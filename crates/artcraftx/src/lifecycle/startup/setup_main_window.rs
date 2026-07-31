@@ -14,7 +14,7 @@ pub async fn setup_main_window(
           .fullscreen(false)
           .background_color(Color(0, 0, 0, 0))
           .enable_clipboard_access()
-          .inner_size(2400.0, 1300.0);
+          .inner_size(1080.0, 480.0);
 
   #[cfg(target_os = "macos")]
   let win_builder = win_builder

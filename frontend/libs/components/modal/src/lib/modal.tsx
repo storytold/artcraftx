@@ -111,7 +111,7 @@ const AnimatedBackdrop = ({
           opacity: styles.opacity,
           pointerEvents: "none",
           background:
-            "radial-gradient(800px 400px at 10% -10%, rgba(45,129,255,0.10), transparent), radial-gradient(600px 320px at 110% 110%, rgba(28,182,190,0.10), transparent), rgba(0,0,0,0.60)",
+            "radial-gradient(800px 400px at 50% -10%, rgba(77,124,251,0.06), transparent), rgba(0,0,0,0.65)",
         }}
       />
     </Dialog.Overlay>
@@ -1040,7 +1040,9 @@ export const Modal = ({
                   >
                     <animated.div
                       className={twMerge(
-                        "w-full max-w-lg rounded-2xl relative border border-ui-panel-border bg-ui-modal text-left align-middle shadow-2xl z-[70]",
+                        // Marketing-site app-window surface: graphite panel,
+                        // hairline border, inset top highlight + deep drop.
+                        "w-full max-w-lg rounded-xl relative border border-line-2 bg-ui-modal text-left align-middle z-[70] shadow-[0_1px_0_0_rgb(237_239_243/0.06)_inset,0_40px_100px_-40px_rgb(0_0_0/0.85)]",
                         childPadding && !expanded ? "p-4" : "",
                         className,
                         "!transition-none", // Always disable CSS transitions for spring animations
@@ -1090,7 +1092,7 @@ export const Modal = ({
                         {title ? (
                           <Dialog.Title
                             className={twMerge(
-                              "mb-4 flex justify-between pb-0 text-xl font-bold text-base-fg",
+                              "ax-display mb-4 flex justify-between pb-0 text-[17px]",
                             )}
                           >
                             <>

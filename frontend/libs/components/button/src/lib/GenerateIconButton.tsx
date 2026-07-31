@@ -1,9 +1,4 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowUp,
-  faCoins,
-  faSpinnerThird,
-} from "@fortawesome/pro-solid-svg-icons";
+import { ArrowUp, Coins, Loader2 } from "lucide-react";
 import { ButtonHTMLAttributes } from "react";
 import { twMerge } from "tailwind-merge";
 import { Tooltip } from "@storyteller/ui-tooltip";
@@ -31,7 +26,7 @@ export const GenerateIconButton = ({
   const isDisabled = disabled || loading;
 
   return (
-    <div className={twMerge("flex shrink-0 items-center gap-2.5", className)}>
+    <div className={twMerge("flex shrink-0 items-center gap-3.5", className)}>
       {credits != null && (
         <Tooltip
           content={`${credits} credit${credits !== 1 ? "s" : ""} cost`}
@@ -44,7 +39,7 @@ export const GenerateIconButton = ({
               isDisabled && "opacity-50",
             )}
           >
-            <FontAwesomeIcon icon={faCoins} className="text-xs" />
+            <Coins className="h-3 w-3" />
             {credits}
           </span>
         </Tooltip>
@@ -52,14 +47,16 @@ export const GenerateIconButton = ({
 
       <button
         type="button"
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white shadow-sm transition-all duration-150 hover:bg-primary-400 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100"
+        className="flex h-9 items-center justify-center gap-1.5 rounded-full bg-primary px-4 text-[13px] font-medium text-white transition-all duration-150 hover:bg-primary-400 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100"
         disabled={isDisabled}
         {...rest}
       >
-        <FontAwesomeIcon
-          icon={loading ? faSpinnerThird : faArrowUp}
-          className={loading ? "animate-spin" : undefined}
-        />
+        Create
+        {loading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <ArrowUp className="h-4 w-4" />
+        )}
       </button>
     </div>
   );

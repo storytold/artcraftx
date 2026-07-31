@@ -16,8 +16,8 @@
   }
 
   .glass {
-    @apply relative border border-white/10 shadow-lg backdrop-blur-xl transition-colors duration-300;
-    @apply bg-[#303032]/90 !important;
+    @apply relative border border-[#edeff3]/10 shadow-lg backdrop-blur-xl transition-colors duration-300;
+    @apply bg-[#17191d]/95 !important;
   }
 
   /* Light theme: the glass surface must be a light panel, not the dark

@@ -14,10 +14,12 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { faCircleInfo } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Clock, Info } from "lucide-react";
 import { arrayMove } from "@dnd-kit/sortable";
 import {
   CommonResolution,
   effectivePromptMaxLength,
+  formatResolution,
   SizeIconOption,
   SizeOption,
   VideoModel,
@@ -92,6 +94,11 @@ const RESOLUTION_STRING_TO_COMMON: Record<string, CommonResolution> = {
   four_eighty_p: CommonResolution.FourEightyP,
   seven_twenty_p: CommonResolution.SevenTwentyP,
   ten_eighty_p: CommonResolution.TenEightyP,
+  "0.5K": CommonResolution.HalfK,
+  "1K": CommonResolution.OneK,
+  "2K": CommonResolution.TwoK,
+  "3K": CommonResolution.ThreeK,
+  "4K": CommonResolution.FourK,
 };
 
 const DEFAULT_RESOLUTIONS: SizeOption[] = [
@@ -125,6 +132,9 @@ interface PromptBoxVideoProps {
   /** Optional model-picker slot rendered at the start of the toolbar
    *  (left of the aspect-ratio picker). */
   modelSelector?: React.ReactNode;
+  /** Render the focus-mode layout inline, filling the parent's height,
+   *  instead of the floating card + fullscreen modal. */
+  fullBleed?: boolean;
 }
 
 export const PromptBoxVideo = ({
@@ -139,6 +149,7 @@ export const PromptBoxVideo = ({
   uploadAudio,
   credits,
   modelSelector,
+  fullBleed = false,
 }: PromptBoxVideoProps) => {
   useSignals();
 
@@ -396,8 +407,10 @@ export const PromptBoxVideo = ({
     }
   }, [selectedModel]);
 
-  // Reset input mode when switching to a model that doesn't support reference.
-  // Read from store directly to avoid stale closure (same as duration above).
+  // Input mode follows the model: reference-capable models (Seedance) default
+  // to Omni Reference on entry; models without reference support fall back to
+  // keyframe. Read from store directly to avoid stale closure (same as
+  // duration above).
   useEffect(() => {
     const currentInputMode = usePromptVideoStore.getState().inputMode;
     if (
@@ -407,6 +420,12 @@ export const PromptBoxVideo = ({
       setInputMode("keyframe");
       setReferenceVideos([]);
       setReferenceAudios([]);
+    } else if (
+      selectedModel?.supportsReferenceMode &&
+      currentInputMode !== "reference"
+    ) {
+      setInputMode("reference");
+      setEndFrameImage(undefined);
     }
   }, [selectedModel]);
 
@@ -445,8 +464,8 @@ export const PromptBoxVideo = ({
   const resolutionPickerOptions: PopoverItem[] | null =
     selectedModel?.resolutionOptions
       ? selectedModel.resolutionOptions.map((r) => ({
-          label: r,
-          selected: r === resolution,
+          label: formatResolution(r),
+          selected: formatResolution(r) === formatResolution(resolution),
         }))
       : null;
 
@@ -623,52 +642,28 @@ export const PromptBoxVideo = ({
 
   const refDeckAddActions: DeckAddAction[] = [];
   if (referenceImages.length + deck.uploadingImages.length < maxImageCount) {
-    refDeckAddActions.push(
-      {
-        key: "upload-image",
-        label: "Upload",
-        group: "image",
-        onSelect: deck.openImageUpload,
-      },
-      {
-        key: "library-image",
-        label: "From library",
-        group: "image",
-        onSelect: () => deck.openGallery("start"),
-      },
-    );
+    refDeckAddActions.push({
+      key: "upload-image",
+      label: "Select file",
+      group: "image",
+      onSelect: deck.openImageUpload,
+    });
   }
   if (referenceVideos.length < maxVideoCount && !deck.uploadingVideo) {
-    refDeckAddActions.push(
-      {
-        key: "upload-video",
-        label: "Upload",
-        group: "video",
-        onSelect: deck.openVideoUpload,
-      },
-      {
-        key: "library-video",
-        label: "From library",
-        group: "video",
-        onSelect: () => deck.openGallery("video"),
-      },
-    );
+    refDeckAddActions.push({
+      key: "upload-video",
+      label: "Select file",
+      group: "video",
+      onSelect: deck.openVideoUpload,
+    });
   }
   if (referenceAudios.length < maxAudioCount && !deck.uploadingAudio) {
-    refDeckAddActions.push(
-      {
-        key: "upload-audio",
-        label: "Upload",
-        group: "audio",
-        onSelect: deck.openAudioUpload,
-      },
-      {
-        key: "library-audio",
-        label: "From library",
-        group: "audio",
-        onSelect: () => deck.openGallery("audio"),
-      },
-    );
+    refDeckAddActions.push({
+      key: "upload-audio",
+      label: "Select file",
+      group: "audio",
+      onSelect: deck.openAudioUpload,
+    });
   }
 
   const handleRemoveDeckItem = (id: string) => {
@@ -767,25 +762,15 @@ export const PromptBoxVideo = ({
       onFirstAddActions={[
         {
           key: "upload-first",
-          label: "Upload",
+          label: "Select file",
           onSelect: deck.openImageUpload,
-        },
-        {
-          key: "library-first",
-          label: "Pick from library",
-          onSelect: () => deck.openGallery("start"),
         },
       ]}
       onLastAddActions={[
         {
           key: "upload-last",
-          label: "Upload",
+          label: "Select file",
           onSelect: deck.openEndUpload,
-        },
-        {
-          key: "library-last",
-          label: "Pick from library",
-          onSelect: () => deck.openGallery("end"),
         },
       ]}
       onRemoveFirst={() => setReferenceImages([])}
@@ -1312,7 +1297,7 @@ export const PromptBoxVideo = ({
       <button
         type="button"
         onClick={() => setIsCharactersModalOpen(true)}
-        className="flex h-9 items-center justify-center gap-1 rounded-lg border border-ui-controls-border bg-ui-controls px-3 text-sm font-medium text-base-fg transition-all duration-150 hover:bg-ui-controls/80 active:scale-95"
+        className="flex h-[34px] items-center justify-center gap-1 rounded-lg border border-line-2 bg-bone/[0.04] px-3 text-[12.5px] font-medium text-putty transition-all duration-150 hover:bg-bone/[0.08] hover:text-bone active:scale-95"
       >
         @Characters
       </button>
@@ -1329,6 +1314,262 @@ export const PromptBoxVideo = ({
       />
     </Tooltip>
   ) : null;
+
+  // Toolbar clusters shared by the floating and full-bleed layouts.
+  const settingsPickers = (
+    <>
+      {modelSelector}
+      <Tooltip
+        content="Aspect Ratio"
+        position="top"
+        className="z-50"
+        closeOnClick={true}
+      >
+        <PopoverMenu
+          items={aspectRatioOptions}
+          onSelect={handleAspectRatioSelect}
+          mode="toggle"
+          panelTitle="Aspect Ratio"
+          showIconsInList
+          triggerIcon={
+            <AspectRatioIcon sizeIcon={getCurrentAspectRatioIcon()} />
+          }
+        />
+      </Tooltip>
+
+      {resolutionPickerOptions && (
+        <Tooltip
+          content="Resolution"
+          position="top"
+          className="z-50"
+          closeOnClick={true}
+        >
+          <PopoverMenu
+            items={resolutionPickerOptions}
+            onSelect={handleResolutionSelect}
+            mode="toggle"
+            panelTitle="Resolution"
+          />
+        </Tooltip>
+      )}
+
+      {durationRange && (
+        <Tooltip content="Duration" position="top" className="z-50">
+          <PopoverMenu
+            mode="default"
+            panelTitle="Duration"
+            triggerIcon={<Clock className="h-3.5 w-3.5" />}
+            triggerLabel={`${effectiveDuration}s`}
+          >
+            <div className="w-48 pb-0.5">
+              <div className="flex items-center gap-2.5">
+                <div className="flex-1">
+                  <SliderV2
+                    min={durationRange.min}
+                    max={durationRange.max}
+                    value={localDuration}
+                    onChange={handleDurationSlide}
+                    step={1}
+                    suffix="s"
+                    variant="filled"
+                  />
+                </div>
+                <span className="min-w-6 shrink-0 text-sm font-medium tabular-nums text-base-fg">
+                  {localDuration}s
+                </span>
+              </div>
+              <div className="mt-1.5 flex justify-between px-0.5 text-[11px] text-base-fg/40">
+                <span>{durationRange.min}s</span>
+                <span>{durationRange.max}s</span>
+              </div>
+            </div>
+          </PopoverMenu>
+        </Tooltip>
+      )}
+
+      {selectedModel?.generateWithSound && (
+        <Tooltip
+          content={generateWithSound ? "Sound: ON" : "Sound: OFF"}
+          position="top"
+          className="z-50"
+          delay={200}
+        >
+          <ToggleButton
+            isActive={generateWithSound}
+            icon={faWaveformLines}
+            activeIcon={faWaveformLines}
+            onClick={() => setGenerateWithSound(!generateWithSound)}
+          />
+        </Tooltip>
+      )}
+
+      {inputModeEl}
+
+      {characterButtonEl}
+    </>
+  );
+
+  const actionCluster = (
+    <>
+      {modelNeedsAnImageButNoneAreSelected && (
+        <span className="flex items-center gap-1.5 text-xs text-red-500 font-medium animate-pulse">
+          <Info className="h-3 w-3" />
+          Starting frame required
+        </span>
+      )}
+      <PromptClearAllButton
+        onClick={handleClearAll}
+        disabled={!hasClearableContent}
+        confirmClear={hasAttachedRefs}
+      />
+      {selectedModel?.id === "seedance_2p0" && (
+        <VideoGenerationCountPicker
+          maxCount={4}
+          currentCount={generationCount}
+          handleCountChange={setGenerationCount}
+        />
+      )}
+      <Tooltip
+        content="Add a starting image before generating"
+        position="top"
+        className="z-50"
+        delay={0}
+        disabled={!modelNeedsAnImageButNoneAreSelected}
+      >
+        <div>
+          <GenerateIconButton
+            onClick={handleEnqueue}
+            disabled={!prompt.trim()}
+            loading={isEnqueueing}
+            credits={credits != null ? credits * generationCount : credits}
+          />
+        </div>
+      </Tooltip>
+    </>
+  );
+
+  const textOnlyWarning = selectedModel?.textToVideoSupported === false && (
+    <div className="mb-2 flex items-center gap-1.5 rounded-md bg-ui-controls/60 px-2.5 py-1.5 text-xs text-base-fg/70">
+      <Info className="h-3 w-3 shrink-0" />
+      <span>
+        This model can&apos;t generate from text alone - add a starting frame to
+        animate your prompt.
+      </span>
+    </div>
+  );
+
+  if (fullBleed) {
+    return (
+      <>
+        {deck.fileInputs}
+        {deck.galleryModal}
+        <div
+          className="relative flex h-full min-h-0 flex-col"
+          {...drop.dropZoneProps}
+        >
+          <PromptBoxDropOverlay
+            dragState={drop.dragState}
+            acceptsImages={maxImageCount > 0}
+            acceptsVideos={dropAcceptsVideos}
+            acceptsAudio={dropAcceptsAudio}
+            keyframeMode={!isReferenceMode}
+          />
+          {textOnlyWarning}
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            {hasAnyMentionables ? (
+              <MentionTextarea
+                ref={mentionEditorRef}
+                value={prompt}
+                onChange={setPrompt}
+                mentionItems={allMentionItems}
+                colorMap={mentionColorMap}
+                onMentionSelect={handleMentionSelect}
+                selectedTokens={mentionSelections}
+                placeholder={
+                  isReferenceMode
+                    ? "Use @Image1, @Video1, @Audio1... to reference uploads in prompt..."
+                    : "Describe what you want to happen in the video..."
+                }
+                className="promptbox-scrollbar h-full min-h-0 w-full resize-none overflow-y-auto bg-transparent text-[15px] leading-[1.85] text-bone/95 sm:text-[16.5px]"
+                style={{ resize: "none" }}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter") return;
+                  const isSubmitCombo = enterToGenerate && !e.shiftKey;
+                  if (isSubmitCombo) {
+                    e.preventDefault();
+                    if (
+                      selectedModel?.requiresImage &&
+                      referenceImages.length === 0
+                    )
+                      return;
+                    if (!prompt.trim()) return;
+                    handleEnqueue();
+                  }
+                }}
+              />
+            ) : (
+              <textarea
+                autoFocus
+                placeholder="Describe what you want to happen in the video..."
+                className="promptbox-scrollbar h-full min-h-0 w-full resize-none overflow-y-auto bg-transparent text-[15px] leading-[1.85] text-bone/95 placeholder-mud focus:outline-none sm:text-[16.5px]"
+                value={prompt}
+                onChange={handleChange}
+                onPaste={handlePaste}
+                onKeyDown={handleKeyDown}
+              />
+            )}
+          </div>
+          {/* Counter rides the heading row, opposite the "Prompt" title. */}
+          <span
+            className={`absolute -top-[33px] right-0 font-mono text-[11px] tabular-nums ${
+              isFinite(maxLen) && prompt.length > maxLen
+                ? "text-red-500"
+                : "text-mud"
+            }`}
+          >
+            {prompt.length} / {isFinite(maxLen) ? maxLen : "∞"}
+          </span>
+          <div className="shrink-0">
+            {isReferenceMode
+              ? renderReferenceDeck(true)
+              : renderKeyframeCards()}
+          </div>
+          <div className="mt-3 flex shrink-0 flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {settingsPickers}
+            </div>
+            <div className="flex items-center gap-2">{actionCluster}</div>
+          </div>
+        </div>
+        <CharactersModal
+          isOpen={isCharactersModalOpen}
+          onClose={() => setIsCharactersModalOpen(false)}
+          onSelectCharacter={(character) => {
+            const mention = `@${character.name}`;
+            const spaceBefore =
+              prompt.length > 0 && !prompt.endsWith(" ") ? " " : "";
+            setPrompt(prompt + spaceBefore + mention + " ");
+            setMentionSelections((prev) => ({
+              ...prev,
+              [character.name]: character.token,
+            }));
+            setIsCharactersModalOpen(false);
+            requestAnimationFrame(() => {
+              const el = mentionEditorRef.current;
+              if (el) {
+                el.focus();
+                const sel = window.getSelection();
+                if (sel) {
+                  sel.selectAllChildren(el);
+                  sel.collapseToEnd();
+                }
+              }
+            });
+          }}
+        />
+      </>
+    );
+  }
 
   return (
     <>
@@ -1351,18 +1592,7 @@ export const PromptBoxVideo = ({
             acceptsAudio={dropAcceptsAudio}
             keyframeMode={!isReferenceMode}
           />
-          {selectedModel?.textToVideoSupported === false && (
-            <div className="mb-2 flex items-center gap-1.5 rounded-md bg-ui-controls/60 px-2.5 py-1.5 text-xs text-base-fg/70">
-              <FontAwesomeIcon
-                icon={faCircleInfo}
-                className="h-3 w-3 shrink-0"
-              />
-              <span>
-                This model can&apos;t generate from text alone - add a starting
-                frame to animate your prompt.
-              </span>
-            </div>
-          )}
+          {textOnlyWarning}
           <div className="relative flex justify-center gap-3">
             {isReferenceMode ? renderReferenceDeck() : renderKeyframeCards()}
             <div className="promptbox-resize-wrap relative flex-1 min-w-0">
@@ -1421,136 +1651,8 @@ export const PromptBoxVideo = ({
             </div>
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              {modelSelector}
-              <Tooltip
-                content="Aspect Ratio"
-                position="top"
-                className="z-50"
-                closeOnClick={true}
-              >
-                <PopoverMenu
-                  items={aspectRatioOptions}
-                  onSelect={handleAspectRatioSelect}
-                  mode="toggle"
-                  panelTitle="Aspect Ratio"
-                  showIconsInList
-                  triggerIcon={
-                    <AspectRatioIcon sizeIcon={getCurrentAspectRatioIcon()} />
-                  }
-                />
-              </Tooltip>
-
-              {resolutionPickerOptions && (
-                <Tooltip
-                  content="Resolution"
-                  position="top"
-                  className="z-50"
-                  closeOnClick={true}
-                >
-                  <PopoverMenu
-                    items={resolutionPickerOptions}
-                    onSelect={handleResolutionSelect}
-                    mode="toggle"
-                    panelTitle="Resolution"
-                  />
-                </Tooltip>
-              )}
-
-              {durationRange && (
-                <Tooltip content="Duration" position="top" className="z-50">
-                  <PopoverMenu
-                    mode="default"
-                    panelTitle="Duration"
-                    triggerIcon={
-                      <FontAwesomeIcon icon={faClock} className="h-3.5 w-3.5" />
-                    }
-                    triggerLabel={`${effectiveDuration}s`}
-                  >
-                    <div className="w-48 pb-0.5">
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex-1">
-                          <SliderV2
-                            min={durationRange.min}
-                            max={durationRange.max}
-                            value={localDuration}
-                            onChange={handleDurationSlide}
-                            step={1}
-                            suffix="s"
-                            variant="filled"
-                          />
-                        </div>
-                        <span className="min-w-6 shrink-0 text-sm font-medium tabular-nums text-base-fg">
-                          {localDuration}s
-                        </span>
-                      </div>
-                      <div className="mt-1.5 flex justify-between px-0.5 text-[11px] text-base-fg/40">
-                        <span>{durationRange.min}s</span>
-                        <span>{durationRange.max}s</span>
-                      </div>
-                    </div>
-                  </PopoverMenu>
-                </Tooltip>
-              )}
-
-              {selectedModel?.generateWithSound && (
-                <Tooltip
-                  content={generateWithSound ? "Sound: ON" : "Sound: OFF"}
-                  position="top"
-                  className="z-50"
-                  delay={200}
-                >
-                  <ToggleButton
-                    isActive={generateWithSound}
-                    icon={faWaveformLines}
-                    activeIcon={faWaveformLines}
-                    onClick={() => setGenerateWithSound(!generateWithSound)}
-                  />
-                </Tooltip>
-              )}
-
-              {inputModeEl}
-
-              {characterButtonEl}
-            </div>
-            <div className="flex items-center gap-2">
-              {modelNeedsAnImageButNoneAreSelected && (
-                <span className="flex items-center gap-1.5 text-xs text-red-500 font-medium animate-pulse">
-                  <FontAwesomeIcon icon={faCircleInfo} />
-                  Starting frame required
-                </span>
-              )}
-              <PromptClearAllButton
-                onClick={handleClearAll}
-                disabled={!hasClearableContent}
-                confirmClear={hasAttachedRefs}
-              />
-              {selectedModel?.id === "seedance_2p0" && (
-                <VideoGenerationCountPicker
-                  maxCount={4}
-                  currentCount={generationCount}
-                  handleCountChange={setGenerationCount}
-                />
-              )}
-              <Tooltip
-                content="Add a starting image before generating"
-                position="top"
-                className="z-50"
-                delay={0}
-                disabled={!modelNeedsAnImageButNoneAreSelected}
-              >
-                <div>
-                  <GenerateIconButton
-                    onClick={handleEnqueue}
-                    disabled={!prompt.trim()}
-                    loading={isEnqueueing}
-                    credits={
-                      credits != null ? credits * generationCount : credits
-                    }
-                  />
-                </div>
-              </Tooltip>
-            </div>
+            <div className="flex items-center gap-2">{settingsPickers}</div>
+            <div className="flex items-center gap-2">{actionCluster}</div>
           </div>
           <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
             <Tooltip

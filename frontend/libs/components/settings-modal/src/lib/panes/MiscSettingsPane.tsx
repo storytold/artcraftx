@@ -8,16 +8,11 @@ import {
 } from "@storyteller/tauri-api";
 import { PreferenceName, UpdateAppPreferences } from "@storyteller/tauri-api";
 import { open } from "@tauri-apps/plugin-dialog";
-import { Label } from "@storyteller/ui-label";
 import { Switch } from "@storyteller/ui-switch";
 import { DownloadDirectoryReveal } from "@storyteller/tauri-api";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faFolder,
-  faMagnifyingGlass,
-  faRotateLeft,
-} from "@fortawesome/pro-solid-svg-icons";
+import { Folder, RotateCcw, Search } from "lucide-react";
 import { useEnterToGenerateStore } from "@storyteller/ui-promptbox";
+import { SettingsBlock, SettingsRow } from "./SettingsRow";
 import {
   getAskLocationBeforeDownload,
   setAskLocationBeforeDownload,
@@ -100,59 +95,44 @@ export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
   };
 
   return (
-    <div className="space-y-4 text-base-fg">
-      <div className="space-y-2">
-        <Label htmlFor="download-path">Default Download Directory</Label>
-        <p className="opacity-80">
-          This is where downloads are placed after downloading. The current path
-          is:
-        </p>
-        <div className="py-1.5 px-2 rounded-md mt-1 bg-ui-panel border border-ui-panel-border text-base-fg">
-          <pre>{currentDownloadLabel}</pre>
+    <div className="text-base-fg">
+      <SettingsBlock
+        title="Download directory"
+        description="Generated files are written straight to this folder."
+      >
+        <div className="w-full overflow-x-auto rounded-ax-sm border border-line bg-well/60 px-3 py-2 font-mono text-[12px] text-putty">
+          {currentDownloadLabel}
         </div>
-      </div>
-      <div className="flex gap-2">
-        <Button variant="primary" onClick={openDirectoryPicker}>
-          <FontAwesomeIcon icon={faFolder} />
-          Choose Directory
-        </Button>
-        <Button variant="destructive" onClick={clearDirectory}>
-          <FontAwesomeIcon icon={faRotateLeft} />
-          Use Default
-        </Button>
-        <Button variant="secondary" onClick={showDirectory}>
-          <FontAwesomeIcon icon={faMagnifyingGlass} />
-          Show Directory
-        </Button>
-      </div>
-      <div className="flex flex-col gap-2 pt-3">
-        <div className="flex flex-col gap-0.5">
-          <Label htmlFor="ask-location-before-download">
-            Ask location before download
-          </Label>
-          <p className="text-xs opacity-70">
-            When on, a system file picker appears every time you download from
-            the lightbox or anywhere in the app, letting you choose the save
-            location for that file. When off, downloads go straight to the
-            default download directory above.
-          </p>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={openDirectoryPicker}>
+            <Folder className="h-3.5 w-3.5" />
+            Choose folder
+          </Button>
+          <Button variant="secondary" onClick={showDirectory}>
+            <Search className="h-3.5 w-3.5" />
+            Show in explorer
+          </Button>
+          <Button variant="ghost" onClick={clearDirectory}>
+            <RotateCcw className="h-3.5 w-3.5" />
+            Use default
+          </Button>
         </div>
+      </SettingsBlock>
+      <SettingsRow
+        title="Ask location before download"
+        description="When on, a file picker appears for every download so you choose where each file goes. When off, downloads go straight to the folder above."
+      >
         <Switch
           enabled={askLocationBeforeDownload}
           setEnabled={toggleAskLocationBeforeDownload}
         />
-      </div>
-      <div className="flex flex-col gap-2 pt-3">
-        <div className="flex flex-col gap-0.5">
-          <Label htmlFor="enter-to-generate">Enter to generate</Label>
-          <p className="text-xs opacity-70">
-            When on, pressing Enter submits the prompt and Shift+Enter adds a
-            new line. When off (default), both Enter and Shift+Enter add a new
-            line - use only the button to submit.
-          </p>
-        </div>
+      </SettingsRow>
+      <SettingsRow
+        title="Enter to generate"
+        description="When on, Enter submits the prompt and Shift+Enter adds a new line. When off, both add a new line — use the button to submit."
+      >
         <Switch enabled={enterToGenerate} setEnabled={setEnterToGenerate} />
-      </div>
+      </SettingsRow>
     </div>
   );
 };

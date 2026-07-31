@@ -10,7 +10,6 @@ import { useSignals } from "@preact/signals-react/runtime";
 import { TopBar } from "~/components";
 import { ErrorDialog } from "~/components";
 import { toast, Toaster } from "@storyteller/ui-toaster";
-import { GalleryDragComponent } from "@storyteller/ui-gallery-modal";
 import {
   PricingModal,
   CreditsModal,
@@ -53,6 +52,7 @@ import { Storyboard } from "./PageStoryboard";
 import { PageBackgroundChange } from "./PageBackgroundChange";
 import { PageVideoEditor } from "./PageVideoEditor";
 import { PageMoodboard } from "./PageMoodboard";
+import { PageSettings } from "./PageSettings";
 import {
   topNavMediaId,
   topNavMediaUrl,
@@ -119,13 +119,12 @@ export const MainApp = () => {
 
   return (
     <div className="w-screen">
-      <TopBar pageName="Edit Scene" />
+      <TopBar />
 
       <TabBody />
 
-      <GalleryDragComponent />
       <ErrorDialog />
-      <Toaster offsetTop={70} offsetRight={12} zIndex={9999} />
+      <Toaster offsetTop={52} offsetRight={12} zIndex={9999} />
       {currentReminderModalProps && (
         <ActionReminderModal
           isOpen={isActionReminderOpen.value}
@@ -236,19 +235,23 @@ const TabBody = () => {
       );
     case "VIDEO_EDITOR":
       return (
-        <div className="h-[calc(100vh-3rem)] w-full">
+        <div className="h-[calc(100vh-40px)] w-full">
           <PageVideoEditor />
         </div>
       );
-    case "MOODBOARD":
-      // The TopBar is fixed and 56px tall, so the board sits below it and fills
-      // the rest of the viewport. h-screen + pt-[56px] (border-box) makes the
-      // board area exactly viewport-minus-topbar, and overflow-hidden keeps
-      // sub-pixel 100vh rounding from spawning page scrollbars (which w-screen
-      // ancestors would turn into a horizontal scrollbar via the Windows
-      // scrollbar gutter).
+    case "SETTINGS":
       return (
-        <div className="h-[calc(100vh-56px)] w-full overflow-hidden">
+        <div>
+          <PageSettings />
+        </div>
+      );
+    case "MOODBOARD":
+      // The TopBar is fixed and 40px tall, so the board sits below it and fills
+      // the rest of the viewport. overflow-hidden keeps sub-pixel 100vh
+      // rounding from spawning page scrollbars (which w-screen ancestors would
+      // turn into a horizontal scrollbar via the Windows scrollbar gutter).
+      return (
+        <div className="h-[calc(100vh-40px)] w-full overflow-hidden">
           <PageMoodboard />
         </div>
       );

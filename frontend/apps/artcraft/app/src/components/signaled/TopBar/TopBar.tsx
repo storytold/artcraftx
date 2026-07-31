@@ -1,14 +1,6 @@
-import {
-  faDash,
-  faSquare,
-  faWindowRestore,
-  faXmark,
-} from "@fortawesome/pro-regular-svg-icons";
-import { faGear, faImages } from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Copy, Minus, Settings, Square, X } from "lucide-react";
 import { signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
-import { getCreatorIcon, ModelCreator } from "@storyteller/model-list";
 import { useCreditsState } from "@storyteller/credits";
 import { gtagEvent } from "@storyteller/google-analytics";
 import { ProviderBillingModal } from "@storyteller/provider-billing-modal";
@@ -22,89 +14,29 @@ import {
   useTauriPlatform,
   useTauriWindowControls,
 } from "@storyteller/tauri-utils";
-import { Button } from "@storyteller/ui-button";
-import {
-  GalleryModal,
-  galleryModalLightboxVisible,
-  galleryModalVisibleDuringDrag,
-  galleryModalVisibleViewMode,
-} from "@storyteller/ui-gallery-modal";
-import {
-  MenuIconItem,
-  MenuIconSelector,
-} from "@storyteller/ui-menu-icon-selector";
 import { CostBreakdownModal, CreditsModal } from "@storyteller/ui-pricing-modal";
-import { GalleryAutoplayToggle } from "@storyteller/ui-generation-list";
-import { SettingsModal } from "@storyteller/ui-settings-modal";
+import { ModelPage, useSelectedModel } from "@storyteller/ui-model-selector";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { useEffect, useRef, useState } from "react";
-import { APP_DESCRIPTORS, goToApp } from "~/config/appMenu";
-import {
-  applyMakeVideoFromImage,
-  applyRecreateFromPromptData,
-  downloadMediaFileToDisk,
-} from "~/components/generation-feed/desktopMediaActions";
-import { useStoryboardStore } from "~/pages/PageStoryboard";
-import { useImageTo3DStore } from "~/pages/PageImageTo3DObject/ImageTo3DStore";
-import { useImageTo3DWorldStore } from "~/pages/PageImageTo3DWorld/ImageTo3DWorldStore";
-import { useRemoveBackgroundStore } from "~/pages/PageRemoveBackground/RemoveBackgroundStore";
+import { twMerge } from "tailwind-merge";
+import { APP_DESCRIPTORS } from "~/config/appMenu";
 import { TabId, useTabStore } from "~/pages/Stores/TabState";
 import { AUTH_STATUS } from "~/enums";
 import { authentication } from "~/signals";
-import { setLogoutStates } from "~/signals/authentication/utilities";
-import {
-  galleryModalDeleteMedia,
-  galleryModalSubscribeToMediaEvents,
-} from "~/Helpers/galleryModalTauriBindings";
 import { TaskQueue } from "./TaskQueue";
-
-interface Props {
-  pageName: string;
-}
-
-// Settings section type to match the SettingsModal component
-type SettingsSection =
-  | "general"
-  | "accounts"
-  | "alerts"
-  | "about"
-  | "provider_priority"
-  | "billing";
 
 const SWITCHER_THROTTLE_TIME = 500; // milliseconds
 const CREDITS_POLL_INTERVAL = 60_000; // milliseconds
 
-// NB: See `TabState` for the default tab.
-const appMenuTabs: MenuIconItem[] = [
-  ...APP_DESCRIPTORS.map((d) => ({
-    id: d.id,
-    label: d.label,
-    icon: <FontAwesomeIcon icon={d.icon} />,
-    imageSrc: d.imageSrc,
-    description: d.description,
-    large: d.large,
-  })),
-];
-
 export const topNavMediaId = signal<string>("");
 export const topNavMediaUrl = signal<string>("");
 
-export const TopBar = ({ pageName }: Props) => {
+export const TopBar = () => {
   useSignals();
-
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [settingsSection, setSettingsSection] =
-    useState<SettingsSection>("general");
 
   const { isDesktop, isMaximized, minimize, toggleMaximize, close } =
     useTauriWindowControls();
   const platform = useTauriPlatform();
-
-  const handleOpenGalleryModal = () => {
-    galleryModalVisibleViewMode.value = true;
-    galleryModalVisibleDuringDrag.value = true;
-    gtagEvent("open_gallery_modal", { tab: tabStore.activeTabId });
-  };
 
   const tabStore = useTabStore();
 
@@ -152,281 +84,149 @@ export const TopBar = ({ pageName }: Props) => {
     subscriptionStore.fetchFromServer();
   });
 
-  const disableTabSwitcher = () => {
-    return disableSwitcher;
-  };
+  const switchTab = (tabId: TabId) => {
+    gtagEvent("switch_tab", { tab: tabId });
 
-  const downloadFile = downloadMediaFileToDisk;
-
-  const handleTurnIntoVideoFromGallery = applyMakeVideoFromImage;
-
-  const handleRecreateFromGallery = applyRecreateFromPromptData;
-
-  const handleRemoveBackgroundFromGallery = async (url: string) => {
-    try {
-      useRemoveBackgroundStore.getState().setPendingExternalUrl(url);
-      useTabStore.getState().setActiveTab("REMOVE_BACKGROUND");
-      galleryModalVisibleViewMode.value = false;
-      galleryModalVisibleDuringDrag.value = false;
-      galleryModalLightboxVisible.value = false;
-    } catch (e) {
-      // no-op
+    // Prevent a second input if the switcher is throttled.
+    if (switcherThrottle.current) {
+      return;
     }
+    switcherThrottle.current = true;
+    setDisableSwitcher(true);
+
+    useTabStore.getState().setActiveTab(tabId);
+    setTimeout(() => {
+      // Clear the throttle
+      switcherThrottle.current = false;
+      // Trigger a new re-render (important)
+      setDisableSwitcher(false);
+    }, SWITCHER_THROTTLE_TIME);
   };
 
-  const handleMake3DObjectFromGallery = async (
-    url: string,
-    mediaId?: string,
-  ) => {
-    try {
-      if (mediaId) {
-        useImageTo3DStore.getState().setPendingExternalImage(url, mediaId);
-      }
-      useTabStore.getState().setActiveTab("IMAGE_TO_3D_OBJECT");
-      galleryModalVisibleViewMode.value = false;
-      galleryModalVisibleDuringDrag.value = false;
-      galleryModalLightboxVisible.value = false;
-    } catch (e) {
-      // no-op
-    }
+  // The titlebar reads "ARTCRAFT-X · <MODEL>" like the marketing site's app
+  // window. Hooks must run unconditionally, so every page's selection is read
+  // and the active tab picks one; modality label is the fallback (audio has no
+  // model-selector page).
+  const imageModel = useSelectedModel(ModelPage.TextToImage);
+  const videoModel = useSelectedModel(ModelPage.ImageToVideo);
+  const worldModel = useSelectedModel(ModelPage.ImageTo3DWorld);
+  const objectModel = useSelectedModel(ModelPage.ImageTo3DObject);
+
+  const modelForTab: Partial<Record<TabId, string | undefined>> = {
+    IMAGE: imageModel?.fullName,
+    VIDEO: videoModel?.fullName,
+    IMAGE_TO_3D_WORLD: worldModel?.fullName,
+    IMAGE_TO_3D_OBJECT: objectModel?.fullName,
   };
-
-  const handleMake3DWorldFromGallery = async (
-    url: string,
-    mediaId?: string,
-  ) => {
-    try {
-      if (mediaId) {
-        useImageTo3DWorldStore.getState().setPendingExternalImage(url, mediaId);
-      }
-      useTabStore.getState().setActiveTab("IMAGE_TO_3D_WORLD");
-      galleryModalVisibleViewMode.value = false;
-      galleryModalVisibleDuringDrag.value = false;
-      galleryModalLightboxVisible.value = false;
-    } catch (e) {
-      // no-op
-    }
-  };
-
-  const getPageTitle = (): string => {
-    switch (tabStore.activeTabId) {
-      case "IMAGE":
-        return "Create Image";
-      case "VIDEO":
-        return "Create Video";
-      case "AUDIO":
-        return "Create Audio";
-      case "EDIT":
-        return "Edit Image";
-      case "VIDEO_FRAME_EXTRACTOR":
-        return "Video Frame Extractor";
-      case "VIDEO_WATERMARK_REMOVAL":
-        return "Video Watermark Remover";
-      case "IMAGE_WATERMARK_REMOVAL":
-        return "Image Watermark Remover";
-      case "IMAGE_TO_3D_OBJECT":
-        return "Image to 3D Object";
-      case "IMAGE_TO_3D_WORLD":
-        return "Image to 3D World";
-      case "BACKGROUND_CHANGE":
-        return "Background Change";
-      default:
-        return "Artcraft";
-    }
-  };
-
-  const pageTitle = getPageTitle();
-
-  // Pick logo based on current theme (light uses black logo; others use white)
-  const [_logoSrc, setLogoSrc] = useState<string>(
-    "/resources/logo/artcraft-logo-color-white.svg",
+  const activeDescriptor = APP_DESCRIPTORS.find(
+    (d) => d.id === tabStore.activeTabId,
   );
-  useEffect(() => {
-    const computeLogo = () => {
-      const root = document.documentElement;
-      const isLight = root.classList.contains("theme-light");
-      setLogoSrc(
-        isLight
-          ? "/resources/logo/artcraft-logo-color-black.svg"
-          : "/resources/logo/artcraft-logo-color-white.svg",
-      );
-    };
-    computeLogo();
-    const mo = new MutationObserver((muts) => {
-      for (const m of muts) {
-        if (m.type === "attributes" && m.attributeName === "class") {
-          computeLogo();
-          break;
-        }
-      }
-    });
-    mo.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-    return () => mo.disconnect();
-  }, []);
+  const titleText = `ArtCraft-X · ${
+    tabStore.activeTabId === "SETTINGS"
+      ? "Settings"
+      : (modelForTab[tabStore.activeTabId] ??
+        activeDescriptor?.label ??
+        "Studio")
+  }`;
 
   return (
     <>
       <header
-        className="fixed left-0 top-0 z-[60] w-full border-b border-ui-panel-border bg-ui-background"
+        className="ax-titlebar fixed left-0 top-0 z-[60] flex h-10 w-full items-center"
         data-tauri-drag-region
       >
+        {/* Modality nav (macOS traffic lights need the left inset). */}
         <nav
-          className="mx-auto grid h-[56px] w-screen grid-cols-3 items-center justify-between ps-3"
+          className={twMerge(
+            "flex h-full items-center gap-5 ps-4",
+            platform === "macos" && "ms-16",
+          )}
           aria-label="navigation"
           data-tauri-drag-region
         >
-          <div
-            className={`flex items-center gap-3 ${platform === "macos" ? "ml-14" : ""}`}
-            data-tauri-drag-region
-          >
-            {/* <div className="mr-2" data-tauri-drag-region>
-              <span className="sr-only" data-tauri-drag-region>
-                ArtCraft
-              </span>
-              <img
-                className="h-[24px] w-auto"
-                src={logoSrc}
-                alt="ArtCraft Logo"
-                data-tauri-drag-region
-              />
-            </div> */}
-            <MenuIconSelector
-              menuItems={appMenuTabs}
-              activeMenu={tabStore.activeTabId}
-              disabled={disableTabSwitcher()}
-              onMenuChange={(tabId) => {
-                gtagEvent("switch_tab", { tab: tabId });
-
-                // Prevent a second input if the switcher is throttled.
-                if (switcherThrottle.current) {
-                  return;
-                }
-                switcherThrottle.current = true;
-                setDisableSwitcher(true);
-
-                useTabStore.getState().setActiveTab(tabId as TabId);
-                setTimeout(() => {
-                  // Clear the throttle
-                  switcherThrottle.current = false;
-                  // Trigger a new re-render (important)
-                  setDisableSwitcher(false);
-                }, SWITCHER_THROTTLE_TIME);
-              }}
-              className="no-drag w-fit"
-            />
-          </div>
-
-          <div
-            className="flex items-center justify-center gap-2 font-medium"
-            data-tauri-drag-region
-          >
-            <h1
-              className="flex items-center gap-2.5 text-base-fg"
-              data-tauri-drag-region
-            >
-              {getCreatorIcon(
-                ModelCreator.ArtCraft,
-                "h-5 w-5 icon-auto-contrast opacity-50",
+          {APP_DESCRIPTORS.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              disabled={disableSwitcher}
+              aria-current={
+                tabStore.activeTabId === tab.id ? "page" : undefined
+              }
+              className={twMerge(
+                "ax-navlink ax-spec no-drag transition-colors",
+                tabStore.activeTabId === tab.id
+                  ? "text-bone"
+                  : "text-ash hover:text-putty",
               )}
-              {pageTitle}
-            </h1>
-          </div>
-
-          <div className="flex justify-end gap-2" data-tauri-drag-region>
-            <div className="no-drag flex items-center gap-1.5">
-              {tabStore.activeTabId === "VIDEO" && <GalleryAutoplayToggle />}
-
-              <Tooltip content="Settings" position="bottom" delay={300}>
-                <Button
-                  variant="secondary"
-                  icon={faGear}
-                  className="h-[34px] w-[34px]"
-                  onClick={() => {
-                    setSettingsSection("general");
-                    setIsSettingsModalOpen(true);
-                    gtagEvent("open_settings_modal");
-                  }}
-                />
-              </Tooltip>
-
-              <Button
-                variant="secondary"
-                icon={faImages}
-                onClick={handleOpenGalleryModal}
-              >
-                <span className="hidden whitespace-nowrap text-base-fg xl:block">
-                  My Library
-                </span>
-              </Button>
-
-              {/* <Activity /> */}
-              <TaskQueue />
-            </div>
-
-            <div className="no-drag">
-              {/* TODO(bt,2025-09-12): This was the old auth buttons that didn't work. We need to remove this and clean up the DOM. */}
-            </div>
-
-            {isDesktop && platform !== "macos" && (
-              <div className="no-drag flex items-center">
-                <Button
-                  variant="secondary"
-                  className="h-[32px] w-[44px] rounded-none border-0 bg-transparent text-base-fg opacity-70 shadow-none hover:bg-ui-controls/20 hover:opacity-100"
-                  onClick={minimize}
-                >
-                  <FontAwesomeIcon icon={faDash} className="text-xs" />
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="h-[32px] w-[44px] rounded-none border-0 bg-transparent text-base-fg opacity-70 shadow-none hover:bg-ui-controls/20 hover:opacity-100"
-                  onClick={toggleMaximize}
-                >
-                  <FontAwesomeIcon
-                    icon={isMaximized ? faWindowRestore : faSquare}
-                    className="text-xs"
-                  />
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="h-[32px] w-[44px] rounded-none border-0 bg-transparent text-base-fg opacity-70 shadow-none hover:bg-red/10 hover:text-red"
-                  onClick={close}
-                >
-                  <FontAwesomeIcon icon={faXmark} className="text-lg" />
-                </Button>
-              </div>
-            )}
-          </div>
+              onClick={() => switchTab(tab.id as TabId)}
+            >
+              {tab.label}
+            </button>
+          ))}
         </nav>
+
+        {/* Centered window title, marketing-site style. */}
+        <span
+          className="pointer-events-none absolute left-1/2 hidden -translate-x-1/2 whitespace-nowrap font-mono text-[11px] uppercase tracking-[0.16em] text-mud md:block"
+          data-tauri-drag-region
+        >
+          {titleText}
+        </span>
+
+        <div className="ms-auto flex h-full items-center" data-tauri-drag-region>
+          <div className="no-drag flex items-center gap-1 pe-2">
+            <TaskQueue />
+
+            <Tooltip content="Settings" position="bottom" delay={300}>
+              <button
+                type="button"
+                className={twMerge(
+                  "grid size-7 place-items-center rounded-ax-sm transition-colors hover:bg-bone/5 hover:text-bone",
+                  tabStore.activeTabId === "SETTINGS"
+                    ? "bg-bone/5 text-bone"
+                    : "text-ash",
+                )}
+                onClick={() => {
+                  gtagEvent("open_settings_page");
+                  switchTab("SETTINGS");
+                }}
+              >
+                <Settings className="h-3.5 w-3.5" />
+              </button>
+            </Tooltip>
+          </div>
+
+          {isDesktop && platform !== "macos" && (
+            <div className="no-drag flex h-full items-center">
+              <button
+                type="button"
+                className="grid h-full w-11 place-items-center text-ash transition-colors hover:bg-bone/5 hover:text-bone"
+                onClick={minimize}
+              >
+                <Minus className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                className="grid h-full w-11 place-items-center text-ash transition-colors hover:bg-bone/5 hover:text-bone"
+                onClick={toggleMaximize}
+              >
+                {isMaximized ? (
+                  <Copy className="h-3 w-3" />
+                ) : (
+                  <Square className="h-3 w-3" />
+                )}
+              </button>
+              <button
+                type="button"
+                className="grid h-full w-11 place-items-center text-ash transition-colors hover:bg-[#c05a4a]/20 hover:text-bone"
+                onClick={close}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
       </header>
-
-      <SettingsModal
-        isOpen={isSettingsModalOpen}
-        onClose={() => setIsSettingsModalOpen(false)}
-        globalAccountLogoutCallback={() => {
-          setIsSettingsModalOpen(false);
-          setLogoutStates();
-        }}
-        onStoryboardPageDisable={() => {
-          useStoryboardStore.getState().reset();
-          goToApp("IMAGE");
-        }}
-        initialSection={settingsSection}
-      />
-
-      <GalleryModal
-        mode="view"
-        onDownloadClicked={downloadFile}
-        onTurnIntoVideoClicked={handleTurnIntoVideoFromGallery}
-        onRemoveBackgroundClicked={handleRemoveBackgroundFromGallery}
-        onMake3DObjectClicked={handleMake3DObjectFromGallery}
-        onMake3DWorldClicked={handleMake3DWorldFromGallery}
-        onRecreateClicked={handleRecreateFromGallery}
-        onDeleteMedia={galleryModalDeleteMedia}
-        subscribeToMediaEvents={galleryModalSubscribeToMediaEvents}
-      />
 
       <ProviderSetupModal />
       <ProviderBillingModal isVideoPage={tabStore.activeTabId === "VIDEO"} />

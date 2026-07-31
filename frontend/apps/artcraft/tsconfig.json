@@ -41,6 +41,9 @@
       "path": "../../libs/omni-gen"
     },
     {
+      "path": "../../libs/components/pagedraw"
+    },
+    {
       "path": "../../libs/components/slider-v2"
     },
     {
@@ -50,13 +53,7 @@
       "path": "../../libs/soundboard"
     },
     {
-      "path": "../../libs/components/pagedraw"
-    },
-    {
       "path": "../../libs/components/settings-modal"
-    },
-    {
-      "path": "../../libs/components/menu-icon-selector"
     },
     {
       "path": "../../libs/state/subscription"
@@ -119,15 +116,6 @@
       "path": "../../libs/components/help-menu"
     },
     {
-      "path": "../../libs/components/pricing-modal"
-    },
-    {
-      "path": "../../libs/components/model-selector"
-    },
-    {
-      "path": "../../libs/model-list"
-    },
-    {
       "path": "../../libs/components/gallery-modal"
     },
     {
@@ -138,6 +126,15 @@
     },
     {
       "path": "../../libs/components/tab-selector"
+    },
+    {
+      "path": "../../libs/components/model-selector"
+    },
+    {
+      "path": "../../libs/model-list"
+    },
+    {
+      "path": "../../libs/components/pricing-modal"
     },
     {
       "path": "../../libs/components/button"

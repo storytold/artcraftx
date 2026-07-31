@@ -21,7 +21,10 @@ import {
   useEnterToGenerateStore,
 } from "./promptStore";
 import { useAutoGrowEditorHeight } from "./useAutoGrowEditorHeight";
-import { PromptFullscreenModal, useFullscreenPrompt } from "./PromptFullscreenModal";
+import {
+  PromptFullscreenModal,
+  useFullscreenPrompt,
+} from "./PromptFullscreenModal";
 import { PromptFullscreenButton } from "./PromptFullscreenButton";
 import { PromptClearAllButton } from "./PromptClearAllButton";
 import { gtagEvent } from "@storyteller/google-analytics";
@@ -66,6 +69,9 @@ interface PromptBoxImageProps {
   /** Optional model-picker slot rendered at the start of the toolbar
    *  (left of the aspect-ratio picker). */
   modelSelector?: ReactNode;
+  /** Render the focus-mode layout inline, filling the parent's height,
+   *  instead of the floating card + fullscreen modal. */
+  fullBleed?: boolean;
 }
 
 export const PromptBoxImage = ({
@@ -78,6 +84,7 @@ export const PromptBoxImage = ({
   url,
   credits,
   modelSelector,
+  fullBleed = false,
 }: PromptBoxImageProps) => {
   useSignals();
 
@@ -181,15 +188,9 @@ export const PromptBoxImage = ({
   const deckAddActions: DeckAddAction[] = [
     {
       key: "upload-image",
-      label: "Upload",
+      label: "Select file",
       group: "image",
       onSelect: deck.openImageUpload,
-    },
-    {
-      key: "library-image",
-      label: "Pick from library",
-      group: "image",
-      onSelect: () => deck.openGallery("start"),
     },
   ];
 
@@ -451,6 +452,142 @@ export const PromptBoxImage = ({
     }
   };
 
+  // Toolbar clusters shared by the floating and full-bleed layouts.
+  const settingsPickers = (
+    <>
+      {modelSelector}
+      {selectedModel?.supportsNewAspectRatio() && (
+        <AspectRatioPicker
+          model={selectedModel}
+          currentAspectRatio={commonAspectRatio}
+          handleCommonAspectRatioSelect={setCommonAspectRatio}
+        />
+      )}
+      {selectedModel?.canChangeAspectRatio &&
+        !selectedModel?.supportsNewAspectRatio() && (
+          <Tooltip
+            content="Aspect Ratio (Legacy)"
+            position="top"
+            className="z-50"
+            closeOnClick={true}
+          >
+            <PopoverMenu
+              items={aspectRatioList}
+              onSelect={handleAspectRatioSelect}
+              mode="toggle"
+              panelTitle="Aspect Ratio (Legacy)"
+              showIconsInList
+              triggerIcon={getCurrentLegacyAspectRatioIcon()}
+            />
+          </Tooltip>
+        )}
+      {selectedModel?.supportsNewResolution() && (
+        <ResolutionPicker
+          model={selectedModel}
+          currentResolution={commonResolution}
+          handleCommonResolutionSelect={setCommonResolution}
+        />
+      )}
+      {selectedModel?.canChangeResolution &&
+        !selectedModel?.supportsNewResolution() && (
+          <Tooltip
+            content="Resolution"
+            position="top"
+            className="z-50"
+            closeOnClick={true}
+          >
+            <PopoverMenu
+              items={resolutionList}
+              onSelect={handleResolutionSelect}
+              mode="toggle"
+              panelTitle="Resolution"
+              showIconsInList
+              triggerIcon={
+                <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />
+              }
+            />
+          </Tooltip>
+        )}
+      {selectedModel?.supportsQuality() && (
+        <QualityPicker
+          model={selectedModel}
+          currentQuality={commonQuality}
+          handleCommonQualitySelect={setCommonQuality}
+        />
+      )}
+    </>
+  );
+
+  const actionCluster = (
+    <>
+      <PromptClearAllButton
+        onClick={handleClearAll}
+        disabled={!hasClearableContent}
+        confirmClear={referenceImages.length > 0}
+      />
+      <GenerationCountPicker
+        currentModel={selectedModel}
+        currentCount={generationCount}
+        handleCountChange={(count) => {
+          setGenerationCount(count);
+        }}
+      />
+      <GenerateIconButton
+        onClick={handleEnqueue}
+        disabled={!prompt.trim()}
+        loading={isEnqueueing}
+        credits={credits}
+      />
+    </>
+  );
+
+  if (fullBleed) {
+    return (
+      <>
+        {deck.fileInputs}
+        {deck.galleryModal}
+
+        <div
+          className="relative flex h-full min-h-0 flex-col"
+          {...drop.dropZoneProps}
+        >
+          <PromptBoxDropOverlay
+            dragState={drop.dragState}
+            acceptsImages={dropAcceptsImages}
+            acceptsVideos={false}
+            acceptsAudio={false}
+          />
+          <textarea
+            autoFocus
+            placeholder="Describe what you want in the image..."
+            className="promptbox-scrollbar min-h-0 w-full flex-1 resize-none overflow-y-auto bg-transparent text-[15px] leading-[1.85] text-bone/95 placeholder-mud focus:outline-none sm:text-[16.5px]"
+            value={prompt}
+            onChange={handleChange}
+            onPaste={handlePaste}
+            onKeyDown={handleKeyDown}
+          />
+          {/* Counter rides the heading row, opposite the "Prompt" title. */}
+          <span
+            className={`absolute -top-[33px] right-0 font-mono text-[11px] tabular-nums ${
+              isFinite(maxLen) && prompt.length > maxLen
+                ? "text-red-500"
+                : "text-mud"
+            }`}
+          >
+            {prompt.length} / {isFinite(maxLen) ? maxLen : "∞"}
+          </span>
+          <div className="shrink-0">{renderReferenceDeck(true)}</div>
+          <div className="mt-3 flex shrink-0 flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {settingsPickers}
+            </div>
+            <div className="flex items-center gap-2">{actionCluster}</div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       {deck.fileInputs}
@@ -497,88 +634,8 @@ export const PromptBoxImage = ({
             </div>
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              {modelSelector}
-              {selectedModel?.supportsNewAspectRatio() && (
-                <AspectRatioPicker
-                  model={selectedModel}
-                  currentAspectRatio={commonAspectRatio}
-                  handleCommonAspectRatioSelect={setCommonAspectRatio}
-                />
-              )}
-              {selectedModel?.canChangeAspectRatio &&
-                !selectedModel?.supportsNewAspectRatio() && (
-                  <Tooltip
-                    content="Aspect Ratio (Legacy)"
-                    position="top"
-                    className="z-50"
-                    closeOnClick={true}
-                  >
-                    <PopoverMenu
-                      items={aspectRatioList}
-                      onSelect={handleAspectRatioSelect}
-                      mode="toggle"
-                      panelTitle="Aspect Ratio (Legacy)"
-                      showIconsInList
-                      triggerIcon={getCurrentLegacyAspectRatioIcon()}
-                    />
-                  </Tooltip>
-                )}
-              {selectedModel?.supportsNewResolution() && (
-                <ResolutionPicker
-                  model={selectedModel}
-                  currentResolution={commonResolution}
-                  handleCommonResolutionSelect={setCommonResolution}
-                />
-              )}
-              {selectedModel?.canChangeResolution &&
-                !selectedModel?.supportsNewResolution() && (
-                  <Tooltip
-                    content="Resolution"
-                    position="top"
-                    className="z-50"
-                    closeOnClick={true}
-                  >
-                    <PopoverMenu
-                      items={resolutionList}
-                      onSelect={handleResolutionSelect}
-                      mode="toggle"
-                      panelTitle="Resolution"
-                      showIconsInList
-                      triggerIcon={
-                        <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />
-                      }
-                    />
-                  </Tooltip>
-                )}
-              {selectedModel?.supportsQuality() && (
-                <QualityPicker
-                  model={selectedModel}
-                  currentQuality={commonQuality}
-                  handleCommonQualitySelect={setCommonQuality}
-                />
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <PromptClearAllButton
-                onClick={handleClearAll}
-                disabled={!hasClearableContent}
-                confirmClear={referenceImages.length > 0}
-              />
-              <GenerationCountPicker
-                currentModel={selectedModel}
-                currentCount={generationCount}
-                handleCountChange={(count) => {
-                  setGenerationCount(count);
-                }}
-              />
-              <GenerateIconButton
-                onClick={handleEnqueue}
-                disabled={!prompt.trim()}
-                loading={isEnqueueing}
-                credits={credits}
-              />
-            </div>
+            <div className="flex items-center gap-2">{settingsPickers}</div>
+            <div className="flex items-center gap-2">{actionCluster}</div>
           </div>
           <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
             <Tooltip

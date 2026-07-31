@@ -30,6 +30,9 @@
       "path": "../../model-list"
     },
     {
+      "path": "../../tauri-events"
+    },
+    {
       "path": "../select"
     },
     {

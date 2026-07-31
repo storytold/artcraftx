@@ -115,12 +115,33 @@ export const Tooltip = ({
     padding: number,
   ): React.CSSProperties => {
     switch (position) {
-      case "top":
+      case "top": {
+        // Clamp within the viewport like "bottom" — wide bubbles (the deck
+        // add menu) on triggers near a window edge would otherwise clip.
+        const center = rect.left + rect.width / 2;
+        const halfWidth = estWidth / 2;
+
+        if (center - halfWidth < padding) {
+          const diff = padding - (center - halfWidth);
+          return {
+            bottom: rect.height + 10,
+            left: "50%",
+            transform: `translateX(calc(-50% + ${diff}px))`,
+          };
+        } else if (center + halfWidth > vw - padding) {
+          const diff = center + halfWidth - (vw - padding);
+          return {
+            bottom: rect.height + 10,
+            left: "50%",
+            transform: `translateX(calc(-50% - ${diff}px))`,
+          };
+        }
         return {
           bottom: rect.height + 10,
           left: "50%",
           transform: "translateX(-50%)",
         };
+      }
       case "bottom": {
         const center = rect.left + rect.width / 2;
         const halfWidth = estWidth / 2;
@@ -362,7 +383,7 @@ export const Tooltip = ({
           }}
           className={twMerge(
             isFixed ? "fixed" : "absolute",
-            "w-max rounded-lg bg-ui-controls shadow-xl border border-ui-controls-border",
+            "w-max rounded-lg bg-umber shadow-xl border border-line-2",
             interactive
               ? "pointer-events-auto p-3"
               : "px-2.5 py-1.5 text-[13px] font-medium pointer-events-none",

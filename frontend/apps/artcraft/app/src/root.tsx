@@ -35,19 +35,6 @@ export const links: LinksFunction = () => [
     rel: "stylesheet",
     href: baseCss,
   },
-  {
-    rel: "preconnect",
-    href: "https://fonts.googleapis.com",
-  },
-  {
-    rel: "preconnect",
-    href: "https://fonts.gstatic.com",
-    crossOrigin: "anonymous",
-  },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap",
-  },
 ];
 
 export default function App() {

@@ -15,9 +15,10 @@ export type TabId =
   | "STORYBOARD"
   | "BACKGROUND_CHANGE"
   | "VIDEO_EDITOR"
-  | "MOODBOARD";
+  | "MOODBOARD"
+  | "SETTINGS";
 
-const DEFAULT_TAB: TabId = "IMAGE";
+const DEFAULT_TAB: TabId = "VIDEO";
 
 interface TabState {
   // Current active tab

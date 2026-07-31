@@ -1,6 +1,6 @@
 * {
   scrollbar-width: thin;
-  scrollbar-color: #363636 #171717;
+  scrollbar-color: rgb(226 232 244 / 0.15) #121316;
 }
 
 /* Works on Chrome, Edge, and Safari */
@@ -9,13 +9,17 @@
 }
 
 *::-webkit-scrollbar-track {
-  background: #171717;
+  background: #121316;
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: #363636;
-  border-radius: 4px;
-  border: 2px solid #171717;
+  background-color: rgb(226 232 244 / 0.15);
+  border-radius: 999px;
+  border: 2px solid #121316;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(226 232 244 / 0.25);
 }
 
 /* Light theme: the scrollbar track/thumb must be light, not the dark defaults. */
@@ -46,46 +50,59 @@ input[type="number"] {
   appearance: textfield;
 }
 
+/* Headings share the body face (Instrument Sans) like the marketing site;
+   Archivo is reserved for explicit display text (.ax-display / font-display). */
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  font-family: "Outfit", sans-serif;
+  font-family: "Instrument Sans Variable", ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
   font-family:
-    "Source Sans 3",
+    "Instrument Sans Variable",
+    ui-sans-serif,
     system-ui,
     -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
     "Helvetica Neue",
     Arial,
     sans-serif;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   color: var(--st-fg);
   background-color: var(--st-bg);
   color-scheme: var(--st-color-scheme, dark);
   user-select: none;
 }
 
+::selection {
+  background: rgb(77 124 251 / 0.32);
+  color: #fff;
+}
+
 /* ===================== THEME VARIABLES ===================== */
+/* Default theme: the ArtCraft-X marketing site's dark graphite palette.
+   Every shared lib component (modals, toasts, settings, promptbox) reads
+   these surfaces, so the reskin lands app-wide from here. */
 :root {
-  --st-bg: #121212;
-  /* gray theme default */
-  --st-panel: #1f1f1f;
-  --st-panel-border: #3f3f3f;
-  --st-modal: #1f1f1f;
-  /* default modal surface (can be gradient per theme) */
-  --st-controls: #3e3e41;
-  --st-controls-rgb: 62 62 65;
-  --st-controls-border: #3f3f3f;
-  --st-fg: #ffffff;
-  --st-fg-rgb: 255 255 255;
-  --st-divider: #515168;
+  --st-bg: #121316;
+  /* carbon */
+  --st-panel: #17191d;
+  /* graphite */
+  --st-panel-border: rgb(226 232 244 / 0.08);
+  --st-modal: #1d2025;
+  /* umber */
+  --st-controls: #1d2025;
+  --st-controls-rgb: 29 32 37;
+  --st-controls-border: rgb(226 232 244 / 0.16);
+  --st-fg: #edeff3;
+  /* bone */
+  --st-fg-rgb: 237 239 243;
+  --st-divider: rgb(226 232 244 / 0.08);
   --st-gallery-vignette-alpha: 0.6;
   /* Photo tint (default neutral) */
   --st-photo-tint-rgb: 0 0 0;
@@ -98,26 +115,31 @@ body {
      Dark-theme palette — the editor only runs in dark mode today.
      --primary matches the webapp's brand blue (#2d81ff) so the
      selection ring is consistent across hosts. */
-  --background: 0 0% 9%;
-  --foreground: 0 0% 98%;
-  --card: 0 0% 12%;
-  --card-foreground: 0 0% 98%;
-  --popover: 0 0% 12%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 216 100% 59%;
+  --background: 225 10% 8%;
+  --foreground: 220 20% 96%;
+  --card: 222 11% 10%;
+  --card-foreground: 220 20% 96%;
+  --popover: 222 12% 13%;
+  --popover-foreground: 220 20% 96%;
+  --primary: 224 96% 64%;
   --primary-foreground: 0 0% 98%;
-  --secondary: 0 0% 24%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 18%;
-  --muted-foreground: 0 0% 64%;
-  --accent: 0 0% 16%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 70% 50%;
+  --secondary: 222 12% 13%;
+  --secondary-foreground: 220 20% 96%;
+  --muted: 222 12% 13%;
+  --muted-foreground: 216 8% 56%;
+  --accent: 222 12% 16%;
+  --accent-foreground: 220 20% 96%;
+  --destructive: 8 48% 52%;
   --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 18%;
-  --input: 0 0% 18%;
-  --ring: 217 91% 60%;
+  --border: 222 12% 16%;
+  --input: 222 12% 16%;
+  --ring: 224 96% 64%;
 }
+
+/* ==================== LEGACY THEMES (parked) ====================
+   Kept for a future theme picker. None of these classes are applied today —
+   index.tsx strips theme-* on boot so the ax palette in :root is the single
+   look. Re-enable via ENABLE_LEGACY_THEMES in index.tsx. */
 
 /* Light theme */
 .theme-light {
@@ -141,7 +163,7 @@ body {
   --st-badge-alpha: 0.1;
 }
 
-/* Gray (current) */
+/* Gray (legacy default) */
 .theme-gray {
   --st-bg: #121212;
   --st-panel: #1f1f1f;
@@ -402,7 +424,7 @@ img {
 }
 
 .topbar-spacer {
-  height: 56px;
+  height: 40px;
   width: 100vw;
 }
 
@@ -729,4 +751,228 @@ img {
 
 .promptbox-drop-chip {
   animation: promptbox-drop-chip-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ==================== ARTCRAFT-X DESIGN LANGUAGE ====================
+   Ported from the marketing site (artcraftx-website styles.css). Only the
+   pieces the app uses — marketing-only effects (grain, field, collage,
+   marquee, reveal) intentionally left behind. */
+
+:root {
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Semi-expanded Archivo, solid near-white. */
+.ax-display {
+  font-family: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+  font-stretch: 118%;
+  font-weight: 620;
+  letter-spacing: -0.03em;
+  color: #edeff3;
+}
+
+.ax-hairline {
+  height: 1px;
+  background: rgb(226 232 244 / 0.08);
+}
+
+/* The site's titlebar sits on the ax-window glass: top-light strip over the
+   window's graphite gradient. */
+.ax-titlebar {
+  background:
+    linear-gradient(
+      180deg,
+      rgb(237 239 243 / 0.045),
+      rgb(237 239 243 / 0.008)
+    ),
+    linear-gradient(180deg, rgb(26 28 33 / 0.88), rgb(15 16 19 / 0.92)),
+    rgb(8 9 11);
+  border-bottom: 1px solid rgb(226 232 244 / 0.08);
+}
+
+/* Mono structural label — spec sheets, readouts, metadata. */
+.ax-spec {
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Section marker: spec label with a signal tick. */
+.ax-marker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.ax-marker::before {
+  content: "";
+  width: 10px;
+  height: 2px;
+  background: #4d7cfb;
+}
+
+/* Big metric numerals. */
+.ax-readout {
+  font-family: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+  font-stretch: 110%;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: #edeff3;
+}
+
+/* Nav links: a hairline that grows from the left, like a meter filling. */
+.ax-navlink {
+  position: relative;
+  transition: color 0.4s var(--ease-soft);
+}
+
+.ax-navlink::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -5px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  opacity: 0.65;
+  transition: transform 0.55s var(--ease-expo);
+}
+
+.ax-navlink:hover::after {
+  transform: scaleX(1);
+}
+
+.ax-navlink[aria-current="page"]::after {
+  transform: scaleX(1);
+  background: #4d7cfb;
+  opacity: 1;
+}
+
+.ax-caret {
+  display: inline-block;
+  width: 1.5px;
+  height: 1.05em;
+  translate: 0 0.14em;
+  background: #4d7cfb;
+  animation: ax-blink 1.05s steps(1, end) infinite;
+}
+
+@keyframes ax-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.ax-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0px 7px 0px 7px;
+  border-radius: 6px;
+  border: 1px solid rgb(226 232 244 / 0.16);
+  background: rgb(226 232 244 / 0.06);
+  animation: ax-chip-in 0.42s var(--ease-expo) both;
+}
+
+@keyframes ax-chip-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 4px, 0) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ax-progress-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+.ax-progress-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(237 239 243 / 0.45),
+    transparent
+  );
+  animation: ax-scan 1.5s var(--ease-soft) infinite;
+}
+
+@keyframes ax-scan {
+  from {
+    transform: translate3d(-100%, 0, 0);
+  }
+  to {
+    transform: translate3d(220%, 0, 0);
+  }
+}
+
+/* Blinking REC dot. */
+.ax-rec {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 1.5px;
+  background: #4d7cfb;
+  animation: ax-rec 1.6s steps(1, end) infinite;
+}
+
+@keyframes ax-rec {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.25;
+  }
+}
+
+/* Disk receipt entrance. */
+.ax-toast {
+  animation: ax-toast-in 0.6s var(--ease-expo) both;
+}
+
+@keyframes ax-toast-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ax-caret,
+  .ax-progress-bar::after,
+  .ax-chip,
+  .ax-toast {
+    animation: none !important;
+  }
+
+  .ax-rec {
+    animation: none !important;
+    opacity: 1;
+  }
 }

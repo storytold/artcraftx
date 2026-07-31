@@ -71,6 +71,9 @@
       "path": "../../model-list/tsconfig.lib.json"
     },
     {
+      "path": "../../tauri-events/tsconfig.lib.json"
+    },
+    {
       "path": "../select/tsconfig.lib.json"
     },
     {

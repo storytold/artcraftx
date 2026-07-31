@@ -18,7 +18,7 @@ export const GenerateButton = ({
   return (
     <Button
       className={twMerge(
-        "group flex items-center justify-center gap-2 h-[34px]",
+        "group flex h-[34px] items-center justify-center gap-2 rounded-full px-4",
         className,
       )}
       disabled={disabled}

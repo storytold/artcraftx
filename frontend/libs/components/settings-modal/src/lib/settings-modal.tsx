@@ -1,15 +1,5 @@
 import { Modal } from "@storyteller/ui-modal";
 import { useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faUser,
-  faCog,
-  faVolumeHigh,
-  faCircleInfo,
-  faCreditCard,
-  faPalette,
-  faFlask,
-} from "@fortawesome/pro-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
 import { MiscSettingsPane } from "./panes/MiscSettingsPane";
 import { AudioSettingsPane } from "./panes/AudioSettingsPane";
@@ -24,15 +14,7 @@ import { Button } from "@storyteller/ui-button";
 import { useExperimentalStore } from "./experimental-store";
 import { ExperimentalConfirmModal } from "./ExperimentalConfirmModal";
 
-interface SettingsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  globalAccountLogoutCallback: () => void;
-  onStoryboardPageDisable?: () => void;
-  initialSection?: SettingsSection;
-}
-
-type SettingsSection =
+export type SettingsSection =
   | "general"
   | "appearance"
   | "accounts"
@@ -42,26 +24,32 @@ type SettingsSection =
   | "billing"
   | "experimental";
 
-export const SettingsModal = ({
-  isOpen,
-  onClose,
+export interface SettingsContentProps {
+  globalAccountLogoutCallback: () => void;
+  onStoryboardPageDisable?: () => void;
+  initialSection?: SettingsSection;
+}
+
+interface SettingsModalProps extends SettingsContentProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+/**
+ * The settings body (sidebar + panes), independent of any container so it can
+ * fill a page or a modal. The host provides the bounded height.
+ */
+export const SettingsContent = ({
   globalAccountLogoutCallback,
   onStoryboardPageDisable,
   initialSection = "general",
-}: SettingsModalProps) => {
+}: SettingsContentProps) => {
   const [selectedSection, setSelectedSection] =
     useState<SettingsSection>(initialSection);
 
   const experimentalEnabled = useExperimentalStore((s) => s.enabled);
   const disableExperimental = useExperimentalStore((s) => s.disable);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
-
-  // Sync the selected section with incoming prop when modal opens or prop changes
-  useEffect(() => {
-    if (isOpen) {
-      setSelectedSection(initialSection);
-    }
-  }, [isOpen, initialSection]);
 
   // If experimental gets disabled while user is on that pane, fall back to General
   useEffect(() => {
@@ -71,23 +59,13 @@ export const SettingsModal = ({
   }, [experimentalEnabled, selectedSection]);
 
   const sections = [
-    { id: "general" as const, label: "General", icon: faCog },
-
-    { id: "accounts" as const, label: "Accounts", icon: faUser },
-    { id: "billing" as const, label: "Plan & Credits", icon: faCreditCard },
-
-    /* {
-      id: "provider_priority" as const,
-      label: "Provider Priority",
-      icon: faRoute,
-    }, */
-    { id: "appearance" as const, label: "Appearance", icon: faPalette },
-    { id: "alerts" as const, label: "Alerts", icon: faVolumeHigh },
-    { id: "about" as const, label: "About", icon: faCircleInfo },
-    //{ id: "video" as const, label: "Video", icon: faVideo },
-    //{ id: "image" as const, label: "Image", icon: faImage },
+    { id: "general" as const, label: "General" },
+    { id: "accounts" as const, label: "Accounts" },
+    { id: "billing" as const, label: "Plan & Credits" },
+    { id: "alerts" as const, label: "Alerts" },
+    { id: "about" as const, label: "About" },
     ...(experimentalEnabled
-      ? [{ id: "experimental" as const, label: "Experimental", icon: faFlask }]
+      ? [{ id: "experimental" as const, label: "Experimental" }]
       : []),
   ];
 
@@ -128,68 +106,72 @@ export const SettingsModal = ({
 
   return (
     <>
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        className="max-w-3xl"
-        childPadding={false}
-      >
-        <div className="h-[560px]">
-          <div className="grid h-full grid-cols-12 gap-3">
-            <div className="relative col-span-4 p-3 pt-2 after:absolute after:right-0 after:top-0 after:h-full after:w-px after:bg-ui-panel-border">
-              <div className="flex items-center justify-between gap-2.5 py-0.5">
-                <h2 className="text-[18px] font-semibold opacity-80">Settings</h2>
+      <div className="flex h-full">
+        {/* Index rail: mono spec labels, signal edge on the open section —
+            the marketing site's spec-sheet row language. */}
+        <nav
+          aria-label="Settings sections"
+          className="flex w-52 shrink-0 flex-col border-r border-line px-4 pb-4 pt-5"
+        >
+          <span className="ax-marker text-mud">Settings</span>
+          <div className="mt-4 flex flex-col gap-0.5">
+            {sections.map((section) => (
+              <button
+                key={section.id}
+                aria-current={
+                  section.id === selectedSection ? "true" : undefined
+                }
+                className={twMerge(
+                  "flex h-8 items-center rounded-ax-sm px-2.5 text-left font-mono text-[11px] uppercase tracking-[0.18em] transition-colors duration-150",
+                  "focus-visible:outline focus-visible:outline-1 focus-visible:outline-signal/60",
+                  section.id === selectedSection
+                    ? "bg-bone/[0.06] text-bone shadow-[inset_2px_0_0_#4d7cfb]"
+                    : "text-ash hover:bg-bone/[0.03] hover:text-putty",
+                )}
+                onClick={() => {
+                  gtagEvent("switch_settings_section", {
+                    section: section.id,
+                  });
+                  setSelectedSection(section.id);
+                }}
+              >
+                {section.label}
+              </button>
+            ))}
+          </div>
+          <div className="mt-auto pt-4">
+            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-mud">
+              ArtCraft-X
+            </span>
+          </div>
+        </nav>
+
+        {/* Section pane: hairline-ruled header row, scrolling body. */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-line px-6">
+            <h2 className="ax-display text-[15px]">
+              {sections.find((s) => s.id === selectedSection)?.label}
+            </h2>
+            {experimentalEnabled && selectedSection === "experimental" && (
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-mud">
+                  Experimental on
+                </span>
+                <Button
+                  variant="destructive"
+                  onClick={() => setIsResetConfirmOpen(true)}
+                  className="px-2 py-1 text-xs"
+                >
+                  Reset
+                </Button>
               </div>
-              <hr className="my-2 w-full border-ui-panel-border" />
-              <div className="space-y-1">
-                {sections.map((section) => (
-                  <button
-                    key={section.id}
-                    className={twMerge(
-                      "h-9 w-full rounded-lg p-2 text-left transition-colors duration-100 hover:bg-[#63636B]/30",
-                      section.id === selectedSection ? "bg-[#63636B]/20" : ""
-                    )}
-                    onClick={() => {
-                      gtagEvent("switch_settings_section", {
-                        section: section.id,
-                      });
-                      setSelectedSection(section.id);
-                    }}
-                  >
-                    <div className="flex items-center gap-2.5 text-sm">
-                      <FontAwesomeIcon icon={section.icon} />
-                      {section.label}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="col-span-8 flex h-full flex-col overflow-y-auto relative">
-              <div className="w-full border-b border-ui-panel-border py-2.5 ps-0">
-                <h2 className="text-[18px] font-semibold">
-                  {sections.find((s) => s.id === selectedSection)?.label}
-                </h2>
-              </div>
-              {experimentalEnabled && selectedSection === "experimental" && (
-                <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-ui-panel-border bg-ui-modal/95 backdrop-blur px-3 py-2">
-                  <div className="flex items-center gap-2 text-xs opacity-80">
-                    <FontAwesomeIcon icon={faFlask} />
-                    Experimental features enabled
-                  </div>
-                  <Button
-                    variant="destructive"
-                    onClick={() => setIsResetConfirmOpen(true)}
-                    className="px-2 py-1 text-xs"
-                  >
-                    Reset
-                  </Button>
-                </div>
-              )}
-              <div className="p-3 ps-0 text-sm h-full">{renderContent()}</div>
-            </div>
+            )}
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+            <div className="text-sm">{renderContent()}</div>
           </div>
         </div>
-      </Modal>
+      </div>
       <ExperimentalConfirmModal
         isOpen={isResetConfirmOpen}
         onClose={() => setIsResetConfirmOpen(false)}
@@ -199,6 +181,34 @@ export const SettingsModal = ({
         confirmText="Reset"
       />
     </>
+  );
+};
+
+/** Modal wrapper kept for hosts that still want settings as an overlay. */
+export const SettingsModal = ({
+  isOpen,
+  onClose,
+  globalAccountLogoutCallback,
+  onStoryboardPageDisable,
+  initialSection = "general",
+}: SettingsModalProps) => {
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      className="max-w-3xl"
+      childPadding={false}
+    >
+      <div className="h-[560px]">
+        {/* Remount on open so initialSection applies each time. */}
+        <SettingsContent
+          key={String(isOpen)}
+          globalAccountLogoutCallback={globalAccountLogoutCallback}
+          onStoryboardPageDisable={onStoryboardPageDisable}
+          initialSection={initialSection}
+        />
+      </div>
+    </Modal>
   );
 };
 

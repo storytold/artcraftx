@@ -12,4 +12,4 @@ pub const MAIN_WINDOW_MIN_WIDTH : u32 = 800;
 
 // TODO: handle pixel density, eg. retina displays
 /// This is the minimum height to resize the main window in an automated fashion
-pub const MAIN_WINDOW_MIN_HEIGHT : u32 = 600;
+pub const MAIN_WINDOW_MIN_HEIGHT : u32 = 400;

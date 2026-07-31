@@ -282,7 +282,7 @@ export function ClassyModelSelector({
         mode="hoverSelect"
         maxListHeight={maxListHeight}
         {...popoverProps}
-        buttonClassName="rounded-xl bg-ui-controls/90 hover:bg-ui-controls text-left shadow-sm px-3 py-1 gap-3 border border-ui-controls-border"
+        buttonClassName="rounded-lg bg-bone/[0.04] hover:bg-bone/[0.08] text-left px-3 py-1 gap-3 border border-line-2"
         renderTrigger={(selectedItem) => {
           const modelTitle = selectedItem?.label ?? selectedModel?.selectorName ?? "";
           const providerIcon = selectedProvider

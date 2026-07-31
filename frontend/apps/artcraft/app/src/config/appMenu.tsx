@@ -1,5 +1,11 @@
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { faFilm, faImage, faMusic } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faCube,
+  faFilm,
+  faGlobe,
+  faImage,
+  faMusic,
+} from "@fortawesome/pro-solid-svg-icons";
 import { useExperimentalStore } from "@storyteller/ui-settings-modal";
 import { useTabStore, TabId } from "~/pages/Stores/TabState";
 
@@ -18,7 +24,8 @@ export type AppId =
   | "STORYBOARD"
   | "BACKGROUND_CHANGE"
   | "VIDEO_EDITOR"
-  | "MOODBOARD";
+  | "MOODBOARD"
+  | "SETTINGS";
 
 export interface AppDescriptor {
   id: AppId;
@@ -29,21 +36,33 @@ export interface AppDescriptor {
   large?: boolean;
 }
 
+// The five modalities. Everything else stays reachable in code (goToApp)
+// but is deliberately absent from the nav.
 export const APP_DESCRIPTORS: AppDescriptor[] = [
   {
     id: "IMAGE",
-    label: "Create Image",
+    label: "Image",
     icon: faImage,
   },
   {
     id: "VIDEO",
-    label: "Create Video",
+    label: "Video",
     icon: faFilm,
   },
   {
     id: "AUDIO",
-    label: "Create Audio",
+    label: "Audio",
     icon: faMusic,
+  },
+  {
+    id: "IMAGE_TO_3D_WORLD",
+    label: "Splats",
+    icon: faGlobe,
+  },
+  {
+    id: "IMAGE_TO_3D_OBJECT",
+    label: "Meshes",
+    icon: faCube,
   },
 ];
 
@@ -65,6 +84,7 @@ export const goToApp = (action?: string) => {
       "BACKGROUND_CHANGE",
       "VIDEO_EDITOR",
       "MOODBOARD",
+      "SETTINGS",
     ].includes(action)
   ) {
     if (action === "STORYBOARD") {

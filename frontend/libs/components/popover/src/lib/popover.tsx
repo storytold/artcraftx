@@ -243,7 +243,7 @@ function InfoHint({ content }: { content: ReactNode }) {
               transform: "translate(-50%, -100%)",
               zIndex: 10000,
             }}
-            className="pointer-events-auto rounded-lg border border-white/10 bg-ui-controls px-3 py-1.5 text-center text-xs leading-relaxed text-base-fg shadow-xl"
+            className="pointer-events-auto rounded-lg border border-line-2 bg-ui-panel px-3 py-1.5 text-center text-xs leading-relaxed text-putty shadow-xl"
             onClick={(e) => e.stopPropagation()}
             onMouseEnter={() => {
               if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
@@ -447,11 +447,12 @@ export const PopoverMenu = ({
     }
   };
 
+  // Marketing-site pill: hairline border, faint fill, putty text.
   const className = twMerge(
-    "text-sm font-medium rounded-lg px-2.5 py-1.5 shadow-sm",
+    "text-[12.5px] font-medium rounded-lg px-2.5 py-1.5",
     "flex gap-2 items-center justify-center outline-none",
     "transition-all duration-150",
-    "bg-ui-controls px-3 text-base-fg hover:bg-ui-controls/80 border border-ui-controls-border",
+    "bg-bone/[0.04] px-3 text-putty hover:bg-bone/[0.08] hover:text-bone border border-line-2",
     "active:scale-95 transform",
     buttonClassName,
   );
@@ -691,7 +692,9 @@ export const PopoverMenu = ({
                   <div
                     ref={panelContentRef}
                     className={twMerge(
-                      "z-10 min-w-48 mt-2 rounded-lg bg-ui-panel p-1.5 shadow-lg border border-ui-panel-border overflow-visible",
+                      // Marketing-site popover surface: umber panel, hairline
+                      // border, inset top highlight + deep drop.
+                      "z-10 min-w-48 mt-2 rounded-[10px] bg-umber p-1.5 border border-line-2 overflow-visible shadow-[0_1px_0_0_rgb(237_239_243/0.06)_inset,0_24px_60px_-24px_rgb(0_0_0/0.85)]",
                       position === "top" ? "mb-2" : "mt-2",
                       panelClassName,
                     )}
@@ -726,7 +729,7 @@ export const PopoverMenu = ({
                             with a slow bouncing arrow hinting to scroll up. */}
                         <div
                           className={twMerge(
-                            "pointer-events-none absolute inset-x-0 top-0 z-20 flex h-10 items-start justify-center bg-gradient-to-b from-ui-panel to-transparent pt-1 transition-opacity duration-200",
+                            "pointer-events-none absolute inset-x-0 top-0 z-20 flex h-10 items-start justify-center bg-gradient-to-b from-umber to-transparent pt-1 transition-opacity duration-200",
                             canScrollUp ? "opacity-100" : "opacity-0",
                           )}
                         >
@@ -761,12 +764,14 @@ export const PopoverMenu = ({
                                     handleItemClick(item, close);
                                 }}
                                 className={twMerge(
+                                  // Spec-list row: faint fill + signal left
+                                  // edge on the selected row (site .ax-row-hover).
                                   "group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 transition-colors",
                                   item.selected
-                                    ? "bg-ui-controls/70"
-                                    : "hover:bg-ui-controls/50",
+                                    ? "bg-bone/[0.06] shadow-[inset_2px_0_0_#4d7cfb]"
+                                    : "hover:bg-bone/[0.04]",
                                   !item.selected && openTooltipIdx === index
-                                    ? "bg-ui-controls/50"
+                                    ? "bg-bone/[0.04]"
                                     : "",
                                   item.disabled
                                     ? "!cursor-not-allowed opacity-50"
@@ -775,10 +780,10 @@ export const PopoverMenu = ({
                               >
                                 <span
                                   className={twMerge(
-                                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-base-fg/80 transition-colors",
+                                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors",
                                     item.selected
-                                      ? "border-primary bg-primary/20"
-                                      : "border-ui-controls-border bg-ui-controls/60",
+                                      ? "border-primary/50 bg-primary/15 text-bone"
+                                      : "border-line-2 bg-bone/[0.04] text-putty",
                                   )}
                                 >
                                   {item.icon}
@@ -787,10 +792,10 @@ export const PopoverMenu = ({
                                   <div className="flex min-w-0 items-center gap-1">
                                     <span
                                       className={twMerge(
-                                        "truncate font-semibold",
+                                        "truncate font-medium",
                                         item.selected
-                                          ? "text-base-fg"
-                                          : "text-base-fg/90",
+                                          ? "text-bone"
+                                          : "text-putty",
                                       )}
                                     >
                                       {item.label}

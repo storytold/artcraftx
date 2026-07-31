@@ -1,14 +1,7 @@
-import { ImageTo3DExperience } from "../../components/experiences/ImageTo3DExperience";
+import { ImageTo3DComposer } from "../../components/experiences/ImageTo3DComposer";
 
 export const ImageTo3DWorld = () => {
-  return (
-    <ImageTo3DExperience
-      title="Image to 3D World"
-      subtitle="Generate 3D worlds from an image with World Labs"
-      variant="world"
-      backgroundImage="/resources/images/room-of-items.webp"
-    />
-  );
+  return <ImageTo3DComposer variant="world" />;
 };
 
 export default ImageTo3DWorld;

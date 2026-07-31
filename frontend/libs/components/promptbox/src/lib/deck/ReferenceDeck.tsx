@@ -7,7 +7,7 @@ import {
 } from "react";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTrashAlt } from "@fortawesome/pro-solid-svg-icons";
+import { Plus, Trash2 } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 import {
   DndContext,
@@ -33,11 +33,11 @@ import {
   DeckStyles,
 } from "./DeckCard";
 
-/** Collapsed-fan tilt/offset per stacked card, front to back. */
+/** Collapsed-stack offset per card, front to back. Straight — no tilt. */
 const FAN_TRANSFORMS = [
-  "rotate(-8deg)",
-  "translateX(12px) rotate(2deg)",
-  "translateX(24px) rotate(9deg)",
+  "translateX(0)",
+  "translateX(12px)",
+  "translateX(24px)",
 ];
 
 const CLOSE_DELAY_MS = 150;
@@ -225,7 +225,7 @@ export const ReferenceDeck = ({
         // z-30 sidebar no matter its own z-index.
         portal
         zIndex={9999}
-        className="-mb-0.5 border border-ui-controls-border bg-ui-controls p-1.5 text-base-fg"
+        className="-mb-0.5 p-1.5 text-base-fg"
         closeOnClick={true}
         onOpenChange={holdPanel ? setAddMenuOpen : undefined}
         content={
@@ -259,10 +259,10 @@ export const ReferenceDeck = ({
           <button
             type="button"
             onClick={handleAddClick}
-            className="glass flex aspect-square w-14 -rotate-6 flex-col items-center justify-center gap-0.5 rounded-lg border-2 border-dashed border-black/5 bg-ui-controls/40 text-base-fg transition-all duration-200 hover:rotate-0 hover:scale-105 hover:bg-ui-controls/60 dark:border-white/25"
+            className="flex aspect-square w-[72px] flex-col items-center justify-center gap-0.5 rounded-lg border-2 border-dashed border-line-2 bg-bone/[0.03] text-putty transition-colors duration-300 ease-out hover:border-bone/30 hover:bg-bone/[0.08] hover:text-bone"
           >
-            <FontAwesomeIcon icon={faPlus} className="text-lg opacity-80" />
-            <span className="text-[9px] font-medium leading-none opacity-70">
+            <Plus className="h-[18px] w-[18px] opacity-80" />
+            <span className="text-[10.5px] font-medium leading-none opacity-70">
               {emptyLabel}
             </span>
           </button>,
@@ -303,7 +303,7 @@ export const ReferenceDeck = ({
             onClick={onClearAll}
             className="flex items-center gap-1 rounded px-1 py-0.5 text-[11px] text-base-fg/60 transition-colors hover:text-red-400"
           >
-            <FontAwesomeIcon icon={faTrashAlt} className="h-2.5 w-2.5" />
+            <Trash2 className="h-2.5 w-2.5" />
             Clear all
           </button>
         </div>
@@ -360,9 +360,9 @@ export const ReferenceDeck = ({
             <button
               type="button"
               onClick={handleAddClick}
-              className="glass flex aspect-square w-14 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-black/5 bg-ui-controls/40 text-base-fg transition-all hover:bg-ui-controls/60 dark:border-white/25"
+              className="flex aspect-square w-[72px] flex-col items-center justify-center gap-0.5 rounded-lg border-2 border-dashed border-line-2 bg-bone/[0.03] text-putty transition-colors duration-300 ease-out hover:border-bone/30 hover:bg-bone/[0.08] hover:text-bone shrink-0"
             >
-              <FontAwesomeIcon icon={faPlus} className="text-xl opacity-80" />
+              <Plus className="h-5 w-5 opacity-80" />
             </button>,
           )}
       </div>
@@ -451,7 +451,7 @@ export const ReferenceDeck = ({
                 onClick={handleAddClick}
                 className="flex h-6 w-6 items-center justify-center rounded-full border border-white/15 bg-ui-controls text-xs text-base-fg shadow-md transition-all hover:scale-110 hover:brightness-125"
               >
-                <FontAwesomeIcon icon={faPlus} />
+                <Plus className="h-4 w-4" />
               </button>,
               false,
             )}

@@ -12,6 +12,37 @@ export default {
     extend: {
       fontFamily: {
         "custom-font": ["Fira Sans", "sans-serif"],
+        sans: [
+          "Instrument Sans Variable",
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "Helvetica Neue",
+          "Arial",
+          "sans-serif",
+        ],
+        display: [
+          "Archivo Variable",
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "Helvetica Neue",
+          "Arial",
+          "sans-serif",
+        ],
+        mono: [
+          "IBM Plex Mono",
+          "ui-monospace",
+          "SFMono-Regular",
+          "SF Mono",
+          "Menlo",
+          "monospace",
+        ],
+      },
+      borderRadius: {
+        "ax-sm": "6px",
+        "ax-md": "10px",
+        "ax-lg": "14px",
       },
       keyframes: {
         fadeIn: {
@@ -36,6 +67,28 @@ export default {
     colors: {
       transparent: "transparent",
       current: "currentColor",
+
+      // ArtCraft-X marketing site palette (artcraftx-website styles.css).
+      // Surfaces are deep neutral graphite — never pure black.
+      carbon: "#121316",
+      graphite: "#17191d",
+      umber: "#1d2025",
+      well: "#0c0d0f",
+      line: {
+        DEFAULT: "rgb(226 232 244 / 0.08)",
+        2: "rgb(226 232 244 / 0.16)",
+      },
+      // Type greys, four steps.
+      bone: "#edeff3",
+      putty: "#b6bcc8",
+      ash: "#868d99",
+      mud: "#5e6572",
+      // The one accent: signal blue, the render light. Green is the disk receipt.
+      signal: {
+        DEFAULT: "#4d7cfb",
+        dim: "#2e57c9",
+      },
+      ok: "#55c07b",
       white: colors.white,
       gray: colors.gray,
       black: colors.black,
@@ -57,7 +110,7 @@ export default {
       indigo: colors.indigo,
       lime: colors.lime,
       primary: {
-        DEFAULT: "#2d81ff",
+        DEFAULT: "#4d7cfb",
         "50": "#eef6ff",
         "100": "#d9ebff",
         "200": "#bcdcff",
@@ -86,7 +139,7 @@ export default {
       },
       "brand-primary": {
         //sunglo
-        DEFAULT: "#2d81ff", //=500
+        DEFAULT: "#4d7cfb", //=signal
         "50": "#eef6ff",
         "100": "#d9ebff",
         "200": "#bcdcff",

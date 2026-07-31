@@ -6,7 +6,7 @@ import {
 } from "@storyteller/ui-gallery-modal";
 import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
-import { GenerateButton, ToggleButton } from "@storyteller/ui-button";
+import { GenerateIconButton, ToggleButton } from "@storyteller/ui-button";
 import {
   faChevronDown,
   faChevronUp,
@@ -80,6 +80,9 @@ interface PromptBoxAudioProps {
   // request can create several Suno clips).
   onEnqueuePressed?: (jobTokens: string[]) => void | Promise<void>;
   credits?: number | null;
+  /** Render the focus-mode layout inline, filling the parent's height,
+   *  instead of the floating card + fullscreen modal. */
+  fullBleed?: boolean;
 }
 
 export const PromptBoxAudio = ({
@@ -88,6 +91,7 @@ export const PromptBoxAudio = ({
   uploadImage,
   onEnqueuePressed,
   credits,
+  fullBleed = false,
 }: PromptBoxAudioProps) => {
   const prompt = usePromptAudioStore((s) => s.prompt);
   const setPrompt = usePromptAudioStore((s) => s.setPrompt);
@@ -523,9 +527,7 @@ export const PromptBoxAudio = ({
         maxAudioCount={audioRefsSupported ? maxAudioRefs : 0}
         maxAudioRefDuration={AUDIO_REF_MAX_DURATION_SECONDS}
         uploadAudio={uploadAudio}
-        onPickAudioFromLibrary={
-          audioRefsSupported ? () => setIsAudioLibraryOpen(true) : undefined
-        }
+        onPickAudioFromLibrary={undefined}
         audioRequired={requiresAudioRef}
         imageSupported={imageRefsSupported}
         referenceImages={referenceImages}
@@ -533,6 +535,84 @@ export const PromptBoxAudio = ({
         uploadImage={uploadImage}
       />
     ) : null;
+
+  // The audio library picker is an input picker (select mode), shared by both
+  // layouts.
+  const audioLibraryModal = (
+    <GalleryModal
+      mode="select"
+      isOpen={isAudioLibraryOpen}
+      onClose={closeAudioLibrary}
+      selectedItemIds={audioLibrarySelectedIds}
+      onSelectItem={handleAudioLibrarySelectToggle}
+      maxSelections={maxAudioLibrarySelections}
+      onUseSelected={handleAudioLibraryUseSelected}
+      useSelectedLoading={isAudioLibraryProcessing}
+      forceFilter="audio"
+      hideFilter
+    />
+  );
+
+  if (fullBleed) {
+    return (
+      <>
+        <div
+          className="relative flex h-full min-h-0 flex-col"
+          {...drop.dropZoneProps}
+        >
+          <PromptBoxDropOverlay
+            dragState={drop.dragState}
+            acceptsImages={imageRefsSupported}
+            acceptsVideos={false}
+            acceptsAudio={audioRefsSupported}
+          />
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <textarea
+              autoFocus
+              placeholder="Describe the music or sound you want..."
+              className="promptbox-scrollbar h-full min-h-0 w-full flex-1 resize-none overflow-y-auto bg-transparent text-[15px] leading-[1.85] text-bone/95 placeholder-mud focus:outline-none sm:text-[16.5px]"
+              value={prompt}
+              onChange={handleChange}
+              onPaste={handlePaste}
+              onKeyDown={handleKeyDown}
+            />
+          </div>
+          {styleSupported && (
+            <div className="shrink-0">
+              <StylePromptRow value={stylePrompt} onChange={setStylePrompt} />
+            </div>
+          )}
+          <div className="shrink-0 pt-2">{referenceRow}</div>
+          <div className="mt-3 flex shrink-0 flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {modelSelector}
+              {toggleButtons}
+              {settingsPopovers}
+            </div>
+            <div className="flex items-center gap-2">
+              {missingRequiredAudioRef && (
+                <span className="flex animate-pulse items-center gap-1.5 text-xs font-medium text-red-500">
+                  Audio track required
+                </span>
+              )}
+              <PromptClearAllButton
+                onClick={handleClearAll}
+                disabled={!hasClearableContent}
+                confirmClear={hasAttachedRefs}
+              />
+              <GenerateIconButton
+                onClick={handleEnqueue}
+                disabled={!prompt.trim() || missingRequiredAudioRef}
+                loading={isEnqueueing}
+                credits={credits}
+              />
+            </div>
+          </div>
+        </div>
+        {audioLibraryModal}
+      </>
+    );
+  }
 
   return (
     <>
@@ -593,16 +673,12 @@ export const PromptBoxAudio = ({
                 disabled={!hasClearableContent}
                 confirmClear={hasAttachedRefs}
               />
-              <GenerateButton
-                className="flex items-center border-none bg-primary px-3 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
-                icon={undefined}
+              <GenerateIconButton
                 onClick={handleEnqueue}
                 disabled={!prompt.trim() || missingRequiredAudioRef}
                 loading={isEnqueueing}
                 credits={credits}
-              >
-                Generate
-              </GenerateButton>
+              />
             </div>
           </div>
 
@@ -626,18 +702,7 @@ export const PromptBoxAudio = ({
           </div>
         </div>
       </div>
-      <GalleryModal
-        mode="select"
-        isOpen={isAudioLibraryOpen}
-        onClose={closeAudioLibrary}
-        selectedItemIds={audioLibrarySelectedIds}
-        onSelectItem={handleAudioLibrarySelectToggle}
-        maxSelections={maxAudioLibrarySelections}
-        onUseSelected={handleAudioLibraryUseSelected}
-        useSelectedLoading={isAudioLibraryProcessing}
-        forceFilter="audio"
-        hideFilter
-      />
+      {audioLibraryModal}
       <PromptFullscreenModal
         isOpen={isFullscreen}
         onClose={closeFullscreen}
