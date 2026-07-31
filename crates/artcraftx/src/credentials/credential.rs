@@ -15,6 +15,9 @@ use std::path::{Path, PathBuf};
 #[derive(Clone, Debug)]
 pub struct Credential {
   pub service: CredentialServiceType,
+  /// Optional user-facing label to tell multiple credentials for the same
+  /// service apart. Empty by default.
+  pub name: Option<String>,
   pub secret: CredentialSecret,
   pub user_info: Option<CredentialUserInfo>,
   /// The TOML file this credential was loaded from (and saves back to).
@@ -53,6 +56,15 @@ impl Credential {
     self.secret.kind()
   }
 
+  /// The credential's identifier: its file name within the credentials
+  /// directory (e.g. `fal_api_2.toml`).
+  pub fn id(&self) -> String {
+    self.source_path
+        .file_name()
+        .map(|name| name.to_string_lossy().to_string())
+        .unwrap_or_default()
+  }
+
   pub fn cookies(&self) -> Option<&CookieCredential> {
     match &self.secret {
       CredentialSecret::Cookies(cookie) => Some(cookie),
@@ -79,6 +91,7 @@ mod tests {
 
     let credential = Credential {
       service: CredentialServiceType::FalApi,
+      name: Some("work account".to_string()),
       secret: CredentialSecret::ApiKey(ApiKeyCredential::new("fal-secret-key-12345")),
       user_info: None,
       source_path: path.clone(),
@@ -87,8 +100,10 @@ mod tests {
 
     let loaded = Credential::load_from_file(&path).unwrap();
     assert_eq!(loaded.service, CredentialServiceType::FalApi);
+    assert_eq!(loaded.name.as_deref(), Some("work account"));
     assert_eq!(loaded.api_key().unwrap().api_key, "fal-secret-key-12345");
     assert_eq!(loaded.api_key().unwrap().printable_partial_prefix, "fal-s");
     assert_eq!(loaded.source_path, path);
+    assert_eq!(loaded.id(), "fal_api_key.toml");
   }
 }

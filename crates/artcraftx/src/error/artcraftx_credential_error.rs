@@ -10,6 +10,9 @@ pub enum ArtcraftXCredentialError {
   DirectoryReadError { path: PathBuf, source: std::io::Error },
   FileReadError { path: PathBuf, source: std::io::Error },
   FileWriteError { path: PathBuf, source: std::io::Error },
+  FileDeleteError { path: PathBuf, source: std::io::Error },
+  // File name errors (ids are file names within the credentials directory)
+  InvalidFileName { file_name: String },
   // Serialization errors
   TomlParseError { path: PathBuf, source: toml::de::Error },
   TomlSerializeError { source: toml::ser::Error },
@@ -32,6 +35,12 @@ impl Display for ArtcraftXCredentialError {
       },
       Self::FileWriteError { path, source } => {
         write!(f, "FileWriteError: {:?}: {:?}", path, source)
+      },
+      Self::FileDeleteError { path, source } => {
+        write!(f, "FileDeleteError: {:?}: {:?}", path, source)
+      },
+      Self::InvalidFileName { file_name } => {
+        write!(f, "InvalidFileName: {:?}", file_name)
       },
       Self::TomlParseError { path, source } => {
         write!(f, "TomlParseError: {:?}: {:?}", path, source)

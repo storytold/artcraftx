@@ -6,7 +6,7 @@
       "path": "../../tauri-utils"
     },
     {
-      "path": "../../model-list"
+      "path": "../../api"
     },
     {
       "path": "../promptbox"
@@ -24,19 +24,16 @@
       "path": "../switch"
     },
     {
-      "path": "../select"
-    },
-    {
       "path": "../../soundboard"
     },
     {
+      "path": "../../model-list"
+    },
+    {
+      "path": "../select"
+    },
+    {
       "path": "../input"
-    },
-    {
-      "path": "../../tauri-events"
-    },
-    {
-      "path": "../../api"
     },
     {
       "path": "../../analytics/google-analytics"

@@ -28,6 +28,10 @@ use std::path::{Path, PathBuf};
 pub struct CredentialFile {
   pub service: CredentialServiceType,
 
+  /// Optional user-facing label. Empty by default.
+  #[serde(default, skip_serializing_if = "Option::is_none")]
+  pub name: Option<String>,
+
   #[serde(default, skip_serializing_if = "Option::is_none")]
   pub cookie: Option<CookieCredential>,
 
@@ -93,6 +97,7 @@ impl CredentialFile {
 
     Ok(Credential {
       service: self.service,
+      name: self.name,
       secret,
       user_info: self.user_info,
       source_path,
@@ -106,6 +111,7 @@ impl CredentialFile {
     };
     Self {
       service: credential.service,
+      name: credential.name.clone(),
       cookie,
       api_key,
       user_info: credential.user_info.clone(),
