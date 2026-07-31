@@ -78,7 +78,7 @@ tokio-util.workspace = true
 url.workspace = true
 
 # NB: We need to vendor this in so that we can access the cookies inside via the private API
-tauri-plugin-http = { path = "../../vendor/tauri-plugin-http" }
+tauri-plugin-http = { path = "../vendor/tauri-plugin-http" }
 tauri-plugin-opener = "2"
 
 # # Transparent title bar on MacOS

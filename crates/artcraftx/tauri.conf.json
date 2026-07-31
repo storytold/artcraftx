@@ -4,15 +4,14 @@
   "version": "0.0.1",
   "identifier": "ai.artcraftx.app",
   "build": {
-    "frontendDist": "../../../frontend/apps/artcraft/dist",
+    "frontendDist": "../../frontend/apps/artcraft/dist",
     "devUrl": "http://localhost:5173",
     "beforeDevCommand": "nx run artcraft:dev",
-    "beforeBuildCommand": "nx run artcraft:build"
+    "beforeBuildCommand": "npx run artcraft:build"
   },
   "app": {
     "withGlobalTauri": true,
-    "windows": [
-    ],
+    "windows": [],
     "security": {
       "assetProtocol": {
         "enable": true,

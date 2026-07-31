@@ -13,8 +13,7 @@ Rust (Tauri) and TypeScript (React) and contains desktop and frontend components
 artcraftx/
 ├── crates/                              # Rust workspace
 │   ├── api_clients/                     # HTTP clients for calling internal and 3rd party services
-│   ├── desktop/                         # Desktop (Tauri) apps
-│   │   └── artcraftx/                   # (Important) ArtCraftX, the desktop app
+│   ├── artcraftx/                       # (Important) ArtCraftX, the Tauri desktop app
 │   ├── lib/                             # Various utility libraries
 │   ├── sqlite_database/                 # Desktop app's "tasks" SQLite database: queries + embedded migrations
 │   ├── schema/                          # Data definition layer

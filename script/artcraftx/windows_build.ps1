@@ -23,13 +23,13 @@ $env:VITE_ENVIRONMENT_TYPE="production"
 
 # This tells Tauri *which* frontend and *which* Rust app to use since we're in a monorepo with several apps.
 $env:TAURI_FRONTEND_PATH=".\frontend"
-$env:TAURI_APP_PATH=".\crates\desktop\artcraftx"
+$env:TAURI_APP_PATH=".\crates\artcraftx"
 
 # Put SQLx into offline mode (no DB hits / migrations).
 $env:SQLX_OFFLINE = "true"
 
 # The config file tells Tauri more instructions for the frontend build.
-cargo tauri build --config ".\crates\desktop\artcraftx\tauri.conf.json"
+cargo tauri build --config ".\crates\artcraftx\tauri.conf.json"
 
 Write-Host ""
 Write-Host "Production Build Done!"  -ForegroundColor green -BackgroundColor white

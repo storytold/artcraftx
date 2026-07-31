@@ -8,7 +8,7 @@ echo ""
 
 root_dir=$(pwd)
 frontend_path="${root_dir}/frontend"
-rust_crate_path="${root_dir}/crates/desktop/artcraftx"
+rust_crate_path="${root_dir}/crates/artcraftx"
 
 config_path="${rust_crate_path}/tauri.conf.json"
 

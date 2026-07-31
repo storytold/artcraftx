@@ -19,7 +19,7 @@ members = [
   "crates/api_clients/worldlabs_consumer_client",
 
   # Desktop apps
-  "crates/desktop/artcraftx",
+  "crates/artcraftx",
 
   # Shared libraries
   "crates/lib/build_metadata",

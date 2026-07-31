@@ -18,9 +18,9 @@ import os
 
 REPO_ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
 
-VERSION_RS    = os.path.join(REPO_ROOT, "crates/desktop/artcraftx/src/version.rs")
-TAURI_CONF    = os.path.join(REPO_ROOT, "crates/desktop/artcraftx/tauri.conf.json")
-TAURI_MAC     = os.path.join(REPO_ROOT, "crates/desktop/artcraftx/tauri-mac.conf.json")
+VERSION_RS    = os.path.join(REPO_ROOT, "crates/artcraftx/src/version.rs")
+TAURI_CONF    = os.path.join(REPO_ROOT, "crates/artcraftx/tauri.conf.json")
+TAURI_MAC     = os.path.join(REPO_ROOT, "crates/artcraftx/tauri-mac.conf.json")
 
 VERSION_RE = re.compile(r"\d+\.\d+\.\d+")
 

@@ -1,9 +1,13 @@
 {
+  "$schema": "https://schema.tauri.app/config/2.0.0-rc",
+  "productName": "ArtCraftX",
+  "version": "0.0.1",
+  "identifier": "ai.artcraftx.app",
   "build": {
-    "frontendDist": "../../../frontend/apps/artcraft/dist",
-    "beforeDevCommand": "echo 'no dev'",
+    "frontendDist": "../../frontend/apps/artcraft/dist",
     "devUrl": "http://localhost:5173",
-    "beforeBuildCommand": "npx nx run artcraft:build"
+    "beforeDevCommand": "nx run artcraft:dev",
+    "beforeBuildCommand": "nx run artcraft:build"
   },
   "app": {
     "withGlobalTauri": true,
@@ -91,5 +95,16 @@
         ]
       }
     }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
   }
 }

@@ -12,7 +12,7 @@ echo ""
 
 root_dir=$(pwd)
 frontend_path="${root_dir}/frontend"
-rust_crate_path="${root_dir}/crates/desktop/artcraftx"
+rust_crate_path="${root_dir}/crates/artcraftx"
 
 sqlite_db_file="/tmp/tasks.sqlite"
 

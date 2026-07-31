@@ -1,6 +1,6 @@
 {
   "build": {
-    "frontendDist": "../../../frontend/apps/artcraft/dist",
+    "frontendDist": "../../frontend/apps/artcraft/dist",
     "beforeDevCommand": "echo 'this is static development; no live reload'",
     "beforeBuildCommand": "echo 'this is static development; no live reload'",
     "devUrl": null
