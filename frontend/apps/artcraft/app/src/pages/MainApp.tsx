@@ -2,13 +2,6 @@
 // (TopBar, pricing modals, toaster, Tauri event listeners,
 // background refresh hooks) lives here, and a single tab-driven
 // switch picks the active page below it.
-//
-// The 3D editor (PageScene) is one of the 13 tab branches — it
-// genuinely mounts/unmounts as the user moves on/off the "3D" tab,
-// so the Three.js engine constructs on entry and tears down on exit
-// via the EngineProvider's React lifecycle. Other pages render as
-// siblings, never wrapped by EngineProvider, so they have no
-// dependency on the 3D engine being present.
 
 import { useEffect, useState } from "react";
 import * as gpu from "detect-gpu";
@@ -17,12 +10,7 @@ import { useSignals } from "@preact/signals-react/runtime";
 import { TopBar } from "~/components";
 import { ErrorDialog } from "~/components";
 import { toast, Toaster } from "@storyteller/ui-toaster";
-import {
-  GalleryDragComponent,
-  GalleryItem,
-  onImageDrop,
-  removeImageDropListener,
-} from "@storyteller/ui-gallery-modal";
+import { GalleryDragComponent } from "@storyteller/ui-gallery-modal";
 import {
   PricingModal,
   CreditsModal,
@@ -52,7 +40,6 @@ import { useTabStore } from "./Stores/TabState";
 import { useTextToImageStore } from "./PageImage/TextToImageStore";
 
 import { AppsIndexPage } from "./PageApps/AppsIndexPage";
-import PageDraw from "./PageDraw/PageDraw";
 import TextToImage from "./PageImage/TextToImage";
 import ImageToVideo from "./PageVideo/ImageToVideo";
 import CreateAudio from "./PageAudio/CreateAudio";
@@ -65,7 +52,6 @@ import { RemoveBackground } from "./PageRemoveBackground";
 import { Angles } from "./PageAngles";
 import { Storyboard } from "./PageStoryboard";
 import { PageBackgroundChange } from "./PageBackgroundChange";
-import { PageScene } from "./PageScene";
 import { PageVideoEditor } from "./PageVideoEditor";
 import { PageMoodboard } from "./PageMoodboard";
 import {
@@ -73,11 +59,7 @@ import {
   topNavMediaUrl,
 } from "~/components/signaled/TopBar/TopBar";
 
-interface Props {
-  sceneToken?: string;
-}
-
-export const MainApp = ({ sceneToken }: Props) => {
+export const MainApp = () => {
   useSignals();
 
   // Background plumbing — should keep running regardless of which tab
@@ -140,7 +122,7 @@ export const MainApp = ({ sceneToken }: Props) => {
     <div className="w-screen">
       <TopBar pageName="Edit Scene" />
 
-      <TabBody sceneToken={sceneToken} />
+      <TabBody />
 
       <GalleryDragComponent />
       <ErrorDialog />
@@ -170,28 +152,18 @@ export const MainApp = ({ sceneToken }: Props) => {
   );
 };
 
-const TabBody = ({ sceneToken }: { sceneToken?: string }) => {
+const TabBody = () => {
   const tabStore = useTabStore();
   const storyboardPageEnabled = useStoryboardPageEnabled();
 
-  // The 3D case stays unwrapped because Stage3DBody (lib) already
-  // returns a <div> wrapper. Every other page is a fragment whose
-  // top-level children may use position: fixed (e.g. PageDraw); the
-  // wrapping <div> scopes them so they don't stack as siblings of
-  // the TopBar at the MainApp root.
+  // Every page is a fragment whose top-level children may use
+  // position: fixed; the wrapping <div> scopes them so they don't
+  // stack as siblings of the TopBar at the MainApp root.
   switch (tabStore.activeTabId) {
-    case "3D":
-      return <PageScene sceneToken={sceneToken} />;
     case "APPS":
       return (
         <div>
           <AppsIndexPage />
-        </div>
-      );
-    case "2D":
-      return (
-        <div>
-          <PageDrawWithGalleryDrop />
         </div>
       );
     case "IMAGE":
@@ -290,41 +262,4 @@ const TabBody = ({ sceneToken }: { sceneToken?: string }) => {
     default:
       return null;
   }
-};
-
-// Bridges gallery-modal's onImageDrop into PageDraw's existing
-// `gallery-2d-drop` window-event listener. Lives here (rather than
-// inside the pagedraw lib) so we don't have to add a gallery-modal
-// dep there. Mounted only when the 2D tab is active, so it doesn't
-// race the 3D-tab gallery handler.
-const PageDrawWithGalleryDrop = () => {
-  useEffect(() => {
-    const handler = onImageDrop(
-      (item: GalleryItem, position: { x: number; y: number }) => {
-        const canvasElement = document.querySelectorAll("canvas")[0];
-        if (!canvasElement) return;
-        const rect = canvasElement.getBoundingClientRect();
-        const canvasX = position.x - rect.left;
-        const canvasY = position.y - rect.top;
-        if (
-          canvasX < 0 ||
-          canvasY < 0 ||
-          canvasX > rect.width ||
-          canvasY > rect.height
-        ) {
-          return;
-        }
-        window.dispatchEvent(
-          new CustomEvent("gallery-2d-drop", {
-            detail: { item, canvasPosition: { x: canvasX, y: canvasY } },
-          }),
-        );
-      },
-    );
-    return () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (handler) removeImageDropListener(handler as any);
-    };
-  }, []);
-  return <PageDraw />;
 };

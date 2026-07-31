@@ -65,8 +65,6 @@ import {
   downloadMediaFileToDisk,
 } from "~/components/generation-feed/desktopMediaActions";
 import { useStoryboardStore } from "~/pages/PageStoryboard";
-import { useSceneStore } from "@storyteller/ui-pagedraw";
-import { usePageSceneStore } from "@storyteller/ui-pagescene";
 import { useImageTo3DStore } from "~/pages/PageImageTo3DObject/ImageTo3DStore";
 import { useImageTo3DWorldStore } from "~/pages/PageImageTo3DWorld/ImageTo3DWorldStore";
 import { useRemoveBackgroundStore } from "~/pages/PageRemoveBackground/RemoveBackgroundStore";
@@ -74,13 +72,11 @@ import { TabId, useTabStore } from "~/pages/Stores/TabState";
 import { AUTH_STATUS } from "~/enums";
 import { authentication } from "~/signals";
 import { setLogoutStates } from "~/signals/authentication/utilities";
-import type { BaseSelectorImage } from "@storyteller/ui-pagedraw";
 import {
   galleryModalDeleteMedia,
   galleryModalSubscribeToMediaEvents,
 } from "~/Helpers/galleryModalTauriBindings";
 import { AppsQuickMenu } from "./AppsQuickMenu";
-import { SceneTitleInput } from "./SceneTitleInput";
 import { TaskQueue } from "./TaskQueue";
 import { UploadImagesButton } from "./UploadImagesButton";
 
@@ -223,8 +219,6 @@ export const TopBar = ({ pageName }: Props) => {
 
   const tabStore = useTabStore();
 
-  const is3DSceneReady = usePageSceneStore((s) => s.is3DSceneLoaded);
-  const is3DEditorReady = usePageSceneStore((s) => s.is3DEditorInitialized);
   const [disableSwitcher, setDisableSwitcher] = useState(false);
   const switcherThrottle = useRef(false);
 
@@ -274,42 +268,10 @@ export const TopBar = ({ pageName }: Props) => {
   });
 
   const disableTabSwitcher = () => {
-    return (
-      disableSwitcher ||
-      (useTabStore.getState().activeTabId === "3D" &&
-        !is3DEditorReady &&
-        !is3DSceneReady)
-    );
+    return disableSwitcher;
   };
 
   const downloadFile = downloadMediaFileToDisk;
-
-  const handleEditFromGallery = async (url: string, mediaId?: string) => {
-    try {
-      // Reset editor state
-      useSceneStore.getState().RESET();
-
-      // Switch to EDIT tab
-      useTabStore.getState().setActiveTab("2D");
-
-      // Select the image for editing
-      const baseImage: BaseSelectorImage = {
-        url,
-        mediaToken: mediaId || "",
-      };
-
-      // Add it to state history
-      useSceneStore.getState().addHistoryImageBundle({ images: [baseImage] });
-      useSceneStore.getState().setBaseImageInfo(baseImage);
-
-      // Close gallery modal and lightbox if open
-      galleryModalVisibleViewMode.value = false;
-      galleryModalVisibleDuringDrag.value = false;
-      galleryModalLightboxVisible.value = false;
-    } catch (e) {
-      // no-op
-    }
-  };
 
   const handleTurnIntoVideoFromGallery = applyMakeVideoFromImage;
 
@@ -363,10 +325,6 @@ export const TopBar = ({ pageName }: Props) => {
 
   const getPageTitle = (): string => {
     switch (tabStore.activeTabId) {
-      case "2D":
-        return "Canvas";
-      case "3D":
-        return "3D Editor";
       case "IMAGE":
         return "Create Image";
       case "VIDEO":
@@ -478,8 +436,6 @@ export const TopBar = ({ pageName }: Props) => {
                   return;
                 }
 
-                // PageScene's mount/unmount in MainApp drives the
-                // engine lifecycle now — no manual flag flips needed.
                 useTabStore.getState().setActiveTab(tabId as TabId);
                 setTimeout(() => {
                   // Clear the throttle
@@ -493,23 +449,19 @@ export const TopBar = ({ pageName }: Props) => {
           </div>
 
           <div
-            className={`${tabStore.activeTabId === "3D" ? "no-drag" : ""} flex items-center justify-center gap-2 font-medium`}
+            className="flex items-center justify-center gap-2 font-medium"
             data-tauri-drag-region
           >
-            {tabStore.activeTabId === "3D" ? (
-              <SceneTitleInput pageName={pageName} />
-            ) : (
-              <h1
-                className="flex items-center gap-2.5 text-base-fg"
-                data-tauri-drag-region
-              >
-                {getCreatorIcon(
-                  ModelCreator.ArtCraft,
-                  "h-5 w-5 icon-auto-contrast opacity-50",
-                )}
-                {pageTitle}
-              </h1>
-            )}
+            <h1
+              className="flex items-center gap-2.5 text-base-fg"
+              data-tauri-drag-region
+            >
+              {getCreatorIcon(
+                ModelCreator.ArtCraft,
+                "h-5 w-5 icon-auto-contrast opacity-50",
+              )}
+              {pageTitle}
+            </h1>
           </div>
 
           <div className="flex justify-end gap-2" data-tauri-drag-region>
@@ -689,7 +641,6 @@ export const TopBar = ({ pageName }: Props) => {
       <GalleryModal
         mode="view"
         onDownloadClicked={downloadFile}
-        onEditClicked={handleEditFromGallery}
         onTurnIntoVideoClicked={handleTurnIntoVideoFromGallery}
         onRemoveBackgroundClicked={handleRemoveBackgroundFromGallery}
         onMake3DObjectClicked={handleMake3DObjectFromGallery}

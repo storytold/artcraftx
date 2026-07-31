@@ -24,10 +24,6 @@ import {
 } from "@storyteller/tauri-api";
 import { toast } from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
-import { useTabStore } from "../../pages/Stores/TabState";
-import { addObject, getActiveEditor } from "@storyteller/ui-pagescene";
-import type { MediaItem } from "@storyteller/ui-pagescene";
-import { AssetType } from "~/enums";
 import { SPLAT_MODELS } from "@storyteller/model-list";
 import {
   ClassyModelSelector,
@@ -969,33 +965,6 @@ export const ImageTo3DExperience = ({
               />
               {activeResult?.modelUrl && activeResult?.mediaToken && (
                 <div className="absolute right-4 top-4 z-10 flex gap-2">
-                  <Button
-                    variant="primary"
-                    className="min-w-[120px]"
-                    onClick={() => {
-                      useTabStore.getState().setActiveTab("3D");
-                      setTimeout(() => {
-                        const mediaItem = {
-                          version: 1,
-                          type: AssetType.OBJECT,
-                          media_id: activeResult.mediaToken!,
-                          name: activeResult.note || "3D Object",
-                          position: { x: 0, y: 0, z: 0 },
-                        } as MediaItem & {
-                          position: { x: number; y: number; z: number };
-                        };
-                        const editor = getActiveEditor();
-                        if (editor) {
-                          void addObject(editor, mediaItem);
-                          toast.success("Added to 3D scene");
-                        } else {
-                          toast.error("3D editor isn't ready yet");
-                        }
-                      }, 500);
-                    }}
-                  >
-                    Open in 3D Editor
-                  </Button>
                   <Button
                     variant="action"
                     icon={faCube}

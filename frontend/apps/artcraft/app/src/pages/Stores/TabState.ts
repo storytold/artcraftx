@@ -1,9 +1,6 @@
 import { create } from "zustand";
-import { useSceneStore } from "@storyteller/ui-pagedraw";
 
 export type TabId =
-  | "2D"
-  | "3D"
   | "VIDEO"
   | "EDIT"
   | "IMAGE"
@@ -48,27 +45,6 @@ export const useTabStore = create<TabState>((set, get) => ({
     if (currentTabId === newTabId) return true;
 
     try {
-      // Save current 2D state if we're leaving 2D tab
-      if (currentTabId === "2D") {
-        const sceneStore = useSceneStore.getState();
-        const sceneState = await sceneStore.serializeSceneToString();
-        set((state) => ({
-          tabData: {
-            ...state.tabData,
-            "2D": sceneState,
-          },
-        }));
-      }
-
-      // Load 2D state if we're entering 2D tab
-      if (newTabId === "2D") {
-        const savedState = get().tabData["2D"];
-        if (savedState) {
-          const sceneStore = useSceneStore.getState();
-          sceneStore.loadSceneFromString(savedState);
-        }
-      }
-
       // Update active tab
       set({ activeTabId: newTabId });
       return true;

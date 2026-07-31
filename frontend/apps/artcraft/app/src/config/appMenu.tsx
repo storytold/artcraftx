@@ -7,9 +7,7 @@ import {
   faDroplet,
   faPhotoFilm,
   faGlobe,
-  faPencil,
   faWandMagicSparkles,
-  faPenNib,
   faCrosshairs,
   faSparkles,
   faObjectGroup,
@@ -26,8 +24,6 @@ export type AppId =
   | "VIDEO"
   | "AUDIO"
   | "EDIT"
-  | "2D"
-  | "3D"
   | "VIDEO_FRAME_EXTRACTOR"
   | "VIDEO_WATERMARK_REMOVAL"
   | "IMAGE_WATERMARK_REMOVAL"
@@ -64,22 +60,6 @@ export const APP_DESCRIPTORS: AppDescriptor[] = [
     id: "AUDIO",
     label: "Create Audio",
     icon: faMusic,
-  },
-  {
-    id: "2D",
-    label: "Image Editor",
-    icon: faPenNib,
-    imageSrc: "/resources/gifs/2D_CANVAS_DEMO.webp",
-    description: "Easy edits. Great for graphic design.",
-    large: true,
-  },
-  {
-    id: "3D",
-    label: "3D Stage",
-    icon: faCube,
-    imageSrc: "/resources/gifs/3D_CANVAS_DEMO.webp",
-    description: "Precision control. Great for AI film.",
-    large: true,
   },
 ];
 
@@ -144,21 +124,6 @@ const APP_CARD_PALETTES: Record<string, AppCardPalette> = {
     accent: "from-fuchsia-500/20 to-fuchsia-500/0",
     iconBg: "bg-fuchsia-500/20 border-fuchsia-400/30",
     iconColor: "text-fuchsia-300",
-  },
-  "2d-canvas": {
-    accent: "from-sky-500/20 to-sky-500/0",
-    iconBg: "bg-sky-500/20 border-sky-400/30",
-    iconColor: "text-sky-300",
-  },
-  "3d-editor": {
-    accent: "from-emerald-500/20 to-emerald-500/0",
-    iconBg: "bg-emerald-500/20 border-emerald-400/30",
-    iconColor: "text-emerald-300",
-  },
-  "edit-image": {
-    accent: "from-purple-500/20 to-purple-500/0",
-    iconBg: "bg-purple-500/20 border-purple-400/30",
-    iconColor: "text-purple-300",
   },
   "remove-background": {
     accent: "from-violet-500/20 to-violet-500/0",
@@ -248,15 +213,6 @@ export const ALL_APPS: FullAppItem[] = [
     color: "bg-blue-500/40",
   },
   {
-    id: "edit-image",
-    label: "Edit Image",
-    description: "Change with inpainting",
-    icon: faPencil,
-    category: "edit",
-    action: "2D",
-    color: "bg-purple-600/40",
-  },
-  {
     id: "video-frame-extractor",
     label: "Video Frame Extractor",
     description: "Extract frames from video",
@@ -343,24 +299,6 @@ export const ALL_APPS: FullAppItem[] = [
     color: "bg-teal-500/40",
     badge: "BETA",
   },
-  {
-    id: "2d-canvas",
-    label: "Image Editor",
-    description: "Easy edits. Great for graphic design.",
-    icon: faPenNib,
-    category: "edit",
-    action: "2D",
-    color: "bg-sky-500/40",
-  },
-  {
-    id: "3d-editor",
-    label: "3D Stage",
-    description: "Precision control. Great for AI film.",
-    icon: faCube,
-    category: "generate",
-    action: "3D",
-    color: "bg-emerald-600/40",
-  },
 ];
 
 export const GENERATE_APPS = ALL_APPS.filter(
@@ -420,8 +358,6 @@ export const goToApp = (action?: string) => {
       "IMAGE",
       "VIDEO",
       "AUDIO",
-      "2D",
-      "3D",
       "VIDEO_FRAME_EXTRACTOR",
       "VIDEO_WATERMARK_REMOVAL",
       "IMAGE_WATERMARK_REMOVAL",
