@@ -4,20 +4,12 @@ import {
   faWindowRestore,
   faXmark,
 } from "@fortawesome/pro-regular-svg-icons";
-import {
-  faCoins,
-  faGear,
-  faGem,
-  faImages,
-  faCalculator,
-  faExclamation,
-  faCheck,
-} from "@fortawesome/pro-solid-svg-icons";
+import { faGear, faImages } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { getCreatorIcon, ModelCreator } from "@storyteller/model-list";
-import { useCreditsState, type CreditsIconStatus } from "@storyteller/credits";
+import { useCreditsState } from "@storyteller/credits";
 import { gtagEvent } from "@storyteller/google-analytics";
 import { ProviderBillingModal } from "@storyteller/provider-billing-modal";
 import { ProviderSetupModal } from "@storyteller/provider-setup-modal";
@@ -41,19 +33,8 @@ import {
   MenuIconItem,
   MenuIconSelector,
 } from "@storyteller/ui-menu-icon-selector";
-import { PopoverMenu } from "@storyteller/ui-popover";
-import {
-  useCreditsModalStore,
-  usePricingModalStore,
-  CostBreakdownModal,
-  useCostBreakdownModalStore,
-  CreditsModal,
-} from "@storyteller/ui-pricing-modal";
-import {
-  GalleryAutoplayToggle,
-  GallerySelectToggle,
-  GalleryViewToggle,
-} from "@storyteller/ui-generation-list";
+import { CostBreakdownModal, CreditsModal } from "@storyteller/ui-pricing-modal";
+import { GalleryAutoplayToggle } from "@storyteller/ui-generation-list";
 import { SettingsModal } from "@storyteller/ui-settings-modal";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { useEffect, useRef, useState } from "react";
@@ -76,7 +57,6 @@ import {
   galleryModalSubscribeToMediaEvents,
 } from "~/Helpers/galleryModalTauriBindings";
 import { TaskQueue } from "./TaskQueue";
-import { UploadImagesButton } from "./UploadImagesButton";
 
 interface Props {
   pageName: string;
@@ -109,74 +89,6 @@ const appMenuTabs: MenuIconItem[] = [
 export const topNavMediaId = signal<string>("");
 export const topNavMediaUrl = signal<string>("");
 
-const CreditsCoinWithStatus = ({
-  iconStatus,
-}: {
-  iconStatus: CreditsIconStatus;
-}) => {
-  const showBadge = iconStatus !== "hidden";
-
-  const badgeColorClass =
-    iconStatus === "failed"
-      ? "bg-red text-white"
-      : iconStatus === "recovered"
-        ? "bg-emerald-500 text-white"
-        : "bg-amber-400 text-black"; // 'slow'
-
-  const badgeIconDef = iconStatus === "recovered" ? faCheck : faExclamation;
-
-  const tooltipMessage =
-    iconStatus === "failed"
-      ? "Couldn't refresh your balance."
-      : iconStatus === "recovered"
-        ? "Balance up to date."
-        : "Refreshing your balance — current amount may not be up to date.";
-
-  const showRetry = iconStatus === "slow" || iconStatus === "failed";
-
-  const handleRetry = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    console.log("TopBar: Retrying credits fetch");
-
-    void useCreditsState.getState().fetchFromServer();
-  };
-
-  return (
-    <Tooltip
-      position="bottom"
-      interactive
-      disabled={!showBadge}
-      content={
-        <div className="flex max-w-[220px] flex-col gap-2 text-xs text-base-fg">
-          <span>{tooltipMessage}</span>
-          {showRetry && (
-            <Button
-              variant="secondary"
-              className="h-7 self-start px-2 text-xs"
-              onClick={handleRetry}
-            >
-              Retry
-            </Button>
-          )}
-        </div>
-      }
-    >
-      <span className="relative inline-flex">
-        <FontAwesomeIcon icon={faCoins} className="text-primary" />
-        {showBadge && (
-          <span
-            className={`absolute -right-1.5 -top-1.5 flex h-3 w-3 items-center justify-center rounded-full ring-1 ring-ui-background ${badgeColorClass}`}
-          >
-            <FontAwesomeIcon icon={badgeIconDef} className="text-[7px]" />
-          </span>
-        )}
-      </span>
-    </Tooltip>
-  );
-};
-
 export const TopBar = ({ pageName }: Props) => {
   useSignals();
 
@@ -194,27 +106,13 @@ export const TopBar = ({ pageName }: Props) => {
     gtagEvent("open_gallery_modal", { tab: tabStore.activeTabId });
   };
 
-  // Force recreation of the modal when switching to billing
-  const handleOpenBillingSettings = () => {
-    setIsSettingsModalOpen(false);
-    setTimeout(() => {
-      setSettingsSection("billing");
-      setIsSettingsModalOpen(true);
-      gtagEvent("open_billing_settings");
-    }, 50);
-  };
-
   const tabStore = useTabStore();
 
   const [disableSwitcher, setDisableSwitcher] = useState(false);
   const switcherThrottle = useRef(false);
 
-  const sumTotalCredits = useCreditsState((s) => s.totalCredits);
-  const creditsIconStatus = useCreditsState((s) => s.iconStatus);
-
   // Just calling this function kills the app:
   const subscriptionStore = useSubscriptionState();
-  const hasPaidPlan = subscriptionStore.hasPaidPlan();
 
   // Fetch credits + subscription on entering LOGGED_IN, then poll credits every
   // 60s. Reading via getState() inside the effect keeps the dep array honest
@@ -339,9 +237,6 @@ export const TopBar = ({ pageName }: Props) => {
 
   const pageTitle = getPageTitle();
 
-  const { toggleModal: toggleSubscriptionModal } = usePricingModalStore();
-  const { toggleModal: toggleCreditsModal } = useCreditsModalStore();
-
   // Pick logo based on current theme (light uses black logo; others use white)
   const [_logoSrc, setLogoSrc] = useState<string>(
     "/resources/logo/artcraft-logo-color-white.svg",
@@ -442,100 +337,7 @@ export const TopBar = ({ pageName }: Props) => {
 
           <div className="flex justify-end gap-2" data-tauri-drag-region>
             <div className="no-drag flex items-center gap-1.5">
-              {(tabStore.activeTabId === "IMAGE" ||
-                tabStore.activeTabId === "VIDEO") && <GallerySelectToggle />}
               {tabStore.activeTabId === "VIDEO" && <GalleryAutoplayToggle />}
-              {(tabStore.activeTabId === "IMAGE" ||
-                tabStore.activeTabId === "VIDEO" ||
-                tabStore.activeTabId === "AUDIO") && <GalleryViewToggle />}
-              <PopoverMenu
-                position="bottom"
-                align="center"
-                triggerIcon={
-                  <CreditsCoinWithStatus iconStatus={creditsIconStatus} />
-                }
-                triggerLabel={
-                  <span className="whitespace-nowrap text-sm font-medium">
-                    {sumTotalCredits} Credits
-                  </span>
-                }
-                buttonClassName="h-[30px] px-2 ps-1.5 bg-transparent hover:bg-ui-controls/30 border-0 shadow-none"
-                panelClassName="mt-3 bg-ui-panel border border-ui-panel-border text-base-fg"
-              >
-                {(close) => (
-                  <div className="w-72 p-2.5 text-base-fg">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-sm font-medium text-base-fg/80">
-                        Your credit balance
-                      </span>
-                      <button
-                        className="text-sm font-medium text-primary-400 transition-all hover:text-primary-300"
-                        onClick={() => {
-                          close();
-                          toggleCreditsModal();
-                        }}
-                      >
-                        Buy credits
-                      </button>
-                    </div>
-                    <div className="flex items-center gap-2 text-4xl font-bold text-base-fg">
-                      <FontAwesomeIcon
-                        icon={faCoins}
-                        className="text-2xl text-primary"
-                      />
-                      {sumTotalCredits}
-                    </div>
-
-                    <button
-                      className="mt-2 flex items-center gap-1.5 text-xs text-base-fg/50 transition-colors hover:text-primary"
-                      onClick={() => {
-                        close();
-                        useCostBreakdownModalStore.getState().openModal();
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faCalculator} />
-                      Cost calculator
-                    </button>
-
-                    <div className="mt-3 flex gap-2">
-                      <Button
-                        variant="action"
-                        className="h-9 grow"
-                        onClick={() => {
-                          close();
-                          handleOpenBillingSettings();
-                        }}
-                      >
-                        See details
-                      </Button>
-                      <Button
-                        variant="primary"
-                        className="h-9 grow"
-                        onClick={() => {
-                          close();
-                          toggleSubscriptionModal();
-                        }}
-                        icon={faGem}
-                      >
-                        Support
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </PopoverMenu>
-
-              {!hasPaidPlan && (
-                <Button
-                  variant="primary"
-                  icon={faGem}
-                  onClick={toggleSubscriptionModal}
-                  className="transition-all duration-300"
-                >
-                  Upgrade
-                </Button>
-              )}
-
-              <UploadImagesButton className="h-[34px] w-[34px]" />
 
               <Tooltip content="Settings" position="bottom" delay={300}>
                 <Button
