@@ -41,36 +41,13 @@ use crate::core::state::data_dir::app_data_root::AppDataRoot;
 use crate::core::state::provider_priority::ProviderPriorityStore;
 use crate::core::threads::discord_presence_thread::discord_presence_thread;
 use crate::core::threads::main_window_thread::main_window_thread::main_window_thread;
-use crate::services::grok::commands::grok_clear_credentials_command::grok_clear_credentials_command;
-use crate::services::grok::commands::grok_get_credential_info_command::grok_get_credential_info_command;
-use crate::services::grok::commands::grok_open_login_command::grok_open_login_command;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;
-use crate::services::midjourney::commands::midjourney_clear_credentials_command::midjourney_clear_credentials_command;
-use crate::services::midjourney::commands::midjourney_get_credential_info_command::midjourney_get_credential_info_command;
-use crate::services::midjourney::commands::midjourney_open_login_command::midjourney_open_login_command;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
-use crate::services::sora::commands::check_sora_session_command::check_sora_session_command;
-use crate::services::sora::commands::open_sora_login_command::open_sora_login_command;
-use crate::services::sora::commands::sora_get_credential_info_command::sora_get_credential_info_command;
-use crate::services::sora::commands::sora_logout_command::sora_logout_command;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::sora::threads::sora_task_polling::sora_task_polling_thread::sora_task_polling_thread;
-use crate::services::storyteller::commands::storyteller_get_credits_command::storyteller_get_credits_command;
-use crate::services::storyteller::commands::storyteller_get_subscription_command::storyteller_get_subscription_command;
-use crate::services::storyteller::commands::storyteller_purge_credentials_command::storyteller_purge_credentials_command;
-use crate::services::storyteller::commands::stripe_checkout::storyteller_open_credits_purchase_command::storyteller_open_credits_purchase_command;
-use crate::services::storyteller::commands::stripe_checkout::storyteller_open_subscription_purchase_command::storyteller_open_subscription_purchase_command;
-use crate::services::storyteller::commands::stripe_customer_portal::storyteller_open_customer_portal_cancel_plan_command::storyteller_open_customer_portal_cancel_plan_command;
-use crate::services::storyteller::commands::stripe_customer_portal::storyteller_open_customer_portal_manage_plan_command::storyteller_open_customer_portal_manage_plan_command;
-use crate::services::storyteller::commands::stripe_customer_portal::storyteller_open_customer_portal_switch_plan_command::storyteller_open_customer_portal_switch_plan_command;
-use crate::services::storyteller::commands::stripe_customer_portal::storyteller_open_customer_portal_update_payment_method_command::storyteller_open_customer_portal_update_payment_method_command;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use crate::services::worldlabs::commands::worldlabs_clear_credentials_command::worldlabs_clear_credentials_command;
-use crate::services::worldlabs::commands::worldlabs_get_credential_info_command::worldlabs_get_credential_info_command;
-use crate::services::worldlabs::commands::worldlabs_open_login_command::worldlabs_open_login_command;
-use crate::services::worldlabs::commands::worldlabs_receive_bearer_command::worldlabs_receive_bearer_command;
 use crate::services::worldlabs::state::worldlabs_bearer_bridge::WorldlabsBearerBridge;
 use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
 use log::error;
@@ -211,7 +188,6 @@ pub fn run() {
   // TODO: Break this out into another module, because RustRover/IntelliJ lags with these macros.
   //  My first attempt at naively doing this didn't work because the macros can't find their codegen'd targets.
   let builder = builder.invoke_handler(tauri::generate_handler![
-    check_sora_session_command,
     download_directory_reveal_command,
     download_media_file_command,
     download_url_command,
@@ -233,35 +209,13 @@ pub fn run() {
     provider_clear_command,
     provider_list_command,
     provider_set_api_key_command,
-    grok_clear_credentials_command,
-    grok_get_credential_info_command,
-    grok_open_login_command,
     load_without_cors_command,
     mark_task_as_dismissed_command,
     media_file_delete_command,
-    midjourney_clear_credentials_command,
-    midjourney_get_credential_info_command,
-    midjourney_open_login_command,
-    open_sora_login_command,
     platform_info_command,
     set_provider_order_command,
-    sora_get_credential_info_command,
-    sora_logout_command,
-    storyteller_get_credits_command,
-    storyteller_get_subscription_command,
-    storyteller_open_credits_purchase_command,
-    storyteller_open_customer_portal_cancel_plan_command,
-    storyteller_open_customer_portal_manage_plan_command,
-    storyteller_open_customer_portal_switch_plan_command,
-    storyteller_open_customer_portal_update_payment_method_command,
-    storyteller_open_subscription_purchase_command,
-    storyteller_purge_credentials_command,
     tasks_nuke_all_command,
     update_app_preferences_command,
-    worldlabs_clear_credentials_command,
-    worldlabs_get_credential_info_command,
-    worldlabs_open_login_command,
-    worldlabs_receive_bearer_command,
   ]);
 
   builder.run(tauri::generate_context!("tauri.conf.json"))
