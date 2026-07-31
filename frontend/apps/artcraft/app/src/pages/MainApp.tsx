@@ -1,5 +1,5 @@
 // Top-level shell for the artcraft app. Always-mounted chrome
-// (TopBar, login + pricing modals, toaster, Tauri event listeners,
+// (TopBar, pricing modals, toaster, Tauri event listeners,
 // background refresh hooks) lives here, and a single tab-driven
 // switch picks the active page below it.
 //
@@ -16,7 +16,6 @@ import { useSignals } from "@preact/signals-react/runtime";
 
 import { TopBar } from "~/components";
 import { ErrorDialog } from "~/components";
-import { LoginModal, useLoginModalStore } from "@storyteller/ui-login-modal";
 import { toast, Toaster } from "@storyteller/ui-toaster";
 import {
   GalleryDragComponent,
@@ -46,13 +45,9 @@ import {
 } from "@storyteller/tauri-events";
 import { SoundManager } from "@storyteller/soundboard";
 import { useStoryboardPageEnabled } from "@storyteller/ui-settings-modal";
-import { DomLevels, usePageSceneStore } from "@storyteller/ui-pagescene";
 
 import { useActiveJobs } from "~/hooks/useActiveJobs";
 import { useBackgroundLoadingMedia } from "~/hooks/useBackgroundLoadingMedia";
-import { UsersApi } from "~/Classes/ApiManager";
-import { authentication } from "~/signals";
-import { AUTH_STATUS } from "~/enums";
 import { useTabStore } from "./Stores/TabState";
 import { useTextToImageStore } from "./PageImage/TextToImageStore";
 
@@ -121,17 +116,7 @@ export const MainApp = ({ sceneToken }: Props) => {
     toast.error("File deleted.");
   });
 
-  // Session probe (runs once per shell mount) and GPU detection.
-  // Both are app-wide concerns, not 3D-only.
-  useEffect(() => {
-    const usersApi = new UsersApi();
-    usersApi.GetSession().then((result) => {
-      console.log(
-        `User Info | Username: ${result.data?.user?.username}, Token: ${result.data?.user?.user_token}`,
-      );
-    });
-  }, []);
-
+  // GPU detection — an app-wide concern, not 3D-only.
   const [, setValidGpu] = useState("unknown");
   useEffect(() => {
     const { getGPUTier } = gpu;
@@ -146,38 +131,14 @@ export const MainApp = ({ sceneToken }: Props) => {
     });
   }, []);
 
-  const { triggerRecheck } = useLoginModalStore();
   const { isOpen: isCreditsOpen, closeModal: closeCreditsModal } =
     useCreditsModalStore();
-  const disableHotkeyInput = usePageSceneStore((s) => s.disableHotkeyInput);
-  const enableHotkeyInput = usePageSceneStore((s) => s.enableHotkeyInput);
 
   const currentReminderModalProps = actionReminderProps.value;
 
   return (
     <div className="w-screen">
-      <TopBar
-        loginSignUpPressed={() => {
-          console.log("PRESSED");
-          triggerRecheck();
-        }}
-        pageName="Edit Scene"
-      />
-      <LoginModal
-        videoSrc2D="/resources/videos/artcraft-canvas-demo.mp4"
-        videoSrc3D="/resources/videos/artcraft-3d-demo.mp4"
-        onOpenChange={(isOpen: boolean) => {
-          if (isOpen) {
-            disableHotkeyInput(DomLevels.DIALOGUE);
-          } else {
-            enableHotkeyInput(DomLevels.DIALOGUE);
-          }
-        }}
-        onArtCraftAuthSuccess={(userInfo: any) => {
-          authentication.status.value = AUTH_STATUS.LOGGED_IN;
-          authentication.userInfo.value = userInfo;
-        }}
-      />
+      <TopBar pageName="Edit Scene" />
 
       <TabBody sceneToken={sceneToken} />
 

@@ -36,9 +36,6 @@
       "path": "../../tauri-events"
     },
     {
-      "path": "../login-modal"
-    },
-    {
       "path": "../../api"
     },
     {

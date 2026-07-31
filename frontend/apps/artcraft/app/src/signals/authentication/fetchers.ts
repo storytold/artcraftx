@@ -1,7 +1,7 @@
 import { authentication } from "./authentication";
 import { UsersApi } from "~/Classes/ApiManager/UsersApi";
 import { BillingApi } from "~/Classes/ApiManager/BillingApi";
-import { gtagLogin, gtagLogout } from "@storyteller/google-analytics";
+import { gtagLogin } from "@storyteller/google-analytics";
 
 import {
   updateActiveSubscriptions,
@@ -11,84 +11,8 @@ import {
 } from "./utilities";
 import { AUTH_STATUS } from "~/enums";
 
-export const logout = async (
-  failureCallback?: (errorMessage: string) => void,
-) => {
-  const usersApi = new UsersApi();
-  const logoutResponse = await usersApi.Logout();
-  if (!logoutResponse.success && failureCallback) {
-    failureCallback(
-      logoutResponse.errorMessage || "Unknown Error during Destroy Session",
-    );
-  }
-  // if success, nothing
-  // regarldess of success/fail, clear the state and localstorage
-  setLogoutStates();
-  gtagLogout();
-};
-
-export const login = async ({
-  usernameOrEmail,
-  password,
-}: {
-  usernameOrEmail: string;
-  password: string;
-  failureCallback?: () => void;
-}) => {
-  updateAuthStatus(AUTH_STATUS.LOGGING);
-
-  const usersApi = new UsersApi();
-  const loginResponse = await usersApi.Login({ usernameOrEmail, password });
-  if (!loginResponse.success || !loginResponse.data) {
-    setLogoutStates();
-    return;
-  }
-
-  // technically user is login with the system now, HOWEVER,
-  // in storyteller studio, only having a sesison is not enough,
-  // we need session info and active subscription info as well
-  getUserInfoAndSubcriptions();
-
-  window.location.href = "/"; // TODO(bt,2025-04-19): Once we have in-page routing, get rid of this.
-};
-
-export const signUp = async ({
-  username,
-  email,
-  password,
-  passwordConfirmation,
-  signupSource,
-}: {
-  username: string;
-  email: string;
-  password: string;
-  passwordConfirmation: string;
-  signupSource?: string;
-}) => {
-  updateAuthStatus(AUTH_STATUS.LOGGING);
-
-  console.log(">>> Signup with source: ", signupSource);
-
-  const usersApi = new UsersApi();
-  const response = await usersApi.Signup({
-    email,
-    password,
-    passwordConfirmation,
-    username,
-    signupSource,
-  });
-  console.log(response);
-  if (!response.success || !response.data) {
-    setLogoutStates();
-    return response.errorMessage ?? "Unknown error";
-  }
-
-  // technically user is login with the system now, HOWEVER,
-  // in storyteller studio, only having a sesison is not enough,
-  // we need session info and active subscription info as well
-  getUserInfoAndSubcriptions();
-  return "";
-};
+// NB: Login/signup/logout flows live on the Tauri side now. This module only
+// reads the current session and mirrors it into the authentication signals.
 
 export const persistLogin = async () => {
   //Only run First Load, return if not

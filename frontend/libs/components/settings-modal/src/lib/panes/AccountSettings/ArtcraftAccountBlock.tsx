@@ -5,7 +5,6 @@ import { Button } from "@storyteller/ui-button";
 
 import { UsersApi } from "@storyteller/api";
 import { UserInfo } from "@storyteller/api";
-import { useLoginModalStore } from "@storyteller/ui-login-modal";
 import { invoke } from "@tauri-apps/api/core";
 
 const usersApi = new UsersApi();
@@ -17,7 +16,6 @@ export interface ArtcraftAccountBlockProps {
 export const ArtcraftAccountBlock = ({
   globalAccountLogoutCallback,
 }: ArtcraftAccountBlockProps) => {
-  const { triggerRecheck } = useLoginModalStore();
   const [artcraftSession, setArtcraftSession] = useState<UserInfo | undefined>(
     undefined
   );
@@ -44,53 +42,43 @@ export const ArtcraftAccountBlock = ({
     fetchSession();
   }, []);
 
-  const handleArtcraftButton = async () => {
-    if (isCheckingArtcraftSession) return;
-    if (isLoggedIn) {
-      setIsCheckingArtcraftSession(true);
-      await usersApi.Logout();
-      setArtcraftSession(undefined);
-      setIsLoggedIn(false);
-      setIsCheckingArtcraftSession(false);
-      globalAccountLogoutCallback(); // TODO: This resets the old global application state
+  // NB: Login is handled by the Tauri side now; this block only surfaces the
+  // current session and offers a logout.
+  const handleLogout = async () => {
+    if (isCheckingArtcraftSession || !isLoggedIn) return;
+    setIsCheckingArtcraftSession(true);
+    await usersApi.Logout();
+    setArtcraftSession(undefined);
+    setIsLoggedIn(false);
+    setIsCheckingArtcraftSession(false);
+    globalAccountLogoutCallback(); // TODO: This resets the old global application state
 
-
-      triggerRecheck(); // Trigger modal to recheck session and potentially open
-
-      await invoke("storyteller_purge_credentials_command");
-
-    } else {
-      triggerRecheck(); // Open login modal instead of redirecting
-    }
+    await invoke("storyteller_purge_credentials_command");
   };
 
   return (
     <div className="flex justify-between items-center">
       <span>ArtCraft Account:</span>
       <pre>{artcraftSession?.display_name}</pre>
-      <Button
-        variant={
-          isCheckingArtcraftSession
-            ? "secondary"
-            : isLoggedIn
-            ? "destructive"
-            : "primary"
-        }
-        className="h-[30px]"
-        onClick={handleArtcraftButton}
-        disabled={isCheckingArtcraftSession}
-      >
-        {isCheckingArtcraftSession ? (
-          <FontAwesomeIcon
-            icon={faSpinnerThird}
-            className="animate-spin text-sm"
-          />
-        ) : isLoggedIn ? (
-          "Log Out"
-        ) : (
-          "Log In"
-        )}
-      </Button>
+      {isLoggedIn || isCheckingArtcraftSession ? (
+        <Button
+          variant={isCheckingArtcraftSession ? "secondary" : "destructive"}
+          className="h-[30px]"
+          onClick={handleLogout}
+          disabled={isCheckingArtcraftSession}
+        >
+          {isCheckingArtcraftSession ? (
+            <FontAwesomeIcon
+              icon={faSpinnerThird}
+              className="animate-spin text-sm"
+            />
+          ) : (
+            "Log Out"
+          )}
+        </Button>
+      ) : (
+        <span className="text-white/40">Not logged in</span>
+      )}
     </div>
   );
 };

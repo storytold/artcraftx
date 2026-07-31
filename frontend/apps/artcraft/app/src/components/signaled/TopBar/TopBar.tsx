@@ -86,7 +86,6 @@ import { UploadImagesButton } from "./UploadImagesButton";
 
 interface Props {
   pageName: string;
-  loginSignUpPressed: () => void;
 }
 
 // Settings section type to match the SettingsModal component

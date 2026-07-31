@@ -77,9 +77,6 @@
       "path": "../../tauri-events/tsconfig.lib.json"
     },
     {
-      "path": "../login-modal/tsconfig.lib.json"
-    },
-    {
       "path": "../../api/tsconfig.lib.json"
     },
     {
