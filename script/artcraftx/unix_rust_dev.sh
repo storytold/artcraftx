@@ -31,7 +31,7 @@ sqlx_migrate() {
   echo "SQLx migrate database file..."
   sqlx migrate run \
     --database-url "sqlite:${sqlite_db_file}" \
-    --source "${root_dir}/_database/sql/artcraft_migrations"
+    --source "${root_dir}/crates/sqlite_database/migrations"
 
   export DATABASE_URL="sqlite:${sqlite_db_file}"
 }

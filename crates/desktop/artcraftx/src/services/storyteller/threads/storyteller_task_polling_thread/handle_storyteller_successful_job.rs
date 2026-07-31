@@ -15,8 +15,8 @@ use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
 use log::error;
 use log::info;
-use sqlite_tasks::queries::task::Task;
-use sqlite_tasks::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
+use sqlite_database::queries::task::Task;
+use sqlite_database::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
 use tauri::AppHandle;
 use tokens::tokens::media_files::MediaFileToken;
 

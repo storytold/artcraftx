@@ -9,7 +9,7 @@ use artcraft_client::error::api_error::ApiError;
 use artcraft_client::error::storyteller_error::StorytellerError;
 use errors::AnyhowResult;
 use log::{debug, error, info};
-use sqlite_tasks::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs};
+use sqlite_database::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs};
 use std::time::Instant;
 use tokens::tokens::app_session::AppSessionToken;
 

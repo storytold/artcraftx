@@ -7,11 +7,11 @@ use artcraft_client::api_defs::jobs::list_session_jobs::ListSessionJobsItem;
 use enums::tauri::tasks::task_status::TaskStatus;
 use errors::AnyhowResult;
 use log::info;
-use sqlite_tasks::queries::task::Task;
-use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
+use sqlite_database::queries::task::Task;
+use sqlite_database::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use tauri::AppHandle;
 use enums::tauri::tasks::task_failure_type::TaskFailureType;
-use sqlite_tasks::queries::update_task_status_with_rich_failure::{update_task_status_with_rich_failure, UpdateTaskWithRichFailureArgs};
+use sqlite_database::queries::update_task_status_with_rich_failure::{update_task_status_with_rich_failure, UpdateTaskWithRichFailureArgs};
 
 pub async fn handle_failed_job(
   app_handle: &AppHandle,

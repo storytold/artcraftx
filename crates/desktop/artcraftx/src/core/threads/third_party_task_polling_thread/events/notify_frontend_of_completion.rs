@@ -17,7 +17,7 @@ use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
 use enums::tauri::tasks::task_model_type::TaskModelType;
 use enums::tauri::tasks::task_type::TaskType;
 use log::{error, info, warn};
-use sqlite_tasks::queries::task::Task;
+use sqlite_database::queries::task::Task;
 use tauri::AppHandle;
 use reqwest::Url;
 use tokens::tokens::batch_generations::BatchGenerationToken;

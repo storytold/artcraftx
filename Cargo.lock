@@ -271,7 +271,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "serial_test",
- "sqlite_tasks",
+ "sqlite_database",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",
@@ -6320,7 +6320,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sqlite_tasks"
+name = "sqlite_database"
 version = "0.0.1"
 dependencies = [
  "anyhow",

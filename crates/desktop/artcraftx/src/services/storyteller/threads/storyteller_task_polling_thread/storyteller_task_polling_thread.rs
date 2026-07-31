@@ -12,8 +12,8 @@ use enums::common::job_status_plus::JobStatusPlus;
 use enums::tauri::tasks::task_status::TaskStatus;
 use errors::AnyhowResult;
 use log::error;
-use sqlite_tasks::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs};
-use sqlite_tasks::queries::task::Task;
+use sqlite_database::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs};
+use sqlite_database::queries::task::Task;
 use std::collections::HashMap;
 use tauri::AppHandle;
 

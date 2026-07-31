@@ -1,4 +1,4 @@
-//! sqlite_tasks
+//! sqlite_database
 //!
 //! sqlx is happier with different compilation units? So be it!
 //!

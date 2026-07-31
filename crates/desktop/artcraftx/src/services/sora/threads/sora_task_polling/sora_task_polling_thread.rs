@@ -26,9 +26,9 @@ use openai_sora_client::recipes::list_classic_sora_tasks_with_session_auto_renew
 use openai_sora_client::requests::common::task_id::TaskId;
 use openai_sora_client::requests::list_classic_tasks::list_classic_tasks::TaskStatus;
 use reqwest::Url;
-use sqlite_tasks::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, TaskList};
-use sqlite_tasks::queries::task::Task;
-use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
+use sqlite_database::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, TaskList};
+use sqlite_database::queries::task::Task;
+use sqlite_database::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::Write;
@@ -74,13 +74,13 @@ async fn local_task_polling_loop(
   app_data_root: &AppDataRoot,
 ) -> AnyhowResult<()> {
   loop {
-    let local_sqlite_tasks = list_tasks_by_provider_and_status(ListTasksByProviderAndStatusArgs {
+    let local_sqlite_database = list_tasks_by_provider_and_status(ListTasksByProviderAndStatusArgs {
       db: task_database.get_connection(),
       provider: GenerationProvider::Sora,
       task_statuses: &TASK_DATABASE_PENDING_STATUSES,
     }).await?;
 
-    if local_sqlite_tasks.tasks.is_empty() {
+    if local_sqlite_database.tasks.is_empty() {
       // No need to poll if we don't have pending tasks.
       tokio::time::sleep(std::time::Duration::from_millis(2_000)).await;
       continue;
@@ -89,7 +89,7 @@ async fn local_task_polling_loop(
     let creds = sora_creds_manager.get_credentials_required()?;
 
     // Map of Sora Task ID to Local Task.
-    let local_sqlite_tasks_by_sora_task_id = local_sqlite_tasks.tasks.iter()
+    let local_sqlite_database_by_sora_task_id = local_sqlite_database.tasks.iter()
         .filter_map(|task| {
           if let Some(provider_job_id) = &task.provider_job_id {
             Some((provider_job_id.clone(), task.clone()))
@@ -110,7 +110,7 @@ async fn local_task_polling_loop(
       &storyteller_creds_manager,
       &sora_task_queue,
       &app_data_root,
-      &local_sqlite_tasks_by_sora_task_id,
+      &local_sqlite_database_by_sora_task_id,
     ).await?;
 
     // TODO: Only poll if we have new items
@@ -124,7 +124,7 @@ async fn local_task_polling_loop(
       &storyteller_creds_manager,
       &sora_task_queue,
       &app_data_root,
-      &local_sqlite_tasks_by_sora_task_id,
+      &local_sqlite_database_by_sora_task_id,
     ).await?;
 
     tokio::time::sleep(std::time::Duration::from_millis(2_000)).await;

@@ -6,8 +6,8 @@ use enums::tauri::tasks::task_type::TaskType;
 use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use errors::AnyhowResult;
 use log::error;
-use sqlite_tasks::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs};
-use sqlite_tasks::queries::task::Task;
+use sqlite_database::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs};
+use sqlite_database::queries::task::Task;
 use tokens::tokens::media_files::MediaFileToken;
 
 pub async fn maybe_send_background_removal_complete_event(

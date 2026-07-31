@@ -5,8 +5,8 @@ use crate::core::state::task_database::TaskDatabase;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
 use log::{error, info};
-use sqlite_tasks::queries::task::Task;
-use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
+use sqlite_database::queries::task::Task;
+use sqlite_database::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use tauri::AppHandle;
 
 pub async fn handle_fal_failure(

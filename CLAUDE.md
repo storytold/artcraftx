@@ -16,9 +16,8 @@ artcraftx/
 │   ├── desktop/                         # Desktop (Tauri) apps
 │   │   └── artcraftx/                   # (Important) ArtCraftX, the desktop app
 │   ├── lib/                             # Various utility libraries
+│   ├── sqlite_database/                 # Desktop app's "tasks" SQLite database: queries + embedded migrations
 │   ├── schema/                          # Data definition layer
-│   │   ├── database/
-│   │   │   └── sqlite_tasks/            # Queries for the desktop app's "tasks" SQLite database
 │   │   └── public/                      # Token identifier and enum variant definitions
 │   │       ├── enums/                   # Enum variants stored as strings
 │   │       └── tokens/                  # Identifiers with Stripe-like ID prefixes, eg. "user_{entropy}"
@@ -37,7 +36,7 @@ artcraftx/
 
 - Rust with no minimum supported version
 - A mix of wreq and reqwest for Rust HTTP clients
-- SQLx for SQLite (the desktop app's local task database in `sqlite_tasks`)
+- SQLx for SQLite (the desktop app's local task database in `sqlite_database`)
 - Never use `println!` or `eprintln!` outside of tests; use `log` crate macros instead
 - When two crates export the same type name, alias imports with a suffix: `use foo::Bar as BarFoo;`
 - Prefer `use` imports over inline fully-qualified paths; only qualify inline for true one-offs or std collisions

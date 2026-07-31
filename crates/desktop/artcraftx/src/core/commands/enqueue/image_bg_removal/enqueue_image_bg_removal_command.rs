@@ -31,7 +31,7 @@ use openai_sora_client::recipes::image_upload_from_file_with_session_auto_renew:
 use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use openai_sora_client::requests::image_gen::common::{ImageSize, NumImages};
 use serde_derive::{Deserialize, Serialize};
-use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
+use sqlite_database::queries::create_task::{create_task, CreateTaskArgs};
 use std::time::Duration;
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
 use artcraft_client::error::storyteller_error::StorytellerError;

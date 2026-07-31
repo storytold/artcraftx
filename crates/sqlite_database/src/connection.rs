@@ -28,9 +28,9 @@ impl TaskDbConnection {
 
       // NB: Scope change here is an attempt to drop the open file connection for Windows.
       // On Windows, we've observed that the file might still be open, preventing deletion:
-      // [2025-08-08][06:42:29][sqlite_tasks::connection][INFO] Deleting and recreating SQLite
+      // [2025-08-08][06:42:29][sqlite_database::connection][INFO] Deleting and recreating SQLite
       //  database at "C:\Users\User\Artcraft\state\tasks_v2.sqlite"
-      // [2025-08-08][06:42:29][sqlite_tasks::connection][ERROR] Error deleting SQLite database
+      // [2025-08-08][06:42:29][sqlite_database::connection][ERROR] Error deleting SQLite database
       //  file: Os { code: 32, kind: Uncategorized, message: "The process cannot access the file
       //  because it is being used by another process." }
     }
@@ -58,7 +58,7 @@ async fn run_migrations<P: AsRef<Path>>(database_file: P) -> Result<SqlitePool, 
   // The migrations text get compiled into the binary, so no worries about build inclusion.
   // Since the task database is being treated as ephemeral, we can always run migrations without
   // worrying about previous state if we simply blow away old versions of the schema.
-  sqlx::migrate!("../../../../_database/sql/artcraft_migrations").run(&pool).await?;
+  sqlx::migrate!().run(&pool).await?;
 
   Ok(pool)
 }

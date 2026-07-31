@@ -43,7 +43,7 @@ helpers go in the parent `mod tests` so sub-modules can `use super::*`.
 ## Building
 
 - Most crates: `cargo check -p {crate_name}` or `cargo test -p {crate_name}`
-- Crates using SQLx (eg. `sqlite_tasks`): `SQLX_OFFLINE=true cargo check -p {crate_name}`
+- Crates using SQLx (eg. `sqlite_database`): `SQLX_OFFLINE=true cargo check -p {crate_name}`
 
 ## Key Crates
 
@@ -53,4 +53,4 @@ helpers go in the parent `mod tests` so sub-modules can `use super::*`.
 - `seedance2pro_client` — HTTP client for the Kinovi/Seedance2Pro video generation service
 - `enums` — enum variants stored as strings
 - `tokens` — identifiers with Stripe-like prefixes (e.g. `user_`, `mf_`)
-- `sqlite_tasks` — SQLx queries for the desktop app's local task database
+- `sqlite_database` — SQLx queries + embedded migrations for the desktop app's local task database

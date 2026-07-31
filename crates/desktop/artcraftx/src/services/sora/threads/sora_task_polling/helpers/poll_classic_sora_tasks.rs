@@ -25,9 +25,9 @@ use openai_sora_client::recipes::list_classic_sora_tasks_with_session_auto_renew
 use openai_sora_client::requests::common::task_id::TaskId;
 use openai_sora_client::requests::list_classic_tasks::list_classic_tasks::TaskStatus;
 use reqwest::Url;
-use sqlite_tasks::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, TaskList};
-use sqlite_tasks::queries::task::Task;
-use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
+use sqlite_database::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, TaskList};
+use sqlite_database::queries::task::Task;
+use sqlite_database::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::Write;
@@ -46,7 +46,7 @@ pub async fn poll_classic_sora_tasks(
   storyteller_creds_manager: &StorytellerCredentialManager,
   sora_task_queue: &SoraTaskQueue,
   app_data_root: &AppDataRoot,
-  local_sqlite_tasks_by_sora_task_id: &HashMap<String, Task>,
+  local_sqlite_database_by_sora_task_id: &HashMap<String, Task>,
 ) -> AnyhowResult<()> {
 
   let (sora_response, maybe_new_creds) =
@@ -103,7 +103,7 @@ pub async fn poll_classic_sora_tasks(
   handle_classic_failed_generations(
     &app_handle,
     &task_database,
-    &local_sqlite_tasks_by_sora_task_id,
+    &local_sqlite_database_by_sora_task_id,
     &sora_failed_tasks_by_id,
     &sora_task_queue,
   ).await?;
@@ -116,7 +116,7 @@ pub async fn poll_classic_sora_tasks(
     &task_database,
     &storyteller_creds,
     &sora_succeeded_tasks_by_id,
-    &local_sqlite_tasks_by_sora_task_id,
+    &local_sqlite_database_by_sora_task_id,
     DownloadExtension::Png,
   ).await?;
 

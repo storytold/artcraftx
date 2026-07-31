@@ -27,10 +27,10 @@ use openai_sora_client::recipes::list_classic_sora_tasks_with_session_auto_renew
 use openai_sora_client::requests::common::task_id::TaskId;
 use openai_sora_client::requests::list_classic_tasks::list_classic_tasks::{PartialGeneration, PartialTaskResponse};
 use reqwest::Url;
-use sqlite_tasks::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, TaskList};
-use sqlite_tasks::queries::task::Task;
-use sqlite_tasks::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
-use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
+use sqlite_database::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, TaskList};
+use sqlite_database::queries::task::Task;
+use sqlite_database::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
+use sqlite_database::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::Write;
@@ -62,12 +62,12 @@ pub async fn handle_classic_successful_generations(
   task_database: &TaskDatabase,
   storyteller_creds: &StorytellerCredentialSet,
   succeeded_tasks_by_id: &HashMap<TaskId, SuccessfulGeneration>,
-  sqlite_tasks_by_sora_task_id: &HashMap<String, Task>,
+  sqlite_database_by_sora_task_id: &HashMap<String, Task>,
   recommended_download_extension: DownloadExtension,
 ) -> AnyhowResult<()> {
 
   for (task_id, generation) in succeeded_tasks_by_id.iter() {
-    if !sqlite_tasks_by_sora_task_id.contains_key(task_id.as_str()) {
+    if !sqlite_database_by_sora_task_id.contains_key(task_id.as_str()) {
       continue; // Task is irrelevant - previously completed, generated elsewhere, etc.
     }
 
@@ -128,7 +128,7 @@ pub async fn handle_classic_successful_generations(
     }
 
     // Clear from SQLite task database.
-    if let Some(local_task) = sqlite_tasks_by_sora_task_id.get(task_id.as_str()) {
+    if let Some(local_task) = sqlite_database_by_sora_task_id.get(task_id.as_str()) {
       info!("Marking local task as succeeded: {:?}", local_task.id);
 
       let generation_class = match generation_type {

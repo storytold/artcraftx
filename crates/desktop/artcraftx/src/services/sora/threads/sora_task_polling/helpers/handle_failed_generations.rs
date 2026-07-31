@@ -11,8 +11,8 @@ use errors::AnyhowResult;
 use log::info;
 use openai_sora_client::requests::common::task_id::TaskId;
 use openai_sora_client::requests::list_classic_tasks::list_classic_tasks::PartialTaskResponse;
-use sqlite_tasks::queries::task::Task;
-use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
+use sqlite_database::queries::task::Task;
+use sqlite_database::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use std::collections::HashMap;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use tauri::AppHandle;
@@ -24,14 +24,14 @@ pub struct FailedGeneration {
 pub async fn handle_classic_failed_generations(
   app_handle: &AppHandle,
   task_database: &TaskDatabase,
-  local_sqlite_tasks_by_sora_task_id: &HashMap<String, Task>,
+  local_sqlite_database_by_sora_task_id: &HashMap<String, Task>,
   sora_failed_tasks_by_id: &HashMap<TaskId, FailedGeneration>,
   sora_task_queue: &SoraTaskQueue,
 ) -> AnyhowResult<()> {
 
   for (task_id, task) in sora_failed_tasks_by_id.iter() {
     // Emit events for failed tasks.
-    if local_sqlite_tasks_by_sora_task_id.contains_key(task_id.as_str()) {
+    if local_sqlite_database_by_sora_task_id.contains_key(task_id.as_str()) {
       let event = GenerationFailedEvent {
         action: GenerationAction::GenerateImage,
         service: GenerationServiceProvider::Sora,
@@ -43,7 +43,7 @@ pub async fn handle_classic_failed_generations(
     }
 
     // Clear from SQLite task database.
-    if let Some(local_task) = local_sqlite_tasks_by_sora_task_id.get(task_id.as_str()) {
+    if let Some(local_task) = local_sqlite_database_by_sora_task_id.get(task_id.as_str()) {
       info!("Marking local task as failed: {:?}", local_task.id);
 
       let _updated = update_task_status(UpdateTaskArgs {

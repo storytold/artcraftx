@@ -7,10 +7,10 @@ use crate::core::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_ST
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use enums::common::generation_provider::GenerationProvider;
 use log::{error, info, warn};
-use sqlite_tasks::queries::list_non_artcraft_pending_tasks::{
+use sqlite_database::queries::list_non_artcraft_pending_tasks::{
   list_non_artcraft_pending_tasks, ListNonArtcraftPendingTasksArgs,
 };
-use sqlite_tasks::queries::task::Task;
+use sqlite_database::queries::task::Task;
 use std::time::Duration;
 use tauri::AppHandle;
 
@@ -120,11 +120,11 @@ async fn poll_iteration(
 
 #[derive(Debug)]
 enum PollError {
-  SqliteTasksError(sqlite_tasks::error::SqliteTasksError),
+  SqliteTasksError(sqlite_database::error::SqliteTasksError),
 }
 
-impl From<sqlite_tasks::error::SqliteTasksError> for PollError {
-  fn from(err: sqlite_tasks::error::SqliteTasksError) -> Self {
+impl From<sqlite_database::error::SqliteTasksError> for PollError {
+  fn from(err: sqlite_database::error::SqliteTasksError) -> Self {
     Self::SqliteTasksError(err)
   }
 }

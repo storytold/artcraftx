@@ -34,7 +34,7 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
-use sqlite_tasks::queries::create_task::{create_task, CreateTaskArgs};
+use sqlite_database::queries::create_task::{create_task, CreateTaskArgs};
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
 

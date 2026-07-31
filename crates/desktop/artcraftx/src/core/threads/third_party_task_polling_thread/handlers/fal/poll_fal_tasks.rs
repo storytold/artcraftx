@@ -12,8 +12,8 @@ use fal_client::creds::fal_api_key::FalApiKey;
 use fal_client::polling::poll_job_response::poll_job_response::{poll_job_response, PollJobResponseArgs};
 use fal_client::polling::poll_job_status::poll_job_status::{poll_job_status, FalJobStatus, PollJobStatusArgs};
 use log::{error, info, warn};
-use sqlite_tasks::queries::task::Task;
-use sqlite_tasks::queries::update_task_status::{update_task_status, UpdateTaskArgs};
+use sqlite_database::queries::task::Task;
+use sqlite_database::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use tauri::AppHandle;
 
 pub async fn poll_fal_tasks(

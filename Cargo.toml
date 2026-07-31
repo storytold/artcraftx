@@ -39,8 +39,8 @@ members = [
   "crates/lib/url_utils",
   "crates/lib/uuid_utils",
 
-  # Schema (database): local task storage
-  "crates/schema/database/sqlite_tasks",
+  # Local task storage (SQLite, embedded migrations)
+  "crates/sqlite_database",
 
   # Schema (public): common strongly-typed tokens, ids, payloads, etc.
   "crates/schema/public/enums",
@@ -103,7 +103,7 @@ mimetypes = { path = "crates/lib/files/mimetypes" }
 openai_sora_client = { path = "crates/api_clients/openai_sora_client" }
 primitives = { path = "crates/lib/data/primitives" }
 seedance2pro_client = { path = "crates/api_clients/seedance2pro_client" }
-sqlite_tasks = { path = "crates/schema/database/sqlite_tasks" }
+sqlite_database = { path = "crates/sqlite_database" }
 test_data = { path = "crates/testing/test_data" }
 test_utils = { path = "crates/testing/test_utils" }
 tokens = { path = "crates/schema/public/tokens" }

@@ -1,5 +1,5 @@
 [package]
-name = "sqlite_tasks"
+name = "sqlite_database"
 edition = "2024"
 version = "0.0.1"
 publish = false
@@ -8,7 +8,7 @@ publish = false
 normal = ["workspace-build-acceleration"]
 
 [lib]
-name = "sqlite_tasks"
+name = "sqlite_database"
 path = "src/lib.rs"
 
 [dependencies]

@@ -15,7 +15,7 @@ use enums::tauri::tasks::task_type::TaskType;
 use errors::AnyhowResult;
 use log::{debug, error, info, warn};
 use serde_derive::{Deserialize, Serialize};
-use sqlite_tasks::queries::list_tasks_for_frontend::list_tasks_for_frontend;
+use sqlite_database::queries::list_tasks_for_frontend::list_tasks_for_frontend;
 use artcraft_client::endpoints::media_files::delete_media_file::delete_media_file;
 use tauri::{AppHandle, State};
 use enums::tauri::tasks::task_failure_type::TaskFailureType;
