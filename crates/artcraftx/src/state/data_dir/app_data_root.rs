@@ -11,10 +11,14 @@ use anyhow::anyhow;
 use directories::UserDirs;
 use std::path::{Path, PathBuf};
 
-const DEFAULT_DATA_DIR : &str = "Artcraft";
+/// Company directory
+const DEFAULT_ARTCRAFT_DATA_DIR : &str = "Artcraft";
+
+/// ArtCraft-X subdirectory
+const DEFAULT_ARTCRAFTX_DATA_SUBDIR : &str = "artcraftx";
 
 /// Note: Tauri appends ".log" to the end of the filename.
-const LOG_FILE_NAME : &str = "artcraft_debug";
+const LOG_FILE_NAME : &str = "artcraftx_debug";
 
 /// The path to the application data directory, which includes "asset" and "weights" data.
 #[derive(Clone)]
@@ -154,5 +158,6 @@ fn get_default_data_dir() -> anyhow::Result<PathBuf> {
   Ok(UserDirs::new()
       .ok_or_else(|| anyhow!("could not determine user home directory"))?
       .home_dir()
-      .join(DEFAULT_DATA_DIR))
+      .join(DEFAULT_ARTCRAFT_DATA_DIR)
+      .join(DEFAULT_ARTCRAFTX_DATA_SUBDIR))
 }
