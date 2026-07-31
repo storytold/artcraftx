@@ -1,5 +1,6 @@
 pub mod api_adapters;
 pub mod commands;
+pub mod credentials;
 pub mod error;
 pub mod events;
 pub mod lifecycle;

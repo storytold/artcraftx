@@ -1,3 +1,4 @@
+use crate::services::midjourney::state::legacy_credential_paths::MidjourneyLegacyCredentialPaths;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::midjourney::state::midjourney_user_info::MidjourneyUserInfo;
 use crate::services::midjourney::state::serializable_midjourney_state::{SerializableMidjourneyState, SERIALIZABLE_MIDJOURNEY_STATE_VERSION};

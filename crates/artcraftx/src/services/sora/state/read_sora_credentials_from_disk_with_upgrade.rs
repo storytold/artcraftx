@@ -1,3 +1,4 @@
+use crate::services::sora::state::legacy_credential_paths::SoraLegacyCredentialPaths;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use anyhow::anyhow;
 use errors::AnyhowResult;

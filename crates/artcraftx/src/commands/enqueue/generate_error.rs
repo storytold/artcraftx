@@ -175,6 +175,7 @@ impl From<ArtcraftXError> for GenerateError {
   fn from(value: ArtcraftXError) -> Self {
     match value {
       ArtcraftXError::AnyhowError(e) => Self::AnyhowError(e),
+      ArtcraftXError::CredentialError(e) => Self::AnyhowError(anyhow!("Credential error: {}", e)),
       ArtcraftXError::DecodeError(e) => Self::DecodeError(e),
       ArtcraftXError::IoError(e) => Self::IoError(e),
       ArtcraftXError::GrokError(e) => Self::ProviderFailure(ProviderFailureReason::GrokError(e)),

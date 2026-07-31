@@ -1,3 +1,4 @@
+use crate::error::artcraftx_credential_error::ArtcraftXCredentialError;
 use grok_consumer_client::error::grok_error::GrokError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
@@ -7,6 +8,7 @@ use artcraft_client::error::storyteller_error::StorytellerError;
 #[derive(Debug)]
 pub enum ArtcraftXError {
   AnyhowError(anyhow::Error),
+  CredentialError(ArtcraftXCredentialError),
   DecodeError(base64::DecodeError),
   IoError(std::io::Error),
   ReqwestError(reqwest::Error),
@@ -28,6 +30,7 @@ impl Display for ArtcraftXError {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     match self {
       Self::AnyhowError(e) => write!(f, "AnyhowError: {:?}", e),
+      Self::CredentialError(e) => write!(f, "CredentialError: {}", e),
       Self::DecodeError(e) => write!(f, "DecodeError: {:?}", e),
       Self::IoError(e) => write!(f, "IoError: {:?}", e),
       Self::ReqwestError(e) => write!(f, "ReqwestError: {:?}", e),
@@ -45,6 +48,12 @@ impl Display for ArtcraftXError {
 impl From<anyhow::Error> for ArtcraftXError {
   fn from(value: anyhow::Error) -> Self {
     Self::AnyhowError(value)
+  }
+}
+
+impl From<ArtcraftXCredentialError> for ArtcraftXError {
+  fn from(value: ArtcraftXCredentialError) -> Self {
+    Self::CredentialError(value)
   }
 }
 

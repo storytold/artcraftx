@@ -1,3 +1,4 @@
+use crate::services::storyteller::state::legacy_credential_paths::StorytellerLegacyCredentialPaths;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use errors::AnyhowResult;
 use std::fs::read_to_string;

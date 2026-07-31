@@ -128,22 +128,6 @@ impl AppDataRoot {
     &self.log_file_name_string
   }
 
-  pub fn get_sora_cookie_file_path(&self) -> PathBuf {
-    self.credentials_dir().get_sora_cookie_file_path()
-  }
-
-  pub fn get_sora_bearer_token_file_path(&self) -> PathBuf {
-    self.credentials_dir().get_sora_bearer_token_file_path()
-  }
-
-  pub fn get_sora_legacy_sentinel_file_path(&self) -> PathBuf {
-    self.credentials_dir().get_sora_legacy_sentinel_file_path()
-  }
-
-  pub fn get_sora_sentinel_token_file_path(&self) -> PathBuf {
-    self.credentials_dir().get_sora_sentinel_token_file_path()
-  }
-
   pub fn get_window_size_config_file(&self) -> PathBuf {
     self.state_dir.get_window_size_config_file()
   }

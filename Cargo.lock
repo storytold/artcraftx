@@ -284,6 +284,7 @@ dependencies = [
  "tokens",
  "tokio",
  "tokio-util",
+ "toml 1.0.7+spec-1.1.0",
  "url",
  "url_utils",
  "uuid_utils",

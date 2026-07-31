@@ -1,6 +1,15 @@
+use crate::credentials::credential::Credential;
+use crate::error::artcraftx_credential_error::ArtcraftXCredentialError;
+use crate::error::artcraftx_error::ArtcraftXError;
 use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use std::path::{Path, PathBuf};
 
+/// The directory holding per-service credential TOML files
+/// (by default `~/Artcraft/artcraftx/credentials`).
+///
+/// Files can be named anything (`artcraft_user1.toml`, `fal_api_key.toml`,
+/// `higgsfield.toml`, ...) — users may hand-write their own. See
+/// [`crate::credentials`] for the file format.
 #[derive(Clone)]
 pub struct AppCredentialsDir {
   path: PathBuf,
@@ -21,60 +30,108 @@ impl DataSubdir for AppCredentialsDir {
 }
 
 impl AppCredentialsDir {
-  pub fn get_grok_state_path(&self) -> PathBuf {
-    self.path.join("grok_state.json")
+  /// List and load every `*.toml` credential file in the directory.
+  ///
+  /// Files that fail to parse or validate are skipped with a warning so a
+  /// single malformed (possibly hand-written) file can't take down every
+  /// other credential. Only a directory listing failure is an error.
+  pub fn load_credentials(&self) -> Result<Vec<Credential>, ArtcraftXError> {
+    let entries = std::fs::read_dir(&self.path)
+        .map_err(|source| ArtcraftXCredentialError::DirectoryReadError {
+          path: self.path.clone(),
+          source,
+        })?;
+
+    let mut paths: Vec<PathBuf> = entries
+        .filter_map(|entry| entry.ok())
+        .map(|entry| entry.path())
+        .filter(|path| path.is_file() && has_toml_extension(path))
+        .collect();
+    paths.sort();
+
+    let mut credentials = Vec::new();
+    for path in paths {
+      match Credential::load_from_file(&path) {
+        Ok(credential) => credentials.push(credential),
+        Err(err) => {
+          log::warn!("Skipping bad credential file: {}", err);
+        },
+      }
+    }
+
+    Ok(credentials)
   }
 
-  pub fn get_grok_cookies_path(&self) -> PathBuf {
-    self.path.join("grok_cookies.txt")
-  }
-  
-  pub fn get_sora_cookie_file_path(&self) -> PathBuf {
-    self.path.join("sora_cookies.txt")
+  /// Rewrite a credential's TOML file in place (refreshed cookies,
+  /// success/failure timestamps, etc.)
+  pub fn save_credential(&self, credential: &Credential) -> Result<(), ArtcraftXError> {
+    credential.save().map_err(ArtcraftXError::from)
   }
 
-  pub fn get_sora_bearer_token_file_path(&self) -> PathBuf {
-    self.path.join("sora_bearer_token.txt")
+  /// Path for a new managed credential file with the given file stem,
+  /// e.g. `file_path_for("fal_api_key")` -> `.../credentials/fal_api_key.toml`.
+  pub fn file_path_for(&self, file_stem: &str) -> PathBuf {
+    self.path.join(format!("{}.toml", file_stem))
+  }
+}
+
+fn has_toml_extension(path: &Path) -> bool {
+  path.extension()
+      .map(|ext| ext.eq_ignore_ascii_case("toml"))
+      .unwrap_or(false)
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::credentials::api_key_credential::ApiKeyCredential;
+  use crate::credentials::credential::CredentialSecret;
+  use crate::credentials::credential_service_type::CredentialServiceType;
+
+  fn write_file(dir: &Path, name: &str, contents: &str) {
+    std::fs::write(dir.join(name), contents).unwrap();
   }
 
-  #[deprecated(note="use the new sentinel token methods")]
-  pub fn get_sora_legacy_sentinel_file_path(&self) -> PathBuf {
-    self.path.join("sora_sentinel.txt")
+  #[test]
+  fn loads_all_valid_toml_files() {
+    let dir = tempfile::tempdir().unwrap();
+    write_file(
+      dir.path(),
+      "artcraft_user1.toml",
+      "service = \"artcraft_cookies\"\n[cookie]\ncookie_header = \"a=b\"\n",
+    );
+    write_file(
+      dir.path(),
+      "fal_api_key.toml",
+      "service = \"fal_api\"\n[api_key]\napi_key = \"fal-key-123\"\n",
+    );
+    // Non-toml and malformed files must not break the load.
+    write_file(dir.path(), "notes.txt", "not a credential");
+    write_file(dir.path(), "broken.toml", "service = \"fal_api\"");
+
+    let creds_dir = AppCredentialsDir::new_from(dir.path());
+    let credentials = creds_dir.load_credentials().unwrap();
+
+    assert_eq!(credentials.len(), 2);
+    assert_eq!(credentials[0].service, CredentialServiceType::ArtcraftCookies);
+    assert_eq!(credentials[1].service, CredentialServiceType::FalApi);
   }
 
-  pub fn get_sora_sentinel_token_file_path(&self) -> PathBuf {
-    self.path.join("sora_sentinel_token_store.json")
-  }
+  #[test]
+  fn save_credential_writes_to_source_path() {
+    let dir = tempfile::tempdir().unwrap();
+    let creds_dir = AppCredentialsDir::new_from(dir.path());
 
-  pub fn get_storyteller_avt_cookie_file_path(&self) -> PathBuf {
-    self.path.join("artcraft_avt.txt")
-  }
-  
-  pub fn get_storyteller_session_cookie_file_path(&self) -> PathBuf {
-    self.path.join("artcraft_session.txt")
-  }
+    let credential = Credential {
+      service: CredentialServiceType::FalApi,
+      secret: CredentialSecret::ApiKey(ApiKeyCredential::new("fal-key-123")),
+      user_info: None,
+      source_path: creds_dir.file_path_for("fal_api_key"),
+    };
+    creds_dir.save_credential(&credential).unwrap();
 
-  pub fn get_fal_api_key_file_path(&self) -> PathBuf {
-    self.path.join("fal_api_key.txt")
-  }
-
-  pub fn get_midjourney_state_path(&self) -> PathBuf {
-    self.path.join("midjourney_state.json")
-  }
-
-  pub fn get_worldlabs_state_path(&self) -> PathBuf {
-    self.path.join("worldlabs_state.json")
-  }
-
-  pub fn get_worldlabs_cookies_path(&self) -> PathBuf {
-    self.path.join("worldlabs_cookies.txt")
-  }
-
-  pub fn get_worldlabs_bearer_path(&self) -> PathBuf {
-    self.path.join("worldlabs_bearer.txt")
-  }
-
-  pub fn get_worldlabs_refresh_path(&self) -> PathBuf {
-    self.path.join("worldlabs_refresh.txt")
+    let credentials = creds_dir.load_credentials().unwrap();
+    assert_eq!(credentials.len(), 1);
+    assert_eq!(credentials[0].api_key().unwrap().api_key, "fal-key-123");
   }
 }

@@ -1,3 +1,4 @@
+use crate::services::worldlabs::state::legacy_credential_paths::WorldlabsLegacyCredentialPaths;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::worldlabs::state::worldlabs_credential_holder::WorldlabsCredentialHolder;
 use crate::services::worldlabs::state::worldlabs_serializable_state::{WorldlabsSerializableState, SERIALIZABLE_WORLDLABS_STATE_VERSION};
