@@ -39,7 +39,6 @@ import { useBackgroundLoadingMedia } from "~/hooks/useBackgroundLoadingMedia";
 import { useTabStore } from "./Stores/TabState";
 import { useTextToImageStore } from "./PageImage/TextToImageStore";
 
-import { AppsIndexPage } from "./PageApps/AppsIndexPage";
 import TextToImage from "./PageImage/TextToImage";
 import ImageToVideo from "./PageVideo/ImageToVideo";
 import CreateAudio from "./PageAudio/CreateAudio";
@@ -160,12 +159,6 @@ const TabBody = () => {
   // position: fixed; the wrapping <div> scopes them so they don't
   // stack as siblings of the TopBar at the MainApp root.
   switch (tabStore.activeTabId) {
-    case "APPS":
-      return (
-        <div>
-          <AppsIndexPage />
-        </div>
-      );
     case "IMAGE":
       return (
         <div>

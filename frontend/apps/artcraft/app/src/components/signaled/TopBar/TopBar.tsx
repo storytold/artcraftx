@@ -8,7 +8,6 @@ import {
   faCoins,
   faGear,
   faGem,
-  faHouse,
   faImages,
   faCalculator,
   faExclamation,
@@ -76,7 +75,6 @@ import {
   galleryModalDeleteMedia,
   galleryModalSubscribeToMediaEvents,
 } from "~/Helpers/galleryModalTauriBindings";
-import { AppsQuickMenu } from "./AppsQuickMenu";
 import { TaskQueue } from "./TaskQueue";
 import { UploadImagesButton } from "./UploadImagesButton";
 
@@ -96,19 +94,8 @@ type SettingsSection =
 const SWITCHER_THROTTLE_TIME = 500; // milliseconds
 const CREDITS_POLL_INTERVAL = 60_000; // milliseconds
 
-// NB: See `TabState` for the default tab. The Apps ("More") entry is first so
-// it's the landing tab and leftmost in the switcher.
+// NB: See `TabState` for the default tab.
 const appMenuTabs: MenuIconItem[] = [
-  {
-    id: "APPS",
-    label: "Home",
-    icon: <FontAwesomeIcon icon={faHouse} />,
-    description: "Explore all apps and miniapps",
-    large: true,
-    tooltipContent: <AppsQuickMenu />,
-    tooltipInteractive: true,
-    tooltipPosition: "bottom",
-  },
   ...APP_DESCRIPTORS.map((d) => ({
     id: d.id,
     label: d.label,
@@ -343,8 +330,6 @@ export const TopBar = ({ pageName }: Props) => {
         return "Image to 3D Object";
       case "IMAGE_TO_3D_WORLD":
         return "Image to 3D World";
-      case "APPS":
-        return "ArtCraft";
       case "BACKGROUND_CHANGE":
         return "Background Change";
       default:
@@ -426,15 +411,6 @@ export const TopBar = ({ pageName }: Props) => {
                 }
                 switcherThrottle.current = true;
                 setDisableSwitcher(true);
-
-                if (tabId === "APPS") {
-                  useTabStore.getState().setActiveTab("APPS");
-                  setTimeout(() => {
-                    switcherThrottle.current = false;
-                    setDisableSwitcher(false);
-                  }, SWITCHER_THROTTLE_TIME);
-                  return;
-                }
 
                 useTabStore.getState().setActiveTab(tabId as TabId);
                 setTimeout(() => {

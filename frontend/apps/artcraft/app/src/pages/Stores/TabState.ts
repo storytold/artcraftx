@@ -5,7 +5,6 @@ export type TabId =
   | "EDIT"
   | "IMAGE"
   | "AUDIO"
-  | "APPS"
   | "VIDEO_FRAME_EXTRACTOR"
   | "VIDEO_WATERMARK_REMOVAL"
   | "IMAGE_WATERMARK_REMOVAL"
@@ -18,7 +17,7 @@ export type TabId =
   | "VIDEO_EDITOR"
   | "MOODBOARD";
 
-const DEFAULT_TAB: TabId = "APPS";
+const DEFAULT_TAB: TabId = "IMAGE";
 
 interface TabState {
   // Current active tab
