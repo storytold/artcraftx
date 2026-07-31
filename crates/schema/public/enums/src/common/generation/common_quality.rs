@@ -4,7 +4,6 @@ use std::collections::BTreeSet;
 use strum::EnumCount;
 #[cfg(test)]
 use strum::EnumIter;
-use utoipa::ToSchema;
 
 use crate::error::enum_error::EnumError;
 
@@ -15,7 +14,7 @@ pub const MAX_LENGTH: usize = 16;
 ///
 /// NB: Keep the max serialized length to 16 characters.
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize, Deserialize, ToSchema)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CommonQuality {
   High,

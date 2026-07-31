@@ -14,7 +14,7 @@ use crate::services::sora::threads::sora_task_polling::helpers::download_extensi
 use crate::services::sora::threads::sora_task_polling::helpers::handle_failed_generations::{handle_classic_failed_generations, FailedGeneration};
 use crate::services::sora::threads::sora_task_polling::helpers::handle_successful_generations::{handle_classic_successful_generations, GenerationItem, SuccessfulGeneration};
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
+use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
 use enums::common::generation::common_model_type::CommonModelType;
 use errors::AnyhowResult;
 use uuid_utils::uuid::generate_random_uuid;

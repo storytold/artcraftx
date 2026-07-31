@@ -5,12 +5,11 @@ use crate::error::enum_error::EnumError;
 use strum::EnumCount;
 #[cfg(test)]
 use strum::EnumIter;
-use utoipa::ToSchema;
 
 /// Defines the names of the Tauri-sent events that the frontend subscribes to.
 /// These event names are also stored in the database, so keep them short-ish.
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize, Deserialize, ToSchema)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TauriCommandCaller {
   /// The 2D canvas

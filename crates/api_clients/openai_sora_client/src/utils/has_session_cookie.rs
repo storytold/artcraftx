@@ -30,7 +30,7 @@ const SESSION_COOKIE_LENGTH_HEURISTIC : usize = 2000;
 //  cookies.contains(SESSION_COOKIE_NAME)
 //}
 
-#[derive(Copy,Clone,Eq,PartialEq,Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum SessionCookiePresence {
   Present,
   MaybePresent,

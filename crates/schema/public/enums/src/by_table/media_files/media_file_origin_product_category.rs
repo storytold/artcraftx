@@ -4,7 +4,6 @@ use std::collections::BTreeSet;
 use strum::EnumCount;
 #[cfg(test)]
 use strum::EnumIter;
-use utoipa::ToSchema;
 
 /// Used in the `media_files` table in `VARCHAR(16)` field `origin_product_category`.
 ///
@@ -15,7 +14,7 @@ use utoipa::ToSchema;
 ///
 /// DO NOT CHANGE VALUES WITHOUT A MIGRATION STRATEGY.
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
-#[derive(Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, Serialize)]
 pub enum MediaFileOriginProductCategory {
   /// Unknown which product is attached to the file (generated the file, the file was
   /// uploaded on behalf of, etc.)

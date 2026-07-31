@@ -2,7 +2,7 @@ use crate::core::commands::response::failure_response_wrapper::{CommandErrorResp
 use crate::core::commands::response::shorthand::ResponseOrError;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
-use artcraft_api_defs::generate::cost_estimate::estimate_splat_cost::{
+use artcraft_client::api_defs::generate::cost_estimate::estimate_splat_cost::{
   EstimateSplatCostError, EstimateSplatCostErrorType, EstimateSplatCostRequest,
   EstimateSplatCostResponse,
 };

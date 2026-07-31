@@ -4,7 +4,6 @@ use std::collections::BTreeSet;
 use strum::EnumCount;
 #[cfg(test)]
 use strum::EnumIter;
-use utoipa::ToSchema;
 
 /// Used in the `media_files` table in the nullable `maybe_project_type`
 /// VARCHAR(32) field.
@@ -16,7 +15,7 @@ use utoipa::ToSchema;
 ///
 /// DO NOT CHANGE VALUES WITHOUT A MIGRATION STRATEGY.
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
-#[derive(Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MediaFileProjectType {
   /// 3D editor scene descriptor: objects with locations, skyboxes, animations,

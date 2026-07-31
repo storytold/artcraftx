@@ -1,5 +1,5 @@
 use crate::core::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
-use artcraft_api_defs::generate::image::multi_function::nano_banana_pro_multi_function_image_gen::NanoBananaProMultiFunctionImageGenAspectRatio;
+use artcraft_client::api_defs::generate::image::multi_function::nano_banana_pro_multi_function_image_gen::NanoBananaProMultiFunctionImageGenAspectRatio;
 
 pub fn aspect_ratio_to_artcraft_nano_banana_pro(aspect_ratio: CommonAspectRatio) -> NanoBananaProMultiFunctionImageGenAspectRatio {
   match aspect_ratio {

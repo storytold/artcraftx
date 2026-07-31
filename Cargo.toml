@@ -6,9 +6,8 @@ resolver = "2"
 members = [
   # API clients for external services
   # These might be custom implementations or wrappers over other client libraries.
-  "crates/api_clients/artcraft/artcraft_api_defs",
-  "crates/api_clients/artcraft/artcraft_client",
-  "crates/api_clients/artcraft/artcraft_router",
+  "crates/api_clients/artcraft_client",
+  "crates/api_clients/artcraft_router",
   "crates/api_clients/fal_client",
   "crates/api_clients/gmicloud_client",
   "crates/api_clients/grok_api_client",
@@ -81,9 +80,8 @@ workspace-build-acceleration = { path = "crates/workspace-build-acceleration" }
 # Internal libs
 # Setting paths here ensures we don't need to do so in every crate's Cargo.toml
 # It makes refactoring much easier.
-artcraft_api_defs = { path = "crates/api_clients/artcraft/artcraft_api_defs" }
-artcraft_client = { path = "crates/api_clients/artcraft/artcraft_client" }
-artcraft_router = { path = "crates/api_clients/artcraft/artcraft_router" }
+artcraft_client = { path = "crates/api_clients/artcraft_client" }
+artcraft_router = { path = "crates/api_clients/artcraft_router" }
 build_metadata = { path = "crates/lib/build_metadata" }
 cloudflare_errors = { path = "crates/lib/cloudflare_errors" }
 cloudflare_mitigation = { path = "crates/lib/cloudflare_mitigation" }
@@ -129,7 +127,7 @@ cookie = "0.18.1"
 env = "1.0.1"
 env_logger = "0.11.9"
 futures = { version = "0.3.32" }
-indexmap = "2.13.0"
+indexmap = { version = "2.13.0", features = ["serde"] }
 log = "0.4.29"
 once_cell = "1.21.4"
 rand = "0.9.1"
@@ -153,7 +151,6 @@ tokio = { version = "1.50.0", features = ["macros"] }
 tokio-util = "0.7.12"
 toml = "1.0.7+spec-1.1.0"
 url = { version = "2.5.8", features = ["serde"] }
-utoipa = { version = "5.4.0", features = ["chrono", "actix_extras", "url"] }
 uuid = "1.22.0"
 walkdir = "2.4.0"
 

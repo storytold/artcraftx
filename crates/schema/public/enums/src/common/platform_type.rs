@@ -10,12 +10,11 @@ use crate::error::enum_error::EnumError;
 use strum::EnumCount;
 #[cfg(test)]
 use strum::EnumIter;
-use utoipa::ToSchema;
 
 /// NB: This is used by multiple tables (`generic_inference_jobs`, `media_files`).
 /// Keep the max length to 16 characters.
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize, Deserialize, ToSchema)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PlatformType {
   // ========== Our clients ==========

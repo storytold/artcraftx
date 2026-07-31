@@ -1,7 +1,7 @@
 use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::core::events::functional_events::canvas_background_removal_complete_event::CanvasBackgroundRemovalCompleteEvent;
 use crate::core::events::generation_events::generation_complete_event::GenerationCompleteEvent;
-use artcraft_api_defs::jobs::list_session_jobs::ListSessionJobsItem;
+use artcraft_client::api_defs::jobs::list_session_jobs::ListSessionJobsItem;
 use enums::tauri::tasks::task_type::TaskType;
 use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use errors::AnyhowResult;

@@ -6,11 +6,10 @@ use serde::Serialize;
 use strum::EnumCount;
 #[cfg(test)]
 use strum::EnumIter;
-use utoipa::ToSchema;
 
 /// Used in the `user_bookmarks` table in a `VARCHAR(32)` field named `entity_type`.
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
-#[derive(Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, Serialize)]
 pub enum FeaturedItemEntityType {
     /// MediaFile
     #[serde(rename = "media_file")]

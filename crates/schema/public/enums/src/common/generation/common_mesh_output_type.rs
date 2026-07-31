@@ -1,7 +1,6 @@
-use utoipa::ToSchema;
 
 /// Mesh output types for 3D object generation.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CommonMeshOutputType {
   /// A standard, fully-detailed mesh.

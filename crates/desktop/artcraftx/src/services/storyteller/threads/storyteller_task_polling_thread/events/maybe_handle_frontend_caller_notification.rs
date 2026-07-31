@@ -7,8 +7,8 @@ use crate::core::events::functional_events::text_to_image_generation_complete_ev
 use crate::core::events::functional_events::video_generation_complete_event::{GeneratedVideo, VideoGenerationCompleteEvent};
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use anyhow::anyhow;
-use artcraft_api_defs::jobs::list_session_jobs::{ListSessionJobsItem, ListSessionResultDetailsResponse};
-use artcraft_api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
+use artcraft_client::api_defs::jobs::list_session_jobs::{ListSessionJobsItem, ListSessionResultDetailsResponse};
+use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
 use enums::tauri::tasks::task_type::TaskType;
 use errors::AnyhowResult;
 use log::{error, warn};

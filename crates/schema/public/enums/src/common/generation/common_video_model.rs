@@ -1,8 +1,7 @@
-use utoipa::ToSchema;
 
 /// Video models available for generation.
 /// Mirrors artcraft_router::api::router_video_model::RouterVideoModel.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CommonVideoModel {
   /// NB: This was for the web login version

@@ -6,11 +6,10 @@ use serde::Serialize;
 use strum::EnumCount;
 #[cfg(test)]
 use strum::EnumIter;
-use utoipa::ToSchema;
 
 /// Used in the `user_stats` table in a `VARCHAR(32)` field named `entity_type`.
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
-#[derive(Clone, Copy, Eq, PartialEq, Hash, Deserialize, Serialize, ToSchema, Ord, PartialOrd)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash, Deserialize, Serialize, Ord, PartialOrd)]
 pub enum StatsEntityType {
     /// Comment
     #[serde(rename = "comment")]

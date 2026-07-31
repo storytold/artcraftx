@@ -1,5 +1,5 @@
 use crate::core::api_adapters::resolution::common_resolution::CommonResolution;
-use artcraft_api_defs::generate::image::multi_function::nano_banana_pro_multi_function_image_gen::NanoBananaProMultiFunctionImageGenImageResolution;
+use artcraft_client::api_defs::generate::image::multi_function::nano_banana_pro_multi_function_image_gen::NanoBananaProMultiFunctionImageGenImageResolution;
 
 pub fn resolution_to_artcraft_nano_banana_pro(resolution: CommonResolution) -> NanoBananaProMultiFunctionImageGenImageResolution {
   match resolution {

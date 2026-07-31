@@ -4,11 +4,10 @@ use serde::Serialize;
 use strum::EnumCount;
 #[cfg(test)]
 use strum::EnumIter;
-use utoipa::ToSchema;
 
 /// Used in the `user_bookmarks` table in a `VARCHAR(32)` field named `entity_type`.
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
-#[derive(Clone, Copy, Eq, PartialEq, Hash, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash, Deserialize, Serialize)]
 pub enum UserBookmarkEntityType {
     /// User
     #[serde(rename = "user")]

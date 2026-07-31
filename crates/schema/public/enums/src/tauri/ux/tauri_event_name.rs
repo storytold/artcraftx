@@ -4,14 +4,13 @@ use std::collections::BTreeSet;
 use strum::EnumCount;
 #[cfg(test)]
 use strum::EnumIter;
-use utoipa::ToSchema;
 
 /// Defines the names of the Tauri-sent events that the frontend subscribes to.
 /// These event names are also stored in the database, so keep them short-ish.
 ///
 /// NB: Events should end in "_event" so they're easy to grep for in Javascript.
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize, Deserialize, ToSchema)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TauriEventName {
   // TODO: Get rid of kebab case.

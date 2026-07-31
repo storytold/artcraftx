@@ -11,8 +11,8 @@ use crate::services::grok::state::grok_credential_manager::GrokCredentialManager
 use crate::services::grok::state::grok_image_prompt_queue::{GrokImagePromptQueue, PromptItem};
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
-use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
-use artcraft_api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
+use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
+use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::generation::common_model_type::CommonModelType;
 use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;

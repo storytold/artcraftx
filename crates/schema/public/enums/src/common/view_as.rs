@@ -2,9 +2,8 @@
 use strum::EnumCount;
 #[cfg(test)]
 use strum::EnumIter;
-use utoipa::ToSchema;
 
-#[derive(Clone, Copy, Eq, PartialEq, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Copy, Eq, PartialEq, Deserialize, Serialize)]
 #[cfg_attr(feature = "database", derive(sqlx::Type))]
 #[cfg_attr(feature = "database", sqlx(rename_all = "snake_case"))]
 #[cfg_attr(test, derive(EnumIter, EnumCount))]

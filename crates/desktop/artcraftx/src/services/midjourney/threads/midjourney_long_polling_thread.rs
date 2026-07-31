@@ -10,8 +10,8 @@ use crate::services::midjourney::state::midjourney_credential_manager::Midjourne
 use crate::services::midjourney::threads::events::maybe_handle_text_to_image_complete_event::maybe_handle_text_to_image_complete_event;
 use crate::services::midjourney::utils::download_midjourney_image::download_midjourney_image;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
-use artcraft_api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
+use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
+use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
 use cookie_store::cookie_store::CookieStore;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::generation::common_model_type::CommonModelType;

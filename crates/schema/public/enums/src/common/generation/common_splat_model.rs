@@ -1,7 +1,6 @@
-use utoipa::ToSchema;
 
 /// Splat models available for generation.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CommonSplatModel {
   #[serde(rename = "marble_0p1_mini")]

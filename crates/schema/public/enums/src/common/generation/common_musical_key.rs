@@ -1,9 +1,8 @@
-use utoipa::ToSchema;
 
 /// Musical keys available for audio generation (eg. Suno Sounds).
 ///
 /// NB: There are intentionally no E keys, per product spec.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CommonMusicalKey {
   /// Let the model pick the key.

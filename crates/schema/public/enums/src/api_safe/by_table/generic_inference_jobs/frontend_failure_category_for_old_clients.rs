@@ -1,10 +1,9 @@
 use crate::by_table::generic_inference_jobs::frontend_failure_category::FrontendFailureCategory;
-use utoipa::ToSchema;
 
 /// A restricted subset of `FrontendFailureCategory` that only includes values
 /// known to old deployed clients. New failure categories are omitted so that
 /// old clients never receive an enum value they cannot deserialize.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, Deserialize, Serialize)]
 pub enum FrontendFailureCategoryForOldClients {
   #[serde(rename = "face_not_detected")]
   FaceNotDetected,

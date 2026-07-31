@@ -1,8 +1,7 @@
-use utoipa::ToSchema;
 
 /// Quality level for a mesh generation sub-feature (e.g. texture quality or
 /// geometry quality). Some models charge extra for `Detailed`.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CommonMeshQuality {
   #[serde(rename = "standard")]

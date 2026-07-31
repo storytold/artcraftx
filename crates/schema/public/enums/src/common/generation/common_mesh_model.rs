@@ -1,7 +1,6 @@
-use utoipa::ToSchema;
 
 /// Mesh (3D object) models available for generation.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CommonMeshModel {
   #[serde(rename = "hunyuan_3d_2p0")]

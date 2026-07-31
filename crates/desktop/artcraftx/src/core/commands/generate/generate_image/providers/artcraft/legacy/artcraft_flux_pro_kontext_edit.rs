@@ -1,6 +1,6 @@
 use log::{error, info};
 
-use artcraft_api_defs::generate::image::edit::flux_pro_kontext_max_edit_image::{
+use artcraft_client::api_defs::generate::image::edit::flux_pro_kontext_max_edit_image::{
   FluxProKontextMaxEditImageNumImages, FluxProKontextMaxEditImageRequest,
 };
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;

@@ -3,7 +3,7 @@ use crate::core::commands::response::shorthand::ResponseOrError;
 use crate::core::commands::response::success_response_wrapper::SerializeMarker;
 use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use artcraft_api_defs::generate::cost_estimate::estimate_video_cost::{
+use artcraft_client::api_defs::generate::cost_estimate::estimate_video_cost::{
   EstimateVideoCostError, EstimateVideoCostErrorType, EstimateVideoCostRequest,
   EstimateVideoCostResponse,
 };

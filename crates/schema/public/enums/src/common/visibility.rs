@@ -15,9 +15,8 @@ use strum::EnumIter;
 ///
 /// *DO NOT CHANGE VALUES WITHOUT A MIGRATION STRATEGY!*
 
-use utoipa::ToSchema;
 
-#[derive(Clone, Copy, Eq, PartialEq, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Copy, Eq, PartialEq, Deserialize, Serialize)]
 #[cfg_attr(feature = "database", derive(sqlx::Type))]
 #[cfg_attr(feature = "database", sqlx(rename_all = "lowercase"))]
 #[cfg_attr(test, derive(EnumIter, EnumCount))]

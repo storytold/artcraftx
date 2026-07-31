@@ -7,7 +7,6 @@ use crate::error::enum_error::EnumError;
 use strum::EnumCount;
 #[cfg(test)]
 use strum::EnumIter;
-use utoipa::ToSchema;
 
 /// Failure type for tasks in the Tauri desktop app.
 ///
@@ -15,7 +14,7 @@ use utoipa::ToSchema;
 /// client can display localized failure information without depending / breaking on the
 /// server-side enum directly.
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize, Deserialize, ToSchema)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TaskFailureType {
   /// Catch-all for unknown failures.

@@ -1,5 +1,4 @@
 use std::collections::BTreeSet;
-use utoipa::ToSchema;
 
 #[cfg(test)]
 use strum::EnumCount;
@@ -8,7 +7,7 @@ use strum::EnumIter;
 
 /// The company or organization that created a model.
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
-#[derive(Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize, ToSchema)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 pub enum ModelCreator {
   #[serde(rename = "alibaba")]
   Alibaba,

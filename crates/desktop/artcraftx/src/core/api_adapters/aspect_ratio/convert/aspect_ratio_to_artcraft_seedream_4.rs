@@ -1,5 +1,5 @@
 use crate::core::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
-use artcraft_api_defs::generate::image::multi_function::bytedance_seedream_v4_multi_function_image_gen::BytedanceSeedreamV4MultiFunctionImageGenImageSize;
+use artcraft_client::api_defs::generate::image::multi_function::bytedance_seedream_v4_multi_function_image_gen::BytedanceSeedreamV4MultiFunctionImageGenImageSize;
 
 pub fn aspect_ratio_to_artcraft_seedream_4(aspect_ratio: CommonAspectRatio) -> BytedanceSeedreamV4MultiFunctionImageGenImageSize {
   match aspect_ratio {

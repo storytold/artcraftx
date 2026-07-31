@@ -1,7 +1,6 @@
-use utoipa::ToSchema;
 
 /// Polygon types for generated meshes.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CommonPolygonType {
   #[serde(rename = "triangle")]

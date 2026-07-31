@@ -13,8 +13,8 @@ use crate::services::sora::threads::sora_task_polling::helpers::download_extensi
 use crate::services::sora::threads::sora_task_polling::helpers::generation_type::GenerationType;
 use crate::services::sora::threads::sora_task_polling::helpers::upload_generation_to_backend::{upload_generation_to_backend, UploadGenerationToBackendArgs};
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
-use artcraft_api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
+use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
+use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::generation::common_model_type::CommonModelType;
 use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;

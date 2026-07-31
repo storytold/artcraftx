@@ -1,5 +1,5 @@
 use crate::core::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
-use artcraft_api_defs::generate::image::text::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageAspectRatio;
+use artcraft_client::api_defs::generate::image::text::generate_flux_1_dev_text_to_image::GenerateFlux1DevTextToImageAspectRatio;
 
 pub fn aspect_ratio_to_artcraft_flux_1_dev(aspect_ratio: CommonAspectRatio) -> GenerateFlux1DevTextToImageAspectRatio {
   match aspect_ratio {

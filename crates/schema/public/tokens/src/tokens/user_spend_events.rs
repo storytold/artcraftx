@@ -2,12 +2,11 @@ use std::fmt::Debug;
 
 use serde::Deserialize;
 use serde::Serialize;
-use utoipa::ToSchema;
 
 use crate::prefixes::TokenPrefix;
 
 /// The primary key for user_spend_events
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize, ToSchema)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "database", derive(sqlx::Type))]
 #[cfg_attr(feature = "database", sqlx(transparent))]
 pub struct UserSpendEventToken(pub String);

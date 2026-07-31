@@ -26,7 +26,6 @@ tauri-build = { version = "2.6.2", features = [] }
 workspace-build-acceleration.workspace =  true
 
 # Internal
-artcraft_api_defs.workspace = true
 artcraft_client.workspace = true
 artcraft_router.workspace = true
 build_metadata.workspace = true

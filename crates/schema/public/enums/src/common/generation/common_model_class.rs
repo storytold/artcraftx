@@ -4,7 +4,6 @@ use std::collections::BTreeSet;
 use strum::EnumCount;
 #[cfg(test)]
 use strum::EnumIter;
-use utoipa::ToSchema;
 
 use crate::error::enum_error::EnumError;
 
@@ -17,7 +16,7 @@ pub const MAX_LENGTH: usize = 24;
 /// `impl_mysql_enum_coders!` or `impl_mysql_from_row!` macros. If it is
 /// stored in the future, add those macros and a migration.
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize, Deserialize, ToSchema)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 pub enum CommonModelClass {
   #[serde(rename = "image")]
   Image,

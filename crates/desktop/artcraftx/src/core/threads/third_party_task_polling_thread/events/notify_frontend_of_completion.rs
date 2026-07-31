@@ -7,7 +7,7 @@ use crate::core::events::functional_events::image_edit_complete_event::{EditedIm
 use crate::core::events::functional_events::object_generation_complete_event::{GeneratedObject, ObjectGenerationCompleteEvent};
 use crate::core::events::functional_events::text_to_image_generation_complete_event::{GeneratedImage, TextToImageGenerationCompleteEvent};
 use crate::core::events::functional_events::video_generation_complete_event::{GeneratedVideo, VideoGenerationCompleteEvent};
-use artcraft_api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
+use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
 use artcraft_client::endpoints::media_files::list_batch_generated_redux_media_files::list_batch_generated_redux_media_files;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;

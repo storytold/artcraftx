@@ -3,7 +3,7 @@ use crate::core::state::artcraft_platform_info::ArtcraftPlatformInfo;
 use crate::core::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
-use artcraft_api_defs::analytics::log_active_user::LogAppActiveUserRequest;
+use artcraft_client::api_defs::analytics::log_active_user::LogAppActiveUserRequest;
 use artcraft_client::endpoints::analytics::log_active_user_v2::log_active_user_v2;
 use artcraft_client::error::api_error::ApiError;
 use artcraft_client::error::storyteller_error::StorytellerError;

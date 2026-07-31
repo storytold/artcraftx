@@ -4,12 +4,12 @@ use crate::services::sora::windows::sora_login_window::sora_login_thread::sora_l
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::services::storyteller::windows::storyteller_billing_window_thread::storyteller_billing_window_thread;
 use anyhow::anyhow;
-use artcraft_api_defs::stripe_artcraft::create_credits_pack_checkout::StripeArtcraftCreateCreditsPackCheckoutRequest;
-use artcraft_api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateSubscriptionCheckoutRequest};
-use artcraft_api_defs::stripe_artcraft::customer_portal_cancel_plan::StripeArtcraftCustomerPortalCancelPlanRequest;
-use artcraft_api_defs::stripe_artcraft::customer_portal_manage_plan::StripeArtcraftCustomerPortalManagePlanRequest;
-use artcraft_api_defs::stripe_artcraft::customer_portal_switch_plan::{PlanBillingCadenceConfirmation, StripeArtcraftCustomerPortalSwitchPlanRequest};
-use artcraft_api_defs::stripe_artcraft::customer_portal_update_payment_method::StripeArtcraftCustomerPortalUpdatePaymentMethodRequest;
+use artcraft_client::api_defs::stripe_artcraft::create_credits_pack_checkout::StripeArtcraftCreateCreditsPackCheckoutRequest;
+use artcraft_client::api_defs::stripe_artcraft::create_subscription_checkout::{PlanBillingCadence, StripeArtcraftCreateSubscriptionCheckoutRequest};
+use artcraft_client::api_defs::stripe_artcraft::customer_portal_cancel_plan::StripeArtcraftCustomerPortalCancelPlanRequest;
+use artcraft_client::api_defs::stripe_artcraft::customer_portal_manage_plan::StripeArtcraftCustomerPortalManagePlanRequest;
+use artcraft_client::api_defs::stripe_artcraft::customer_portal_switch_plan::{PlanBillingCadenceConfirmation, StripeArtcraftCustomerPortalSwitchPlanRequest};
+use artcraft_client::api_defs::stripe_artcraft::customer_portal_update_payment_method::StripeArtcraftCustomerPortalUpdatePaymentMethodRequest;
 use enums::common::artcraft_credits_pack_slug::ArtcraftCreditsPackSlug;
 use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use errors::AnyhowResult;

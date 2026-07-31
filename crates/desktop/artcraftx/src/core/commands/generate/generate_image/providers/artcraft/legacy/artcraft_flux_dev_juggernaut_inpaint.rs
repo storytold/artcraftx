@@ -1,6 +1,6 @@
 use log::{error, info};
 
-use artcraft_api_defs::generate::image::inpaint::flux_dev_juggernaut_inpaint_image::{
+use artcraft_client::api_defs::generate::image::inpaint::flux_dev_juggernaut_inpaint_image::{
   FluxDevJuggernautInpaintImageNumImages, FluxDevJuggernautInpaintImageRequest,
 };
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;

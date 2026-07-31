@@ -1,4 +1,4 @@
-use artcraft_api_defs::prompts::create_prompt::CreatePromptRequest;
+use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
 use artcraft_router::api::router_aspect_ratio::RouterAspectRatio;
 use artcraft_router::api::router_image_model::RouterImageModel;
 use artcraft_router::api::router_resolution::RouterResolution;
