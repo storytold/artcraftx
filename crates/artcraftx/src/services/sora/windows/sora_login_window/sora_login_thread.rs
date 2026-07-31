@@ -1,8 +1,8 @@
-use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::core::events::functional_events::refresh_account_state_event::RefreshAccountStateEvent;
-use crate::core::events::sendable_event_trait::SendableEvent;
-use crate::core::state::data_dir::app_data_root::AppDataRoot;
-use crate::core::utils::window::get_webview_window_hostname::get_webview_window_hostname;
+use crate::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::events::functional_events::refresh_account_state_event::RefreshAccountStateEvent;
+use crate::events::sendable_event_trait::SendableEvent;
+use crate::state::data_dir::app_data_root::AppDataRoot;
+use crate::utils::window::get_webview_window_hostname::get_webview_window_hostname;
 use crate::services::sora::events::sora_login_success_event::SoraLoginSuccessEvent;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::windows::sora_login_window::extract_sora_webview_cookies::extract_sora_webview_cookies;

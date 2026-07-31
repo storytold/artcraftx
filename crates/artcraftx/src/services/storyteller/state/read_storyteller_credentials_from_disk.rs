@@ -1,4 +1,4 @@
-use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::state::data_dir::app_data_root::AppDataRoot;
 use errors::AnyhowResult;
 use std::fs::read_to_string;
 use artcraft_client::credentials::storyteller_avt_cookie::StorytellerAvtCookie;

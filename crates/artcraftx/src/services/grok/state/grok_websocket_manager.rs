@@ -1,4 +1,4 @@
-use crate::core::artcraft_error::ArtcraftError;
+use crate::error::artcraftx_error::ArtcraftXError;
 use errors::AnyhowResult;
 use grok_consumer_client::requests::image_websocket::grok_wrapped_websocket::GrokWrappedWebsocket;
 use log::error;
@@ -20,7 +20,7 @@ impl GrokWebsocketManager {
     }
   }
 
-  pub fn set_websocket(&self, websocket: GrokWrappedWebsocket) -> Result<(), ArtcraftError> {
+  pub fn set_websocket(&self, websocket: GrokWrappedWebsocket) -> Result<(), ArtcraftXError> {
     match self.websocket.write() {
       Ok(mut guard) => {
         //*guard = Some(websocket);
@@ -29,12 +29,12 @@ impl GrokWebsocketManager {
       }
       Err(err) => {
         error!("Error writing locked websocket: {}", err);
-        Err(ArtcraftError::RwLockWriteError)
+        Err(ArtcraftXError::RwLockWriteError)
       }
     }
   }
 
-  pub fn clear_websocket(&self) -> Result<(), ArtcraftError> {
+  pub fn clear_websocket(&self) -> Result<(), ArtcraftXError> {
     match self.websocket.write() {
       Ok(mut guard) => {
         *guard = None;
@@ -42,12 +42,12 @@ impl GrokWebsocketManager {
       }
       Err(err) => {
         error!("Error writing locked websocket: {}", err);
-        Err(ArtcraftError::RwLockWriteError)
+        Err(ArtcraftXError::RwLockWriteError)
       }
     }
   }
 
-  pub fn grab_websocket(&self) -> Result<Option<GrokWrappedWebsocket>, ArtcraftError> {
+  pub fn grab_websocket(&self) -> Result<Option<GrokWrappedWebsocket>, ArtcraftXError> {
     match self.websocket.read() {
       Ok(guard) => {
         //Ok(guard.clone())
@@ -55,7 +55,7 @@ impl GrokWebsocketManager {
       }
       Err(err) => {
         error!("Error reading locked websocket: {}", err);
-        Err(ArtcraftError::RwLockReadError)
+        Err(ArtcraftXError::RwLockReadError)
       }
     }
   }

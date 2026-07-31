@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
 use log::error;
-use crate::core::artcraft_error::ArtcraftError;
+use crate::error::artcraftx_error::ArtcraftXError;
 
 #[derive(Clone)]
 pub struct WorldlabsBearerBridge {
@@ -20,7 +20,7 @@ impl WorldlabsBearerBridge {
     }
   }
 
-  pub fn clear(&self) -> Result<(), ArtcraftError> {
+  pub fn clear(&self) -> Result<(), ArtcraftXError> {
     match self.state.write() {
       Ok(mut state) => {
         *state = None;
@@ -28,24 +28,24 @@ impl WorldlabsBearerBridge {
       }
       Err(err) => {
         error!("Lock poisoned: {:?}", err);
-        Err(ArtcraftError::RwLockWriteError)
+        Err(ArtcraftXError::RwLockWriteError)
       }
     }
   }
 
-  pub fn get(&self) -> Result<Option<WorldlabsBearerBridgeInner>, ArtcraftError> {
+  pub fn get(&self) -> Result<Option<WorldlabsBearerBridgeInner>, ArtcraftXError> {
     match self.state.read() {
       Ok(state) => {
         Ok(state.clone())
       }
       Err(err) => {
         error!("Lock poisoned: {:?}", err);
-        Err(ArtcraftError::RwLockReadError)
+        Err(ArtcraftXError::RwLockReadError)
       }
     }
   }
 
-  pub fn set(&self, new_state: WorldlabsBearerBridgeInner) -> Result<(), ArtcraftError> {
+  pub fn set(&self, new_state: WorldlabsBearerBridgeInner) -> Result<(), ArtcraftXError> {
     match self.state.write() {
       Ok(mut state) => {
         *state = Some(new_state);
@@ -53,7 +53,7 @@ impl WorldlabsBearerBridge {
       }
       Err(err) => {
         error!("Lock poisoned: {:?}", err);
-        Err(ArtcraftError::RwLockReadError)
+        Err(ArtcraftXError::RwLockReadError)
       }
     }
   }

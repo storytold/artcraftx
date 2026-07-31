@@ -1,5 +1,5 @@
-use crate::core::commands::enqueue::generate_error::GenerateError;
-use crate::core::events::functional_events::show_provider_login_modal_event::ShowProviderLoginModalEvent;
+use crate::commands::enqueue::generate_error::GenerateError;
+use crate::events::functional_events::show_provider_login_modal_event::ShowProviderLoginModalEvent;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use grok_consumer_client::credentials::grok_cookies::GrokCookies;
 use grok_consumer_client::credentials::grok_full_credentials::GrokFullCredentials;
@@ -8,9 +8,9 @@ use grok_consumer_client::error::grok_error::GrokError;
 use grok_consumer_client::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
 use log::{error, info, warn};
 use tauri::AppHandle;
-use crate::core::artcraft_error::ArtcraftError;
+use crate::error::artcraftx_error::ArtcraftXError;
 
-pub async fn get_or_update_grok_full_credentials(grok_credential_manager: &GrokCredentialManager) -> Result<GrokFullCredentials, ArtcraftError> {
+pub async fn get_or_update_grok_full_credentials(grok_credential_manager: &GrokCredentialManager) -> Result<GrokFullCredentials, ArtcraftXError> {
   if let Some(creds) = grok_credential_manager.maybe_copy_full_credentials()? {
     return Ok(creds);
   }
@@ -33,7 +33,7 @@ pub async fn get_or_update_grok_full_credentials(grok_credential_manager: &GrokC
   match upgraded {
     Err(err) => {
       error!("Failed to fetch Grok client secrets: {}", err); // NB: Fall-through
-      return Err(ArtcraftError::from(err));
+      return Err(ArtcraftXError::from(err));
     }
     Ok(secrets) => {
       info!("Grok client secrets successfully upgraded...");

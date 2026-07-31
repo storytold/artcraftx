@@ -1,9 +1,9 @@
-use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::core::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
-use crate::core::events::generation_events::generation_failed_event::GenerationFailedEvent;
-use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
-use crate::core::state::data_dir::app_data_root::AppDataRoot;
-use crate::core::state::task_database::TaskDatabase;
+use crate::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
+use crate::events::generation_events::generation_failed_event::GenerationFailedEvent;
+use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
+use crate::state::data_dir::app_data_root::AppDataRoot;
+use crate::state::task_database::TaskDatabase;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::sora::threads::sora_task_polling::helpers::handle_successful_generations::GenerationItem;
 use enums::tauri::tasks::task_status;

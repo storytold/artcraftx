@@ -1,5 +1,5 @@
-use crate::core::state::data_dir::app_data_root::AppDataRoot;
-use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::state::data_dir::app_data_root::AppDataRoot;
+use crate::state::data_dir::trait_data_subdir::DataSubdir;
 use errors::AnyhowResult;
 use midjourney_client::utils::get_image_url::get_image_url;
 use std::fs::File;

@@ -1,4 +1,4 @@
-use crate::core::windows::main_window::constants::MAIN_WINDOW_NAME;
+use crate::windows::main_window::constants::MAIN_WINDOW_NAME;
 use errors::AnyhowResult;
 use log::warn;
 use tauri::webview::Cookie;

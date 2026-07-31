@@ -1,4 +1,4 @@
-use crate::core::events::sendable_event_trait::SendableEvent;
+use crate::events::sendable_event_trait::SendableEvent;
 use serde_derive::Serialize;
 
 #[derive(Debug, Clone, Serialize)]

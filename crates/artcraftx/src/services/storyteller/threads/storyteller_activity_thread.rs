@@ -1,6 +1,6 @@
-use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
-use crate::core::state::artcraft_platform_info::ArtcraftPlatformInfo;
-use crate::core::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
+use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
+use crate::state::artcraft_platform_info::ArtcraftPlatformInfo;
+use crate::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use anyhow::anyhow;
 use artcraft_client::api_defs::analytics::log_active_user::LogAppActiveUserRequest;

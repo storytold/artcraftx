@@ -1,8 +1,8 @@
-use crate::core::state::app_env_configs::app_env_configs_serializeable::StorytellerApiHost;
-use crate::core::state::data_dir::app_data_root::AppDataRoot;
-use crate::core::state::data_dir::trait_data_subdir::DataSubdir;
-use crate::core::utils::get_url_file_extension::get_url_file_extension;
-use crate::core::utils::simple_http_download::simple_http_download;
+use crate::state::app_env_configs::app_env_configs_serializeable::StorytellerApiHost;
+use crate::state::data_dir::app_data_root::AppDataRoot;
+use crate::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::utils::get_url_file_extension::get_url_file_extension;
+use crate::utils::simple_http_download::simple_http_download;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use errors::AnyhowResult;

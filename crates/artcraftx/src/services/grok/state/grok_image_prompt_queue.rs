@@ -1,4 +1,4 @@
-use crate::core::artcraft_error::ArtcraftError;
+use crate::error::artcraftx_error::ArtcraftXError;
 use log::error;
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
@@ -29,7 +29,7 @@ impl GrokImagePromptQueue {
     }
   }
   
-  pub fn enqueue(&self, prompt_item: PromptItem) -> Result<(), ArtcraftError> {
+  pub fn enqueue(&self, prompt_item: PromptItem) -> Result<(), ArtcraftXError> {
     match self.prompt_queue.lock() {
       Ok(mut queue) => {
         queue.push_back(prompt_item);
@@ -37,43 +37,43 @@ impl GrokImagePromptQueue {
       },
       Err(err) => {
         error!("Error locking prompt queue: {:?}", err);
-        Err(ArtcraftError::MutexLockError)
+        Err(ArtcraftXError::MutexLockError)
       },
     }
   }
   
-  pub fn dequeue(&self) -> Result<Option<PromptItem>, ArtcraftError> {
+  pub fn dequeue(&self) -> Result<Option<PromptItem>, ArtcraftXError> {
     match self.prompt_queue.lock() {
       Ok(mut queue) => {
         Ok(queue.pop_front())
       },
       Err(err) => {
         error!("Error locking prompt queue: {:?}", err);
-        Err(ArtcraftError::MutexLockError)
+        Err(ArtcraftXError::MutexLockError)
       },
     }
   }
 
-  pub fn is_empty(&self) -> Result<bool, ArtcraftError> {
+  pub fn is_empty(&self) -> Result<bool, ArtcraftXError> {
     match self.prompt_queue.lock() {
       Ok(mut queue) => {
         Ok(queue.is_empty())
       },
       Err(err) => {
         error!("Error locking prompt queue: {:?}", err);
-        Err(ArtcraftError::MutexLockError)
+        Err(ArtcraftXError::MutexLockError)
       },
     }
   }
 
-  pub fn len(&self) -> Result<usize, ArtcraftError> {
+  pub fn len(&self) -> Result<usize, ArtcraftXError> {
     match self.prompt_queue.lock() {
       Ok(mut queue) => {
         Ok(queue.len())
       },
       Err(err) => {
         error!("Error locking prompt queue: {:?}", err);
-        Err(ArtcraftError::MutexLockError)
+        Err(ArtcraftXError::MutexLockError)
       },
     }
   }

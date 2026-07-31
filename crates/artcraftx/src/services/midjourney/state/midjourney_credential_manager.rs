@@ -1,4 +1,4 @@
-use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::midjourney::state::midjourney_user_info::MidjourneyUserInfo;
 use crate::services::midjourney::state::serializable_midjourney_state::{SerializableMidjourneyState, SERIALIZABLE_MIDJOURNEY_STATE_VERSION};
 use crate::services::storyteller::state::read_storyteller_credentials_from_disk::read_storyteller_credentials_from_disk;

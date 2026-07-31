@@ -1,4 +1,4 @@
-use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::storyteller::state::read_storyteller_credentials_from_disk::read_storyteller_credentials_from_disk;
 use crate::services::storyteller::state::storyteller_credential_holder::StorytellerCredentialHolder;
 use errors::AnyhowResult;

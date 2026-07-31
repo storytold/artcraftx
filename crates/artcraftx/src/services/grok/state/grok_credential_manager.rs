@@ -1,4 +1,4 @@
-use crate::core::state::data_dir::app_data_root::AppDataRoot;
+use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::grok::state::grok_credential_holder::GrokCredentialHolder;
 use crate::services::grok::state::grok_serializable_state::{GrokSerializableState, SERIALIZABLE_GROK_STATE_VERSION};
 use cookie_store::cookie_store::CookieStore;

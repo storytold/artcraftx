@@ -1,6 +1,6 @@
-use crate::core::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::core::events::functional_events::text_to_image_generation_complete_event::{GeneratedImage, TextToImageGenerationCompleteEvent};
-use crate::core::state::app_env_configs::app_env_configs::AppEnvConfigs;
+use crate::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::events::functional_events::text_to_image_generation_complete_event::{GeneratedImage, TextToImageGenerationCompleteEvent};
+use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use anyhow::anyhow;
 use artcraft_client::api_defs::jobs::list_session_jobs::{ListSessionJobsItem, ListSessionResultDetailsResponse};
 use enums::tauri::tasks::task_type::TaskType;
