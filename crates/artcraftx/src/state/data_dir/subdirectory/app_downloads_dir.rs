@@ -1,13 +1,13 @@
-use crate::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use std::path::{Path, PathBuf};
 
 #[derive(Clone)]
-pub struct AppWeightsDir {
+pub struct AppDownloadsDir {
   path: PathBuf,
 }
 
-impl DataSubdir for AppWeightsDir {
-  const DIRECTORY_NAME: &'static str = "weights";
+impl DataSubdir for AppDownloadsDir {
+  const DIRECTORY_NAME: &'static str = "downloads";
 
   fn new_from<P: AsRef<Path>>(dir: P) -> Self {
     Self {

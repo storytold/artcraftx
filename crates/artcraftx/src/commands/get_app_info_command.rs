@@ -4,7 +4,7 @@ use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::artcraft_platform_info::{ArtcraftOs, ArtcraftPlatformInfo};
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use crate::state::os_platform::OsPlatform;
 use chrono::{DateTime, Utc};
 use log::{info, warn};

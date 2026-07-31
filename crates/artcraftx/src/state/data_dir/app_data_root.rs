@@ -1,10 +1,10 @@
-use crate::state::data_dir::app_assets_dir::AppAssetsDir;
-use crate::state::data_dir::app_credentials_dir::AppCredentialsDir;
-use crate::state::data_dir::app_downloads_dir::AppDownloadsDir;
-use crate::state::data_dir::app_settings_dir::AppSettingsDir;
-use crate::state::data_dir::app_state_dir::AppStateDir;
-use crate::state::data_dir::temporary_dir::TemporaryDir;
-use crate::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::state::data_dir::subdirectory::app_assets_dir::AppAssetsDir;
+use crate::state::data_dir::subdirectory::app_credentials_dir::AppCredentialsDir;
+use crate::state::data_dir::subdirectory::app_downloads_dir::AppDownloadsDir;
+use crate::state::data_dir::subdirectory::app_settings_dir::AppSettingsDir;
+use crate::state::data_dir::subdirectory::app_state_dir::AppStateDir;
+use crate::state::data_dir::subdirectory::temporary_dir::TemporaryDir;
+use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use crate::state::expanduser::expanduser;
 use crate::state::os_platform::OsPlatform;
 use anyhow::anyhow;

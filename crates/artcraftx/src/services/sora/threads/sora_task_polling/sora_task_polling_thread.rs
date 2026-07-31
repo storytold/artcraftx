@@ -5,7 +5,7 @@ use crate::events::generation_events::generation_failed_event::GenerationFailedE
 use crate::events::sendable_event_trait::SendableEvent;
 use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use crate::state::task_database::TaskDatabase;
 use crate::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;

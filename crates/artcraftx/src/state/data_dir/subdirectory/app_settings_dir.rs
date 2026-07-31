@@ -1,5 +1,5 @@
 use crate::state::app_preferences::app_preferences::AppPreferences;
-use crate::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use errors::AnyhowResult;
 use serde::Serialize;
 use std::fs::OpenOptions;

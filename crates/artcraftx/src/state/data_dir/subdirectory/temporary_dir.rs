@@ -1,4 +1,4 @@
-use crate::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use std::path::{Path, PathBuf};
 use tempdir::TempDir;
 use tempfile::{Builder, NamedTempFile};

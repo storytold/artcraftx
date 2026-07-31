@@ -1,6 +1,6 @@
 use crate::state::app_env_configs::app_env_configs_serializeable::StorytellerApiHost;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use crate::utils::get_url_file_extension::get_url_file_extension;
 use crate::utils::simple_http_download::simple_http_download;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;

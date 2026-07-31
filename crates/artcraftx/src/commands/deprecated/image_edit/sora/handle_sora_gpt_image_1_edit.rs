@@ -9,7 +9,7 @@ use crate::events::generation_events::generation_enqueue_failure_event::Generati
 use crate::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use crate::state::provider_priority::ProviderPriorityStore;
 use crate::utils::get_url_file_extension::get_url_file_extension;
 use crate::utils::simple_http_download::simple_http_download;

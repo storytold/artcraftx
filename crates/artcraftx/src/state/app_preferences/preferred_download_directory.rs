@@ -4,7 +4,7 @@ use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 
 const SYSTEM_DEFAULT_SENTINEL_VALUE: &str = "system_default";
 

@@ -18,7 +18,7 @@ use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
 use crate::state::artcraft_usage_tracker::artcraft_usage_type::{ArtcraftUsagePage, ArtcraftUsageType};
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use crate::state::provider_priority::ProviderPriorityStore;
 use crate::state::task_database::TaskDatabase;
 use crate::utils::get_url_file_extension::get_url_file_extension;

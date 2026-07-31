@@ -12,7 +12,7 @@ use crate::providers::credentials::payload::web_login::{WebLoginData, WebLoginDa
 use crate::providers::credentials::provider_credential_key::ProviderCredentialKey;
 use crate::providers::credentials::provider_credential_type::ProviderCredentialType;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::data_dir::trait_data_subdir::DataSubdir;
+use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 
 struct CacheEntry {
   payload: ProviderCredentialPayload,
