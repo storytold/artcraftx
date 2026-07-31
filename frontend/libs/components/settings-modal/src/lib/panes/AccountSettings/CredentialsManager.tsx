@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useRefreshAccountStateEvent } from "@storyteller/tauri-events";
 import { Button } from "@storyteller/ui-button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faKey, faPen, faPlus, faTrash } from "@fortawesome/pro-solid-svg-icons";
@@ -39,6 +40,12 @@ export const CredentialsManager = () => {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  // A completed web login saves a credential and emits this event; reload so
+  // the new (or refreshed) credential shows up without reopening the modal.
+  useRefreshAccountStateEvent(async () => {
+    await refresh();
+  });
 
   return (
     <div className="flex flex-col gap-3 text-base-fg">

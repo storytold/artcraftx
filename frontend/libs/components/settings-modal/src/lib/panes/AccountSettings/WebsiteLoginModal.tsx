@@ -3,6 +3,7 @@ import { faGlobe } from "@fortawesome/pro-solid-svg-icons";
 import {
   WEBSITE_LOGIN_SERVICES,
   getServiceLogoPath,
+  openWebLogin,
 } from "./credential-helpers";
 
 interface WebsiteLoginModalProps {
@@ -11,13 +12,23 @@ interface WebsiteLoginModalProps {
 }
 
 /**
- * Website login chooser: one logo button per site.
- * The buttons are no-ops for now; login flows land later.
+ * Website login chooser: one logo button per site. Clicking a site opens a
+ * backend login window; the modal closes so the user can complete login there.
  */
 export const WebsiteLoginModal = ({
   isOpen,
   onClose,
 }: WebsiteLoginModalProps) => {
+  const handleLogin = async (loginWebsite: string | undefined) => {
+    if (!loginWebsite) return;
+    try {
+      await openWebLogin(loginWebsite);
+      onClose();
+    } catch (error) {
+      console.error(`Failed to open login window for ${loginWebsite}:`, error);
+    }
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -37,10 +48,7 @@ export const WebsiteLoginModal = ({
             <button
               key={meta.value}
               className="flex h-16 flex-col items-center justify-center gap-1.5 rounded-lg border border-ui-panel-border bg-ui-controls/40 transition-colors hover:bg-ui-controls"
-              onClick={() => {
-                // No-op for now; website login flows are wired up later.
-                console.log(`Website login requested: ${meta.value}`);
-              }}
+              onClick={() => handleLogin(meta.loginWebsite)}
             >
               <img
                 src={getServiceLogoPath(meta.value)}

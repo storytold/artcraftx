@@ -4,6 +4,7 @@ pub mod credentials;
 pub mod error;
 pub mod events;
 pub mod lifecycle;
+pub mod login_window;
 pub mod providers;
 pub mod services;
 pub mod state;
@@ -15,9 +16,12 @@ pub mod windows;
 use tauri::Manager;
 
 use crate::commands::credentials::add_api_credential_command::add_api_credential_command;
+use crate::commands::credentials::add_web_credential_command::add_web_credential_command;
 use crate::commands::credentials::delete_credentials_command::delete_credentials_command;
 use crate::commands::credentials::edit_api_credential_command::edit_api_credential_command;
+use crate::commands::credentials::edit_web_credential_command::edit_web_credential_command;
 use crate::commands::credentials::list_credentials_command::list_credentials_command;
+use crate::commands::credentials::open_web_login_command::open_web_login_command;
 use crate::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
 use crate::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
 use crate::commands::cost_estimate::estimate_image_cost_command::estimate_image_cost_command;
@@ -203,9 +207,12 @@ pub fn run() {
   //  My first attempt at naively doing this didn't work because the macros can't find their codegen'd targets.
   let builder = builder.invoke_handler(tauri::generate_handler![
     add_api_credential_command,
+    add_web_credential_command,
     delete_credentials_command,
     edit_api_credential_command,
+    edit_web_credential_command,
     list_credentials_command,
+    open_web_login_command,
     download_directory_reveal_command,
     download_media_file_command,
     download_url_command,

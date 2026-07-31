@@ -21,6 +21,12 @@ export interface ServiceMeta {
   value: string;
   label: string;
   logo: string;
+  /**
+   * For website-login services: the `LoginWebsite` value passed to
+   * `open_web_login_command` (mirrors the Rust enum in
+   * crates/artcraftx/src/credentials/login_website.rs).
+   */
+  loginWebsite?: string;
 }
 
 /** API-key services offered in the "Add" dropdown. */
@@ -32,14 +38,14 @@ export const API_KEY_SERVICES: ServiceMeta[] = [
   { value: "xai_api", label: "xAI", logo: "grok.svg" },
 ];
 
-/** Website-login services offered as logo buttons (no-ops for now). */
+/** Website-login services offered as logo buttons. */
 export const WEBSITE_LOGIN_SERVICES: ServiceMeta[] = [
-  { value: "artcraft_cookies", label: "ArtCraft", logo: "artcraft.svg" },
-  { value: "runway_cookies", label: "Runway", logo: "runway.svg" },
-  { value: "higgsfield_cookies", label: "Higgsfield", logo: "higgsfield.svg" },
-  { value: "openart_cookies", label: "OpenArt", logo: "openart.svg" },
-  { value: "magnific_cookies", label: "Magnific", logo: "magnific.svg" },
-  { value: "xai_cookies", label: "xAI", logo: "grok.svg" },
+  { value: "artcraft_cookies", label: "ArtCraft", logo: "artcraft.svg", loginWebsite: "artcraft" },
+  { value: "runway_cookies", label: "Runway", logo: "runway.svg", loginWebsite: "runway" },
+  { value: "higgsfield_cookies", label: "Higgsfield", logo: "higgsfield.svg", loginWebsite: "higgsfield" },
+  { value: "openart_cookies", label: "OpenArt", logo: "openart.svg", loginWebsite: "openart" },
+  { value: "magnific_cookies", label: "Magnific", logo: "magnific.svg", loginWebsite: "magnific" },
+  { value: "xai_cookies", label: "xAI", logo: "grok.svg", loginWebsite: "xai" },
 ];
 
 // Every service the backend knows about, so hand-written credential files
@@ -102,4 +108,14 @@ export const editApiCredential = async (args: {
 
 export const deleteCredential = async (fileName: string): Promise<void> => {
   await invoke("delete_credentials_command", { fileName });
+};
+
+/**
+ * Open a web-login window for a site. The `website` value must be a
+ * `LoginWebsite` variant (see `WEBSITE_LOGIN_SERVICES[].loginWebsite`). The
+ * backend opens a fresh webview and, once the user signs in, saves the
+ * captured cookies as a credential and emits `refresh_account_state_event`.
+ */
+export const openWebLogin = async (website: string): Promise<void> => {
+  await invoke("open_web_login_command", { website });
 };
