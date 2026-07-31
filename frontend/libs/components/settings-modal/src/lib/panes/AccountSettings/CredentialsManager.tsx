@@ -115,8 +115,15 @@ const CredentialRow = ({
 }) => {
   const meta = getServiceMeta(credential.service);
   const isApiKey = credential.kind === "api_key";
-  const subtitle = isApiKey
-    ? `API key ${credential.api_key_preview ? `${credential.api_key_preview}…` : ""}`
+  // API keys: "Service (optional name)" over a partial key (prefix +
+  // asterisks). Cookies: label over whatever identity info the file carries.
+  const primaryLine = isApiKey
+    ? credential.name
+      ? `${meta.label} (${credential.name})`
+      : meta.label
+    : credential.name || meta.label;
+  const secondaryLine = isApiKey
+    ? `${credential.api_key_preview ?? ""}${"*".repeat(12)}`
     : [credential.username, credential.email].filter(Boolean).join(" · ") ||
       "Website login";
 
@@ -133,12 +140,11 @@ const CredentialRow = ({
         className="h-6 w-6 shrink-0 object-contain icon-auto-contrast"
       />
       <div className="flex min-w-0 grow flex-col">
-        <span className="truncate text-sm font-medium">
-          {credential.name || meta.label}
-        </span>
-        <span className="truncate text-xs text-base-fg/50">
-          {subtitle}
-          <span className="ms-2 font-mono text-base-fg/30">{credential.id}</span>
+        <span className="truncate text-sm font-medium">{primaryLine}</span>
+        <span
+          className={`truncate text-xs text-base-fg/50 ${isApiKey ? "font-mono" : ""}`}
+        >
+          {secondaryLine}
         </span>
       </div>
       {isApiKey && (

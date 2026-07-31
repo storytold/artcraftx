@@ -26,6 +26,8 @@ export const EditCredentialModal = ({
   const [name, setName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  // The key is masked at rest and revealed only while the input is focused.
+  const [isKeyFocused, setIsKeyFocused] = useState(false);
 
   useEffect(() => {
     if (credential) {
@@ -33,6 +35,7 @@ export const EditCredentialModal = ({
       setName(credential.name ?? "");
       setIsSaving(false);
       setErrorMessage("");
+      setIsKeyFocused(false);
     }
   }, [credential]);
 
@@ -83,9 +86,11 @@ export const EditCredentialModal = ({
         <div className="flex flex-col gap-1.5">
           <label className="text-sm text-base-fg/70">API key</label>
           <Input
-            type="password"
+            type={isKeyFocused ? "text" : "password"}
             value={apiKey}
             onChange={(e) => setApiKey((e.target as HTMLInputElement).value)}
+            onFocus={() => setIsKeyFocused(true)}
+            onBlur={() => setIsKeyFocused(false)}
             placeholder="API key"
           />
         </div>
