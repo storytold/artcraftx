@@ -47,7 +47,7 @@ export const EditCredentialModal = ({
     setErrorMessage("");
     try {
       await editApiCredential({
-        fileName: credential.id,
+        credentialToken: credential.token,
         apiKey: apiKey.trim(),
         // Empty string clears the name on the Rust side.
         name: name.trim(),

@@ -39,7 +39,7 @@ export const DeleteCredentialModal = ({
     try {
       // Deletes by file name (the credential id) so we're sure we're
       // removing exactly this one.
-      await deleteCredential(credential.id);
+      await deleteCredential(credential.token);
       onDeleted();
       onClose();
     } catch (e) {

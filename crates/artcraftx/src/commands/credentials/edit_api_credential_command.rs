@@ -11,31 +11,35 @@ pub struct EditApiCredentialResponse {
   pub credential: CredentialPayload,
 }
 
-/// Edit an existing API-key credential file, identified by its file name
-/// within the credentials directory (e.g. `fal_api_2.toml`).
+/// Edit an existing API-key credential, identified by its stable token.
 ///
 /// `api_key` replaces the key when provided (non-empty). `name` replaces the
 /// label; an empty string clears it. Omitted fields are left unchanged.
 #[tauri::command]
 pub async fn edit_api_credential_command(
   app_data_root: State<'_, AppDataRoot>,
-  file_name: String,
+  credential_token: String,
   api_key: Option<String>,
   name: Option<String>,
 ) -> Result<EditApiCredentialResponse, String> {
-  info!("edit_api_credential_command called for: {}", file_name);
+  info!("edit_api_credential_command called for: {}", credential_token);
 
   let creds_dir = app_data_root.credentials_dir();
 
   let mut credential = creds_dir
-      .load_credential(&file_name)
+      .find_credential_by_token(&credential_token)
       .map_err(|err| {
-        error!("Error loading credential {}: {}", file_name, err);
-        format!("Error loading credential {}: {}", file_name, err)
+        error!("Error looking up credential {}: {}", credential_token, err);
+        format!("Error looking up credential {}: {}", credential_token, err)
+      })?
+      .ok_or_else(|| {
+        let message = format!("No credential found for token {}", credential_token);
+        error!("{}", message);
+        message
       })?;
 
   let CredentialSecret::ApiKey(existing_key) = &credential.secret else {
-    let message = format!("Credential {} is not an API key credential", file_name);
+    let message = format!("Credential {} is not an API key credential", credential_token);
     error!("{}", message);
     return Err(message);
   };
@@ -55,8 +59,8 @@ pub async fn edit_api_credential_command(
   creds_dir
       .save_credential(&credential)
       .map_err(|err| {
-        error!("Error saving credential {}: {}", file_name, err);
-        format!("Error saving credential {}: {}", file_name, err)
+        error!("Error saving credential {}: {}", credential_token, err);
+        format!("Error saving credential {}: {}", credential_token, err)
       })?;
 
   Ok(EditApiCredentialResponse {

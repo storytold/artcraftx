@@ -150,6 +150,7 @@ fn save_session_credential(
   let creds_dir = app_data_root.credentials_dir();
 
   let credential = Credential {
+    token: creds_dir.generate_unique_credential_token(),
     service,
     name: None,
     secret: CredentialSecret::Cookies(cookie),

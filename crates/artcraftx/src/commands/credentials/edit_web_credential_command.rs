@@ -12,8 +12,8 @@ pub struct EditWebCredentialResponse {
   pub credential: CredentialPayload,
 }
 
-/// Edit an existing web-login (cookie) credential file, identified by its file
-/// name within the credentials directory (e.g. `artcraft_cookies_2.toml`).
+/// Edit an existing web-login (cookie) credential, identified by its stable
+/// token.
 ///
 /// `name` replaces the label; an empty string clears it. `cookie_header`
 /// replaces the cookies when provided (non-empty). Omitted fields are left
@@ -21,23 +21,28 @@ pub struct EditWebCredentialResponse {
 #[tauri::command]
 pub async fn edit_web_credential_command(
   app_data_root: State<'_, AppDataRoot>,
-  file_name: String,
+  credential_token: String,
   name: Option<String>,
   cookie_header: Option<String>,
 ) -> Result<EditWebCredentialResponse, String> {
-  info!("edit_web_credential_command called for: {}", file_name);
+  info!("edit_web_credential_command called for: {}", credential_token);
 
   let creds_dir = app_data_root.credentials_dir();
 
   let mut credential = creds_dir
-      .load_credential(&file_name)
+      .find_credential_by_token(&credential_token)
       .map_err(|err| {
-        error!("Error loading credential {}: {}", file_name, err);
-        format!("Error loading credential {}: {}", file_name, err)
+        error!("Error looking up credential {}: {}", credential_token, err);
+        format!("Error looking up credential {}: {}", credential_token, err)
+      })?
+      .ok_or_else(|| {
+        let message = format!("No credential found for token {}", credential_token);
+        error!("{}", message);
+        message
       })?;
 
   let CredentialSecret::Cookies(existing_cookie) = &credential.secret else {
-    let message = format!("Credential {} is not a cookie credential", file_name);
+    let message = format!("Credential {} is not a cookie credential", credential_token);
     error!("{}", message);
     return Err(message);
   };
@@ -65,8 +70,8 @@ pub async fn edit_web_credential_command(
   creds_dir
       .save_credential(&credential)
       .map_err(|err| {
-        error!("Error saving credential {}: {}", file_name, err);
-        format!("Error saving credential {}: {}", file_name, err)
+        error!("Error saving credential {}: {}", credential_token, err);
+        format!("Error saving credential {}: {}", credential_token, err)
       })?;
 
   Ok(EditWebCredentialResponse {

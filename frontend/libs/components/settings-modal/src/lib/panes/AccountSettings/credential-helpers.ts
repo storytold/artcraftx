@@ -3,7 +3,14 @@ import { getServicesBasePath } from "@storyteller/model-list";
 
 // Mirrors the Rust `CredentialPayload` (crates/artcraftx/src/commands/credentials).
 export interface CredentialPayload {
-  /** File name within the credentials directory, e.g. `fal_api_2.toml`. */
+  /**
+   * Stable identity (`credential_{entropy}`) stored inside the credential
+   * file. Hidden from users, but the effective primary identifier — pass it
+   * back to edit/delete and use it to reference the credential anywhere.
+   */
+  token: string;
+  /** File name within the credentials directory, e.g. `fal_api_2.toml`.
+   *  Informational; changes if the user renames the file. */
   id: string;
   service: string;
   kind: "cookies" | "api_key";
@@ -103,14 +110,14 @@ export const addApiCredential = async (args: {
 };
 
 export const editApiCredential = async (args: {
-  fileName: string;
+  credentialToken: string;
   apiKey?: string;
   name?: string;
 }): Promise<CredentialPayload> => {
   const response = await invoke<{ credential: CredentialPayload }>(
     "edit_api_credential_command",
     {
-      fileName: args.fileName,
+      credentialToken: args.credentialToken,
       apiKey: args.apiKey ?? null,
       name: args.name ?? null,
     }
@@ -118,8 +125,10 @@ export const editApiCredential = async (args: {
   return response.credential;
 };
 
-export const deleteCredential = async (fileName: string): Promise<void> => {
-  await invoke("delete_credentials_command", { fileName });
+export const deleteCredential = async (
+  credentialToken: string
+): Promise<void> => {
+  await invoke("delete_credentials_command", { credentialToken });
 };
 
 /**

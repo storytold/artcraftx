@@ -45,6 +45,7 @@ pub fn save_web_credential(
 
   let credential = match existing {
     Some(existing) => Credential {
+      token: existing.token,
       service: existing.service,
       name: existing.name,
       secret: CredentialSecret::Cookies(cookie),
@@ -52,6 +53,7 @@ pub fn save_web_credential(
       source_path: existing.source_path,
     },
     None => Credential {
+      token: creds_dir.generate_unique_credential_token(),
       service: save.service,
       name: None,
       secret: CredentialSecret::Cookies(cookie),

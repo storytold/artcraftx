@@ -2,21 +2,33 @@ use crate::state::data_dir::app_data_root::AppDataRoot;
 use log::{error, info};
 use tauri::State;
 
-/// Delete a credential file, identified by its file name within the
-/// credentials directory (e.g. `fal_api_2.toml`). The frontend asks the
-/// user for confirmation before calling this.
+/// Delete a credential, identified by its stable token. The frontend asks
+/// the user for confirmation before calling this.
 #[tauri::command]
 pub async fn delete_credentials_command(
   app_data_root: State<'_, AppDataRoot>,
-  file_name: String,
+  credential_token: String,
 ) -> Result<(), String> {
-  info!("delete_credentials_command called for: {}", file_name);
+  info!("delete_credentials_command called for: {}", credential_token);
 
-  app_data_root
-      .credentials_dir()
-      .delete_credential_file(&file_name)
+  let creds_dir = app_data_root.credentials_dir();
+
+  let credential = creds_dir
+      .find_credential_by_token(&credential_token)
       .map_err(|err| {
-        error!("Error deleting credential {}: {}", file_name, err);
-        format!("Error deleting credential {}: {}", file_name, err)
+        error!("Error looking up credential {}: {}", credential_token, err);
+        format!("Error looking up credential {}: {}", credential_token, err)
+      })?
+      .ok_or_else(|| {
+        let message = format!("No credential found for token {}", credential_token);
+        error!("{}", message);
+        message
+      })?;
+
+  creds_dir
+      .delete_credential_file(&credential.id())
+      .map_err(|err| {
+        error!("Error deleting credential {}: {}", credential_token, err);
+        format!("Error deleting credential {}: {}", credential_token, err)
       })
 }

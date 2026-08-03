@@ -22,11 +22,11 @@ import { useAccountSelectorStore } from "./accountSelectorStore";
  */
 export const AccountSelector = () => {
   const [credentials, setCredentials] = useState<CredentialPayload[]>([]);
-  const selectedAccountId = useAccountSelectorStore(
-    (state) => state.selectedAccountId
+  const selectedAccountToken = useAccountSelectorStore(
+    (state) => state.selectedAccountToken
   );
-  const setSelectedAccountId = useAccountSelectorStore(
-    (state) => state.setSelectedAccountId
+  const setSelectedAccountToken = useAccountSelectorStore(
+    (state) => state.setSelectedAccountToken
   );
 
   const refresh = useCallback(async () => {
@@ -50,21 +50,24 @@ export const AccountSelector = () => {
   // clear) when the selected credential is deleted.
   useEffect(() => {
     if (credentials.length === 0) {
-      if (selectedAccountId !== null) setSelectedAccountId(null);
+      if (selectedAccountToken !== null) setSelectedAccountToken(null);
       return;
     }
-    if (!credentials.some((credential) => credential.id === selectedAccountId)) {
-      setSelectedAccountId(credentials[0].id);
+    const selectionExists = credentials.some(
+      (credential) => credential.token === selectedAccountToken
+    );
+    if (!selectionExists) {
+      setSelectedAccountToken(credentials[0].token);
     }
-  }, [credentials, selectedAccountId, setSelectedAccountId]);
+  }, [credentials, selectedAccountToken, setSelectedAccountToken]);
 
   const items: PopoverItem[] =
     credentials.length > 0
       ? credentials.map((credential) => ({
           label: accountLabel(credential),
           description: accountDescription(credential),
-          selected: credential.id === selectedAccountId,
-          action: credential.id,
+          selected: credential.token === selectedAccountToken,
+          action: credential.token,
           icon: (
             <img
               src={getServiceLogoPath(credential.service)}
@@ -83,11 +86,11 @@ export const AccountSelector = () => {
         ];
 
   const handleSelect = (item: PopoverItem) => {
-    if (item.action) setSelectedAccountId(item.action);
+    if (item.action) setSelectedAccountToken(item.action);
   };
 
   const selectedCredential = credentials.find(
-    (credential) => credential.id === selectedAccountId
+    (credential) => credential.token === selectedAccountToken
   );
 
   return (

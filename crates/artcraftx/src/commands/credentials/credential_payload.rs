@@ -2,12 +2,18 @@ use crate::credentials::credential::Credential;
 use crate::credentials::credential_service_type::{CredentialKind, CredentialServiceType};
 use chrono::{DateTime, Utc};
 use serde_derive::Serialize;
+use tokens::tokens::sqlite::credentials::CredentialToken;
 
 /// Frontend-facing view of a stored credential.
 #[derive(Serialize)]
 pub struct CredentialPayload {
-  /// The credential's identifier: its file name within the credentials
-  /// directory (e.g. `fal_api_2.toml`). Pass this back to edit/delete.
+  /// The credential's stable identity (`credential_{entropy}`). Hidden from
+  /// users, but the effective primary identifier — pass this back to
+  /// edit/delete and use it to reference the credential anywhere.
+  pub token: CredentialToken,
+  /// The credential's file name within the credentials directory
+  /// (e.g. `fal_api_2.toml`). Informational; may change if the user renames
+  /// the file.
   pub id: String,
   pub service: CredentialServiceType,
   pub kind: CredentialKind,
@@ -29,6 +35,7 @@ impl CredentialPayload {
     let api_key = credential.api_key();
     let cookie = credential.cookies();
     Self {
+      token: credential.token.clone(),
       id: credential.id(),
       service: credential.service,
       kind: credential.kind(),

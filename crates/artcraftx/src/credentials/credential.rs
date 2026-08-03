@@ -5,6 +5,7 @@ use crate::credentials::credential_service_type::{CredentialKind, CredentialServ
 use crate::credentials::credential_user_info::CredentialUserInfo;
 use crate::error::artcraftx_credential_error::ArtcraftXCredentialError;
 use std::path::{Path, PathBuf};
+use tokens::tokens::sqlite::credentials::CredentialToken;
 
 /// A validated, in-app credential.
 ///
@@ -14,6 +15,10 @@ use std::path::{Path, PathBuf};
 /// timestamps, etc.)
 #[derive(Clone, Debug)]
 pub struct Credential {
+  /// The credential's stable identity (`credential_{entropy}`), stored in the
+  /// TOML file. Hidden from users, but the effective primary identifier —
+  /// file names can be freely renamed.
+  pub token: CredentialToken,
   pub service: CredentialServiceType,
   /// Optional user-facing label to tell multiple credentials for the same
   /// service apart. Empty by default.
@@ -41,10 +46,19 @@ impl CredentialSecret {
 }
 
 impl Credential {
+  /// Load a credential, minting (and persisting) a token if the file lacks
+  /// one so the identity stays stable across loads.
   pub fn load_from_file<P: AsRef<Path>>(path: P) -> Result<Self, ArtcraftXCredentialError> {
     let path = path.as_ref();
     let file = CredentialFile::load(path)?;
-    file.into_credential(path.to_path_buf())
+    let needs_token_backfill = file.token.is_none();
+    let credential = file.into_credential(path.to_path_buf())?;
+    if needs_token_backfill {
+      if let Err(err) = credential.save() {
+        log::warn!("Could not persist backfilled credential token for {:?}: {}", path, err);
+      }
+    }
+    Ok(credential)
   }
 
   /// Rewrite this credential's TOML file in place.
@@ -90,6 +104,7 @@ mod tests {
     let path = dir.path().join("fal_api_key.toml");
 
     let credential = Credential {
+      token: CredentialToken::generate(),
       service: CredentialServiceType::FalApi,
       name: Some("work account".to_string()),
       secret: CredentialSecret::ApiKey(ApiKeyCredential::new("fal-secret-key-12345")),
@@ -99,6 +114,7 @@ mod tests {
     credential.save().unwrap();
 
     let loaded = Credential::load_from_file(&path).unwrap();
+    assert_eq!(loaded.token, credential.token);
     assert_eq!(loaded.service, CredentialServiceType::FalApi);
     assert_eq!(loaded.name.as_deref(), Some("work account"));
     assert_eq!(loaded.api_key().unwrap().api_key, "fal-secret-key-12345");
