@@ -5,11 +5,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faKey, faPen, faPlus, faTrash } from "@fortawesome/pro-solid-svg-icons";
 import {
   CredentialPayload,
+  ServiceMeta,
   getServiceLogoPath,
   getServiceMeta,
   listCredentials,
 } from "./credential-helpers";
 import { AddCredentialModal } from "./AddCredentialModal";
+import { ArtcraftLoginModal } from "./ArtcraftLoginModal";
 import { WebsiteLoginModal } from "./WebsiteLoginModal";
 import { EditCredentialModal } from "./EditCredentialModal";
 import { DeleteCredentialModal } from "./DeleteCredentialModal";
@@ -23,6 +25,8 @@ export const CredentialsManager = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isWebsiteLoginOpen, setIsWebsiteLoginOpen] = useState(false);
+  const [passwordLoginService, setPasswordLoginService] =
+    useState<ServiceMeta | null>(null);
   const [editing, setEditing] = useState<CredentialPayload | null>(null);
   const [deleting, setDeleting] = useState<CredentialPayload | null>(null);
 
@@ -96,6 +100,12 @@ export const CredentialsManager = () => {
       <WebsiteLoginModal
         isOpen={isWebsiteLoginOpen}
         onClose={() => setIsWebsiteLoginOpen(false)}
+        onChoosePasswordLogin={setPasswordLoginService}
+      />
+      <ArtcraftLoginModal
+        service={passwordLoginService}
+        onClose={() => setPasswordLoginService(null)}
+        onLoggedIn={refresh}
       />
       <EditCredentialModal
         credential={editing}

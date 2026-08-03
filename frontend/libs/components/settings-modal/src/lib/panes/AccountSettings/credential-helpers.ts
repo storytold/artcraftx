@@ -27,6 +27,12 @@ export interface ServiceMeta {
    * crates/artcraftx/src/credentials/login_website.rs).
    */
   loginWebsite?: string;
+  /**
+   * For direct API logins (ArtCraft): show our own username + password form
+   * instead of opening a login webview. `value` is the service passed to
+   * `artcraft_login_command`.
+   */
+  passwordLogin?: boolean;
 }
 
 /** API-key services offered in the "Add" dropdown. */
@@ -38,14 +44,19 @@ export const API_KEY_SERVICES: ServiceMeta[] = [
   { value: "xai_api", label: "xAI", logo: "grok.svg" },
 ];
 
-/** Website-login services offered as logo buttons. */
+/**
+ * Website-login services offered as logo buttons. ArtCraft uses our own
+ * username/password form (`passwordLogin`); the rest open a login webview.
+ * "ArtCraft Local Dev" stays last — it's a developer option.
+ */
 export const WEBSITE_LOGIN_SERVICES: ServiceMeta[] = [
-  { value: "artcraft_cookies", label: "ArtCraft", logo: "artcraft.svg", loginWebsite: "artcraft" },
+  { value: "artcraft", label: "ArtCraft", logo: "artcraft.svg", passwordLogin: true },
   { value: "runway_cookies", label: "Runway", logo: "runway.svg", loginWebsite: "runway" },
   { value: "higgsfield_cookies", label: "Higgsfield", logo: "higgsfield.svg", loginWebsite: "higgsfield" },
   { value: "openart_cookies", label: "OpenArt", logo: "openart.svg", loginWebsite: "openart" },
   { value: "magnific_cookies", label: "Magnific", logo: "magnific.svg", loginWebsite: "magnific" },
   { value: "xai_cookies", label: "xAI", logo: "grok.svg", loginWebsite: "xai" },
+  { value: "artcraft_local", label: "ArtCraft Local Dev", logo: "artcraft.svg", passwordLogin: true },
 ];
 
 // Every service the backend knows about, so hand-written credential files
@@ -53,6 +64,7 @@ export const WEBSITE_LOGIN_SERVICES: ServiceMeta[] = [
 const ALL_SERVICES: ServiceMeta[] = [
   ...API_KEY_SERVICES,
   ...WEBSITE_LOGIN_SERVICES,
+  { value: "artcraft_cookies", label: "ArtCraft", logo: "artcraft.svg" },
   { value: "grok_cookies", label: "Grok", logo: "grok.svg" },
   { value: "magnific_cookies", label: "Magnific", logo: "magnific.svg" },
   { value: "midjourney_cookies", label: "Midjourney", logo: "midjourney.svg" },
@@ -118,4 +130,37 @@ export const deleteCredential = async (fileName: string): Promise<void> => {
  */
 export const openWebLogin = async (website: string): Promise<void> => {
   await invoke("open_web_login_command", { website });
+};
+
+// Mirrors the Rust `ArtcraftLoginCommandError` payload.
+export interface ArtcraftLoginError {
+  error_type:
+    | "invalid_credentials"
+    | "account_needs_password"
+    | "server_error"
+    | "connection_error"
+    | "bad_request";
+  message: string;
+}
+
+/**
+ * Log into an ArtCraft account with username/email + password. `service` is
+ * `"artcraft"` (production) or `"artcraft_local"` (local dev server). Each
+ * successful login stores a NEW credential file. Rejects with an
+ * `ArtcraftLoginError` payload on failure.
+ */
+export const artcraftLogin = async (args: {
+  service: string;
+  usernameOrEmail: string;
+  password: string;
+}): Promise<CredentialPayload> => {
+  const response = await invoke<{ credential: CredentialPayload }>(
+    "artcraft_login_command",
+    {
+      service: args.service,
+      usernameOrEmail: args.usernameOrEmail,
+      password: args.password,
+    }
+  );
+  return response.credential;
 };

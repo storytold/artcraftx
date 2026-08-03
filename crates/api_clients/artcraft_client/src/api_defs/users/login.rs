@@ -1,12 +1,12 @@
 use serde_derive::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct LoginRequest {
   pub username_or_email: String,
   pub password: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct LoginSuccessResponse {
   pub success: bool,
 
@@ -16,7 +16,15 @@ pub struct LoginSuccessResponse {
   pub signed_session: String,
 }
 
-#[derive(Copy, Clone, Debug, Serialize)]
+/// Error body returned by `/v1/login` on 401/500 responses.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct LoginErrorResponse {
+  pub success: bool,
+  pub error_type: LoginErrorType,
+  pub error_message: String,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum LoginErrorType {
   /// Account was created without a password and the user needs to create one
   AccountNeedsPassword,

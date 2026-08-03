@@ -16,6 +16,13 @@ pub enum CredentialKind {
 /// NEVER change existing values; only add new ones.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum CredentialServiceType {
+  // Direct API logins (username + password against the ArtCraft API;
+  // stores the resulting session cookie)
+  #[serde(rename = "artcraft")]
+  Artcraft,
+  #[serde(rename = "artcraft_local")]
+  ArtcraftLocal,
+
   // Website (cookie) integrations
   #[serde(rename = "artcraft_cookies")]
   ArtcraftCookies,
@@ -55,7 +62,9 @@ impl CredentialServiceType {
   /// The auth mechanism this service uses.
   pub fn kind(&self) -> CredentialKind {
     match self {
-      Self::ArtcraftCookies
+      Self::Artcraft
+      | Self::ArtcraftLocal
+      | Self::ArtcraftCookies
       | Self::GrokCookies
       | Self::HiggsfieldCookies
       | Self::MagnificCookies
@@ -75,6 +84,8 @@ impl CredentialServiceType {
 
   pub fn to_str(&self) -> &'static str {
     match self {
+      Self::Artcraft => "artcraft",
+      Self::ArtcraftLocal => "artcraft_local",
       Self::ArtcraftCookies => "artcraft_cookies",
       Self::GrokCookies => "grok_cookies",
       Self::HiggsfieldCookies => "higgsfield_cookies",
@@ -113,6 +124,8 @@ mod tests {
   #[test]
   fn round_trips_through_serde() {
     let all = [
+      CredentialServiceType::Artcraft,
+      CredentialServiceType::ArtcraftLocal,
       CredentialServiceType::ArtcraftCookies,
       CredentialServiceType::GrokCookies,
       CredentialServiceType::HiggsfieldCookies,
@@ -139,6 +152,8 @@ mod tests {
 
   #[test]
   fn kind_matches_variant_family() {
+    assert_eq!(CredentialServiceType::Artcraft.kind(), CredentialKind::Cookies);
+    assert_eq!(CredentialServiceType::ArtcraftLocal.kind(), CredentialKind::Cookies);
     assert_eq!(CredentialServiceType::RunwayCookies.kind(), CredentialKind::Cookies);
     assert_eq!(CredentialServiceType::FalApi.kind(), CredentialKind::ApiKey);
   }

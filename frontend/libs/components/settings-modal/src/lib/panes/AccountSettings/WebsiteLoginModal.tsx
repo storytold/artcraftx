@@ -1,6 +1,7 @@
 import { Modal } from "@storyteller/ui-modal";
 import { faGlobe } from "@fortawesome/pro-solid-svg-icons";
 import {
+  ServiceMeta,
   WEBSITE_LOGIN_SERVICES,
   getServiceLogoPath,
   openWebLogin,
@@ -9,23 +10,32 @@ import {
 interface WebsiteLoginModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Called for services that use our own username/password form (ArtCraft). */
+  onChoosePasswordLogin: (service: ServiceMeta) => void;
 }
 
 /**
- * Website login chooser: one logo button per site. Clicking a site opens a
- * backend login window; the modal closes so the user can complete login there.
+ * Website login chooser: one logo button per site. Most sites open a backend
+ * login window; ArtCraft services switch to a username/password form instead.
+ * The modal closes so the user can complete login there.
  */
 export const WebsiteLoginModal = ({
   isOpen,
   onClose,
+  onChoosePasswordLogin,
 }: WebsiteLoginModalProps) => {
-  const handleLogin = async (loginWebsite: string | undefined) => {
-    if (!loginWebsite) return;
+  const handleLogin = async (meta: ServiceMeta) => {
+    if (meta.passwordLogin) {
+      onClose();
+      onChoosePasswordLogin(meta);
+      return;
+    }
+    if (!meta.loginWebsite) return;
     try {
-      await openWebLogin(loginWebsite);
+      await openWebLogin(meta.loginWebsite);
       onClose();
     } catch (error) {
-      console.error(`Failed to open login window for ${loginWebsite}:`, error);
+      console.error(`Failed to open login window for ${meta.loginWebsite}:`, error);
     }
   };
 
@@ -48,7 +58,7 @@ export const WebsiteLoginModal = ({
             <button
               key={meta.value}
               className="flex h-16 flex-col items-center justify-center gap-1.5 rounded-lg border border-ui-panel-border bg-ui-controls/40 transition-colors hover:bg-ui-controls"
-              onClick={() => handleLogin(meta.loginWebsite)}
+              onClick={() => handleLogin(meta)}
             >
               <img
                 src={getServiceLogoPath(meta.value)}

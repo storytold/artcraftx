@@ -17,6 +17,7 @@ use tauri::Manager;
 
 use crate::commands::credentials::add_api_credential_command::add_api_credential_command;
 use crate::commands::credentials::add_web_credential_command::add_web_credential_command;
+use crate::commands::credentials::artcraft_login_command::artcraft_login_command;
 use crate::commands::credentials::delete_credentials_command::delete_credentials_command;
 use crate::commands::credentials::edit_api_credential_command::edit_api_credential_command;
 use crate::commands::credentials::edit_web_credential_command::edit_web_credential_command;
@@ -208,6 +209,7 @@ pub fn run() {
   let builder = builder.invoke_handler(tauri::generate_handler![
     add_api_credential_command,
     add_web_credential_command,
+    artcraft_login_command,
     delete_credentials_command,
     edit_api_credential_command,
     edit_web_credential_command,

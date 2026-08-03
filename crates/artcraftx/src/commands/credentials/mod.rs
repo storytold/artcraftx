@@ -1,5 +1,6 @@
 pub mod add_api_credential_command;
 pub mod add_web_credential_command;
+pub mod artcraft_login_command;
 pub mod credential_payload;
 pub mod delete_credentials_command;
 pub mod edit_api_credential_command;
