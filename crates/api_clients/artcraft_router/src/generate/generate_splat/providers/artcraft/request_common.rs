@@ -1,5 +1,6 @@
 use artcraft_client::api_defs::omni_gen::cost_and_generate_requests::omni_gen_splat_cost_and_generate_request::OmniGenSplatCostAndGenerateRequest;
-use artcraft_client::endpoints::omni_gen::generate::splat::omni_gen_splat::omni_gen_splat_generate;
+use artcraft_client::credentials::api_or_web_creds::ApiOrWebCreds;
+use artcraft_client::endpoints::omni_gen::generate::splat::omni_gen_splat::{omni_gen_splat_generate, OmniGenSplatGenerateArgs};
 
 use crate::client::router_artcraft_client::RouterArtcraftClient;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
@@ -14,11 +15,13 @@ pub async fn send_artcraft_omni_splat_request(
   request: &OmniGenSplatCostAndGenerateRequest,
   client: &RouterArtcraftClient,
 ) -> Result<GenerateSplatResponse, ArtcraftRouterError> {
-  let response = omni_gen_splat_generate(
-    &client.api_host,
-    Some(&client.credentials),
-    request.clone(),
-  )
+  let api_or_web_creds = ApiOrWebCreds::from(&client.credentials);
+
+  let response = omni_gen_splat_generate(OmniGenSplatGenerateArgs {
+    api_host: &client.api_host,
+    api_or_web_creds: Some(&api_or_web_creds),
+    request,
+  })
     .await
     .map_err(|err| ArtcraftRouterError::Provider(ProviderError::Storyteller(err)))?;
 

@@ -1,5 +1,6 @@
 use artcraft_client::api_defs::omni_gen::cost_and_generate_requests::omni_gen_image_cost_and_generate_request::OmniGenImageCostAndGenerateRequest;
-use artcraft_client::endpoints::omni_gen::generate::image::omni_gen_image::omni_gen_image_generate;
+use artcraft_client::credentials::api_or_web_creds::ApiOrWebCreds;
+use artcraft_client::endpoints::omni_gen::generate::image::omni_gen_image::{omni_gen_image_generate, OmniGenImageGenerateArgs};
 
 use crate::client::router_artcraft_client::RouterArtcraftClient;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
@@ -14,11 +15,13 @@ pub async fn send_artcraft_omni_image_request(
   request: &OmniGenImageCostAndGenerateRequest,
   client: &RouterArtcraftClient,
 ) -> Result<GenerateImageResponse, ArtcraftRouterError> {
-  let response = omni_gen_image_generate(
-    &client.api_host,
-    Some(&client.credentials),
-    request.clone(),
-  )
+  let api_or_web_creds = ApiOrWebCreds::from(&client.credentials);
+
+  let response = omni_gen_image_generate(OmniGenImageGenerateArgs {
+    api_host: &client.api_host,
+    api_or_web_creds: Some(&api_or_web_creds),
+    request,
+  })
     .await
     .map_err(|err| ArtcraftRouterError::Provider(ProviderError::Storyteller(err)))?;
 

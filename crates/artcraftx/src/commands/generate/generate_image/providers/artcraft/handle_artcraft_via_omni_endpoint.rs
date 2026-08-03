@@ -1,5 +1,6 @@
 use artcraft_client::api_defs::omni_gen::cost_and_generate_requests::omni_gen_image_cost_and_generate_request::OmniGenImageCostAndGenerateRequest;
-use artcraft_client::endpoints::omni_gen::generate::image::omni_gen_image::omni_gen_image_generate;
+use artcraft_client::credentials::api_or_web_creds::ApiOrWebCreds;
+use artcraft_client::endpoints::omni_gen::generate::image::omni_gen_image::{omni_gen_image_generate, OmniGenImageGenerateArgs};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use log::{error, info};
@@ -47,11 +48,13 @@ pub async fn handle_artcraft_via_omni_endpoint(
 
   info!("Sending image generation via omni endpoint: model={:?}", omni_api_model);
 
-  let response = omni_gen_image_generate(
-    &app_env_configs.storyteller_host,
-    Some(creds),
-    omni_request,
-  ).await.map_err(|err| {
+  let api_or_web_creds = ApiOrWebCreds::from(creds);
+
+  let response = omni_gen_image_generate(OmniGenImageGenerateArgs {
+    api_host: &app_env_configs.storyteller_host,
+    api_or_web_creds: Some(&api_or_web_creds),
+    request: &omni_request,
+  }).await.map_err(|err| {
     error!("Omni image generation failed: {:?}", err);
     GenerateError::from(err)
   })?;
