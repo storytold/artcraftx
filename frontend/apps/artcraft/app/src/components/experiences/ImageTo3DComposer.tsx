@@ -21,6 +21,7 @@ import {
   useSelectedProviderForModel,
 } from "@storyteller/ui-model-selector";
 import { PromptShell, useComposerTasks } from "~/components/PromptShell";
+import { AccountSelector } from "~/components/account-selector/AccountSelector";
 
 // Minimal image→3D composer in the marketing-site style: reference tray +
 // optional prompt + generate. Replaces the old ImageTo3DExperience page UI
@@ -285,6 +286,7 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
         {/* control bar */}
         <div className="mt-3 flex shrink-0 flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
+            <AccountSelector />
             <ClassyModelSelector
               variant="embedded"
               items={

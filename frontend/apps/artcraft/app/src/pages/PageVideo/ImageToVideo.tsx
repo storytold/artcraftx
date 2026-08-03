@@ -25,6 +25,7 @@ import { useCostBreakdownModalStore } from "@storyteller/ui-pricing-modal";
 import { GenerationProvider } from "@storyteller/api-enums";
 import { Clapperboard } from "lucide-react";
 import { PromptShell, useComposerTasks } from "~/components/PromptShell";
+import { AccountSelector } from "~/components/account-selector/AccountSelector";
 
 const PAGE_ID: ModelPage = ModelPage.ImageToVideo;
 
@@ -91,6 +92,7 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
           uploadVideo={UploadVideoMedia}
           uploadAudio={UploadAudioMedia}
           credits={videoCredits}
+          accountSelector={<AccountSelector />}
           modelSelector={
             <ClassyModelSelector
               variant="embedded"

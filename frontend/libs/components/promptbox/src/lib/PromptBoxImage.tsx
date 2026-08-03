@@ -66,6 +66,9 @@ interface PromptBoxImageProps {
   url?: string;
   onImageRowVisibilityChange?: (visible: boolean) => void;
   credits?: number | null;
+  /** Optional account-picker slot rendered at the very start of the toolbar
+   *  (left of the model selector). */
+  accountSelector?: ReactNode;
   /** Optional model-picker slot rendered at the start of the toolbar
    *  (left of the aspect-ratio picker). */
   modelSelector?: ReactNode;
@@ -83,6 +86,7 @@ export const PromptBoxImage = ({
   imageMediaId,
   url,
   credits,
+  accountSelector,
   modelSelector,
   fullBleed = false,
 }: PromptBoxImageProps) => {
@@ -455,6 +459,7 @@ export const PromptBoxImage = ({
   // Toolbar clusters shared by the floating and full-bleed layouts.
   const settingsPickers = (
     <>
+      {accountSelector}
       {modelSelector}
       {selectedModel?.supportsNewAspectRatio() && (
         <AspectRatioPicker

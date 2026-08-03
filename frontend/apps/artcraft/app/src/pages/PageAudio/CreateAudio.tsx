@@ -12,6 +12,7 @@ import {
   PromptShell,
   type CompletedFile,
 } from "~/components/PromptShell";
+import { AccountSelector } from "~/components/account-selector/AccountSelector";
 
 // The whole page is the composer: no feed, no gallery — results are written
 // straight to disk and the PromptShell shows the progress bar + receipt.
@@ -64,6 +65,7 @@ const CreateAudio = () => {
         uploadAudio={UploadAudioMedia}
         uploadImage={UploadImageMedia}
         credits={audioCredits}
+        accountSelector={<AccountSelector />}
         onEnqueuePressed={async () => {
           // Nudge the shared jobs poller so the in-flight state appears
           // immediately (one request can create several job tokens).

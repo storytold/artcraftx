@@ -129,6 +129,9 @@ interface PromptBoxVideoProps {
   uploadVideo?: UploadImageFn;
   uploadAudio?: UploadImageFn;
   credits?: number | null;
+  /** Optional account-picker slot rendered at the very start of the toolbar
+   *  (left of the model selector). */
+  accountSelector?: React.ReactNode;
   /** Optional model-picker slot rendered at the start of the toolbar
    *  (left of the aspect-ratio picker). */
   modelSelector?: React.ReactNode;
@@ -148,6 +151,7 @@ export const PromptBoxVideo = ({
   uploadVideo,
   uploadAudio,
   credits,
+  accountSelector,
   modelSelector,
   fullBleed = false,
 }: PromptBoxVideoProps) => {
@@ -1318,6 +1322,7 @@ export const PromptBoxVideo = ({
   // Toolbar clusters shared by the floating and full-bleed layouts.
   const settingsPickers = (
     <>
+      {accountSelector}
       {modelSelector}
       <Tooltip
         content="Aspect Ratio"

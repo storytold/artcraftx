@@ -14,6 +14,7 @@ import { useCostBreakdownModalStore } from "@storyteller/ui-pricing-modal";
 import { GenerationProvider } from "@storyteller/api-enums";
 import { Image as ImageIcon } from "lucide-react";
 import { PromptShell, useComposerTasks } from "~/components/PromptShell";
+import { AccountSelector } from "~/components/account-selector/AccountSelector";
 
 const PAGE_ID: ModelPage = ModelPage.TextToImage;
 
@@ -64,6 +65,7 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
         imageMediaId={imageMediaId}
         url={imageUrl ?? undefined}
         credits={imageCredits}
+        accountSelector={<AccountSelector />}
         modelSelector={
           <ClassyModelSelector
             variant="embedded"

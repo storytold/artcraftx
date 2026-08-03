@@ -80,6 +80,9 @@ interface PromptBoxAudioProps {
   // request can create several Suno clips).
   onEnqueuePressed?: (jobTokens: string[]) => void | Promise<void>;
   credits?: number | null;
+  /** Optional account-picker slot rendered at the very start of the toolbar
+   *  (left of the model selector). */
+  accountSelector?: ReactNode;
   /** Render the focus-mode layout inline, filling the parent's height,
    *  instead of the floating card + fullscreen modal. */
   fullBleed?: boolean;
@@ -91,6 +94,7 @@ export const PromptBoxAudio = ({
   uploadImage,
   onEnqueuePressed,
   credits,
+  accountSelector,
   fullBleed = false,
 }: PromptBoxAudioProps) => {
   const prompt = usePromptAudioStore((s) => s.prompt);
@@ -585,6 +589,7 @@ export const PromptBoxAudio = ({
           <div className="shrink-0 pt-2">{referenceRow}</div>
           <div className="mt-3 flex shrink-0 flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">
+              {accountSelector}
               {modelSelector}
               {toggleButtons}
               {settingsPopovers}
@@ -658,6 +663,7 @@ export const PromptBoxAudio = ({
 
           <div className="mt-2 flex items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">
+              {accountSelector}
               {modelSelector}
               {toggleButtons}
               {settingsPopovers}
