@@ -105,7 +105,7 @@ async fn handle_artcraft_credential(
 
   let router_model = tauri_image_model_to_router_model(tauri_model)
     .ok_or(GenerateError::NotYetImplemented(
-      format!("Model {:?} is not supported via the router", tauri_model),
+      format!("Model {:?} can't be generated with this account yet", tauri_model),
     ))?;
 
   let api_host = maybe_artcraft_api_host_for_service(credential.service)

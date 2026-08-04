@@ -148,9 +148,16 @@ async fn handle_error_behavior(
     })
    */
 
+  // Prefer a human-readable message for the frontend toast; fall back to the
+  // debug rendering for error kinds without one.
+  let error_message = match &err {
+    GenerateError::NotYetImplemented(message) => message.clone(),
+    other => format!("{:?}", other),
+  };
+
   Err(CommandErrorResponseWrapper {
     status: CommandErrorStatus::ServerError,
-    error_message: Some(format!("{:?}", err)),
+    error_message: Some(error_message),
     error_type: Some(error_type),
     error_details: None,
   })

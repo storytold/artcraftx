@@ -80,6 +80,8 @@ impl TaskEnqueueSuccess{
       Some(GenerationModel::Seedream4) => Some(TaskModelType::Seedream4),
       Some(GenerationModel::Seedream4p5) => Some(TaskModelType::Seedream4p5),
       Some(GenerationModel::Seedream5Lite) => Some(TaskModelType::Seedream5Lite),
+      Some(GenerationModel::Seedream5p0Pro) => Some(TaskModelType::Seedream5p0Pro),
+      Some(GenerationModel::Seedream5p0ProUltra) => Some(TaskModelType::Seedream5p0ProUltra),
       Some(GenerationModel::QwenEdit2511Angles) => Some(TaskModelType::QwenEdit2511Angles),
       Some(GenerationModel::Flux2LoraAngles) => Some(TaskModelType::Flux2LoraAngles),
       Some(GenerationModel::GrokImage) => Some(TaskModelType::GrokImage),

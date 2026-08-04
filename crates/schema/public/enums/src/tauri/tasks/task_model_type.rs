@@ -46,6 +46,10 @@ pub enum TaskModelType {
   Seedream4p5,
   #[serde(rename = "seedream_5_lite")]
   Seedream5Lite,
+  #[serde(rename = "seedream_5p0_pro")]
+  Seedream5p0Pro,
+  #[serde(rename = "seedream_5p0_pro_u")]
+  Seedream5p0ProUltra,
   #[serde(rename = "qwen_edit_2511_angles")]
   QwenEdit2511Angles,
   #[serde(rename = "flux_2_lora_angles")]
@@ -151,6 +155,8 @@ impl TaskModelType {
       Self::Seedream4 => "seedream_4",
       Self::Seedream4p5 => "seedream_4p5",
       Self::Seedream5Lite => "seedream_5_lite",
+      Self::Seedream5p0Pro => "seedream_5p0_pro",
+      Self::Seedream5p0ProUltra => "seedream_5p0_pro_u",
       Self::QwenEdit2511Angles => "qwen_edit_2511_angles",
       Self::Flux2LoraAngles => "flux_2_lora_angles",
       Self::GrokImage => "grok_image",
@@ -211,6 +217,8 @@ impl TaskModelType {
       "seedream_4" => Ok(Self::Seedream4),
       "seedream_4p5" => Ok(Self::Seedream4p5),
       "seedream_5_lite" => Ok(Self::Seedream5Lite),
+      "seedream_5p0_pro" => Ok(Self::Seedream5p0Pro),
+      "seedream_5p0_pro_u" => Ok(Self::Seedream5p0ProUltra),
       "qwen_edit_2511_angles" => Ok(Self::QwenEdit2511Angles),
       "flux_2_lora_angles" => Ok(Self::Flux2LoraAngles),
       "grok_image" => Ok(Self::GrokImage),
@@ -274,6 +282,8 @@ impl TaskModelType {
       Self::Seedream4,
       Self::Seedream4p5,
       Self::Seedream5Lite,
+      Self::Seedream5p0Pro,
+      Self::Seedream5p0ProUltra,
       Self::QwenEdit2511Angles,
       Self::Flux2LoraAngles,
       Self::GrokImage,
@@ -344,6 +354,8 @@ mod tests {
       assert_serialization(TaskModelType::Seedream4, "seedream_4");
       assert_serialization(TaskModelType::Seedream4p5, "seedream_4p5");
       assert_serialization(TaskModelType::Seedream5Lite, "seedream_5_lite");
+      assert_serialization(TaskModelType::Seedream5p0Pro, "seedream_5p0_pro");
+      assert_serialization(TaskModelType::Seedream5p0ProUltra, "seedream_5p0_pro_u");
       assert_serialization(TaskModelType::QwenEdit2511Angles, "qwen_edit_2511_angles");
       assert_serialization(TaskModelType::Flux2LoraAngles, "flux_2_lora_angles");
       assert_serialization(TaskModelType::GrokImage, "grok_image");
@@ -403,6 +415,8 @@ mod tests {
       assert_eq!(TaskModelType::Seedream4.to_str(), "seedream_4");
       assert_eq!(TaskModelType::Seedream4p5.to_str(), "seedream_4p5");
       assert_eq!(TaskModelType::Seedream5Lite.to_str(), "seedream_5_lite");
+      assert_eq!(TaskModelType::Seedream5p0Pro.to_str(), "seedream_5p0_pro");
+      assert_eq!(TaskModelType::Seedream5p0ProUltra.to_str(), "seedream_5p0_pro_u");
       assert_eq!(TaskModelType::QwenEdit2511Angles.to_str(), "qwen_edit_2511_angles");
       assert_eq!(TaskModelType::Flux2LoraAngles.to_str(), "flux_2_lora_angles");
       assert_eq!(TaskModelType::GrokImage.to_str(), "grok_image");
@@ -459,6 +473,8 @@ mod tests {
       assert_eq!(TaskModelType::from_str("seedream_4").unwrap(), TaskModelType::Seedream4);
       assert_eq!(TaskModelType::from_str("seedream_4p5").unwrap(), TaskModelType::Seedream4p5);
       assert_eq!(TaskModelType::from_str("seedream_5_lite").unwrap(), TaskModelType::Seedream5Lite);
+      assert_eq!(TaskModelType::from_str("seedream_5p0_pro").unwrap(), TaskModelType::Seedream5p0Pro);
+      assert_eq!(TaskModelType::from_str("seedream_5p0_pro_u").unwrap(), TaskModelType::Seedream5p0ProUltra);
       assert_eq!(TaskModelType::from_str("qwen_edit_2511_angles").unwrap(), TaskModelType::QwenEdit2511Angles);
       assert_eq!(TaskModelType::from_str("flux_2_lora_angles").unwrap(), TaskModelType::Flux2LoraAngles);
       assert_eq!(TaskModelType::from_str("grok_image").unwrap(), TaskModelType::GrokImage);
@@ -509,7 +525,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskModelType::all_variants();
-      assert_eq!(variants.len(), 52);
+      assert_eq!(variants.len(), 54);
       // Image models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Schnell));
@@ -528,6 +544,8 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TaskModelType::Seedream4));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Seedream4p5));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Seedream5Lite));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Seedream5p0Pro));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Seedream5p0ProUltra));
       assert_eq!(variants.pop_first(), Some(TaskModelType::QwenEdit2511Angles));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux2LoraAngles));
       assert_eq!(variants.pop_first(), Some(TaskModelType::GrokImage));

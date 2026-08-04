@@ -55,14 +55,14 @@ export const APP_DESCRIPTORS: AppDescriptor[] = [
     icon: faMusic,
   },
   {
-    id: "IMAGE_TO_3D_WORLD",
-    label: "Splats",
-    icon: faGlobe,
-  },
-  {
     id: "IMAGE_TO_3D_OBJECT",
     label: "Meshes",
     icon: faCube,
+  },
+  {
+    id: "IMAGE_TO_3D_WORLD",
+    label: "Splats",
+    icon: faGlobe,
   },
 ];
 

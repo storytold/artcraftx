@@ -46,6 +46,10 @@ pub enum TauriImageModel {
   Seedream4p5,
   #[serde(rename = "seedream_5_lite")]
   Seedream5Lite,
+  #[serde(rename = "seedream_5p0_pro")]
+  Seedream5p0Pro,
+  #[serde(rename = "seedream_5p0_pro_u")]
+  Seedream5p0ProUltra,
   // Generic Midjourney experience, served via the native Midjourney provider.
   #[serde(rename = "midjourney")]
   Midjourney,

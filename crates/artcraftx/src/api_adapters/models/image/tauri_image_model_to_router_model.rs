@@ -21,6 +21,8 @@ pub fn tauri_image_model_to_router_model(model: TauriImageModel) -> Option<Route
     TauriImageModel::Seedream4 => Some(RouterImageModel::Seedream4), // Text-to-Image
     TauriImageModel::Seedream4p5 => Some(RouterImageModel::Seedream4p5), // Text-to-Image
     TauriImageModel::Seedream5Lite => Some(RouterImageModel::Seedream5Lite), // Text-to-Image
+    TauriImageModel::Seedream5p0Pro => Some(RouterImageModel::Seedream5p0Pro), // Text-to-Image
+    TauriImageModel::Seedream5p0ProUltra => Some(RouterImageModel::Seedream5p0ProUltra), // Text-to-Image
     TauriImageModel::QwenEdit2511Angles => Some(RouterImageModel::QwenEdit2511Angles),
     TauriImageModel::Flux2LoraAngles => Some(RouterImageModel::Flux2LoraAngles),
     TauriImageModel::Midjourney7 => Some(RouterImageModel::Midjourney7),

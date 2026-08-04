@@ -102,8 +102,8 @@ async fn handle_fal(
       return Err(GenerateError::NotYetImplemented("Fal should not be sending draft requests".to_string()));
     },
     Err(err) => {
-      warn!("Could not use FAL: {:?}", err);
-      return Err(GenerateError::NotYetImplemented("Error Message: TODO".to_string()));
+      warn!("Could not build FAL router request: {:?}", err);
+      return Err(err.into());
     }
   };
 

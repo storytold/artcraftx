@@ -20,6 +20,8 @@ pub fn tauri_image_model_to_generation_model(model: TauriImageModel) -> Generati
     TauriImageModel::Seedream4 => GenerationModel::Seedream4,
     TauriImageModel::Seedream4p5 => GenerationModel::Seedream4p5,
     TauriImageModel::Seedream5Lite => GenerationModel::Seedream5Lite,
+    TauriImageModel::Seedream5p0Pro => GenerationModel::Seedream5p0Pro,
+    TauriImageModel::Seedream5p0ProUltra => GenerationModel::Seedream5p0ProUltra,
     TauriImageModel::Midjourney => GenerationModel::Midjourney,
     TauriImageModel::Midjourney7 => GenerationModel::Midjourney7,
     TauriImageModel::Midjourney7Niji => GenerationModel::Midjourney7Niji,

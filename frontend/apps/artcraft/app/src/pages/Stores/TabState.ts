@@ -18,7 +18,7 @@ export type TabId =
   | "MOODBOARD"
   | "SETTINGS";
 
-const DEFAULT_TAB: TabId = "VIDEO";
+const DEFAULT_TAB: TabId = "IMAGE";
 
 interface TabState {
   // Current active tab

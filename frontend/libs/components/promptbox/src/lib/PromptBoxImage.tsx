@@ -436,7 +436,11 @@ export const PromptBoxImage = ({
       await onEnqueuePressed?.(prompt, generationCount, subscriberId);
     } catch (err) {
       console.error("PromptBoxImage - enqueue failed", err);
-      toast.error("Failed to start image generation. Please try again.");
+      const backendMessage = (err as { error_message?: string } | null)
+        ?.error_message;
+      toast.error(
+        backendMessage || "Failed to start image generation. Please try again.",
+      );
     } finally {
       setIsEnqueueing(false);
     }

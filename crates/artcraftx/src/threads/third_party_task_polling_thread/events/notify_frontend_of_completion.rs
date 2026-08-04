@@ -296,6 +296,8 @@ fn task_model_type_to_generation_model(model: TaskModelType) -> Option<Generatio
     TaskModelType::Seedream4 => Some(GenerationModel::Seedream4),
     TaskModelType::Seedream4p5 => Some(GenerationModel::Seedream4p5),
     TaskModelType::Seedream5Lite => Some(GenerationModel::Seedream5Lite),
+    TaskModelType::Seedream5p0Pro => Some(GenerationModel::Seedream5p0Pro),
+    TaskModelType::Seedream5p0ProUltra => Some(GenerationModel::Seedream5p0ProUltra),
     TaskModelType::QwenEdit2511Angles => Some(GenerationModel::QwenEdit2511Angles),
     TaskModelType::GrokImage => Some(GenerationModel::GrokImage),
     TaskModelType::Recraft3 => Some(GenerationModel::Recraft3),
