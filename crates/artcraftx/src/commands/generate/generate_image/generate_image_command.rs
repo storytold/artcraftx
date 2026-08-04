@@ -1,8 +1,7 @@
 use crate::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::commands::enqueue::generate_error::{GenerateError, MissingCredentialsReason};
 use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
-use crate::commands::generate::generate_image::providers::artcraft::handle_artcraft;
-use crate::commands::generate::generate_image::providers::artcraft_router::handle_router::handle_router;
+use crate::commands::generate::generate_image::providers::router::handle_credential_router::handle_credential_router;
 use crate::commands::generate::generate_image::tauri_generate_image_request::{
   TauriGenerateImageErrorType, TauriGenerateImageRequest, TauriGenerateImageResponse,
 };
@@ -11,11 +10,10 @@ use crate::commands::response::shorthand::Response;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::credits_balance_changed_event::CreditsBalanceChangedEvent;
 use crate::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
-use crate::providers::credentials::provider_credential_loading_cache::ProviderCredentialLoadingCache;
 use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
+use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::task_database::TaskDatabase;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use enums::common::generation_provider::GenerationProvider;
 use log::{error, info};
 use tauri::{AppHandle, State};
 
@@ -23,41 +21,22 @@ use tauri::{AppHandle, State};
 pub async fn generate_image_command(
   request: TauriGenerateImageRequest,
   app: AppHandle,
+  app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
   task_database: State<'_, TaskDatabase>,
   storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
-  credential_cache: State<'_, ProviderCredentialLoadingCache>,
 ) -> Response<TauriGenerateImageResponse, TauriGenerateImageErrorType, ()> {
 
   info!("generate_image_command called, request: {:?}", request);
 
-  let provider = request.provider.unwrap_or(GenerationProvider::Artcraft);
-
-  let result = match provider {
-    GenerationProvider::Artcraft => {
-      handle_artcraft(
-        &request,
-        &app_env_configs,
-        &storyteller_creds_manager,
-      ).await
-    }
-    // Midjourney uses its own legacy command path, not this one.
-    GenerationProvider::Midjourney => {
-      Err(GenerateError::NotYetImplemented(
-        "Midjourney should use its dedicated command".to_string(),
-      ))
-    }
-    // All other providers go through the router.
-    other => {
-      handle_router(
-        &request,
-        other,
-        &app_env_configs,
-        &credential_cache,
-        &storyteller_creds_manager,
-      ).await
-    }
-  };
+  // Generation is credential-driven: the request names a stored credential,
+  // and the router dispatches to that credential's service.
+  let result = handle_credential_router(
+    &request,
+    &app_data_root,
+    &app_env_configs,
+    &storyteller_creds_manager,
+  ).await;
 
   match result {
     Ok(success) => handle_success_behavior(&app, &task_database, &request, success).await,
@@ -130,6 +109,7 @@ async fn handle_error_behavior(
     GenerateError::MissingCredentials(MissingCredentialsReason::NeedsFalApiKey) => TauriGenerateImageErrorType::NeedsFalApiKey,
     GenerateError::MissingCredentials(MissingCredentialsReason::NeedsGrokCredentials) => TauriGenerateImageErrorType::NeedsGrokCredentials,
     GenerateError::MissingCredentials(_) => TauriGenerateImageErrorType::NeedsStorytellerCredentials,
+    GenerateError::CredentialProblem(_) => TauriGenerateImageErrorType::CredentialProblem,
     GenerateError::NoProviderAvailable => TauriGenerateImageErrorType::NoProviderAvailable,
     GenerateError::BillingIssue(_) => TauriGenerateImageErrorType::BillingIssue,
     _ => TauriGenerateImageErrorType::ServerError,

@@ -1,5 +1,5 @@
-use artcraft_router::api::router_aspect_ratio::RouterAspectRatio;
-use artcraft_router::api::router_resolution::RouterResolution;
+use router::api::router_aspect_ratio::RouterAspectRatio;
+use router::api::router_resolution::RouterResolution;
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use serde_derive::{Deserialize, Serialize};

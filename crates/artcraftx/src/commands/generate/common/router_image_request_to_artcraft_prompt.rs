@@ -1,9 +1,9 @@
 use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
-use artcraft_router::api::router_aspect_ratio::RouterAspectRatio;
-use artcraft_router::api::router_image_model::RouterImageModel;
-use artcraft_router::api::router_resolution::RouterResolution;
-use artcraft_router::api::router_provider::RouterProvider;
-use artcraft_router::generate::generate_image::generate_image_request_builder::GenerateImageRequestBuilder;
+use router::api::router_aspect_ratio::RouterAspectRatio;
+use router::api::router_image_model::RouterImageModel;
+use router::api::router_resolution::RouterResolution;
+use router::api::router_provider::RouterProvider;
+use router::generate::generate_image::generate_image_request_builder::GenerateImageRequestBuilder;
 use enums::common::generation::common_aspect_ratio::CommonAspectRatio as EnumsAspectRatio;
 use enums::common::generation::common_generation_mode::CommonGenerationMode;
 use enums::common::generation::common_model_type::CommonModelType;
@@ -117,7 +117,7 @@ fn router_resolution_to_enums(res: RouterResolution) -> EnumsResolution {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use artcraft_router::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
+  use router::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 
   fn base_builder() -> GenerateImageRequestBuilder {
     GenerateImageRequestBuilder {
@@ -162,7 +162,7 @@ mod tests {
 
   #[test]
   fn edit_mode_when_images_present() {
-    use artcraft_router::api::image_list_ref::ImageListRef;
+    use router::api::image_list_ref::ImageListRef;
     let builder = GenerateImageRequestBuilder {
       image_inputs: Some(ImageListRef::Urls(vec!["https://example.com/img.jpg".to_string()])),
       ..base_builder()

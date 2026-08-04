@@ -1,6 +1,5 @@
 use artcraft_client::api_defs::users::login::{LoginErrorType, LoginRequest};
 use artcraft_client::endpoints::users::login::{login, LoginArgs, LoginError};
-use artcraft_client::utils::api_host::ApiHost;
 use chrono::Utc;
 use enums::common::generation_provider::GenerationProvider;
 use log::{error, info, warn};
@@ -8,6 +7,7 @@ use serde_derive::Serialize;
 use tauri::{AppHandle, State};
 
 use crate::commands::credentials::credential_payload::CredentialPayload;
+use crate::credentials::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::cookie_credential::CookieCredential;
 use crate::credentials::credential::{Credential, CredentialSecret};
 use crate::credentials::credential_service_type::CredentialServiceType;
@@ -15,9 +15,6 @@ use crate::credentials::credential_user_info::CredentialUserInfo;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::refresh_account_state_event::RefreshAccountStateEvent;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-
-/// Port the local ArtCraft development server listens on.
-const LOCAL_DEV_PORT: u32 = 12345;
 
 #[derive(Serialize)]
 pub struct ArtcraftLoginResponse {
@@ -68,17 +65,21 @@ pub async fn artcraft_login_command(
 ) -> Result<ArtcraftLoginResponse, ArtcraftLoginCommandError> {
   info!("artcraft_login_command called for service: {}", service);
 
-  let api_host = match service {
-    CredentialServiceType::Artcraft => ApiHost::Storyteller,
-    CredentialServiceType::ArtcraftLocal => ApiHost::Localhost { port: LOCAL_DEV_PORT },
-    other => {
-      let message = format!("Service {} does not support password login", other);
-      error!("{}", message);
-      return Err(ArtcraftLoginCommandError {
-        error_type: ArtcraftLoginErrorType::BadRequest,
-        message,
-      });
-    }
+  let is_password_login_service = matches!(
+    service,
+    CredentialServiceType::Artcraft | CredentialServiceType::ArtcraftLocal,
+  );
+
+  let maybe_api_host = maybe_artcraft_api_host_for_service(service)
+      .filter(|_| is_password_login_service);
+
+  let Some(api_host) = maybe_api_host else {
+    let message = format!("Service {} does not support password login", service);
+    error!("{}", message);
+    return Err(ArtcraftLoginCommandError {
+      error_type: ArtcraftLoginErrorType::BadRequest,
+      message,
+    });
   };
 
   let username_or_email = username_or_email.trim().to_string();

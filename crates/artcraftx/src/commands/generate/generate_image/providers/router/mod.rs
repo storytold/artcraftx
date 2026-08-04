@@ -1,3 +1,4 @@
+pub mod handle_credential_router;
 pub mod handle_router;
 mod handle_api_providers;
 mod handle_web_login_providers;

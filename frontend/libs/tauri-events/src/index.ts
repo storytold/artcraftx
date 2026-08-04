@@ -5,6 +5,7 @@ export * from "./lib/events/functional/MediaFileDeletedEvent";
 export * from "./lib/events/functional/ObjectGenerationCompleteEvent";
 export * from "./lib/events/functional/RefreshAccountStateEvent";
 export * from "./lib/events/functional/ShowProviderBillingModalEvent";
+export * from "./lib/events/functional/ShowCredentialErrorModalEvent";
 export * from "./lib/events/functional/ShowProviderLoginModalEvent";
 export * from "./lib/events/functional/SubscriptionPlanChangedEvent";
 export * from "./lib/events/functional/TextToImageGenerationCompleteEvent";

@@ -35,6 +35,7 @@ import { useStoryboardPageEnabled } from "@storyteller/ui-settings-modal";
 
 import { useActiveJobs } from "~/hooks/useActiveJobs";
 import { useBackgroundLoadingMedia } from "~/hooks/useBackgroundLoadingMedia";
+import { CredentialErrorModal } from "~/components/CredentialErrorModal/CredentialErrorModal";
 import { useTabStore } from "./Stores/TabState";
 import { useTextToImageStore } from "./PageImage/TextToImageStore";
 
@@ -124,6 +125,7 @@ export const MainApp = () => {
       <TabBody />
 
       <ErrorDialog />
+      <CredentialErrorModal />
       <Toaster offsetTop={52} offsetRight={12} zIndex={9999} />
       {currentReminderModalProps && (
         <ActionReminderModal

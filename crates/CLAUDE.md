@@ -48,7 +48,7 @@ helpers go in the parent `mod tests` so sub-modules can `use super::*`.
 ## Key Crates
 
 - `artcraftx` (desktop) — Tauri desktop app
-- `artcraft_router` — provider routing for image/video generation (Artcraft, Fal, Seedance2Pro)
+- `router` — provider routing for image/video generation (Artcraft, Fal, Seedance2Pro)
 - `artcraft_client` — HTTP client for the Artcraft/Storyteller API, including the API type definitions (`artcraft_client::api_defs`)
 - `seedance2pro_client` — HTTP client for the Kinovi/Seedance2Pro video generation service
 - `enums` — enum variants stored as strings

@@ -1,5 +1,5 @@
 [package]
-name = "artcraft_router"
+name = "router"
 edition = "2024"
 version = "0.0.1"
 publish = false
@@ -8,7 +8,7 @@ publish = false
 normal = ["workspace-build-acceleration"]
 
 [lib]
-name = "artcraft_router"
+name = "router"
 path = "src/lib.rs"
 
 [dependencies]

@@ -27,7 +27,7 @@ workspace-build-acceleration.workspace =  true
 
 # Internal
 artcraft_client.workspace = true
-artcraft_router.workspace = true
+router.workspace = true
 build_metadata.workspace = true
 cookie_store.workspace = true
 enums.workspace = true

@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use artcraft_router::api::router_quality::RouterQuality;
+use router::api::router_quality::RouterQuality;
 
 /// Just cargo culting this. might not be necessary for standalone types anymore
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]

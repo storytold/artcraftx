@@ -1,4 +1,4 @@
-use artcraft_router::api::router_image_model::RouterImageModel;
+use router::api::router_image_model::RouterImageModel;
 
 use crate::commands::generate::generate_image::tauri_image_model::TauriImageModel;
 

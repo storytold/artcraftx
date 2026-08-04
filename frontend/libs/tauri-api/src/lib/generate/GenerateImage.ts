@@ -9,6 +9,11 @@ import {
 import { GenerationProvider } from "@storyteller/api-enums";
 
 export interface GenerateImageRequest {
+  // Stable id (`credential_{entropy}`) of the stored credential (account)
+  // to generate with. The backend loads it from disk and routes to that
+  // credential's service.
+  credential_id?: string;
+
   // The provider to use (defaults to Artcraft/Storyteller).
   provider?: GenerationProvider;
 
@@ -61,6 +66,7 @@ export interface GenerateImageRequest {
 }
 
 interface RawGenerateImageRequest {
+  credential_id?: string;
   provider?: GenerationProvider;
   model?: string;
   prompt?: string;
@@ -92,6 +98,9 @@ export enum GenerateImageErrorType {
   NeedsStorytellerCredentials = "needs_storyteller_credentials",
   NeedsGrokCredentials = "needs_grok_credentials",
   BillingIssue = "billing_issue",
+  // Problem with the selected account credential; the backend also flashes
+  // a dismissable modal.
+  CredentialProblem = "credential_problem",
 }
 
 export interface GenerateImageError extends CommandResult {
@@ -130,6 +139,7 @@ export const GenerateImage = async (
     model: modelName,
   };
 
+  if (!!request.credential_id) mutableRequest.credential_id = request.credential_id;
   if (!!request.provider) mutableRequest.provider = request.provider;
   if (!!request.prompt) mutableRequest.prompt = request.prompt;
   if (!!request.aspect_ratio) mutableRequest.aspect_ratio = request.aspect_ratio;

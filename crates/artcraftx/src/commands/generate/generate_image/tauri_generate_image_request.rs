@@ -13,6 +13,11 @@ use crate::commands::response::success_response_wrapper::SerializeMarker;
 
 #[derive(Deserialize, Debug)]
 pub struct TauriGenerateImageRequest {
+  /// Stable id (`credential_{entropy}`) of the stored credential (account)
+  /// to generate with. Loaded from disk; generation routes to the
+  /// credential's service.
+  pub credential_id: Option<String>,
+
   /// The provider to use (defaults to Artcraft/Storyteller).
   /// Not all (provider, model) combinations are valid.
   pub provider: Option<GenerationProvider>,
@@ -122,4 +127,7 @@ pub enum TauriGenerateImageErrorType {
   NeedsGrokCredentials,
   /// Billing issue
   BillingIssue,
+  /// Problem with the selected account credential (absent, unknown, or
+  /// unusable). The backend also flashes a dismissable modal.
+  CredentialProblem,
 }

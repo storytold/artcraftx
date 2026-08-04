@@ -8,7 +8,7 @@ use crate::events::generation_events::common::GenerationModel;
 use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use artcraft_router::api::router_image_model::RouterImageModel;
+use router::api::router_image_model::RouterImageModel;
 use tauri::AppHandle;
 
 pub async fn handle_image_edit_artcraft(

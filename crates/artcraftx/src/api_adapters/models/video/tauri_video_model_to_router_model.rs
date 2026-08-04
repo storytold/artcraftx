@@ -1,4 +1,4 @@
-use artcraft_router::api::router_video_model::RouterVideoModel;
+use router::api::router_video_model::RouterVideoModel;
 
 use crate::commands::generate::generate_video::request::TauriVideoModel;
 

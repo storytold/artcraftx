@@ -1,9 +1,9 @@
 use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
-use artcraft_router::api::router_aspect_ratio::RouterAspectRatio;
-use artcraft_router::api::router_resolution::RouterResolution;
-use artcraft_router::api::router_video_model::RouterVideoModel;
-use artcraft_router::api::router_provider::RouterProvider;
-use artcraft_router::generate::generate_video::generate_video_request_builder::GenerateVideoRequestBuilder;
+use router::api::router_aspect_ratio::RouterAspectRatio;
+use router::api::router_resolution::RouterResolution;
+use router::api::router_video_model::RouterVideoModel;
+use router::api::router_provider::RouterProvider;
+use router::generate::generate_video::generate_video_request_builder::GenerateVideoRequestBuilder;
 use enums::common::generation::common_aspect_ratio::CommonAspectRatio as EnumsAspectRatio;
 use enums::common::generation::common_generation_mode::CommonGenerationMode;
 use enums::common::generation::common_model_type::CommonModelType;
@@ -158,7 +158,7 @@ mod tests {
       video_batch_count: None,
       generate_audio: None,
       request_mismatch_mitigation_strategy:
-        artcraft_router::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy::ErrorOut,
+        router::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy::ErrorOut,
       idempotency_token: None,
     }
   }
@@ -208,7 +208,7 @@ mod tests {
 
   #[test]
   fn keyframe_mode_with_start_frame() {
-    use artcraft_router::api::image_ref::ImageRef;
+    use router::api::image_ref::ImageRef;
     let builder = GenerateVideoRequestBuilder {
       start_frame: Some(ImageRef::Url("https://example.com/frame.jpg".to_string())),
       ..base_builder()
@@ -219,7 +219,7 @@ mod tests {
 
   #[test]
   fn keyframe_mode_with_end_frame() {
-    use artcraft_router::api::image_ref::ImageRef;
+    use router::api::image_ref::ImageRef;
     let builder = GenerateVideoRequestBuilder {
       end_frame: Some(ImageRef::Url("https://example.com/frame.jpg".to_string())),
       ..base_builder()
@@ -230,7 +230,7 @@ mod tests {
 
   #[test]
   fn reference_mode_with_reference_images() {
-    use artcraft_router::api::image_list_ref::ImageListRef;
+    use router::api::image_list_ref::ImageListRef;
     let builder = GenerateVideoRequestBuilder {
       reference_images: Some(ImageListRef::Urls(vec!["https://example.com/ref.jpg".to_string()])),
       ..base_builder()
@@ -241,8 +241,8 @@ mod tests {
 
   #[test]
   fn keyframe_takes_priority_over_reference() {
-    use artcraft_router::api::image_ref::ImageRef;
-    use artcraft_router::api::image_list_ref::ImageListRef;
+    use router::api::image_ref::ImageRef;
+    use router::api::image_list_ref::ImageListRef;
     let builder = GenerateVideoRequestBuilder {
       start_frame: Some(ImageRef::Url("https://example.com/frame.jpg".to_string())),
       reference_images: Some(ImageListRef::Urls(vec!["https://example.com/ref.jpg".to_string()])),

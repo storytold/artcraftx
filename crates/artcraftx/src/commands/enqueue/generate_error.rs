@@ -1,7 +1,7 @@
 use crate::error::artcraftx_error::ArtcraftXError;
 use anyhow::anyhow;
-use artcraft_router::errors::artcraft_router_error::ArtcraftRouterError;
-use artcraft_router::errors::provider_error::ProviderError;
+use router::errors::artcraft_router_error::ArtcraftRouterError;
+use router::errors::provider_error::ProviderError;
 use base64::DecodeError;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::generation::common_model_type::CommonModelType;
@@ -10,7 +10,7 @@ use grok_consumer_client::error::grok_error::GrokError;
 use midjourney_client::error::midjourney_error::MidjourneyError;
 use openai_sora_client::error::sora_error::SoraError;
 use artcraft_client::error::storyteller_error::StorytellerError;
-use artcraft_router::errors::download_error::DownloadError;
+use router::errors::download_error::DownloadError;
 use worldlabs_consumer_client::error::world_labs_error::WorldLabsError;
 //use fal_client::error::fal_error_plus::FalErrorPlus;
 
@@ -18,6 +18,9 @@ use worldlabs_consumer_client::error::world_labs_error::WorldLabsError;
 pub enum GenerateError {
   BadInput(BadInputReason),
   MissingCredentials(MissingCredentialsReason),
+  /// Problem with the stored credential named by the request
+  /// (`credential_id`): absent, unknown, or unusable.
+  CredentialProblem(CredentialProblemReason),
   ProviderFailure(ProviderFailureReason),
 
   /// We couldn't find a provider to dispatch the request to.
@@ -72,6 +75,16 @@ pub enum BadInputReason {
   RequiredSourceImageMaskNotProvided,
   RequiredSourceImageNotProvided,
   WrongImageArguments(String),
+}
+
+#[derive(Debug)]
+pub enum CredentialProblemReason {
+  /// The request didn't name a credential (no account selected).
+  NoCredentialSupplied,
+  /// The named credential doesn't exist on disk.
+  CredentialNotFound { credential_id: String },
+  /// The credential exists but can't serve this request.
+  CredentialNotUsable { credential_id: String, reason: String },
 }
 
 #[derive(Debug)]

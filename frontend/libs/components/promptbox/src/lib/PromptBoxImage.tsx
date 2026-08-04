@@ -69,6 +69,10 @@ interface PromptBoxImageProps {
   /** Optional account-picker slot rendered at the very start of the toolbar
    *  (left of the model selector). */
   accountSelector?: ReactNode;
+  /** Stable id (`credential_{entropy}`) of the selected account credential,
+   *  sent with generation requests so the backend knows which stored
+   *  credential to generate with. */
+  credentialId?: string | null;
   /** Optional model-picker slot rendered at the start of the toolbar
    *  (left of the aspect-ratio picker). */
   modelSelector?: ReactNode;
@@ -87,6 +91,7 @@ export const PromptBoxImage = ({
   url,
   credits,
   accountSelector,
+  credentialId,
   modelSelector,
   fullBleed = false,
 }: PromptBoxImageProps) => {
@@ -384,6 +389,10 @@ export const PromptBoxImage = ({
         frontend_caller: "text_to_image",
         frontend_subscriber_id: subscriberId,
       };
+
+      if (!!credentialId) {
+        request.credential_id = credentialId;
+      }
 
       if (!!selectedProvider) {
         request.provider = selectedProvider;

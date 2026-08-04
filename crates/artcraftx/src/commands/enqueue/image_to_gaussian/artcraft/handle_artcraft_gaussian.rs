@@ -6,7 +6,7 @@ use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::events::generation_events::common::GenerationModel;
 use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use artcraft_router::api::router_splat_model::RouterSplatModel;
+use router::api::router_splat_model::RouterSplatModel;
 use tauri::AppHandle;
 
 pub async fn handle_gaussian_artcraft(

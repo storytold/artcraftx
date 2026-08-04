@@ -1,14 +1,14 @@
 use log::{error, info};
 
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
-use artcraft_router::api::router_image_model::RouterImageModel;
-use artcraft_router::api::image_list_ref::ImageListRef;
-use artcraft_router::api::router_provider::RouterProvider;
-use artcraft_router::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
-use artcraft_router::client::router_artcraft_client::RouterArtcraftClient;
-use artcraft_router::client::router_client::RouterClient;
-use artcraft_router::generate::generate_image::generate_image_request_builder::GenerateImageRequestBuilder;
-use artcraft_router::generate::generate_image::image_generation_draft_or_request::ImageGenerationDraftOrRequest;
+use router::api::router_image_model::RouterImageModel;
+use router::api::image_list_ref::ImageListRef;
+use router::api::router_provider::RouterProvider;
+use router::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
+use router::client::router_artcraft_client::RouterArtcraftClient;
+use router::client::router_client::RouterClient;
+use router::generate::generate_image::generate_image_request_builder::GenerateImageRequestBuilder;
+use router::generate::generate_image::image_generation_draft_or_request::ImageGenerationDraftOrRequest;
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 
