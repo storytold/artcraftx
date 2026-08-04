@@ -19,7 +19,7 @@ path = "src/lib.rs"
 # Workspace hack (faster compile times)
 workspace-build-acceleration.workspace = true
 
-# Serialization
+# Serialization (define_id! expansion references ::serde)
 serde.workspace = true
 
 # Id entropy (time-ordered ULIDs)
