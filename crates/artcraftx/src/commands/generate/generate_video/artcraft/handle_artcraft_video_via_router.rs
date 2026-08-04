@@ -1,6 +1,6 @@
-use crate::commands::enqueue::generate_error::GenerateError;
+use crate::commands::generate::generate_error::GenerateError;
 use crate::commands::generate::generate_video::request::TauriGenerateVideoRequest;
-use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::events::generation_events::common::GenerationModel;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::utils::api_host::ApiHost;

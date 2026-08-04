@@ -1,6 +1,6 @@
-use crate::commands::enqueue::generate_error::GenerateError;
+use crate::commands::generate::generate_error::GenerateError;
 use crate::commands::generate::generate_video::request::{TauriGenerateVideoRequest, SoraOrientation};
-use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::events::functional_events::show_provider_login_modal_event::ShowProviderLoginModalEvent;
 use crate::events::generation_events::common::GenerationModel;
 use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;

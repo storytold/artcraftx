@@ -1,6 +1,6 @@
 use tauri::AppHandle;
 
-use crate::commands::enqueue::generate_error::{CredentialProblemReason, GenerateError};
+use crate::commands::generate::generate_error::{CredentialProblemReason, GenerateError};
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::show_credential_error_modal_event::ShowCredentialErrorModalEvent;
 

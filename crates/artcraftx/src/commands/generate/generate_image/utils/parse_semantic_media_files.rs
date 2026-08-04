@@ -4,7 +4,7 @@ use artcraft_client::credentials::storyteller_credential_set::StorytellerCredent
 use artcraft_client::utils::api_host::ApiHost;
 use tokens::tokens::media_files::MediaFileToken;
 
-use crate::commands::enqueue::generate_error::{BadInputReason, GenerateError};
+use crate::commands::generate::generate_error::{BadInputReason, GenerateError};
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;
 use crate::utils::upload_bytes_to_media_file::upload_image_bytes_as_media_file::upload_image_bytes_as_media_file;
 use crate::utils::upload_bytes_to_media_file::upload_mask_image_bytes_as_media_file::upload_mask_image_bytes_as_media_file;

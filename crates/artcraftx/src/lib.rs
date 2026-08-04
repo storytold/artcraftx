@@ -33,9 +33,7 @@ use crate::commands::generate::models::video::list_video_models_command::list_vi
 use crate::commands::download::download_directory_reveal_command::download_directory_reveal_command;
 use crate::commands::download::download_media_file_command::download_media_file_command;
 use crate::commands::download::download_url_command::download_url_command;
-use crate::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::enqueue_image_bg_removal_command;
-use crate::commands::enqueue::image_to_gaussian::enqueue_image_to_gaussian_command::enqueue_image_to_gaussian_command;
-use crate::commands::enqueue::image_to_object::enqueue_image_to_3d_object_command::enqueue_image_to_3d_object_command;
+use crate::commands::background_removal::enqueue_image_bg_removal_command::enqueue_image_bg_removal_command;
 use crate::commands::generate::generate_audio::generate_audio_command::generate_audio_command;
 use crate::commands::generate::generate_image::generate_image_command::generate_image_command;
 use crate::commands::generate::generate_mesh::generate_mesh_command::generate_mesh_command;
@@ -222,8 +220,6 @@ pub fn run() {
     download_media_file_command,
     download_url_command,
     enqueue_image_bg_removal_command,
-    enqueue_image_to_3d_object_command,
-    enqueue_image_to_gaussian_command,
     estimate_image_cost_command,
     estimate_splat_cost_command,
     estimate_video_cost_command,

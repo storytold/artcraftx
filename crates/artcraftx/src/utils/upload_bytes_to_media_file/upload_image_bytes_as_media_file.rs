@@ -7,7 +7,7 @@ use artcraft_client::endpoints::media_files::upload_image_media_file_from_bytes:
 use artcraft_client::utils::api_host::ApiHost;
 use tokens::tokens::media_files::MediaFileToken;
 
-use crate::commands::enqueue::generate_error::GenerateError;
+use crate::commands::generate::generate_error::GenerateError;
 
 /// Upload raw image bytes to ArtCraft, returning the resulting MediaFileToken.
 ///

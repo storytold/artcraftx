@@ -1,7 +1,6 @@
-use crate::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason, ProviderFailureReason};
-use crate::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::EnqueueImageBgRemovalCommand;
-use crate::commands::deprecated::image_edit::enqueue_edit_image_command::{EditImageQuality, EditImageSize, EnqueueEditImageCommand};
-use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::commands::generate::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason, ProviderFailureReason};
+use crate::commands::background_removal::enqueue_image_bg_removal_command::EnqueueImageBgRemovalCommand;
+use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;

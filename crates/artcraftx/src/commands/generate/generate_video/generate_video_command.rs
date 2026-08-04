@@ -1,6 +1,6 @@
-use crate::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
-use crate::commands::enqueue::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason};
-use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::commands::generate::common::notify_frontend_of_errors::notify_frontend_of_errors;
+use crate::commands::generate::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason};
+use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::generate_video::handle_credential_router::handle_credential_router;
 use crate::commands::generate::generate_video::request::{
   TauriGenerateVideoErrorType, TauriGenerateVideoRequest, TauriGenerateVideoResponse,

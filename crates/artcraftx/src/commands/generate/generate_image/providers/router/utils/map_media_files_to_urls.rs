@@ -3,7 +3,7 @@ use artcraft_client::utils::api_host::ApiHost;
 use log::info;
 use tokens::tokens::media_files::MediaFileToken;
 
-use crate::commands::enqueue::generate_error::GenerateError;
+use crate::commands::generate::generate_error::GenerateError;
 
 /// Resolve a list of media file tokens to their CDN URLs.
 ///

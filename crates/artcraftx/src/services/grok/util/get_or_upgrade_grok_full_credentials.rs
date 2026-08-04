@@ -1,4 +1,4 @@
-use crate::commands::enqueue::generate_error::GenerateError;
+use crate::commands::generate::generate_error::GenerateError;
 use crate::events::functional_events::show_provider_login_modal_event::ShowProviderLoginModalEvent;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use grok_consumer_client::credentials::grok_cookies::GrokCookies;

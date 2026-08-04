@@ -44,6 +44,9 @@
       "path": "../../libs/components/pagedraw"
     },
     {
+      "path": "../../libs/components/help-menu"
+    },
+    {
       "path": "../../libs/components/slider-v2"
     },
     {
@@ -51,9 +54,6 @@
     },
     {
       "path": "../../libs/soundboard"
-    },
-    {
-      "path": "../../libs/components/settings-modal"
     },
     {
       "path": "../../libs/state/subscription"
@@ -80,12 +80,6 @@
       "path": "../../libs/components/close-button"
     },
     {
-      "path": "../../libs/components/popover"
-    },
-    {
-      "path": "../../libs/components/modal"
-    },
-    {
       "path": "../../libs/components/loading"
     },
     {
@@ -104,28 +98,13 @@
       "path": "../../libs/common"
     },
     {
-      "path": "../../libs/tauri-events"
+      "path": "../../libs/components/gallery-modal"
     },
     {
       "path": "../../libs/components/generation-list"
     },
     {
       "path": "../../libs/components/toaster"
-    },
-    {
-      "path": "../../libs/components/help-menu"
-    },
-    {
-      "path": "../../libs/components/gallery-modal"
-    },
-    {
-      "path": "../../libs/components/viewer-3d"
-    },
-    {
-      "path": "../../libs/components/tooltip"
-    },
-    {
-      "path": "../../libs/components/tab-selector"
     },
     {
       "path": "../../libs/components/model-selector"
@@ -137,13 +116,28 @@
       "path": "../../libs/components/pricing-modal"
     },
     {
-      "path": "../../libs/components/button"
+      "path": "../../libs/components/settings-modal"
+    },
+    {
+      "path": "../../libs/components/tooltip"
+    },
+    {
+      "path": "../../libs/components/popover"
     },
     {
       "path": "../../libs/components/promptbox"
     },
     {
       "path": "../../libs/components/upload-modal"
+    },
+    {
+      "path": "../../libs/tauri-events"
+    },
+    {
+      "path": "../../libs/components/button"
+    },
+    {
+      "path": "../../libs/components/modal"
     },
     {
       "path": "../../libs/tauri-api"

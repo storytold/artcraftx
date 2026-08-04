@@ -1,6 +1,6 @@
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 
-use crate::commands::enqueue::generate_error::{CredentialProblemReason, GenerateError};
+use crate::commands::generate::generate_error::{CredentialProblemReason, GenerateError};
 use crate::credentials::credential::Credential;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 

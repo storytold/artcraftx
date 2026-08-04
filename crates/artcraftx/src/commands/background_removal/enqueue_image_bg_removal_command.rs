@@ -1,7 +1,7 @@
-use crate::commands::enqueue::common::notify_frontend_of_errors::notify_frontend_of_errors;
-use crate::commands::enqueue::generate_error::{BadInputReason, GenerateError};
-use crate::commands::enqueue::image_bg_removal::artcraft::handle_generic_bg_removal_artcraft::handle_generic_bg_removal_artcraft;
-use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::commands::generate::common::notify_frontend_of_errors::notify_frontend_of_errors;
+use crate::commands::generate::generate_error::{BadInputReason, GenerateError};
+use crate::commands::background_removal::artcraft::handle_generic_bg_removal_artcraft::handle_generic_bg_removal_artcraft;
+use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::commands::response::shorthand::{Response, ResponseOrErrorType};
 use crate::commands::response::success_response_wrapper::SerializeMarker;

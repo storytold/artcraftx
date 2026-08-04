@@ -6,11 +6,7 @@ import { twMerge } from "tailwind-merge";
 import { MediaUploadApi } from "@storyteller/api";
 import { GenerateIconButton } from "@storyteller/ui-button";
 import { useCostBreakdownModalStore } from "@storyteller/ui-pricing-modal";
-import {
-  EnqueueImageTo3dObject,
-  EnqueueImageTo3dObjectModel,
-  GenerateSplat,
-} from "@storyteller/tauri-api";
+import { GenerateMesh, GenerateSplat } from "@storyteller/tauri-api";
 import { SPLAT_MODELS } from "@storyteller/model-list";
 import {
   ClassyModelSelector,
@@ -39,7 +35,7 @@ interface TrayImage {
 }
 
 const MAX_WORLD_IMAGES = 10;
-const DEFAULT_OBJECT_MODEL_ID = EnqueueImageTo3dObjectModel.Hunyuan3d3;
+const DEFAULT_OBJECT_MODEL_ID = "hunyuan_3d_3";
 
 const generateId = () =>
   typeof crypto !== "undefined" && crypto.randomUUID
@@ -56,9 +52,7 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
   const maxImages = isWorld ? MAX_WORLD_IMAGES : 1;
 
   const selectedModel = useSelectedModel(pageId);
-  const selectedObjectModelId =
-    (selectedModel?.id as EnqueueImageTo3dObjectModel | undefined) ??
-    DEFAULT_OBJECT_MODEL_ID;
+  const selectedObjectModelId = selectedModel?.id ?? DEFAULT_OBJECT_MODEL_ID;
 
   const { busy, completed } = useComposerTasks(isWorld ? "splat" : "mesh");
 
@@ -163,9 +157,11 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
             frontend_caller: "mini_app",
             frontend_subscriber_id: subscriberId,
           })
-        : await EnqueueImageTo3dObject({
-            image_media_token: readyTokens[0],
+        : await GenerateMesh({
+            credential_id: selectedAccountId ?? undefined,
             model: selectedObjectModelId,
+            prompt: prompt.trim() || undefined,
+            reference_image_media_tokens: readyTokens,
             frontend_caller: "mini_app",
             frontend_subscriber_id: subscriberId,
           });

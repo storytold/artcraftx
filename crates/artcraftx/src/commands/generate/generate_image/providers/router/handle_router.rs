@@ -1,8 +1,8 @@
 use enums::common::generation_provider::GenerationProvider;
 use log::info;
 
-use crate::commands::enqueue::generate_error::{GenerateError, MissingCredentialsReason};
-use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::commands::generate::generate_error::{GenerateError, MissingCredentialsReason};
+use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::generate_image::providers::router::handle_api_providers::handle_api_key_provider;
 use crate::commands::generate::generate_image::providers::router::handle_web_login_providers::handle_web_login_provider;
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;

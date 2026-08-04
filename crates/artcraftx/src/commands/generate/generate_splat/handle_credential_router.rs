@@ -12,8 +12,8 @@ use router::api::video_ref::VideoRef;
 
 use crate::api_adapters::models::splat::tauri_splat_model_to_generation_model::tauri_splat_model_to_generation_model;
 use crate::api_adapters::models::splat::tauri_splat_model_to_router_model::tauri_splat_model_to_router_model;
-use crate::commands::enqueue::generate_error::GenerateError;
-use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::commands::generate::generate_error::GenerateError;
+use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::common::generation_credential::{credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential};
 use crate::commands::generate::generate_splat::request::TauriGenerateSplatRequest;
 use crate::credentials::artcraft_api_host::maybe_artcraft_api_host_for_service;

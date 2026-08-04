@@ -12,8 +12,8 @@ use router::generate::generate_image::image_generation_draft_or_request::ImageGe
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 
-use crate::commands::enqueue::generate_error::GenerateError;
-use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::commands::generate::generate_error::GenerateError;
+use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;
 use crate::commands::generate::generate_image::utils::parse_semantic_media_files::SemanticMediaFiles;
 use crate::events::generation_events::common::GenerationModel;

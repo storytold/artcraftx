@@ -8,7 +8,7 @@ use artcraft_client::utils::api_host::ApiHost;
 use images::mask_images::normalize_image_bytes_to_flux_mask::normalize_image_bytes_to_flux_mask;
 use tokens::tokens::media_files::MediaFileToken;
 
-use crate::commands::enqueue::generate_error::GenerateError;
+use crate::commands::generate::generate_error::GenerateError;
 
 /// Upload raw mask image bytes to ArtCraft, returning the resulting MediaFileToken.
 ///

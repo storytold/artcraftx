@@ -16,8 +16,8 @@ export const OBJECT_3D_MODELS: Object3DModel[] = [
     progressBarTime: 120000,
   }),
   new Object3DModel({
-    id: "hunyuan_3d_2_0",
-    tauriId: "hunyuan_3d_2_0",
+    id: "hunyuan_3d_2p0",
+    tauriId: "hunyuan_3d_2p0",
     fullName: "Hunyuan 3D 2.0",
     category: "3d_object",
     creator: ModelCreator.Tencent,

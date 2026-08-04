@@ -17,8 +17,8 @@ use tokens::tokens::prompts::PromptToken;
 
 use crate::api_adapters::models::image::tauri_image_model_to_generation_model::tauri_image_model_to_generation_model;
 use crate::api_adapters::models::image::tauri_image_model_to_router_model::tauri_image_model_to_router_model;
-use crate::commands::enqueue::generate_error::GenerateError;
-use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::commands::generate::generate_error::GenerateError;
+use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::common::router_image_request_to_artcraft_prompt::router_image_request_to_artcraft_prompt;
 use crate::commands::generate::generate_image::providers::router::utils::convert_enums_to_router::{convert_aspect_ratio, convert_quality, convert_resolution};
 use crate::commands::generate::generate_image::providers::router::utils::map_media_files_to_urls::map_media_file_tokens_to_cdn_urls;

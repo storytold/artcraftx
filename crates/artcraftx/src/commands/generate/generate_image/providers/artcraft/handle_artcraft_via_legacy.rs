@@ -1,7 +1,7 @@
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 
-use crate::commands::enqueue::generate_error::GenerateError;
-use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::commands::generate::generate_error::GenerateError;
+use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::generate_image::providers::artcraft::legacy::artcraft_flux_2_lora_angles::handle_flux_2_lora_angles;
 use crate::commands::generate::generate_image::providers::artcraft::legacy::artcraft_flux_dev_juggernaut_inpaint::handle_flux_dev_juggernaut_inpaint;
 use crate::commands::generate::generate_image::providers::artcraft::legacy::artcraft_flux_pro_kontext_edit::handle_flux_pro_kontext_edit;

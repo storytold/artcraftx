@@ -1,7 +1,7 @@
 use log::info;
 
-use crate::commands::enqueue::generate_error::{GenerateError, MissingCredentialsReason};
-use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::commands::generate::generate_error::{GenerateError, MissingCredentialsReason};
+use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::generate_image::providers::artcraft::handle_artcraft_via_legacy::handle_artcraft_via_legacy;
 use crate::commands::generate::generate_image::providers::artcraft::handle_artcraft_via_omni_endpoint::handle_artcraft_via_omni_endpoint;
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;

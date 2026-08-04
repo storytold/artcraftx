@@ -1,3 +1,7 @@
+pub mod maybe_notify_frontend_of_billing_errors;
+pub mod maybe_notify_frontend_of_credential_errors;
+pub mod maybe_notify_frontend_of_grok_errors;
+pub mod notify_frontend_of_errors;
 pub mod generation_credential;
 pub mod router_image_request_to_artcraft_prompt;
 pub mod router_video_request_to_artcraft_prompt;

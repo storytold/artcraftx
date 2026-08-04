@@ -1,4 +1,4 @@
-use crate::commands::enqueue::generate_error::{GenerateError, ProviderFailureReason};
+use crate::commands::generate::generate_error::{GenerateError, ProviderFailureReason};
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;

@@ -1,4 +1,4 @@
-use crate::commands::enqueue::generate_error::{BillingIssueReason, BillingProvider, GenerateError, ProviderFailureReason};
+use crate::commands::generate::generate_error::{BillingIssueReason, BillingProvider, GenerateError, ProviderFailureReason};
 use crate::events::functional_events::show_provider_billing_modal_event::ShowProviderBillingModalEvent;
 use enums::common::generation_provider::GenerationProvider;
 use log::warn;

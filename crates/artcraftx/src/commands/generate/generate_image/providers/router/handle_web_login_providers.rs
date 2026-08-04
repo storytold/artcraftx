@@ -1,7 +1,7 @@
 use enums::common::generation_provider::GenerationProvider;
 
-use crate::commands::enqueue::generate_error::GenerateError;
-use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::commands::generate::generate_error::GenerateError;
+use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;
 use crate::providers::credentials::payload::web_login::WebLoginData;
 

@@ -71,9 +71,9 @@ pub struct TauriGenerateMeshRequest {
 /// model ids (`CommonMeshModel` serde strings).
 #[derive(Clone, Copy, Debug, Deserialize)]
 pub enum TauriMeshModel {
-  #[serde(rename = "hunyuan_3d_2p0")]
+  #[serde(rename = "hunyuan_3d_2p0", alias = "hunyuan_3d_2_0", alias = "hunyuan_3d_2")]
   Hunyuan3d2p0,
-  #[serde(rename = "hunyuan_3d_2p1")]
+  #[serde(rename = "hunyuan_3d_2p1", alias = "hunyuan_3d_2_1")]
   Hunyuan3d2p1,
   #[serde(rename = "hunyuan_3d_3")]
   Hunyuan3d3,

@@ -11,8 +11,8 @@ use uuid_utils::uuid::generate_random_uuid;
 
 use tokens::tokens::media_files::MediaFileToken;
 
-use crate::commands::enqueue::generate_error::{BadInputReason, GenerateError};
-use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::commands::generate::generate_error::{BadInputReason, GenerateError};
+use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;
 use crate::commands::generate::generate_image::utils::parse_semantic_media_files::SemanticMediaFiles;
 use crate::events::generation_events::common::GenerationModel;
