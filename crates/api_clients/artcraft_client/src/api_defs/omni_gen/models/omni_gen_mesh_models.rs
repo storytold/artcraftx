@@ -1,7 +1,7 @@
-use enums::common::generation::common_mesh_model::CommonMeshModel;
-use enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
-use enums::common::generation::common_polygon_type::CommonPolygonType;
-use enums::common::generation::model_creator::ModelCreator;
+use artcraft_enums::common::generation::common_mesh_model::CommonMeshModel;
+use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+use artcraft_enums::common::generation::common_polygon_type::CommonPolygonType;
+use artcraft_enums::common::generation::model_creator::ModelCreator;
 use sqlite_identifiers::enums::generation_provider::GenerationProvider;
 use serde_derive::Serialize;
 

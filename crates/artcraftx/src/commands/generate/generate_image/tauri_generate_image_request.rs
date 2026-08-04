@@ -1,6 +1,6 @@
-use enums::common::generation::common_aspect_ratio::CommonAspectRatio;
-use enums::common::generation::common_resolution::CommonResolution;
-use enums::common::generation::common_quality::CommonQuality;
+use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
+use artcraft_enums::common::generation::common_resolution::CommonResolution;
+use artcraft_enums::common::generation::common_quality::CommonQuality;
 use sqlite_identifiers::enums::generation_provider::GenerationProvider;
 use sqlite_identifiers::enums::tauri_command_caller::TauriCommandCaller;
 use serde_derive::{Deserialize, Serialize};

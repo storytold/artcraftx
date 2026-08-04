@@ -24,12 +24,12 @@ workspace-build-acceleration.workspace = true
 
 # Internal
 cloudflare_errors.workspace = true
-enums.workspace = true
+artcraft_enums.workspace = true
 errors.workspace = true
 uuid_utils.workspace = true
 mimetypes.workspace = true
 sqlite_identifiers.workspace = true
-tokens.workspace = true
+artcraft_tokens.workspace = true
 
 # External
 anyhow.workspace = true

@@ -1,12 +1,12 @@
 use chrono::{DateTime, Utc};
-use enums::by_table::generic_inference_jobs::inference_job_external_third_party::InferenceJobExternalThirdParty;
-use enums::by_table::wallet_ledger_entries::wallet_ledger_entry_type::WalletLedgerEntryType;
-use enums::common::job_status_plus::JobStatusPlus;
+use artcraft_enums::by_table::generic_inference_jobs::inference_job_external_third_party::InferenceJobExternalThirdParty;
+use artcraft_enums::by_table::wallet_ledger_entries::wallet_ledger_entry_type::WalletLedgerEntryType;
+use artcraft_enums::common::job_status_plus::JobStatusPlus;
 use serde_derive::{Deserialize, Serialize};
-use tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use artcraft_tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
-use tokens::tokens::users::UserToken;
-use tokens::tokens::wallet_ledger_entries::WalletLedgerEntryToken;
+use artcraft_tokens::tokens::users::UserToken;
+use artcraft_tokens::tokens::wallet_ledger_entries::WalletLedgerEntryToken;
 
 pub const LIST_USER_JOBS_PATH: &str = "/v1/moderation/jobs/user/{user_token}/list";
 

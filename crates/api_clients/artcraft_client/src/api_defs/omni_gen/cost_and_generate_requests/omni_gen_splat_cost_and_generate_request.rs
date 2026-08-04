@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-use enums::common::generation::common_splat_model::CommonSplatModel;
+use artcraft_enums::common::generation::common_splat_model::CommonSplatModel;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 /// Shared request body for both the splat cost estimate and splat generation endpoints.

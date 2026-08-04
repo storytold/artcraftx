@@ -1,8 +1,8 @@
 use chrono::{DateTime, Utc};
-use enums::common::payments_namespace::PaymentsNamespace;
+use artcraft_enums::common::payments_namespace::PaymentsNamespace;
 use serde_derive::{Deserialize, Serialize};
-use tokens::tokens::users::UserToken;
-use tokens::tokens::wallets::WalletToken;
+use artcraft_tokens::tokens::users::UserToken;
+use artcraft_tokens::tokens::wallets::WalletToken;
 
 pub const LIST_USER_WALLETS_PATH: &str = "/v1/moderation/wallets/user/{user_token}/list";
 

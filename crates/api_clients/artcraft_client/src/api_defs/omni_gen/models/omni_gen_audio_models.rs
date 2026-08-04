@@ -1,5 +1,5 @@
-use enums::common::generation::common_audio_model::CommonAudioModel;
-use enums::common::generation::model_creator::ModelCreator;
+use artcraft_enums::common::generation::common_audio_model::CommonAudioModel;
+use artcraft_enums::common::generation::model_creator::ModelCreator;
 use sqlite_identifiers::enums::generation_provider::GenerationProvider;
 use serde_derive::Serialize;
 

@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use tokens::tokens::users::UserToken;
+use artcraft_tokens::tokens::users::UserToken;
 
 pub const MODERATOR_LIST_TOP_SPENDERS_PATH: &str =
   "/v1/moderation/top_spenders/list";

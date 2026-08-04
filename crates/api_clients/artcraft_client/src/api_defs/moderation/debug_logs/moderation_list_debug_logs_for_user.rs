@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-use tokens::tokens::users::UserToken;
+use artcraft_tokens::tokens::users::UserToken;
 
 use crate::api_defs::moderation::debug_logs::debug_log_entry::ModerationDebugLogEntry;
 

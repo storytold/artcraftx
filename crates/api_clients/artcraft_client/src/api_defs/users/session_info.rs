@@ -1,8 +1,8 @@
 use crate::api_defs::common::responses::user_details_light::UserDetailsLight;
-use enums::by_table::users::user_feature_flag::UserFeatureFlag;
+use artcraft_enums::by_table::users::user_feature_flag::UserFeatureFlag;
 use serde_derive::Serialize;
 use std::collections::BTreeSet;
-use tokens::tokens::users::UserToken;
+use artcraft_tokens::tokens::users::UserToken;
 
 #[derive(Serialize, Copy, Clone)]
 #[serde(rename_all = "snake_case")]

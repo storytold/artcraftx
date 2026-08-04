@@ -15,11 +15,13 @@ artcraftx/
 │   ├── api_clients/                     # HTTP clients for calling internal and 3rd party services
 │   ├── artcraftx/                       # (Important) ArtCraftX, the Tauri desktop app
 │   ├── lib/                             # Various utility libraries
-│   ├── sqlite_database/                 # Desktop app's "tasks" SQLite database: queries + embedded migrations
+│   ├── router/                          # Provider routing for generation requests (Artcraft, Fal, ...)
 │   ├── schema/                          # Data definition layer
-│   │   └── public/                      # Token identifier and enum variant definitions
-│   │       ├── enums/                   # Enum variants stored as strings
-│   │       └── tokens/                  # Identifiers with Stripe-like ID prefixes, eg. "user_{entropy}"
+│   │   ├── artcraft_enums/              # Enum variants stored as strings
+│   │   ├── artcraft_tokens/             # Identifiers with Stripe-like ID prefixes, eg. "user_{entropy}"
+│   │   ├── identifiers/                 # Desktop app's own IDs, eg. "credential_{ulid}"
+│   │   ├── sqlite_database/             # Desktop app's "tasks" SQLite database: queries + embedded migrations
+│   │   └── sqlite_identifiers/          # Enums and IDs used in sqlite queries as enums or keys
 │   ├── testing/                         # Test data and test utilities
 │   └── vendor/                          # Vendored third-party crates (eg. tauri-plugin-http)
 ├── frontend/                            # Nx typescript monorepo for the Tauri desktop app frontend

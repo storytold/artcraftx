@@ -1,5 +1,5 @@
-use enums::api_safe::by_table::generic_inference_jobs::frontend_failure_category_for_api_clients::FrontendFailureCategoryForApiClients;
-use enums::by_table::generic_inference_jobs::frontend_failure_category::FrontendFailureCategory;
+use artcraft_enums::api_safe::by_table::generic_inference_jobs::frontend_failure_category_for_api_clients::FrontendFailureCategoryForApiClients;
+use artcraft_enums::by_table::generic_inference_jobs::frontend_failure_category::FrontendFailureCategory;
 use sqlite_identifiers::enums::task_failure_type::TaskFailureType;
 
 /// Convert the web API's `FrontendFailureCategory` to a Tauri-facing type, if there is a matching variant.

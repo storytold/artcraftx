@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-use tokens::tokens::non_unique::debug_logs_event_token::DebugLogEventToken;
+use artcraft_tokens::tokens::non_unique::debug_logs_event_token::DebugLogEventToken;
 
 use crate::api_defs::moderation::debug_logs::debug_log_entry::ModerationDebugLogEntry;
 

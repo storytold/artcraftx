@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-use tokens::tokens::tags::TagToken;
+use artcraft_tokens::tokens::tags::TagToken;
 
 /// One tag as returned by every tags endpoint.
 #[derive(Clone, Debug, Serialize, Deserialize)]

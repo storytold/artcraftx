@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use artcraft_tokens::tokens::generic_inference_jobs::InferenceJobToken;
 
 pub const GENERATE_FLUX_1_SCHNELL_TEXT_TO_IMAGE_PATH: &str = "/v1/generate/image/flux_1_schnell_text_to_image";
 

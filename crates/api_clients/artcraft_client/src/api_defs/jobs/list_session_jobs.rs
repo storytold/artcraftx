@@ -1,15 +1,15 @@
 use crate::api_defs::common::responses::job_details::{JobDetailsLipsyncRequest, JobDetailsLivePortraitRequest};
 use crate::api_defs::common::responses::media_links::MediaLinks;
 use chrono::{DateTime, Utc};
-use enums::api_safe::by_table::generic_inference_jobs::frontend_failure_category_for_api_clients::FrontendFailureCategoryForApiClients;
-use enums::api_safe::by_table::generic_inference_jobs::frontend_failure_category_for_old_clients::FrontendFailureCategoryForOldClients;
-use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
-use enums::common::job_status_plus::JobStatusPlus;
-use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
+use artcraft_enums::api_safe::by_table::generic_inference_jobs::frontend_failure_category_for_api_clients::FrontendFailureCategoryForApiClients;
+use artcraft_enums::api_safe::by_table::generic_inference_jobs::frontend_failure_category_for_old_clients::FrontendFailureCategoryForOldClients;
+use artcraft_enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
+use artcraft_enums::common::job_status_plus::JobStatusPlus;
+use artcraft_enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use serde::Deserialize;
 use serde::Serialize;
 use sqlite_identifiers::ids::batch_generation_token::BatchGenerationToken;
-use tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use artcraft_tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use sqlite_identifiers::ids::prompt_token::PromptToken;
 
 pub const LIST_SESSION_JOBS_URL_PATH: &str = "/v1/jobs/session";

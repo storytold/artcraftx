@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
-use enums::by_table::wallet_ledger_entries::wallet_ledger_entry_type::WalletLedgerEntryType;
+use artcraft_enums::by_table::wallet_ledger_entries::wallet_ledger_entry_type::WalletLedgerEntryType;
 use serde_derive::{Deserialize, Serialize};
-use tokens::tokens::wallet_ledger_entries::WalletLedgerEntryToken;
+use artcraft_tokens::tokens::wallet_ledger_entries::WalletLedgerEntryToken;
 
 pub const MODERATOR_GET_WALLET_LEDGER_ENTRY_PATH: &str = "/v1/moderation/wallet_ledger_entry/{wallet_ledger_entry_token}";
 

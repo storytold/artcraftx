@@ -1,7 +1,7 @@
 use serde_derive::{Deserialize, Serialize};
 
-use enums::by_table::media_files::media_file_class::MediaFileClass;
-use tokens::tokens::folders::FolderToken;
+use artcraft_enums::by_table::media_files::media_file_class::MediaFileClass;
+use artcraft_tokens::tokens::folders::FolderToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 // ── GET /v1/folders/media_files/{folder_token} ──

@@ -6,7 +6,7 @@ use crate::services::sora::threads::sora_task_polling::helpers::download_extensi
 use crate::services::sora::threads::sora_task_polling::helpers::handle_failed_generations::{handle_classic_failed_generations, FailedGeneration};
 use crate::services::sora::threads::sora_task_polling::helpers::handle_successful_generations::{handle_classic_successful_generations, GenerationItem, SuccessfulGeneration};
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use enums::common::generation::common_model_type::CommonModelType;
+use artcraft_enums::common::generation::common_model_type::CommonModelType;
 use errors::AnyhowResult;
 use log::{info, warn};
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;

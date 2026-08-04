@@ -1,4 +1,4 @@
-use enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
+use artcraft_enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use serde_derive::{Deserialize, Serialize};
 
 pub const CREATE_NEW_USER_ACCOUNT_AND_SUBSCRIPTION_CHECKOUT_URL_PATH: &str = "/v1/stripe_artcraft/user_signup/subscription_checkout";

@@ -1,10 +1,10 @@
 use chrono::{DateTime, Utc};
 use serde_derive::Serialize;
 
-use enums::by_table::debug_logs::debug_log_level::DebugLogLevel;
-use enums::by_table::debug_logs::debug_log_type::DebugLogType;
-use tokens::tokens::non_unique::debug_logs_event_token::DebugLogEventToken;
-use tokens::tokens::users::UserToken;
+use artcraft_enums::by_table::debug_logs::debug_log_level::DebugLogLevel;
+use artcraft_enums::by_table::debug_logs::debug_log_type::DebugLogType;
+use artcraft_tokens::tokens::non_unique::debug_logs_event_token::DebugLogEventToken;
+use artcraft_tokens::tokens::users::UserToken;
 
 /// A single debug log row.
 /// Shared by the moderation debug-log list endpoints.

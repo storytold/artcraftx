@@ -2,11 +2,11 @@ use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 use url::Url;
 
-use enums::by_table::media_files::media_file_class::MediaFileClass;
-use enums::by_table::media_files::media_file_type::MediaFileType;
-use tokens::tokens::folders::FolderToken;
+use artcraft_enums::by_table::media_files::media_file_class::MediaFileClass;
+use artcraft_enums::by_table::media_files::media_file_type::MediaFileType;
+use artcraft_tokens::tokens::folders::FolderToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
-use tokens::tokens::users::UserToken;
+use artcraft_tokens::tokens::users::UserToken;
 
 // NB: The "folder media file" list-item shape lives in storyteller_web
 // (see `endpoints/folders/media_files/list_folder_media_files_handler.rs`)

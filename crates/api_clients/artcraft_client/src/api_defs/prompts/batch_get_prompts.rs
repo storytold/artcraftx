@@ -1,12 +1,12 @@
 use crate::api_defs::prompts::get_prompt::GetPromptImageContextItem;
 use chrono::{DateTime, Utc};
-use enums::by_table::prompts::prompt_type::PromptType;
-use enums::common::generation::common_aspect_ratio::CommonAspectRatio;
-use enums::common::generation::common_bitrate::CommonBitrate;
-use enums::common::generation::common_generation_mode::CommonGenerationMode;
-use enums::common::generation::common_model_class::CommonModelClass;
-use enums::common::generation::common_model_type::CommonModelType;
-use enums::common::generation::common_resolution::CommonResolution;
+use artcraft_enums::by_table::prompts::prompt_type::PromptType;
+use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
+use artcraft_enums::common::generation::common_bitrate::CommonBitrate;
+use artcraft_enums::common::generation::common_generation_mode::CommonGenerationMode;
+use artcraft_enums::common::generation::common_model_class::CommonModelClass;
+use artcraft_enums::common::generation::common_model_type::CommonModelType;
+use artcraft_enums::common::generation::common_resolution::CommonResolution;
 use sqlite_identifiers::enums::generation_provider::GenerationProvider;
 use std::collections::HashSet;
 

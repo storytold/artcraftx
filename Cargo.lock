@@ -184,11 +184,12 @@ name = "artcraft_client"
 version = "0.0.1"
 dependencies = [
  "anyhow",
+ "artcraft_enums",
+ "artcraft_tokens",
  "backoff",
  "chrono",
  "cloudflare_errors",
  "cookie",
- "enums",
  "errors",
  "log",
  "mimetypes",
@@ -197,7 +198,6 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sqlite_identifiers",
- "tokens",
  "tokio",
  "url",
  "url-builder",
@@ -207,11 +207,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "artcraft_enums"
+version = "0.0.1"
+dependencies = [
+ "log",
+ "regex",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "strum",
+ "toml 1.0.7+spec-1.1.0",
+ "workspace-build-acceleration",
+]
+
+[[package]]
+name = "artcraft_tokens"
+version = "0.0.1"
+dependencies = [
+ "once_cell",
+ "rand 0.8.5",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "strum",
+ "workspace-build-acceleration",
+]
+
+[[package]]
 name = "artcraftx"
 version = "0.0.1"
 dependencies = [
  "anyhow",
  "artcraft_client",
+ "artcraft_enums",
+ "artcraft_tokens",
  "base64 0.22.1",
  "build_metadata",
  "bytes",
@@ -220,7 +249,6 @@ dependencies = [
  "directories",
  "dirs",
  "discord-rich-presence",
- "enums",
  "errors",
  "fal_client",
  "filesys",
@@ -256,7 +284,6 @@ dependencies = [
  "tauri-plugin-upload",
  "tempdir",
  "tempfile",
- "tokens",
  "tokio",
  "tokio-util",
  "toml 1.0.7+spec-1.1.0",
@@ -1752,20 +1779,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.117",
-]
-
-[[package]]
-name = "enums"
-version = "0.0.1"
-dependencies = [
- "log",
- "regex",
- "serde",
- "serde_derive",
- "serde_json",
- "strum",
- "toml 1.0.7+spec-1.1.0",
- "workspace-build-acceleration",
 ]
 
 [[package]]
@@ -5471,7 +5484,8 @@ version = "0.0.1"
 dependencies = [
  "anyhow",
  "artcraft_client",
- "enums",
+ "artcraft_enums",
+ "artcraft_tokens",
  "fal_client",
  "gmicloud_client",
  "grok_api_client",
@@ -5485,7 +5499,6 @@ dependencies = [
  "strum",
  "test_data",
  "test_utils",
- "tokens",
  "tokio",
  "url_utils",
  "uuid 1.22.0",
@@ -6339,7 +6352,6 @@ version = "0.0.1"
 dependencies = [
  "anyhow",
  "chrono",
- "enums",
  "errors",
  "log",
  "once_cell",
@@ -6350,7 +6362,6 @@ dependencies = [
  "sqlite_identifiers",
  "sqlx",
  "tempfile",
- "tokens",
  "workspace-build-acceleration",
 ]
 
@@ -7352,19 +7363,6 @@ name = "tinyvec_macros"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
-
-[[package]]
-name = "tokens"
-version = "0.0.1"
-dependencies = [
- "once_cell",
- "rand 0.8.5",
- "serde",
- "serde_derive",
- "serde_json",
- "strum",
- "workspace-build-acceleration",
-]
 
 [[package]]
 name = "tokio"

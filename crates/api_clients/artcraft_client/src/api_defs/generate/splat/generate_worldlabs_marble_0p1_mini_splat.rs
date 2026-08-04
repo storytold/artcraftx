@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use artcraft_tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 pub const GENERATE_WORLDLABS_MARBLE_0P1_MINI_SPLAT_URL_PATH: &str = "/v1/generate/splat/worldlabs_marble_0p1_mini";

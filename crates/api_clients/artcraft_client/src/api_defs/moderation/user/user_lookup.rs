@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
-use tokens::tokens::users::UserToken;
+use artcraft_tokens::tokens::users::UserToken;
 
 pub const MODERATOR_USER_LOOKUP_PATH: &str = "/v1/moderation/users/lookup";
 

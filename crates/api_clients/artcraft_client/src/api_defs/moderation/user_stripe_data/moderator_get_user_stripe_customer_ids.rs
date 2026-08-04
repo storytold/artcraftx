@@ -1,6 +1,6 @@
-use enums::common::payments_namespace::PaymentsNamespace;
+use artcraft_enums::common::payments_namespace::PaymentsNamespace;
 use serde_derive::{Deserialize, Serialize};
-use tokens::tokens::users::UserToken;
+use artcraft_tokens::tokens::users::UserToken;
 
 pub const MODERATOR_GET_USER_STRIPE_CUSTOMER_IDS_PATH: &str =
     "/v1/moderation/user_stripe_data/{user_token}/customer_ids";

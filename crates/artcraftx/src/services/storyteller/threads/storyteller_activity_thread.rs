@@ -10,7 +10,7 @@ use artcraft_client::error::storyteller_error::StorytellerError;
 use errors::AnyhowResult;
 use log::{debug, error, info};
 use std::time::Instant;
-use tokens::tokens::app_session::AppSessionToken;
+use artcraft_tokens::tokens::app_session::AppSessionToken;
 
 const CLIENT_NAME : &str = "artcraft";
 

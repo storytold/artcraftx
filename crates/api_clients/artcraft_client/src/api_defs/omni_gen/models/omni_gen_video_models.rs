@@ -1,11 +1,11 @@
-use enums::common::generation::common_aspect_ratio::CommonAspectRatio;
-use enums::common::generation::common_quality::CommonQuality;
-use enums::common::generation::common_resolution::CommonResolution;
-use enums::common::generation::common_video_model::CommonVideoModel;
-use enums::common::generation::model_creator::ModelCreator;
+use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
+use artcraft_enums::common::generation::common_quality::CommonQuality;
+use artcraft_enums::common::generation::common_resolution::CommonResolution;
+use artcraft_enums::common::generation::common_video_model::CommonVideoModel;
+use artcraft_enums::common::generation::model_creator::ModelCreator;
 use sqlite_identifiers::enums::generation_provider::GenerationProvider;
 use serde_derive::{Deserialize, Serialize};
-use enums::common::generation::common_bitrate::CommonBitrate;
+use artcraft_enums::common::generation::common_bitrate::CommonBitrate;
 
 /// Video model to default to if none is specified
 const DEFAULT_VIDEO_MODEL : CommonVideoModel = CommonVideoModel::Seedance2p0;

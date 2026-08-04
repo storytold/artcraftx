@@ -1,8 +1,8 @@
 use serde_derive::{Deserialize, Serialize};
 
 use crate::api_defs::common::responses::media_links::MediaLinks;
-use enums::common::generation::common_model_type::CommonModelType;
-use tokens::tokens::characters::CharacterToken;
+use artcraft_enums::common::generation::common_model_type::CommonModelType;
+use artcraft_tokens::tokens::characters::CharacterToken;
 
 /// Path parameters for getting a character.
 #[derive(Deserialize)]

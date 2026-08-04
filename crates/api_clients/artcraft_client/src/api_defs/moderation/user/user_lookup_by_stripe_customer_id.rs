@@ -1,6 +1,6 @@
-use enums::common::payments_namespace::PaymentsNamespace;
+use artcraft_enums::common::payments_namespace::PaymentsNamespace;
 use serde_derive::{Deserialize, Serialize};
-use tokens::tokens::users::UserToken;
+use artcraft_tokens::tokens::users::UserToken;
 
 pub const MODERATOR_USER_LOOKUP_BY_STRIPE_CUSTOMER_ID_PATH: &str = "/v1/moderation/users/lookup_by_stripe_customer_id";
 

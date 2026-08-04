@@ -1,8 +1,8 @@
-use enums::common::generation::common_aspect_ratio::CommonAspectRatio;
-use enums::common::generation::common_image_model::CommonImageModel;
-use enums::common::generation::common_quality::CommonQuality;
-use enums::common::generation::common_resolution::CommonResolution;
-use enums::common::generation::model_creator::ModelCreator;
+use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
+use artcraft_enums::common::generation::common_image_model::CommonImageModel;
+use artcraft_enums::common::generation::common_quality::CommonQuality;
+use artcraft_enums::common::generation::common_resolution::CommonResolution;
+use artcraft_enums::common::generation::model_creator::ModelCreator;
 use sqlite_identifiers::enums::generation_provider::GenerationProvider;
 use serde_derive::{Deserialize, Serialize};
 

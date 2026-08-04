@@ -18,7 +18,7 @@ use std::io::Read;
 use std::path::Path;
 use sqlite_identifiers::ids::batch_generation_token::BatchGenerationToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
-use tokens::tokens::model_weights::ModelWeightToken;
+use artcraft_tokens::tokens::model_weights::ModelWeightToken;
 use sqlite_identifiers::ids::prompt_token::PromptToken;
 use uuid::uuid;
 

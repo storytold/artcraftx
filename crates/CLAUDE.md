@@ -51,6 +51,8 @@ helpers go in the parent `mod tests` so sub-modules can `use super::*`.
 - `router` — provider routing for image/video generation (Artcraft, Fal, Seedance2Pro)
 - `artcraft_client` — HTTP client for the Artcraft/Storyteller API, including the API type definitions (`artcraft_client::api_defs`)
 - `seedance2pro_client` — HTTP client for the Kinovi/Seedance2Pro video generation service
-- `enums` — enum variants stored as strings
-- `tokens` — identifiers with Stripe-like prefixes (e.g. `user_`, `mf_`)
+- `artcraft_enums` — enum variants stored as strings
+- `artcraft_tokens` — identifiers with Stripe-like prefixes (e.g. `user_`, `mf_`)
+- `identifiers` — the desktop app's own IDs (e.g. `credential_{ulid}`)
 - `sqlite_database` — SQLx queries + embedded migrations for the desktop app's local task database
+- `sqlite_identifiers` — enums and IDs used in sqlite queries as enums or keys

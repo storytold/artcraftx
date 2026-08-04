@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use tokens::tokens::user_referral_codes::UserReferralCodeToken;
+use artcraft_tokens::tokens::user_referral_codes::UserReferralCodeToken;
 
 #[derive(Deserialize)]
 pub struct DeleteReferralCodePathInfo {

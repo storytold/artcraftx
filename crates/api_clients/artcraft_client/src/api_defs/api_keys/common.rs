@@ -1,8 +1,8 @@
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 
-use tokens::tokens::api_keys::ApiKeyToken;
-use tokens::tokens::users::UserToken;
+use artcraft_tokens::tokens::api_keys::ApiKeyToken;
+use artcraft_tokens::tokens::users::UserToken;
 
 /// Canonical wire shape for an API key, used by the list rows and the
 /// single-key GET.

@@ -1,6 +1,6 @@
 use chrono::{DateTime, NaiveDate, Utc};
 use serde_derive::{Deserialize, Serialize};
-use tokens::tokens::users::UserToken;
+use artcraft_tokens::tokens::users::UserToken;
 
 pub const MODERATOR_USER_DAILY_SPENDS_PATH: &str =
   "/v1/moderation/user_daily_spends/user/{user_token}";

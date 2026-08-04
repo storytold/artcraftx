@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use enums::common::generation::common_aspect_ratio::CommonAspectRatio;
-use enums::common::generation::common_image_model::CommonImageModel;
-use enums::common::generation::common_quality::CommonQuality;
-use enums::common::generation::common_resolution::CommonResolution;
+use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
+use artcraft_enums::common::generation::common_image_model::CommonImageModel;
+use artcraft_enums::common::generation::common_quality::CommonQuality;
+use artcraft_enums::common::generation::common_resolution::CommonResolution;
 use sqlite_identifiers::enums::generation_provider::GenerationProvider;
 
 pub const ESTIMATE_IMAGE_COST_PATH: &str = "/v1/generate/cost_estimate/image";

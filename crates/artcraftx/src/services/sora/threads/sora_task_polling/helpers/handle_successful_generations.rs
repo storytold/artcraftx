@@ -11,7 +11,7 @@ use crate::services::sora::threads::sora_task_polling::helpers::upload_generatio
 use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
 use sqlite_identifiers::enums::generation_provider::GenerationProvider;
-use enums::common::generation::common_model_type::CommonModelType;
+use artcraft_enums::common::generation::common_model_type::CommonModelType;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
 use uuid_utils::uuid::generate_random_uuid;

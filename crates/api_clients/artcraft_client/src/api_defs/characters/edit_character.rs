@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-use tokens::tokens::characters::CharacterToken;
+use artcraft_tokens::tokens::characters::CharacterToken;
 
 /// Request body for editing a character.
 #[derive(Deserialize)]

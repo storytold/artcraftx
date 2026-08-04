@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use artcraft_tokens::tokens::generic_inference_jobs::InferenceJobToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 pub const HUNYUAN3D_V3_MULTI_FUNCTION_OBJECT_GEN_PATH: &str = "/v1/generate/object/multi_function/hunyuan3d_v3";

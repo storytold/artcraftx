@@ -4,7 +4,7 @@ use router::errors::artcraft_router_error::ArtcraftRouterError;
 use router::errors::provider_error::ProviderError;
 use base64::DecodeError;
 use sqlite_identifiers::enums::generation_provider::GenerationProvider;
-use enums::common::generation::common_model_type::CommonModelType;
+use artcraft_enums::common::generation::common_model_type::CommonModelType;
 use errors::AnyhowError;
 use grok_consumer_client::error::grok_error::GrokError;
 use midjourney_client::error::midjourney_error::MidjourneyError;

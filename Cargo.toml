@@ -13,7 +13,7 @@ members = [
   "crates/api_clients/grok_consumer_client",
   "crates/api_clients/midjourney_client",
   "crates/api_clients/openai_sora_client",
-  "crates/api_clients/router",
+  "crates/router",
   "crates/api_clients/seedance2pro_client",
   "crates/api_clients/worldlabs_api_client",
   "crates/api_clients/worldlabs_consumer_client",
@@ -22,7 +22,7 @@ members = [
   "crates/artcraftx",
 
   # Strongly-typed identifiers for non-database entities
-  "crates/identifiers",
+  "crates/schema/identifiers",
 
   # Shared libraries
   "crates/lib/build_metadata",
@@ -43,12 +43,12 @@ members = [
   "crates/lib/uuid_utils",
 
   # Local task storage (SQLite, embedded migrations)
-  "crates/sqlite_database",
-  "crates/sqlite_identifiers",
+  "crates/schema/sqlite_database",
+  "crates/schema/sqlite_identifiers",
 
   # Schema (public): common strongly-typed tokens, ids, payloads, etc.
-  "crates/schema/public/enums",
-  "crates/schema/public/tokens",
+  "crates/schema/artcraft_enums",
+  "crates/schema/artcraft_tokens",
 
   # Testing code
   "crates/testing/test_data",
@@ -89,7 +89,7 @@ build_metadata = { path = "crates/lib/build_metadata" }
 cloudflare_errors = { path = "crates/lib/cloudflare_errors" }
 cloudflare_mitigation = { path = "crates/lib/cloudflare_mitigation" }
 cookie_store = { path = "crates/lib/cookie_store" }
-enums = { path = "crates/schema/public/enums" }
+artcraft_enums = { path = "crates/schema/artcraft_enums" }
 errors = { path = "crates/lib/errors" }
 fal_client = { path = "crates/api_clients/fal_client" }
 file_to_base64_url = { path = "crates/lib/files/file_to_base64_url" }
@@ -98,7 +98,7 @@ gmicloud_client = { path = "crates/api_clients/gmicloud_client" }
 grok_api_client = { path = "crates/api_clients/grok_api_client" }
 grok_consumer_client = { path = "crates/api_clients/grok_consumer_client" }
 http_headers = { path = "crates/lib/http_headers" }
-identifiers = { path = "crates/identifiers" }
+identifiers = { path = "crates/schema/identifiers" }
 images = { path = "crates/lib/files/images" }
 jwt_light = { path = "crates/lib/jwt_light" }
 memory_store = { path = "crates/lib/caching/memory_store" }
@@ -106,13 +106,13 @@ midjourney_client = { path = "crates/api_clients/midjourney_client" }
 mimetypes = { path = "crates/lib/files/mimetypes" }
 openai_sora_client = { path = "crates/api_clients/openai_sora_client" }
 primitives = { path = "crates/lib/data/primitives" }
-router = { path = "crates/api_clients/router" }
+router = { path = "crates/router" }
 seedance2pro_client = { path = "crates/api_clients/seedance2pro_client" }
-sqlite_database = { path = "crates/sqlite_database" }
-sqlite_identifiers = { path = "crates/sqlite_identifiers" }
+sqlite_database = { path = "crates/schema/sqlite_database" }
+sqlite_identifiers = { path = "crates/schema/sqlite_identifiers" }
 test_data = { path = "crates/testing/test_data" }
 test_utils = { path = "crates/testing/test_utils" }
-tokens = { path = "crates/schema/public/tokens" }
+artcraft_tokens = { path = "crates/schema/artcraft_tokens" }
 url_utils = { path = "crates/lib/url_utils" }
 uuid_utils = { path = "crates/lib/uuid_utils" }
 web_base64 = { path = "crates/lib/data/web_base64" }
