@@ -84,6 +84,11 @@ pub enum TauriVideoModel {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct TauriGenerateVideoRequest {
+  /// Stable id (`credential_{entropy}`) of the stored credential (account)
+  /// to generate with. Loaded from disk; generation routes to the
+  /// credential's service.
+  pub credential_id: Option<String>,
+
   pub provider: Option<GenerationProvider>,
   pub model: Option<TauriVideoModel>,
 
@@ -149,4 +154,7 @@ pub enum TauriGenerateVideoErrorType {
   NeedsFalApiKey,
   FalError,
   NeedsStorytellerCredentials,
+  /// Problem with the selected account credential (absent, unknown, or
+  /// unusable). The backend also flashes a dismissable modal.
+  CredentialProblem,
 }

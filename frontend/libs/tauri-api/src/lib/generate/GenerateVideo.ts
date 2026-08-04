@@ -8,6 +8,11 @@ import {
 import { GenerationProvider } from "@storyteller/api-enums";
 
 export interface GenerateVideoRequest {
+  // Stable id (`credential_{entropy}`) of the stored credential (account)
+  // to generate with. The backend loads it from disk and routes to that
+  // credential's service.
+  credential_id?: string;
+
   // The provider to use (defaults to Artcraft/Storyteller).
   provider?: GenerationProvider;
 
@@ -50,6 +55,7 @@ export interface GenerateVideoRequest {
 }
 
 interface RawGenerateVideoRequest {
+  credential_id?: string;
   provider?: GenerationProvider;
   model?: string;
   prompt?: string;
@@ -117,6 +123,7 @@ export const GenerateVideo = async (
     model: modelName,
   };
 
+  if (!!request.credential_id) mutableRequest.credential_id = request.credential_id;
   if (!!request.provider) mutableRequest.provider = request.provider;
   if (!!request.prompt) mutableRequest.prompt = request.prompt;
   if (!!request.negative_prompt) mutableRequest.negative_prompt = request.negative_prompt;

@@ -1,2 +1,3 @@
+pub mod generation_credential;
 pub mod router_image_request_to_artcraft_prompt;
 pub mod router_video_request_to_artcraft_prompt;

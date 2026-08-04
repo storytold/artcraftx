@@ -1,5 +1,3 @@
-use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
-use artcraft_client::utils::api_host::ApiHost;
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use log::{info, warn};
@@ -15,8 +13,9 @@ use tokens::tokens::media_files::MediaFileToken;
 
 use crate::api_adapters::models::image::tauri_image_model_to_generation_model::tauri_image_model_to_generation_model;
 use crate::api_adapters::models::image::tauri_image_model_to_router_model::tauri_image_model_to_router_model;
-use crate::commands::enqueue::generate_error::{CredentialProblemReason, GenerateError};
+use crate::commands::enqueue::generate_error::GenerateError;
 use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
+use crate::commands::generate::common::generation_credential::{credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential};
 use crate::commands::generate::generate_image::providers::router::handle_api_providers::handle_api_key_provider;
 use crate::commands::generate::generate_image::providers::router::utils::convert_enums_to_router::{convert_aspect_ratio, convert_quality, convert_resolution};
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;
@@ -37,7 +36,10 @@ pub async fn handle_credential_router(
   app_env_configs: &AppEnvConfigs,
   storyteller_creds_manager: &StorytellerCredentialManager,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
-  let credential = resolve_credential(request, app_data_root)?;
+  let credential = resolve_generation_credential(
+    request.credential_id.as_deref(),
+    app_data_root,
+  )?;
 
   info!(
     "handle_credential_router: credential={} service={}",
@@ -68,29 +70,6 @@ pub async fn handle_credential_router(
       &format!("accounts for service {} can't generate images yet", other),
     )),
   }
-}
-
-/// Require and load the credential named by the request.
-fn resolve_credential(
-  request: &TauriGenerateImageRequest,
-  app_data_root: &AppDataRoot,
-) -> Result<Credential, GenerateError> {
-  let credential_id = request.credential_id.as_deref()
-      .filter(|id| !id.trim().is_empty())
-      .ok_or(GenerateError::CredentialProblem(
-        CredentialProblemReason::NoCredentialSupplied,
-      ))?;
-
-  let maybe_credential = app_data_root
-      .credentials_dir()
-      .find_credential_by_id(credential_id)
-      .map_err(GenerateError::from)?;
-
-  maybe_credential.ok_or_else(|| {
-    GenerateError::CredentialProblem(CredentialProblemReason::CredentialNotFound {
-      credential_id: credential_id.to_string(),
-    })
-  })
 }
 
 /// Generate via the router's Artcraft provider, authenticating with the
@@ -186,27 +165,6 @@ async fn handle_artcraft_credential(
   })
 }
 
-/// Rebuild the web-session credential set from the stored cookie header.
-fn storyteller_creds_from_credential(
-  credential: &Credential,
-) -> Result<StorytellerCredentialSet, GenerateError> {
-  let cookie = credential.cookies().ok_or_else(|| {
-    credential_not_usable(credential, "the account has no session cookies")
-  })?;
-
-  StorytellerCredentialSet::parse_multi_cookie_header(&cookie.cookie_header)
-      .map_err(|err| {
-        credential_not_usable(
-          credential,
-          &format!("the stored session cookies could not be parsed ({})", err),
-        )
-      })?
-      .filter(|creds| !creds.is_empty())
-      .ok_or_else(|| {
-        credential_not_usable(credential, "the stored session cookies are empty")
-      })
-}
-
 /// Reference images for the router request: canvas first, then scene, then
 /// the un-semantic reference images. (Artcraft accepts media tokens
 /// directly; no URL resolution needed.)
@@ -235,9 +193,3 @@ fn collect_image_inputs(
   }
 }
 
-fn credential_not_usable(credential: &Credential, reason: &str) -> GenerateError {
-  GenerateError::CredentialProblem(CredentialProblemReason::CredentialNotUsable {
-    credential_id: credential.id.to_string(),
-    reason: reason.to_string(),
-  })
-}

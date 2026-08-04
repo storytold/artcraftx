@@ -26,5 +26,5 @@ pub async fn handle_video_artcraft(
   let router_model = tauri_video_model_to_router_model(model);
   let generation_model = tauri_video_model_to_generation_model(model);
 
-  handle_artcraft_video_via_router(request, app_env_configs, &creds, router_model, generation_model).await
+  handle_artcraft_video_via_router(request, &app_env_configs.storyteller_host, &creds, router_model, generation_model).await
 }

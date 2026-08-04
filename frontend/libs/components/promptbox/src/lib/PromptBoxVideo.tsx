@@ -132,6 +132,10 @@ interface PromptBoxVideoProps {
   /** Optional account-picker slot rendered at the very start of the toolbar
    *  (left of the model selector). */
   accountSelector?: React.ReactNode;
+  /** Stable id (`credential_{entropy}`) of the selected account credential,
+   *  sent with generation requests so the backend knows which stored
+   *  credential to generate with. */
+  credentialId?: string | null;
   /** Optional model-picker slot rendered at the start of the toolbar
    *  (left of the aspect-ratio picker). */
   modelSelector?: React.ReactNode;
@@ -152,6 +156,7 @@ export const PromptBoxVideo = ({
   uploadAudio,
   credits,
   accountSelector,
+  credentialId,
   modelSelector,
   fullBleed = false,
 }: PromptBoxVideoProps) => {
@@ -1080,6 +1085,10 @@ export const PromptBoxVideo = ({
         frontend_subscriber_id: subscriberId,
       };
 
+      if (!!credentialId) {
+        request.credential_id = credentialId;
+      }
+
       if (!!selectedProvider) {
         request.provider = selectedProvider;
       }
@@ -1208,7 +1217,11 @@ export const PromptBoxVideo = ({
       await Promise.all(enqueuePromises);
     } catch (err) {
       console.error("PromptBoxVideo - enqueue failed", err);
-      toast.error("Failed to start video generation. Please try again.");
+      const backendMessage = (err as { error_message?: string } | null)
+        ?.error_message;
+      toast.error(
+        backendMessage || "Failed to start video generation. Please try again.",
+      );
     }
 
     onEnqueuePressed?.(prompt, subscriberIds);

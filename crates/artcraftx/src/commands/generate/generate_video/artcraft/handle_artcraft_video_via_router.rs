@@ -2,8 +2,8 @@ use crate::commands::enqueue::generate_error::GenerateError;
 use crate::commands::generate::generate_video::request::TauriGenerateVideoRequest;
 use crate::commands::enqueue::task_enqueue_success::TaskEnqueueSuccess;
 use crate::events::generation_events::common::GenerationModel;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
+use artcraft_client::utils::api_host::ApiHost;
 use router::api::audio_list_ref::AudioListRef;
 use router::api::character_list_ref::CharacterListRef;
 use router::api::router_video_model::RouterVideoModel;
@@ -21,15 +21,15 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_type::TaskType;
 use log::{error, info};
 
-pub(super) async fn handle_artcraft_video_via_router(
+pub async fn handle_artcraft_video_via_router(
   request: &TauriGenerateVideoRequest,
-  app_env_configs: &AppEnvConfigs,
+  api_host: &ApiHost,
   creds: &StorytellerCredentialSet,
   model: RouterVideoModel,
   generation_model: GenerationModel,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let client = RouterClient::Artcraft(RouterArtcraftClient::new(
-    app_env_configs.storyteller_host.clone(),
+    api_host.clone(),
     creds.clone(),
   ));
 
@@ -69,6 +69,12 @@ pub(super) async fn handle_artcraft_video_via_router(
   let job_id = response.get_artcraft_payload()
     .map(|p| p.inference_job_token.to_string())
     .ok_or(GenerateError::ResponseHadNoJobTokens)?;
+
+  info!(
+    "Router video generation enqueued: inference_job_token={}, response={:?}",
+    job_id,
+    response,
+  );
 
   Ok(TaskEnqueueSuccess {
     task_type: TaskType::VideoGeneration,
