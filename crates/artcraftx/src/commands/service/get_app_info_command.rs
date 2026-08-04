@@ -2,7 +2,7 @@ use artcraft_client::utils::api_host::ApiHost;
 use crate::commands::utils::response::shorthand::InfallibleResponse;
 use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
-use crate::state::artcraft_platform_info::{ArtcraftOs, ArtcraftPlatformInfo};
+use crate::state::runtime::artcraft_platform_info::{ArtcraftOs, ArtcraftPlatformInfo};
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use chrono::{DateTime, Utc};

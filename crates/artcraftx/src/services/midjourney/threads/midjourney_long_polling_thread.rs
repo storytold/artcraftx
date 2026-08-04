@@ -3,7 +3,7 @@ use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::task_database::TaskDatabase;
+use crate::state::database::task_database::TaskDatabase;
 use crate::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::midjourney::threads::events::maybe_handle_text_to_image_complete_event::maybe_handle_text_to_image_complete_event;

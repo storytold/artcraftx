@@ -1,5 +1,5 @@
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::task_database::TaskDatabase;
+use crate::state::database::task_database::TaskDatabase;
 use errors::AnyhowResult;
 use tauri::{AppHandle, Manager};
 

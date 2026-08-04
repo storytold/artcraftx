@@ -4,7 +4,7 @@ use crate::events::functional_events::text_to_image_generation_complete_event::{
 use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::task_database::TaskDatabase;
+use crate::state::database::task_database::TaskDatabase;
 use crate::utils::download_url_to_temp_dir::download_url_to_temp_dir;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::state::grok_image_prompt_queue::{GrokImagePromptQueue, PromptItem};

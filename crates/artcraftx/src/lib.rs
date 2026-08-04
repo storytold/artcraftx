@@ -47,7 +47,7 @@ use crate::commands::task_queue::tasks_nuke_all_command::tasks_nuke_all_command;
 use crate::lifecycle::startup::handle_tauri_startup::handle_tauri_startup;
 use crate::lifecycle::startup::setup_main_window::setup_main_window;
 use crate::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
-use crate::state::artcraft_platform_info::ArtcraftPlatformInfo;
+use crate::state::runtime::artcraft_platform_info::ArtcraftPlatformInfo;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;

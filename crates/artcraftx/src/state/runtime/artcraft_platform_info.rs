@@ -1,4 +1,4 @@
-use crate::state::os_platform::OsPlatform;
+use crate::state::runtime::os_platform::OsPlatform;
 use crate::version::ARTCRAFT_VERSION;
 use chrono::{DateTime, Utc};
 

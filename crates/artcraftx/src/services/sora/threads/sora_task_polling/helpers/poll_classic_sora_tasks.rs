@@ -1,5 +1,5 @@
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::task_database::TaskDatabase;
+use crate::state::database::task_database::TaskDatabase;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::sora::threads::sora_task_polling::helpers::download_extension::DownloadExtension;

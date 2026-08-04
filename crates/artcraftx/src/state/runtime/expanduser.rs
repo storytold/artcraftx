@@ -43,7 +43,7 @@ pub fn home_dir() -> io::Result<PathBuf> {
 
 #[cfg(test)]
 mod tests {
-  use crate::state::expanduser::expanduser;
+  use crate::state::runtime::expanduser::expanduser;
   use std::env;
   use std::path::PathBuf;
 

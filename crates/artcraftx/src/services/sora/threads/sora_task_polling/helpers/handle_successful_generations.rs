@@ -4,7 +4,7 @@ use crate::events::generation_events::common::{GenerationAction, GenerationServi
 use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
-use crate::state::task_database::TaskDatabase;
+use crate::state::database::task_database::TaskDatabase;
 use crate::services::sora::threads::sora_task_polling::helpers::download_extension::DownloadExtension;
 use crate::services::sora::threads::sora_task_polling::helpers::generation_type::GenerationType;
 use crate::services::sora::threads::sora_task_polling::helpers::upload_generation_to_backend::{upload_generation_to_backend, UploadGenerationToBackendArgs};

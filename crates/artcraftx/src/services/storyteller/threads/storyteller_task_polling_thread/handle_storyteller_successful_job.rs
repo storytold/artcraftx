@@ -1,7 +1,7 @@
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::events::sendable_event_trait::SendableEvent;
-use crate::state::task_database::TaskDatabase;
+use crate::state::database::task_database::TaskDatabase;
 use crate::utils::enum_conversion::generation_provider::to_generation_service_provider;
 use crate::utils::enum_conversion::task_type::to_generation_action;
 use super::events::maybe_handle_frontend_caller_notification::maybe_handle_frontend_caller_notification;

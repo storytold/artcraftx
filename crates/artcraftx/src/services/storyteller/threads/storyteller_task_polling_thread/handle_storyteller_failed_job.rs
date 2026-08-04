@@ -1,7 +1,7 @@
 use crate::utils::enum_conversion::task_failure_type::task_failure_type_from_frontend_failure_category_for_api;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::generation_events::generation_failed_event::GenerationFailedEvent;
-use crate::state::task_database::TaskDatabase;
+use crate::state::database::task_database::TaskDatabase;
 use crate::utils::enum_conversion::generation_provider::to_generation_service_provider;
 use crate::utils::enum_conversion::task_type::to_generation_action;
 use artcraft_client::api_defs::jobs::list_session_jobs::ListSessionJobsItem;

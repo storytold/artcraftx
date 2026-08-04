@@ -1,5 +1,5 @@
 use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
-use crate::state::task_database_version::TASK_DATABASE_VERSION;
+use crate::state::database::task_database_version::TASK_DATABASE_VERSION;
 use std::path::{Path, PathBuf};
 
 #[derive(Clone)]

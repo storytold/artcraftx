@@ -1,5 +1,5 @@
 use artcraft_client::utils::api_host::ApiHost;
-use crate::state::task_database::TaskDatabase;
+use crate::state::database::task_database::TaskDatabase;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::services::storyteller::threads::storyteller_task_polling_thread::handle_storyteller_failed_job::handle_failed_job;
 use crate::services::storyteller::threads::storyteller_task_polling_thread::handle_storyteller_successful_job::handle_successful_job;

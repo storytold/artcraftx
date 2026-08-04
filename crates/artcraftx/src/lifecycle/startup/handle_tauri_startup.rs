@@ -5,7 +5,7 @@ use crate::lifecycle::startup::tasks::spawn_discord_presence_thread::spawn_disco
 use crate::lifecycle::startup::tasks::spawn_main_window_thread::spawn_main_window_thread;
 use crate::lifecycle::startup::tasks::spawn_sora_task_polling_thread::spawn_sora_task_polling_thread;
 use crate::lifecycle::startup::tasks::spawn_storyteller_threads::spawn_storyteller_threads;
-use crate::state::artcraft_platform_info::ArtcraftPlatformInfo;
+use crate::state::runtime::artcraft_platform_info::ArtcraftPlatformInfo;
 use crate::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;

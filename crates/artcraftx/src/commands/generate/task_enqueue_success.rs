@@ -1,5 +1,5 @@
 use crate::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
-use crate::state::task_database::TaskDatabase;
+use crate::state::database::task_database::TaskDatabase;
 use sqlite_identifiers::enums::generation_provider::GenerationProvider;
 use sqlite_identifiers::enums::task_model_type::TaskModelType;
 use sqlite_identifiers::enums::task_status::TaskStatus;

@@ -1,6 +1,6 @@
 use crate::credentials::find_service_credentials::find_fal_api_key;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::task_database::TaskDatabase;
+use crate::state::database::task_database::TaskDatabase;
 use crate::threads::third_party_task_polling_thread::handlers::fal::handle_fal_complete::handle_fal_complete;
 use crate::threads::third_party_task_polling_thread::handlers::fal::handle_fal_failure::handle_fal_failure;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;

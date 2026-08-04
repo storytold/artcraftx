@@ -1,6 +1,6 @@
 use crate::commands::utils::response::shorthand::ResponseOrErrorMessage;
 use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
-use crate::state::task_database::TaskDatabase;
+use crate::state::database::task_database::TaskDatabase;
 use chrono::{DateTime, Utc};
 use sqlite_identifiers::enums::generation_provider::GenerationProvider;
 use sqlite_identifiers::enums::task_model_type::TaskModelType;

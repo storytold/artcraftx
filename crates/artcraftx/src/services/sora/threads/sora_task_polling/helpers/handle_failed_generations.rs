@@ -1,7 +1,7 @@
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::events::generation_events::generation_failed_event::GenerationFailedEvent;
-use crate::state::task_database::TaskDatabase;
+use crate::state::database::task_database::TaskDatabase;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use sqlite_identifiers::enums::task_status;
 use errors::AnyhowResult;

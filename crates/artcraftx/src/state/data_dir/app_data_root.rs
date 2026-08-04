@@ -1,12 +1,11 @@
-use crate::state::data_dir::subdirectory::app_assets_dir::AppAssetsDir;
 use crate::state::data_dir::subdirectory::app_credentials_dir::AppCredentialsDir;
 use crate::state::data_dir::subdirectory::app_downloads_dir::AppDownloadsDir;
 use crate::state::data_dir::subdirectory::app_settings_dir::AppSettingsDir;
 use crate::state::data_dir::subdirectory::app_state_dir::AppStateDir;
 use crate::state::data_dir::subdirectory::temporary_dir::TemporaryDir;
 use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
-use crate::state::expanduser::expanduser;
-use crate::state::os_platform::OsPlatform;
+use crate::state::runtime::expanduser::expanduser;
+use crate::state::runtime::os_platform::OsPlatform;
 use anyhow::anyhow;
 use directories::UserDirs;
 use std::path::{Path, PathBuf};
@@ -20,7 +19,7 @@ const DEFAULT_ARTCRAFTX_DATA_SUBDIR : &str = "artcraftx";
 /// Note: Tauri appends ".log" to the end of the filename.
 const LOG_FILE_NAME : &str = "artcraftx_debug";
 
-/// The path to the application data directory, which includes "asset" and "weights" data.
+/// The path to the application data directory.
 #[derive(Clone)]
 pub struct AppDataRoot {
   path: PathBuf,
@@ -28,7 +27,6 @@ pub struct AppDataRoot {
   log_file_name: PathBuf,
   log_file_name_string: String,
   
-  assets_dir: AppAssetsDir,
   credentials_dir: AppCredentialsDir,
   downloads_dir: AppDownloadsDir,
   settings_dir: AppSettingsDir,
@@ -67,7 +65,6 @@ impl AppDataRoot {
       }
     }
     
-    let assets_dir = AppAssetsDir::get_or_create_in_root_dir(&dir)?;
     let credentials_dir = AppCredentialsDir::get_or_create_in_root_dir(&dir)?;
     let downloads_dir = AppDownloadsDir::get_or_create_in_root_dir(&dir)?;
     let settings_dir = AppSettingsDir::get_or_create_in_root_dir(&dir)?;
@@ -83,7 +80,6 @@ impl AppDataRoot {
       path: dir,
       log_file_name,
       log_file_name_string,
-      assets_dir,
       credentials_dir,
       downloads_dir,
       settings_dir,
@@ -92,10 +88,6 @@ impl AppDataRoot {
     })
   }
   
-  pub fn assets_dir(&self) -> &AppAssetsDir {
-    &self.assets_dir
-  }
-
   pub fn credentials_dir(&self) -> &AppCredentialsDir {
     &self.credentials_dir
   }

@@ -13,7 +13,7 @@ use crate::events::generation_events::generation_enqueue_success_event::Generati
 
 
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::task_database::TaskDatabase;
+use crate::state::database::task_database::TaskDatabase;
 use log::{error, info};
 use tauri::{AppHandle, State};
 
