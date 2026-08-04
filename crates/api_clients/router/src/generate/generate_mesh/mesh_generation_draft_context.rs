@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::client::router_client::RouterClient;
 

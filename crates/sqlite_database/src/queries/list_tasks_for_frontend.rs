@@ -1,16 +1,16 @@
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
 use chrono::{DateTime, Utc};
-use sqlite_identifiers::generation_provider::GenerationProvider;
-use sqlite_identifiers::task_failure_type::TaskFailureType;
-use sqlite_identifiers::task_media_file_class::TaskMediaFileClass;
-use sqlite_identifiers::task_model_type::TaskModelType;
-use sqlite_identifiers::task_status::TaskStatus;
-use sqlite_identifiers::task_type::TaskType;
-use sqlite_identifiers::tauri_command_caller::TauriCommandCaller;
-use sqlite_identifiers::batch_generation_token::BatchGenerationToken;
-use sqlite_identifiers::media_file_token::MediaFileToken;
-use sqlite_identifiers::task_id::TaskId;
+use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use sqlite_identifiers::enums::task_failure_type::TaskFailureType;
+use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
+use sqlite_identifiers::enums::task_model_type::TaskModelType;
+use sqlite_identifiers::enums::task_status::TaskStatus;
+use sqlite_identifiers::enums::task_type::TaskType;
+use sqlite_identifiers::enums::tauri_command_caller::TauriCommandCaller;
+use sqlite_identifiers::ids::batch_generation_token::BatchGenerationToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::task_id::TaskId;
 
 pub struct TaskList {
   pub tasks: Vec<TaskItem>,

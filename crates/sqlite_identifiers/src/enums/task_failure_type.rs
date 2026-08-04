@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-use crate::enum_error::EnumError;
+use crate::enums::enum_error::EnumError;
 #[cfg(test)]
 use strum::EnumCount;
 #[cfg(test)]
@@ -95,12 +95,12 @@ impl TaskFailureType {
 
 #[cfg(test)]
 mod tests {
-  use crate::task_failure_type::TaskFailureType;
+  use crate::enums::task_failure_type::TaskFailureType;
   use crate::test_helpers::assert_serialization;
 
   mod explicit_checks {
     use super::*;
-    use crate::enum_error::EnumError;
+    use crate::enums::enum_error::EnumError;
 
     #[test]
     fn test_serialization() {

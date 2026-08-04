@@ -6,7 +6,7 @@ use enums::common::generation::common_quality::CommonQuality;
 use enums::common::generation::common_resolution::CommonResolution;
 use enums::common::generation::common_video_model::CommonVideoModel;
 use tokens::tokens::characters::CharacterToken;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 /// Shared request body for both the video cost estimate and video generation endpoints.
 #[derive(Clone, Serialize, Deserialize, Debug)]

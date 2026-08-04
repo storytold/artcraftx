@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 pub const FLUX_2_LORA_EDIT_IMAGE_ANGLE_PATH: &str = "/v1/generate/image/angle/flux_2_lora";
 

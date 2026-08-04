@@ -2,7 +2,7 @@ use serde_derive::{Deserialize, Serialize};
 
 use enums::common::generation::common_model_type::CommonModelType;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 /// Request body for creating a character.
 #[derive(Deserialize)]

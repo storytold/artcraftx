@@ -6,7 +6,7 @@ use crate::utils::api_host::ApiHost;
 use crate::utils::constants::{APPLICATION_JSON, USER_AGENT};
 use crate::utils::filter_bad_response::filter_bad_response;
 use crate::utils::http_get_anonymous::http_get_anonymous;
-use sqlite_identifiers::generation_provider::GenerationProvider;
+use sqlite_identifiers::enums::generation_provider::GenerationProvider;
 use chrono::{DateTime, Utc};
 use uuid_utils::uuid::generate_random_uuid;
 use log::debug;
@@ -16,10 +16,10 @@ use serde_derive::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use sqlite_identifiers::batch_generation_token::BatchGenerationToken;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::batch_generation_token::BatchGenerationToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;
-use sqlite_identifiers::prompt_token::PromptToken;
+use sqlite_identifiers::ids::prompt_token::PromptToken;
 use uuid::uuid;
 
 pub struct UploadImageBytesArgs<'a> {

@@ -18,7 +18,7 @@ impl ArtcraftViduQ3RequestState {
 
 #[cfg(test)]
 mod tests {
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
   use artcraft_client::utils::api_host::ApiHost;

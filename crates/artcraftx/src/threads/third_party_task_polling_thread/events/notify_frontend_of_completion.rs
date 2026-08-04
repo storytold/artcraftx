@@ -10,16 +10,16 @@ use crate::events::functional_events::video_generation_complete_event::{Generate
 use artcraft_client::endpoints::media_files::list_batch_generated_redux_media_files::list_batch_generated_redux_media_files;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::utils::api_host::ApiHost;
-use sqlite_identifiers::generation_provider::GenerationProvider;
-use sqlite_identifiers::task_media_file_class::TaskMediaFileClass;
-use sqlite_identifiers::task_model_type::TaskModelType;
-use sqlite_identifiers::task_type::TaskType;
+use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
+use sqlite_identifiers::enums::task_model_type::TaskModelType;
+use sqlite_identifiers::enums::task_type::TaskType;
 use log::{error, warn};
 use sqlite_database::queries::task::Task;
 use tauri::AppHandle;
 use reqwest::Url;
-use sqlite_identifiers::batch_generation_token::BatchGenerationToken;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::batch_generation_token::BatchGenerationToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 /// Data about a successfully completed third-party generation.
 pub struct CompletionData {

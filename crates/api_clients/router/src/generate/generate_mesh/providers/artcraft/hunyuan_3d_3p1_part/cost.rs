@@ -30,7 +30,7 @@ impl ArtcraftHunyuan3d3p1PartCostState {
 
 #[cfg(test)]
 mod tests {
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::mesh_ref::MeshRef;
   use crate::api::router_mesh_model::RouterMeshModel;

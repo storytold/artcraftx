@@ -3,7 +3,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 struct CompositeType {
@@ -12,7 +12,7 @@ struct CompositeType {
 }
 
 mod interface {
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   #[test]
   fn generate() {
@@ -59,7 +59,7 @@ mod interface {
 }
 
 mod traits {
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   #[test]
   fn display() {
@@ -75,7 +75,7 @@ mod traits {
 }
 
 mod serialization {
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::CompositeType;
 
@@ -100,7 +100,7 @@ mod serialization {
 }
 
 mod deserialization {
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::CompositeType;
 
@@ -131,7 +131,7 @@ mod deserialization {
 
 // These traits should be tested by the macro, but we duplicate them in case that breaks
 mod crockford_traits {
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   const ENTROPIC_CHARACTERS_MINIMUM : usize = 8;
 

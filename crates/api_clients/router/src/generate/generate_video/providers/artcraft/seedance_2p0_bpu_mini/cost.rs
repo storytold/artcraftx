@@ -49,7 +49,7 @@ impl ArtcraftSeedance2p0BytePlusUltraMiniCostState {
 
 #[cfg(test)]
 mod tests {
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::router_resolution::RouterResolution;
   use crate::api::router_video_model::RouterVideoModel;

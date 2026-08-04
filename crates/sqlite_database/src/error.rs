@@ -1,4 +1,4 @@
-use sqlite_identifiers::enum_error::EnumError;
+use sqlite_identifiers::enums::enum_error::EnumError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 

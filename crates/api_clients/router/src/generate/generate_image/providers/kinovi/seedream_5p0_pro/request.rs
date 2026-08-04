@@ -43,7 +43,7 @@ mod tests {
   use std::collections::HashMap;
 
   use seedance2pro_client::creds::seedance2pro_session::Seedance2ProSession;
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::image_list_ref::ImageListRef;
   use crate::api::router_aspect_ratio::RouterAspectRatio;

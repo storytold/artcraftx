@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-use crate::enum_error::EnumError;
+use crate::enums::enum_error::EnumError;
 #[cfg(test)]
 use strum::EnumCount;
 #[cfg(test)]
@@ -63,12 +63,12 @@ impl TaskMediaFileClass {
 
 #[cfg(test)]
 mod tests {
-  use crate::task_media_file_class::TaskMediaFileClass;
+  use crate::enums::task_media_file_class::TaskMediaFileClass;
   use crate::test_helpers::assert_serialization;
 
   mod explicit_checks {
     use super::*;
-    use crate::enum_error::EnumError;
+    use crate::enums::enum_error::EnumError;
 
     #[test]
     fn test_serialization() {

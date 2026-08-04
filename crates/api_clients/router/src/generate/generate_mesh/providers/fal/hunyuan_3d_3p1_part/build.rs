@@ -53,7 +53,7 @@ pub(crate) fn build_fal_hunyuan_3d_3p1_part_state(
 mod tests {
   use enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
   use enums::common::generation::common_polygon_type::CommonPolygonType;
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::image_ref::ImageRef;
   use crate::api::mesh_ref::MeshRef;

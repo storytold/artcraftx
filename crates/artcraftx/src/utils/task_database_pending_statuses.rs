@@ -1,4 +1,4 @@
-use sqlite_identifiers::task_status::TaskStatus;
+use sqlite_identifiers::enums::task_status::TaskStatus;
 use once_cell::sync::Lazy;
 use std::collections::HashSet;
 

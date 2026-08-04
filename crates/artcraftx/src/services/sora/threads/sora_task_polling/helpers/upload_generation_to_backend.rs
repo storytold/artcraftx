@@ -6,10 +6,10 @@ use artcraft_client::credentials::storyteller_credential_set::StorytellerCredent
 use artcraft_client::endpoints::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
 use artcraft_client::endpoints::media_files::upload_video_media_file_from_file::{upload_video_media_file_from_file, UploadVideoFromFileArgs};
 use artcraft_client::utils::api_host::ApiHost;
-use sqlite_identifiers::generation_provider::GenerationProvider;
-use sqlite_identifiers::batch_generation_token::BatchGenerationToken;
-use sqlite_identifiers::media_file_token::MediaFileToken;
-use sqlite_identifiers::prompt_token::PromptToken;
+use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use sqlite_identifiers::ids::batch_generation_token::BatchGenerationToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::prompt_token::PromptToken;
 
 pub(super) struct UploadGenerationToBackendArgs<'a, P: AsRef<Path>> {
   pub storyteller_api_host: &'a ApiHost,

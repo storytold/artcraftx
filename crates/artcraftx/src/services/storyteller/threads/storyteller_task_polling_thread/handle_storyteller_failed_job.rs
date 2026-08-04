@@ -5,12 +5,12 @@ use crate::state::task_database::TaskDatabase;
 use crate::utils::enum_conversion::generation_provider::to_generation_service_provider;
 use crate::utils::enum_conversion::task_type::to_generation_action;
 use artcraft_client::api_defs::jobs::list_session_jobs::ListSessionJobsItem;
-use sqlite_identifiers::task_status::TaskStatus;
+use sqlite_identifiers::enums::task_status::TaskStatus;
 use errors::AnyhowResult;
 use log::info;
 use sqlite_database::queries::task::Task;
 use tauri::AppHandle;
-use sqlite_identifiers::task_failure_type::TaskFailureType;
+use sqlite_identifiers::enums::task_failure_type::TaskFailureType;
 use sqlite_database::queries::update_task_status_with_rich_failure::{update_task_status_with_rich_failure, UpdateTaskWithRichFailureArgs};
 
 pub async fn handle_failed_job(

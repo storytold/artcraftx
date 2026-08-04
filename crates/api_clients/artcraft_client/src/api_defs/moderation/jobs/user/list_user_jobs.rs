@@ -4,7 +4,7 @@ use enums::by_table::wallet_ledger_entries::wallet_ledger_entry_type::WalletLedg
 use enums::common::job_status_plus::JobStatusPlus;
 use serde_derive::{Deserialize, Serialize};
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 use tokens::tokens::users::UserToken;
 use tokens::tokens::wallet_ledger_entries::WalletLedgerEntryToken;
 

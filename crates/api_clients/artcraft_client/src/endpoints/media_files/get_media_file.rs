@@ -18,10 +18,10 @@ use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use enums::by_table::model_weights::weights_types::WeightsType;
 use log::debug;
 use serde_derive::Deserialize;
-use sqlite_identifiers::batch_generation_token::BatchGenerationToken;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::batch_generation_token::BatchGenerationToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;
-use sqlite_identifiers::prompt_token::PromptToken;
+use sqlite_identifiers::ids::prompt_token::PromptToken;
 
 /// Get details about a media file from our backend
 pub async fn get_media_file(api_host: &ApiHost, media_file_token: &MediaFileToken) -> Result<GetMediaFileSuccessResponse, StorytellerError> {
@@ -205,7 +205,7 @@ pub struct GetMediaFileModelInfo {
 mod tests {
   use crate::endpoints::media_files::get_media_file::get_media_file;
   use crate::utils::api_host::ApiHost;
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   #[tokio::test]
   #[ignore] // Don't run in CI. Requires valid cookie

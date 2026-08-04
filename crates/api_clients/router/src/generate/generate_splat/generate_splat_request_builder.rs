@@ -107,7 +107,7 @@ impl GenerateSplatRequestBuilder {
 
 #[cfg(test)]
 mod tests {
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::generate::generate_splat::splat_generation_draft::SplatGenerationDraftRequest;
   use crate::generate::generate_splat::splat_generation_request::SplatGenerationRequest;

@@ -6,7 +6,7 @@ use crate::api_defs::common::responses::simple_generic_json_success::SimpleGener
 use crate::api_defs::media_file::delete_media_file::DeleteMediaFileRequest;
 use crate::api_defs::subscriptions::get_session_subscription::GetSessionSubscriptionResponse;
 use log::debug;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 pub async fn delete_media_file(
   api_host: &ApiHost,

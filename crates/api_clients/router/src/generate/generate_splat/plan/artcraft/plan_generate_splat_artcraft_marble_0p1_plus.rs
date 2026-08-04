@@ -3,7 +3,7 @@ use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::client_error::ClientError;
 use crate::generate::generate_splat::generate_splat_request::GenerateSplatRequest;
 use crate::generate::generate_splat::splat_generation_plan::SplatGenerationPlan;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 #[derive(Debug, Clone)]
 pub struct PlanArtcraftMarble0p1Plus {

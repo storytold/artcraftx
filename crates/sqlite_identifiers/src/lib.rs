@@ -106,19 +106,9 @@ macro_rules! impl_crockford_generator {
   };
 }
 
-pub mod batch_generation_token;
-pub mod enum_error;
-pub mod generation_provider;
-pub mod media_file_token;
-pub mod prompt_token;
+pub mod enums;
+pub mod ids;
 pub(crate) mod safe_entropy;
-pub mod task_failure_type;
-pub mod task_id;
-pub mod task_media_file_class;
-pub mod task_model_type;
-pub mod task_status;
-pub mod task_type;
-pub mod tauri_command_caller;
 
 #[cfg(test)]
 pub(crate) mod test_helpers;

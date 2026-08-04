@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 pub const FLUX_PRO_1_INPAINT_PATH: &str = "/v1/generate/image/inpaint/flux_pro_1";
 

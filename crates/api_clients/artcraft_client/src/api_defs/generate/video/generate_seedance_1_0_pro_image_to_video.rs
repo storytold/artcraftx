@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 pub const GENERATE_SEEDANCE_1_0_PRO_IMAGE_TO_VIDEO_URL_PATH: &str = "/v1/generate/video/seedance_1.0_pro_image_to_video";
 

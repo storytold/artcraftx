@@ -17,8 +17,8 @@ use router::client::router_client::RouterClient;
 use router::generate::generate_video::generate_video_request_builder::GenerateVideoRequestBuilder;
 use router::generate::generate_video::generate_video_response::GenerateVideoResponse;
 use router::generate::generate_video::video_generation_draft_or_request::VideoGenerationDraftOrRequest;
-use sqlite_identifiers::generation_provider::GenerationProvider;
-use sqlite_identifiers::task_type::TaskType;
+use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use sqlite_identifiers::enums::task_type::TaskType;
 use log::{error, info};
 
 pub async fn handle_artcraft_video_via_router(

@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 use worldlabs_api_client::api::api_types::world_labs_model::WorldLabsModel;
 use worldlabs_api_client::api::requests::generate_world::http_request::{
   ContentReference, SphericallyLocatedContent, WorldPrompt,

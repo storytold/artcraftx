@@ -32,7 +32,7 @@ impl ArtcraftMeshyV6CostState {
 mod tests {
   use enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
   use enums::common::generation::common_polygon_type::CommonPolygonType;
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::image_list_ref::ImageListRef;
   use crate::api::router_mesh_model::RouterMeshModel;

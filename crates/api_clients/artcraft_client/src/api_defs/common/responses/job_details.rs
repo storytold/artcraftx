@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use serde::Serialize;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 /// Details about submitted live portrait jobs (request arguments only)
 #[derive(Serialize, Deserialize)]

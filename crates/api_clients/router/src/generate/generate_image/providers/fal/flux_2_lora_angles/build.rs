@@ -159,7 +159,7 @@ mod tests {
 
   #[test]
   fn media_file_tokens_rejected() {
-    use sqlite_identifiers::media_file_token::MediaFileToken;
+    use sqlite_identifiers::ids::media_file_token::MediaFileToken;
     let builder = GenerateImageRequestBuilder {
       image_inputs: Some(ImageListRef::MediaFileTokens(vec![MediaFileToken::new_from_str("mf_test")])),
       ..base()

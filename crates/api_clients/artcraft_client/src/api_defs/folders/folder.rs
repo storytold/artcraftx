@@ -1,7 +1,7 @@
 use serde_derive::{Deserialize, Serialize};
 
 use tokens::tokens::folders::FolderToken;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::api_defs::folders::common::FolderInfo;
 

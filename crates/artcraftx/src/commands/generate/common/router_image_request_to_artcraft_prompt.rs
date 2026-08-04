@@ -8,7 +8,7 @@ use enums::common::generation::common_aspect_ratio::CommonAspectRatio as EnumsAs
 use enums::common::generation::common_generation_mode::CommonGenerationMode;
 use enums::common::generation::common_model_type::CommonModelType;
 use enums::common::generation::common_resolution::CommonResolution as EnumsResolution;
-use sqlite_identifiers::generation_provider::GenerationProvider;
+use sqlite_identifiers::enums::generation_provider::GenerationProvider;
 use uuid_utils::uuid::generate_random_uuid;
 
 pub fn router_image_request_to_artcraft_prompt(

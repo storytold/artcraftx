@@ -18,7 +18,7 @@ impl ArtcraftHappyHorse1p0RequestState {
 
 #[cfg(test)]
 mod tests {
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::router_aspect_ratio::RouterAspectRatio;
   use crate::api::router_resolution::RouterResolution;

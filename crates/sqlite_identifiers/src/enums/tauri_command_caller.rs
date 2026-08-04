@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-use crate::enum_error::EnumError;
+use crate::enums::enum_error::EnumError;
 #[cfg(test)]
 use strum::EnumCount;
 #[cfg(test)]
@@ -65,8 +65,8 @@ impl TauriCommandCaller {
 
 #[cfg(test)]
 mod tests {
-  use crate::enum_error::EnumError;
-  use crate::tauri_command_caller::TauriCommandCaller;
+  use crate::enums::enum_error::EnumError;
+  use crate::enums::tauri_command_caller::TauriCommandCaller;
   use crate::test_helpers::assert_serialization;
 
   mod explicit_checks {

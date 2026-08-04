@@ -1,5 +1,5 @@
-use sqlite_identifiers::generation_provider::GenerationProvider;
-use sqlite_identifiers::task_type::TaskType;
+use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use sqlite_identifiers::enums::task_type::TaskType;
 use log::{info, warn};
 use router::api::router_provider::RouterProvider;
 use router::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;

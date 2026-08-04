@@ -1,10 +1,10 @@
-use sqlite_identifiers::generation_provider::GenerationProvider;
+use sqlite_identifiers::enums::generation_provider::GenerationProvider;
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
-use sqlite_identifiers::task_media_file_class::TaskMediaFileClass;
-use sqlite_identifiers::task_status::TaskStatus;
-use sqlite_identifiers::batch_generation_token::BatchGenerationToken;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
+use sqlite_identifiers::enums::task_status::TaskStatus;
+use sqlite_identifiers::ids::batch_generation_token::BatchGenerationToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 const SUCCESSFUL_STATUS : &str = TaskStatus::CompleteSuccess.to_str();
 

@@ -2,7 +2,7 @@ use log::info;
 
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::utils::api_host::ApiHost;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::commands::generate::generate_error::{BadInputReason, GenerateError};
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;

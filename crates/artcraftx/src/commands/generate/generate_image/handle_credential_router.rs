@@ -1,5 +1,5 @@
-use sqlite_identifiers::generation_provider::GenerationProvider;
-use sqlite_identifiers::task_type::TaskType;
+use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use sqlite_identifiers::enums::task_type::TaskType;
 use log::{info, warn};
 use router::api::image_list_ref::ImageListRef;
 use router::api::router_provider::RouterProvider;
@@ -9,7 +9,7 @@ use router::client::router_artcraft_client::RouterArtcraftClient;
 use router::client::router_client::RouterClient;
 use router::generate::generate_image::generate_image_request_builder::GenerateImageRequestBuilder;
 use router::generate::generate_image::image_generation_draft_or_request::ImageGenerationDraftOrRequest;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_generation_model::tauri_image_model_to_generation_model;
 use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_router_model::tauri_image_model_to_router_model;

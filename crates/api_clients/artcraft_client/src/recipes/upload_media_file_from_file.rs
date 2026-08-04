@@ -9,8 +9,8 @@ use mimetypes::mimetype_info::file_extension::FileExtension;
 use mimetypes::mimetype_info::mimetype_info::MimetypeInfo;
 use serde_derive::Deserialize;
 use std::path::Path;
-use sqlite_identifiers::media_file_token::MediaFileToken;
-use sqlite_identifiers::prompt_token::PromptToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::prompt_token::PromptToken;
 
 #[derive(Deserialize, Debug)]
 pub struct UploadMediaFileSuccessResponse {

@@ -156,7 +156,7 @@ fn plan_duration(
 
 #[cfg(test)]
 mod tests {
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::router_video_model::RouterVideoModel;
   use crate::api::router_provider::RouterProvider;

@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 pub const UPLOAD_NEW_EDITOR_2D_PROJECT_URL_PATH: &str = "/v1/media_files/upload/project/editor_2d/new";
 

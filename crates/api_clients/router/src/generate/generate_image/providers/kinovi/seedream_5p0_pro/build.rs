@@ -181,7 +181,7 @@ pub(crate) fn plan_batch_count(
 
 #[cfg(test)]
 mod tests {
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::router_image_model::RouterImageModel;
   use crate::api::router_provider::RouterProvider;

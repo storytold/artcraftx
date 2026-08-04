@@ -12,9 +12,9 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use anyhow::anyhow;
 use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
-use sqlite_identifiers::generation_provider::GenerationProvider;
+use sqlite_identifiers::enums::generation_provider::GenerationProvider;
 use enums::common::generation::common_model_type::CommonModelType;
-use sqlite_identifiers::task_media_file_class::TaskMediaFileClass;
+use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
 use grok_consumer_client::recipes::prompt_websocket_image_with_retry::{prompt_websocket_image_with_retry, PromptWebsocketImageWithRetryArgs};
 use grok_consumer_client::requests::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
@@ -34,7 +34,7 @@ use artcraft_client::endpoints::prompts::create_prompt::create_prompt;
 use artcraft_client::error::api_error::ApiError;
 use artcraft_client::error::storyteller_error::StorytellerError;
 use tauri::AppHandle;
-use sqlite_identifiers::batch_generation_token::BatchGenerationToken;
+use sqlite_identifiers::ids::batch_generation_token::BatchGenerationToken;
 
 pub async fn grok_image_websocket_thread(
   app_handle: AppHandle,

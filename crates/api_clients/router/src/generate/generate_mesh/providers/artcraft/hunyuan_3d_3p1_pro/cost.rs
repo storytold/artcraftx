@@ -49,7 +49,7 @@ impl ArtcraftHunyuan3d3p1ProCostState {
 #[cfg(test)]
 mod tests {
   use enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::image_list_ref::ImageListRef;
   use crate::api::image_ref::ImageRef;

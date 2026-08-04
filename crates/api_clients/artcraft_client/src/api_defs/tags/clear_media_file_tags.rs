@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 // ── POST /v1/tags/media_file/clear/{media_file_token} ──
 

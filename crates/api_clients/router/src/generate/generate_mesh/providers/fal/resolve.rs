@@ -127,7 +127,7 @@ fn image_ref_to_url(image_ref: ImageRef) -> Result<String, ArtcraftRouterError> 
 
 #[cfg(test)]
 mod tests {
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use super::*;
 

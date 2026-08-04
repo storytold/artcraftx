@@ -9,14 +9,14 @@ use crate::events::functional_events::video_generation_complete_event::{Generate
 use anyhow::anyhow;
 use artcraft_client::api_defs::jobs::list_session_jobs::{ListSessionJobsItem, ListSessionResultDetailsResponse};
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
-use sqlite_identifiers::task_type::TaskType;
+use sqlite_identifiers::enums::task_type::TaskType;
 use errors::AnyhowResult;
 use log::warn;
 use sqlite_database::queries::task::Task;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::endpoints::media_files::list_batch_generated_redux_media_files::list_batch_generated_redux_media_files;
 use tauri::AppHandle;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 pub async fn maybe_handle_frontend_caller_notification(
   app: &AppHandle,

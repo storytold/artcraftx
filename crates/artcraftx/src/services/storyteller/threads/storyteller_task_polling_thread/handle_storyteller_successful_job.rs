@@ -9,14 +9,14 @@ use artcraft_client::api_defs::jobs::list_session_jobs::ListSessionJobsItem;
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
-use sqlite_identifiers::task_media_file_class::TaskMediaFileClass;
+use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
 use log::error;
 use log::info;
 use sqlite_database::queries::task::Task;
 use sqlite_database::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
 use tauri::AppHandle;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 pub async fn handle_successful_job(
   app_handle: &AppHandle,

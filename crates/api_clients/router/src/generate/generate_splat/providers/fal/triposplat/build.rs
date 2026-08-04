@@ -112,7 +112,7 @@ mod tests {
 
     #[test]
     fn media_tokens_are_rejected() {
-      use sqlite_identifiers::media_file_token::MediaFileToken;
+      use sqlite_identifiers::ids::media_file_token::MediaFileToken;
       let builder = GenerateSplatRequestBuilder {
         reference_images: Some(ImageListRef::MediaFileTokens(vec![
           MediaFileToken::new("mf_test123".to_string()),

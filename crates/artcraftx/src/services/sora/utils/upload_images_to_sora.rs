@@ -11,7 +11,7 @@ use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_o
 use std::time::Duration;
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
 use artcraft_client::utils::api_host::ApiHost;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 const SORA_IMAGE_UPLOAD_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
 

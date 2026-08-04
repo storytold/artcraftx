@@ -139,7 +139,7 @@ mod tests {
   use gmicloud_client::requests::api::video::seedance_2_0_260128::api::{
     Seedance20Ratio, Seedance20Resolution,
   };
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::router_aspect_ratio::RouterAspectRatio;
   use crate::api::router_resolution::RouterResolution;

@@ -5,7 +5,7 @@ use url::Url;
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use tokens::tokens::folders::FolderToken;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 use tokens::tokens::users::UserToken;
 
 // NB: The "folder media file" list-item shape lives in storyteller_web

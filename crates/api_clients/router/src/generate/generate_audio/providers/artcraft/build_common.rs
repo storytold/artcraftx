@@ -40,7 +40,7 @@ pub fn build_artcraft_omni_audio_request(
 
 #[cfg(test)]
 mod tests {
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::audio_list_ref::AudioListRef;
   use crate::api::image_list_ref::ImageListRef;

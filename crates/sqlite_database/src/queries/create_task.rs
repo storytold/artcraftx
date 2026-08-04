@@ -1,12 +1,12 @@
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
-use sqlite_identifiers::generation_provider::GenerationProvider;
-use sqlite_identifiers::task_model_type::TaskModelType;
-use sqlite_identifiers::task_status::TaskStatus;
-use sqlite_identifiers::task_type::TaskType;
-use sqlite_identifiers::tauri_command_caller::TauriCommandCaller;
-use sqlite_identifiers::prompt_token::PromptToken;
-use sqlite_identifiers::task_id::TaskId;
+use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use sqlite_identifiers::enums::task_model_type::TaskModelType;
+use sqlite_identifiers::enums::task_status::TaskStatus;
+use sqlite_identifiers::enums::task_type::TaskType;
+use sqlite_identifiers::enums::tauri_command_caller::TauriCommandCaller;
+use sqlite_identifiers::ids::prompt_token::PromptToken;
+use sqlite_identifiers::ids::task_id::TaskId;
 
 pub struct CreateTaskArgs<'a> {
   pub db: &'a TaskDbConnection,

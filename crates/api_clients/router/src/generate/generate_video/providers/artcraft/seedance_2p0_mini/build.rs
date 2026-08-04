@@ -29,7 +29,7 @@ mod tests {
   use enums::common::generation::common_video_model::CommonVideoModel as CommonVideoModelEnum;
   use enums::common::generation::common_bitrate::CommonBitrate as CommonBitrateEnum;
   use tokens::tokens::characters::CharacterToken;
-  use sqlite_identifiers::media_file_token::MediaFileToken;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::character_list_ref::CharacterListRef;
   use crate::api::router_aspect_ratio::RouterAspectRatio;

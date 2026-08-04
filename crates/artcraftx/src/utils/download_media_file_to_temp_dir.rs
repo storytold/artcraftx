@@ -5,7 +5,7 @@ use crate::utils::get_url_file_extension::get_url_file_extension;
 use crate::utils::simple_http_download_to_tempfile::simple_http_download_to_tempfile;
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
 use tempfile::NamedTempFile;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 // TODO: Better more concrete error handling
 
 pub async fn download_media_file_to_temp_dir(app_data_root: &AppDataRoot, token: &MediaFileToken) -> Result<NamedTempFile, ArtcraftXError> {

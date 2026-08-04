@@ -3,7 +3,7 @@ use crate::error::storyteller_error::StorytellerError;
 use crate::utils::api_host::ApiHost;
 use crate::utils::basic_json_get_request::basic_json_get_request;
 use crate::api_defs::media_file::list_batch_generated_media_files::{ListBatchGeneratedReduxMediaFilesSuccessResponse, LIST_BATCH_GENERATED_REDUX_MEDIA_FILES_URL_PATH};
-use sqlite_identifiers::batch_generation_token::BatchGenerationToken;
+use sqlite_identifiers::ids::batch_generation_token::BatchGenerationToken;
 
 pub async fn list_batch_generated_redux_media_files(
   api_host: &ApiHost,

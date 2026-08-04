@@ -3,7 +3,7 @@
 //! Artcraft only accepts media file tokens — raw URLs are rejected.
 
 use tokens::tokens::characters::CharacterToken;
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::api::audio_list_ref::AudioListRef;
 use crate::api::character_list_ref::CharacterListRef;

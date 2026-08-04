@@ -7,7 +7,7 @@
 
 use std::collections::BTreeSet;
 
-use crate::enum_error::EnumError;
+use crate::enums::enum_error::EnumError;
 #[cfg(test)]
 use strum::EnumCount;
 #[cfg(test)]
@@ -73,8 +73,8 @@ impl GenerationProvider {
 
 #[cfg(test)]
 mod tests {
-  use crate::generation_provider::GenerationProvider;
-  use crate::enum_error::EnumError;
+  use crate::enums::generation_provider::GenerationProvider;
+  use crate::enums::enum_error::EnumError;
   use crate::test_helpers::assert_serialization;
 
   mod explicit_checks {

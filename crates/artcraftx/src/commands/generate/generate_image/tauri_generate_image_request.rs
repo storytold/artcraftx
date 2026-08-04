@@ -1,10 +1,10 @@
 use enums::common::generation::common_aspect_ratio::CommonAspectRatio;
 use enums::common::generation::common_resolution::CommonResolution;
 use enums::common::generation::common_quality::CommonQuality;
-use sqlite_identifiers::generation_provider::GenerationProvider;
-use sqlite_identifiers::tauri_command_caller::TauriCommandCaller;
+use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use sqlite_identifiers::enums::tauri_command_caller::TauriCommandCaller;
 use serde_derive::{Deserialize, Serialize};
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::commands::generate::generate_image::tauri_image_model::TauriImageModel;
 use crate::commands::response::success_response_wrapper::SerializeMarker;

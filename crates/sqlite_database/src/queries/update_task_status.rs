@@ -1,7 +1,7 @@
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
-use sqlite_identifiers::task_status::TaskStatus;
-use sqlite_identifiers::task_id::TaskId;
+use sqlite_identifiers::enums::task_status::TaskStatus;
+use sqlite_identifiers::ids::task_id::TaskId;
 
 pub struct UpdateTaskArgs<'a> {
   pub db: &'a TaskDbConnection,

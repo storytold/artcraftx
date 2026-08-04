@@ -2,7 +2,7 @@
 //!
 //! Artcraft only accepts media file tokens — raw URLs are rejected.
 
-use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::api::image_list_ref::ImageListRef;
 use crate::api::video_ref::VideoRef;
