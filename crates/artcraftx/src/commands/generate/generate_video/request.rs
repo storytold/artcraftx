@@ -82,7 +82,7 @@ pub enum TauriVideoModel {
   Veo3p1Fast,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Default)]
 pub struct TauriGenerateVideoRequest {
   /// Stable id (`credential_{entropy}`) of the stored credential (account)
   /// to generate with. Loaded from disk; generation routes to the

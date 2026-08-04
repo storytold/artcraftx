@@ -33,14 +33,14 @@ async fn discord_main_loop(mut client: DiscordIpcClient) -> AnyhowResult<()> {
 
     let assets = discord_rich_presence::activity::Assets::new()
         .large_image(discord_logo_image)
-        .large_text("https://GetArtCraft.com");
+        .large_text("ArtCraftX.ai");
         //.small_image("https://storyteller.ai/android-chrome-192x192.png")
         //.small_text("small text");
 
     client.set_activity(discord_rich_presence::activity::Activity::new()
         //.state("Anyone can make arts!")
-        .state("GetArtCraft.com")
-        .details("Crafting Arts with ArtCraft")
+        .state("ArtCraftX.ai")
+        .details("Making Art | ArtCraftX")
         .activity_type(discord_rich_presence::activity::ActivityType::Playing)
         .assets(assets))
         .map_err(|err| anyhow!("Error setting Discord activity: {:?}", err))?;

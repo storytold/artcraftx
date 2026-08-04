@@ -16,8 +16,8 @@ use crate::api_adapters::models::image::tauri_image_model_to_router_model::tauri
 use crate::commands::generate::generate_error::GenerateError;
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::common::generation_credential::{credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential};
-use crate::commands::generate::generate_image::providers::router::handle_api_providers::handle_api_key_provider;
-use crate::commands::generate::generate_image::providers::router::utils::convert_enums_to_router::{convert_aspect_ratio, convert_quality, convert_resolution};
+use crate::commands::generate::generate_image::handle_fal_credential::handle_fal_credential;
+use crate::commands::generate::generate_image::utils::convert_enums_to_router::{convert_aspect_ratio, convert_quality, convert_resolution};
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;
 use crate::commands::generate::generate_image::utils::parse_semantic_media_files::{parse_semantic_media_files, SemanticMediaFiles};
 use crate::credentials::artcraft_api_host::maybe_artcraft_api_host_for_service;
@@ -25,7 +25,6 @@ use crate::credentials::credential::Credential;
 use crate::credentials::credential_service_type::CredentialServiceType;
 use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 
 /// Credential-driven image generation: resolve the stored credential named
 /// by the request's `credential_id`, then route to that credential's service
@@ -34,7 +33,6 @@ pub async fn handle_credential_router(
   request: &TauriGenerateImageRequest,
   app_data_root: &AppDataRoot,
   app_env_configs: &AppEnvConfigs,
-  storyteller_creds_manager: &StorytellerCredentialManager,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let credential = resolve_generation_credential(
     request.credential_id.as_deref(),
@@ -57,12 +55,10 @@ pub async fn handle_credential_router(
       let api_key = credential.api_key().ok_or_else(|| {
         credential_not_usable(&credential, "the FAL credential has no API key")
       })?;
-      handle_api_key_provider(
+      handle_fal_credential(
         request,
-        GenerationProvider::Fal,
         &api_key.api_key,
         app_env_configs,
-        storyteller_creds_manager,
       ).await
     }
     other => Err(credential_not_usable(
@@ -193,3 +189,72 @@ fn collect_image_inputs(
   }
 }
 
+
+/// Live smoke tests that hit the REAL production API with the REAL stored
+/// credential and SPEND CREDITS. All `#[ignore]`; run explicitly:
+///   SQLX_OFFLINE=true cargo test -p artcraftx live_generation -- --ignored --nocapture
+#[cfg(test)]
+mod live_generation_tests {
+  use artcraft_client::utils::api_host::ApiHost;
+
+  use crate::commands::generate::generate_image::tauri_image_model::TauriImageModel;
+
+  use super::*;
+
+  fn production_setup() -> (AppDataRoot, AppEnvConfigs, String) {
+    let app_data_root = AppDataRoot::create_default().expect("app data root");
+    let credential_id = app_data_root
+        .credentials_dir()
+        .load_credentials()
+        .expect("load credentials")
+        .into_iter()
+        .find(|c| c.service == CredentialServiceType::Artcraft)
+        .expect("no `artcraft` (production) credential on disk")
+        .id
+        .as_str()
+        .to_string();
+    let app_env_configs = AppEnvConfigs { storyteller_host: ApiHost::Storyteller };
+    (app_data_root, app_env_configs, credential_id)
+  }
+
+  #[tokio::test]
+  #[ignore] // live: spends credits on api.storyteller.ai
+  async fn live_generation_image_nano_banana() {
+    let (app_data_root, app_env_configs, credential_id) = production_setup();
+
+    let request = TauriGenerateImageRequest {
+      credential_id: Some(credential_id),
+      model: Some(TauriImageModel::NanoBanana),
+      prompt: Some("a tiny friendly robot watering a bonsai tree".to_string()),
+      batch_size: Some(1),
+      ..Default::default()
+    };
+
+    let result = handle_credential_router(&request, &app_data_root, &app_env_configs).await;
+    let success = result.expect("nano banana enqueue should succeed");
+    println!("[live] nano banana enqueued: job_id={:?}", success.provider_job_id);
+    assert!(success.provider_job_id.is_some());
+  }
+
+  #[tokio::test]
+  #[ignore] // live: spends credits on api.storyteller.ai
+  async fn live_generation_image_midjourney_8() {
+    let (app_data_root, app_env_configs, credential_id) = production_setup();
+
+    let request = TauriGenerateImageRequest {
+      credential_id: Some(credential_id),
+      model: Some(TauriImageModel::Midjourney8),
+      prompt: Some("a lighthouse on a cliff at dusk, oil painting".to_string()),
+      ..Default::default()
+    };
+
+    let result = handle_credential_router(&request, &app_data_root, &app_env_configs).await;
+    match result {
+      Ok(success) => {
+        println!("[live] midjourney 8 enqueued: job_id={:?}", success.provider_job_id);
+        assert!(success.provider_job_id.is_some());
+      }
+      Err(err) => panic!("midjourney 8 enqueue failed: {:?}", err),
+    }
+  }
+}

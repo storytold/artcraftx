@@ -1,7 +1,7 @@
 use crate::commands::generate::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::commands::generate::generate_error::{GenerateError, MissingCredentialsReason};
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
-use crate::commands::generate::generate_image::providers::router::handle_credential_router::handle_credential_router;
+use crate::commands::generate::generate_image::handle_credential_router::handle_credential_router;
 use crate::commands::generate::generate_image::tauri_generate_image_request::{
   TauriGenerateImageErrorType, TauriGenerateImageRequest, TauriGenerateImageResponse,
 };
@@ -13,7 +13,6 @@ use crate::events::generation_events::generation_enqueue_success_event::Generati
 use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::task_database::TaskDatabase;
-use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use log::{error, info};
 use tauri::{AppHandle, State};
 
@@ -24,7 +23,6 @@ pub async fn generate_image_command(
   app_data_root: State<'_, AppDataRoot>,
   app_env_configs: State<'_, AppEnvConfigs>,
   task_database: State<'_, TaskDatabase>,
-  storyteller_creds_manager: State<'_, StorytellerCredentialManager>,
 ) -> Response<TauriGenerateImageResponse, TauriGenerateImageErrorType, ()> {
 
   info!("generate_image_command called, request: {:?}", request);
@@ -35,7 +33,6 @@ pub async fn generate_image_command(
     &request,
     &app_data_root,
     &app_env_configs,
-    &storyteller_creds_manager,
   ).await;
 
   match result {

@@ -11,7 +11,7 @@ use crate::commands::response::success_response_wrapper::SerializeMarker;
 
 // ── Request ──
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Default)]
 pub struct TauriGenerateImageRequest {
   /// Stable id (`credential_{entropy}`) of the stored credential (account)
   /// to generate with. Loaded from disk; generation routes to the
