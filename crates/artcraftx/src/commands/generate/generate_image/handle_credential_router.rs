@@ -234,6 +234,28 @@ mod live_generation_tests {
 
   #[tokio::test]
   #[ignore] // live: spends credits on api.storyteller.ai
+  async fn live_generation_image_midjourney_generic() {
+    let (app_data_root, credential_id) = production_setup();
+
+    let request = TauriGenerateImageRequest {
+      credential_id: Some(credential_id),
+      model: Some(TauriImageModel::Midjourney),
+      prompt: Some("a paper crane resting on a stack of old books".to_string()),
+      ..Default::default()
+    };
+
+    let result = handle_credential_router(&request, &app_data_root).await;
+    match result {
+      Ok(success) => {
+        println!("[live] generic midjourney enqueued: job_id={:?}", success.provider_job_id);
+        assert!(success.provider_job_id.is_some());
+      }
+      Err(err) => panic!("generic midjourney enqueue failed: {:?}", err),
+    }
+  }
+
+  #[tokio::test]
+  #[ignore] // live: spends credits on api.storyteller.ai
   async fn live_generation_image_midjourney_8() {
     let (app_data_root, credential_id) = production_setup();
 
