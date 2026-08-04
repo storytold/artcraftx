@@ -27,5 +27,8 @@ pub fn tauri_video_model_to_generation_model(model: TauriVideoModel) -> Generati
     TauriVideoModel::Veo3Fast => GenerationModel::Veo3Fast,
     TauriVideoModel::Veo3p1 => GenerationModel::Veo3p1,
     TauriVideoModel::Veo3p1Fast => GenerationModel::Veo3p1Fast,
+    TauriVideoModel::Veo3p1Lite => GenerationModel::Veo3p1Lite,
+    TauriVideoModel::ViduQ3 => GenerationModel::ViduQ3,
+    TauriVideoModel::ViduQ3Turbo => GenerationModel::ViduQ3Turbo,
   }
 }

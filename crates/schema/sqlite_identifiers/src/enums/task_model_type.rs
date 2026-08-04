@@ -112,6 +112,12 @@ pub enum TaskModelType {
   Veo3p1,
   #[serde(rename = "veo_3p1_fast")]
   Veo3p1Fast,
+  #[serde(rename = "veo_3p1_lite")]
+  Veo3p1Lite,
+  #[serde(rename = "vidu_q3")]
+  ViduQ3,
+  #[serde(rename = "vidu_q3_turbo")]
+  ViduQ3Turbo,
 
   // 3D Object generation models
   #[serde(rename = "hunyuan_3d_2.0")]
@@ -227,6 +233,9 @@ impl TaskModelType {
       Self::Veo3Fast => "veo_3_fast",
       Self::Veo3p1 => "veo_3p1",
       Self::Veo3p1Fast => "veo_3p1_fast",
+      Self::Veo3p1Lite => "veo_3p1_lite",
+      Self::ViduQ3 => "vidu_q3",
+      Self::ViduQ3Turbo => "vidu_q3_turbo",
       // 3D Object generation models
       Self::Hunyuan3d2_0 => "hunyuan_3d_2.0",
       Self::Hunyuan3d2_1 => "hunyuan_3d_2.1",
@@ -307,6 +316,9 @@ impl TaskModelType {
       "veo_3_fast" => Ok(Self::Veo3Fast),
       "veo_3p1" => Ok(Self::Veo3p1),
       "veo_3p1_fast" => Ok(Self::Veo3p1Fast),
+      "veo_3p1_lite" => Ok(Self::Veo3p1Lite),
+      "vidu_q3" => Ok(Self::ViduQ3),
+      "vidu_q3_turbo" => Ok(Self::ViduQ3Turbo),
       // 3D Object generation models
       "hunyuan_3d_2.0" => Ok(Self::Hunyuan3d2_0),
       "hunyuan_3d_2.1" => Ok(Self::Hunyuan3d2_1),
@@ -390,6 +402,9 @@ impl TaskModelType {
       Self::Veo3Fast,
       Self::Veo3p1,
       Self::Veo3p1Fast,
+      Self::Veo3p1Lite,
+      Self::ViduQ3,
+      Self::ViduQ3Turbo,
       // 3D Object generation models
       Self::Hunyuan3d2_0,
       Self::Hunyuan3d2_1,
@@ -480,6 +495,9 @@ mod tests {
       assert_serialization(TaskModelType::Veo3Fast, "veo_3_fast");
       assert_serialization(TaskModelType::Veo3p1, "veo_3p1");
       assert_serialization(TaskModelType::Veo3p1Fast, "veo_3p1_fast");
+      assert_serialization(TaskModelType::Veo3p1Lite, "veo_3p1_lite");
+      assert_serialization(TaskModelType::ViduQ3, "vidu_q3");
+      assert_serialization(TaskModelType::ViduQ3Turbo, "vidu_q3_turbo");
       // 3D Object generation models
       assert_serialization(TaskModelType::Hunyuan3d2_0, "hunyuan_3d_2.0");
       assert_serialization(TaskModelType::Hunyuan3d2_1, "hunyuan_3d_2.1");
@@ -556,6 +574,9 @@ mod tests {
       assert_eq!(TaskModelType::Veo3Fast.to_str(), "veo_3_fast");
       assert_eq!(TaskModelType::Veo3p1.to_str(), "veo_3p1");
       assert_eq!(TaskModelType::Veo3p1Fast.to_str(), "veo_3p1_fast");
+      assert_eq!(TaskModelType::Veo3p1Lite.to_str(), "veo_3p1_lite");
+      assert_eq!(TaskModelType::ViduQ3.to_str(), "vidu_q3");
+      assert_eq!(TaskModelType::ViduQ3Turbo.to_str(), "vidu_q3_turbo");
       // 3D Object generation models
       assert_eq!(TaskModelType::Hunyuan3d2_0.to_str(), "hunyuan_3d_2.0");
       assert_eq!(TaskModelType::Hunyuan3d2_1.to_str(), "hunyuan_3d_2.1");
@@ -632,6 +653,9 @@ mod tests {
       assert_eq!(TaskModelType::from_str("veo_3_fast").unwrap(), TaskModelType::Veo3Fast);
       assert_eq!(TaskModelType::from_str("veo_3p1").unwrap(), TaskModelType::Veo3p1);
       assert_eq!(TaskModelType::from_str("veo_3p1_fast").unwrap(), TaskModelType::Veo3p1Fast);
+      assert_eq!(TaskModelType::from_str("veo_3p1_lite").unwrap(), TaskModelType::Veo3p1Lite);
+      assert_eq!(TaskModelType::from_str("vidu_q3").unwrap(), TaskModelType::ViduQ3);
+      assert_eq!(TaskModelType::from_str("vidu_q3_turbo").unwrap(), TaskModelType::ViduQ3Turbo);
       // 3D Object generation models
       assert_eq!(TaskModelType::from_str("hunyuan_3d_2.0").unwrap(), TaskModelType::Hunyuan3d2_0);
       assert_eq!(TaskModelType::from_str("hunyuan_3d_2.1").unwrap(), TaskModelType::Hunyuan3d2_1);
@@ -673,7 +697,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskModelType::all_variants();
-      assert_eq!(variants.len(), 72);
+      assert_eq!(variants.len(), 75);
       // Image models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Schnell));
@@ -724,6 +748,9 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TaskModelType::Veo3Fast));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Veo3p1));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Veo3p1Fast));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Veo3p1Lite));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::ViduQ3));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::ViduQ3Turbo));
       // 3D Object generation models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Hunyuan3d2_0));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Hunyuan3d2_1));

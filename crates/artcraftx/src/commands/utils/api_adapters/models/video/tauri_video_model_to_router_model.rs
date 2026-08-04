@@ -26,5 +26,8 @@ pub fn tauri_video_model_to_router_model(model: TauriVideoModel) -> RouterVideoM
     TauriVideoModel::Veo3Fast => RouterVideoModel::Veo3Fast,
     TauriVideoModel::Veo3p1 => RouterVideoModel::Veo3p1,
     TauriVideoModel::Veo3p1Fast => RouterVideoModel::Veo3p1Fast,
+    TauriVideoModel::Veo3p1Lite => RouterVideoModel::Veo3p1Lite,
+    TauriVideoModel::ViduQ3 => RouterVideoModel::ViduQ3,
+    TauriVideoModel::ViduQ3Turbo => RouterVideoModel::ViduQ3Turbo,
   }
 }

@@ -32,8 +32,6 @@ pub enum TauriImageModel {
   GptImage1p5,
   #[serde(rename = "gpt_image_2")]
   GptImage2,
-  #[serde(rename = "gemini_25_flash")]
-  Gemini25Flash,
   #[serde(rename = "nano_banana")]
   NanoBanana,
   #[serde(rename = "nano_banana_2")]
@@ -50,12 +48,8 @@ pub enum TauriImageModel {
   Seedream5p0Pro,
   #[serde(rename = "seedream_5p0_pro_u")]
   Seedream5p0ProUltra,
-  // Generic Midjourney experience, served via the native Midjourney provider.
-  #[serde(rename = "midjourney")]
-  Midjourney,
-
-  // Versioned Midjourney models, served by storyteller-web via the
-  // Artcraft provider (dispatched through artcraft_router).
+  // Midjourney models, served by storyteller-web via the Artcraft provider
+  // (dispatched through the router).
   #[serde(rename = "midjourney_7")]
   Midjourney7,
   #[serde(rename = "midjourney_7_niji")]

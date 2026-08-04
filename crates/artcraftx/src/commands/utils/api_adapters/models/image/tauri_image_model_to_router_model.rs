@@ -17,7 +17,6 @@ pub fn tauri_image_model_to_router_model(model: TauriImageModel) -> Option<Route
     TauriImageModel::NanoBanana => Some(RouterImageModel::NanoBanana), // Text-to-Image
     TauriImageModel::NanoBanana2 => Some(RouterImageModel::NanoBanana2), // Text-to-Image
     TauriImageModel::NanoBananaPro => Some(RouterImageModel::NanoBananaPro), // Text-to-Image
-    TauriImageModel::Gemini25Flash => Some(RouterImageModel::NanoBanana), // Text-to-Image
     TauriImageModel::Seedream4 => Some(RouterImageModel::Seedream4), // Text-to-Image
     TauriImageModel::Seedream4p5 => Some(RouterImageModel::Seedream4p5), // Text-to-Image
     TauriImageModel::Seedream5Lite => Some(RouterImageModel::Seedream5Lite), // Text-to-Image
@@ -28,8 +27,6 @@ pub fn tauri_image_model_to_router_model(model: TauriImageModel) -> Option<Route
     TauriImageModel::Midjourney7 => Some(RouterImageModel::Midjourney7),
     TauriImageModel::Midjourney7Niji => Some(RouterImageModel::Midjourney7Niji),
     TauriImageModel::Midjourney8 => Some(RouterImageModel::Midjourney8),
-    // Generic Midjourney routes to the newest version; the server has no unversioned model.
-    TauriImageModel::Midjourney => Some(RouterImageModel::Midjourney8),
     // Not accounted for yet
     TauriImageModel::GrokImage => None,
     TauriImageModel::Recraft3 => None,

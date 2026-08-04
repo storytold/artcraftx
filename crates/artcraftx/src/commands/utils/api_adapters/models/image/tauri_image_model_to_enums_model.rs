@@ -17,7 +17,6 @@ pub fn tauri_image_model_to_enums_model(model: TauriImageModel) -> Option<Common
     TauriImageModel::NanoBanana => Some(CommonImageModel::NanoBanana),
     TauriImageModel::NanoBanana2 => Some(CommonImageModel::NanoBanana2),
     TauriImageModel::NanoBananaPro => Some(CommonImageModel::NanoBananaPro),
-    TauriImageModel::Gemini25Flash => Some(CommonImageModel::NanoBanana),
     TauriImageModel::Seedream4 => Some(CommonImageModel::Seedream4),
     TauriImageModel::Seedream4p5 => Some(CommonImageModel::Seedream4p5),
     TauriImageModel::Seedream5Lite => Some(CommonImageModel::Seedream5Lite),
@@ -31,7 +30,6 @@ pub fn tauri_image_model_to_enums_model(model: TauriImageModel) -> Option<Common
     // Not accounted for yet
     TauriImageModel::GrokImage => None,
     TauriImageModel::Recraft3 => None,
-    TauriImageModel::Midjourney => None, // NB: Generic Midjourney is served by the native Midjourney provider.
     TauriImageModel::FluxProKontextMax => None,
     TauriImageModel::FluxDevJuggernaut => None,
   }

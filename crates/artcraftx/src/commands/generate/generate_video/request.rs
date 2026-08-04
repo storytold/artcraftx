@@ -80,6 +80,15 @@ pub enum TauriVideoModel {
 
   #[serde(rename = "veo_3p1_fast")]
   Veo3p1Fast,
+
+  #[serde(rename = "veo_3p1_lite")]
+  Veo3p1Lite,
+
+  #[serde(rename = "vidu_q3")]
+  ViduQ3,
+
+  #[serde(rename = "vidu_q3_turbo")]
+  ViduQ3Turbo,
 }
 
 #[derive(Deserialize, Debug, Clone, Default)]

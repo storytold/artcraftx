@@ -65,6 +65,18 @@ export const SPLAT_MODELS : SplatModel [] = [
     ],
     progressBarTime: 45000,
   }),
+  new SplatModel({
+    id: "triposplat",
+    tauriId: "triposplat",
+    fullName: "TripoSplat",
+    category: "gaussian",
+    creator: ModelCreator.Tripo,
+    selectorName: "TripoSplat",
+    selectorDescription: "Reconstructs a splat from a single image",
+    selectorBadges: ["~1 min."],
+    providers: [GenerationProvider.Artcraft],
+    progressBarTime: 60000,
+  }),
 ];
 
 export const SPLAT_MODELS_BY_ID: Map<string, SplatModel> = new Map(
