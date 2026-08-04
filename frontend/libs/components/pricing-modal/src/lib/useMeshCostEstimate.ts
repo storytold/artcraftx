@@ -2,17 +2,17 @@ import { useEffect, useState } from "react";
 import { ModelPage } from "@storyteller/ui-model-selector";
 import { Model } from "@storyteller/model-list";
 import {
-  EstimateSplatCost,
-  isEstimateSplatCostSuccess,
+  EstimateMeshCost,
+  isEstimateMeshCostSuccess,
 } from "@storyteller/tauri-api";
 import { useCostBreakdownModalStore } from "./cost-breakdown-modal-store";
 
-const SPLAT_PAGES = new Set<ModelPage>([ModelPage.ImageTo3DWorld]);
+const MESH_PAGES = new Set<ModelPage>([ModelPage.ImageTo3DObject]);
 
-export function useSplatCostEstimate(
+export function useMeshCostEstimate(
   activePage: ModelPage,
   selectedModel: Model | null | undefined,
-  selectedProvider: string | null | undefined,
+  _selectedProvider: string | null | undefined,
 ): { isLoading: boolean } {
   const [isLoading, setIsLoading] = useState(false);
   const setEstimatedCreditsForPage = useCostBreakdownModalStore(
@@ -20,7 +20,7 @@ export function useSplatCostEstimate(
   );
 
   useEffect(() => {
-    if (!SPLAT_PAGES.has(activePage) || !selectedModel) {
+    if (!MESH_PAGES.has(activePage) || !selectedModel) {
       return;
     }
 
@@ -32,14 +32,14 @@ export function useSplatCostEstimate(
 
     setIsLoading(true);
 
-    EstimateSplatCost({
+    EstimateMeshCost({
       model: commonModel,
-      // Splat generation is image-driven; assume one reference image so the
+      // Mesh generation is image-driven; assume one reference image so the
       // estimate matches what the page will actually send.
       reference_image_media_tokens: ["m_placeholder"],
     })
       .then((result) => {
-        if (isEstimateSplatCostSuccess(result)) {
+        if (isEstimateMeshCostSuccess(result)) {
           setEstimatedCreditsForPage(
             activePage,
             result.payload.cost_in_credits ?? null,
@@ -54,7 +54,7 @@ export function useSplatCostEstimate(
       .finally(() => {
         setIsLoading(false);
       });
-  }, [activePage, selectedModel?.id, selectedProvider]);
+  }, [activePage, selectedModel, setEstimatedCreditsForPage]);
 
   return { isLoading };
 }

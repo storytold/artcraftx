@@ -31,6 +31,7 @@ import { Model } from "@storyteller/model-list";
 import { useCurrency } from "./use-currency";
 import { useVideoCostEstimate } from "./useVideoCostEstimate";
 import { useImageCostEstimate } from "./useImageCostEstimate";
+import { useMeshCostEstimate } from "./useMeshCostEstimate";
 import { useSplatCostEstimate } from "./useSplatCostEstimate";
 
 // Drag handle subcomponent that Modal looks for
@@ -140,8 +141,16 @@ export function CostBreakdownModal({ activeTabId }: CostBreakdownModalProps) {
     selectedModel,
     selectedProvider,
   );
+  const { isLoading: isMeshEstimateLoading } = useMeshCostEstimate(
+    activePage,
+    selectedModel,
+    selectedProvider,
+  );
   const isEstimateLoading =
-    isVideoEstimateLoading || isImageEstimateLoading || isSplatEstimateLoading;
+    isVideoEstimateLoading ||
+    isImageEstimateLoading ||
+    isSplatEstimateLoading ||
+    isMeshEstimateLoading;
 
   // Get generation settings from the appropriate stores based on active page
   const prompt2D = usePrompt2DStore();

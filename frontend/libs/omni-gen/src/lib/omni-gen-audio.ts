@@ -1,3 +1,7 @@
+import {
+  EstimateAudioCost,
+  isEstimateAudioCostSuccess,
+} from "@storyteller/tauri-api";
 import { useEffect, useRef, useState } from "react";
 import { OmniGenApi } from "@storyteller/api";
 import type {
@@ -155,21 +159,23 @@ export function useAudioCostEstimate(params: AudioCostParams): number | null {
 
     const id = ++abortRef.current;
 
-    const body: OmniGenAudioRequest = {
+    // Route through the Tauri cost command (`/v1/omni_gen/cost/audio` on the
+    // Rust side) so estimates use the same client stack as generation.
+    EstimateAudioCost({
       model: params.model,
       audio_media_tokens: params.audioReferenceCount
         ? new Array(params.audioReferenceCount).fill("placeholder")
-        : null,
-      image_media_tokens: params.hasImageReference ? ["placeholder"] : null,
-      sample_rate_hz: params.sampleRateHz ?? null,
-    };
-
-    const api = new OmniGenApi();
-    api.estimateAudioCost(body).then(
-      (response) => {
+        : undefined,
+      image_media_tokens: params.hasImageReference ? ["placeholder"] : undefined,
+      sample_rate_hz: params.sampleRateHz ?? undefined,
+    }).then(
+      (result) => {
         if (id !== abortRef.current) return;
-        if (response.success && response.cost_in_credits != null) {
-          setCredits(response.cost_in_credits);
+        if (
+          isEstimateAudioCostSuccess(result) &&
+          result.payload.cost_in_credits != null
+        ) {
+          setCredits(result.payload.cost_in_credits);
         } else {
           setCredits(null);
         }

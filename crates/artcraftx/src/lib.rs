@@ -25,7 +25,9 @@ use crate::commands::credentials::list_credentials_command::list_credentials_com
 use crate::commands::credentials::open_web_login_command::open_web_login_command;
 use crate::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
 use crate::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
+use crate::commands::cost_estimate::estimate_audio_cost_command::estimate_audio_cost_command;
 use crate::commands::cost_estimate::estimate_image_cost_command::estimate_image_cost_command;
+use crate::commands::cost_estimate::estimate_mesh_cost_command::estimate_mesh_cost_command;
 use crate::commands::cost_estimate::estimate_splat_cost_command::estimate_splat_cost_command;
 use crate::commands::cost_estimate::estimate_video_cost_command::estimate_video_cost_command;
 use crate::commands::generate::models::image::list_image_models_command::list_image_models_command;
@@ -220,7 +222,9 @@ pub fn run() {
     download_media_file_command,
     download_url_command,
     enqueue_image_bg_removal_command,
+    estimate_audio_cost_command,
     estimate_image_cost_command,
+    estimate_mesh_cost_command,
     estimate_splat_cost_command,
     estimate_video_cost_command,
     list_image_models_command,
