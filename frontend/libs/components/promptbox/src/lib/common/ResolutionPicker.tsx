@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { faSquare, IconDefinition } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PopoverItem, PopoverMenu } from "@storyteller/ui-popover";
@@ -31,11 +32,32 @@ export const ResolutionPicker = ({
   currentResolution,
   handleCommonResolutionSelect,
 }: ResolutionPickerProps) => {
-  const useResolution =
-    currentResolution ?? model.defaultResolution ?? undefined;
+  const supportedResolutions = model.resolutions ?? [];
+  const pickSupported = (resolution?: CommonResolution) =>
+    resolution && supportedResolutions.includes(resolution)
+      ? resolution
+      : undefined;
 
-  console.log("resolution - currentResolution:", currentResolution);
-  console.log("resolution - useResolution:", useResolution);
+  // Always resolve to a resolution the current model supports so
+  // PopoverMenu's toggle mode has a selected item. Otherwise the trigger
+  // renders icon-only (no label) and the pill comes out shorter than the
+  // neighboring pickers (model, aspect ratio).
+  const useResolution =
+    pickSupported(currentResolution) ??
+    pickSupported(model.defaultResolution) ??
+    supportedResolutions[0];
+
+  // If the stored resolution isn't supported by the current model (e.g. the
+  // user picked 4K then switched to a 1K-only model), reset to the model's
+  // default. Mirrors AspectRatioPicker.
+  useEffect(() => {
+    if (currentResolution === undefined) return;
+    if (supportedResolutions.includes(currentResolution)) return;
+    const fallback = model.defaultResolution ?? supportedResolutions[0];
+    if (!fallback) return;
+    handleCommonResolutionSelect(fallback);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [model, currentResolution]);
 
   const getCurrentResolutionIcon = (): IconDefinition => {
     if (!useResolution) {

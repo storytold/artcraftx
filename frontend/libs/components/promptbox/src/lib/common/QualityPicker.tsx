@@ -30,7 +30,17 @@ export const QualityPicker = ({
   currentQuality,
   handleCommonQualitySelect,
 }: QualityPickerProps) => {
-  const useQuality = currentQuality ?? model.defaultQuality ?? undefined;
+  const supportedQualities = model.qualityOptions ?? [];
+  const pickSupported = (quality?: CommonQuality) =>
+    quality && supportedQualities.includes(quality) ? quality : undefined;
+
+  // Always resolve to a supported quality so PopoverMenu's toggle mode has a
+  // selected item — otherwise the trigger renders icon-only and the pill is
+  // shorter than the neighboring pickers.
+  const useQuality =
+    pickSupported(currentQuality) ??
+    pickSupported(model.defaultQuality) ??
+    supportedQualities[0];
 
   const handleSelectAdapter = (item: PopoverItem) => {
     const quality = LABEL_TO_QUALITY[item.label];
