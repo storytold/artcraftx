@@ -9,7 +9,7 @@ import { useCostBreakdownModalStore } from "@storyteller/ui-pricing-modal";
 import {
   EnqueueImageTo3dObject,
   EnqueueImageTo3dObjectModel,
-  EnqueueImageToGaussian,
+  GenerateSplat,
 } from "@storyteller/tauri-api";
 import { SPLAT_MODELS } from "@storyteller/model-list";
 import {
@@ -18,10 +18,10 @@ import {
   IMAGE_TO_3D_WORLD_PAGE_MODEL_LIST,
   ModelPage,
   useSelectedModel,
-  useSelectedProviderForModel,
 } from "@storyteller/ui-model-selector";
 import { PromptShell, useComposerTasks } from "~/components/PromptShell";
 import { AccountSelector } from "~/components/account-selector/AccountSelector";
+import { useAccountSelectorStore } from "~/components/account-selector/accountSelectorStore";
 
 // Minimal image→3D composer in the marketing-site style: reference tray +
 // optional prompt + generate. Replaces the old ImageTo3DExperience page UI
@@ -56,10 +56,6 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
   const maxImages = isWorld ? MAX_WORLD_IMAGES : 1;
 
   const selectedModel = useSelectedModel(pageId);
-  const selectedProvider = useSelectedProviderForModel(
-    pageId,
-    selectedModel?.id,
-  );
   const selectedObjectModelId =
     (selectedModel?.id as EnqueueImageTo3dObjectModel | undefined) ??
     DEFAULT_OBJECT_MODEL_ID;
@@ -72,6 +68,7 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
 
   const [images, setImages] = useState<TrayImage[]>([]);
   const [prompt, setPrompt] = useState("");
+  const selectedAccountId = useAccountSelectorStore((s) => s.selectedAccountId);
   const [isGenerating, setIsGenerating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -156,11 +153,13 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
       });
 
       const result = isWorld
-        ? await EnqueueImageToGaussian({
-            image_media_tokens: readyTokens,
+        ? await GenerateSplat({
+            credential_id: selectedAccountId ?? undefined,
+            model:
+              (selectedModel as any)?.tauriId ??
+              (SPLAT_MODELS[0] as any)?.tauriId,
             prompt: prompt.trim() || undefined,
-            model: (selectedModel as any) ?? SPLAT_MODELS[0],
-            provider: selectedProvider,
+            reference_image_media_tokens: readyTokens,
             frontend_caller: "mini_app",
             frontend_subscriber_id: subscriberId,
           })
@@ -179,7 +178,10 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
       window.dispatchEvent(new Event("task-queue-update"));
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "An unexpected error occurred";
+        error instanceof Error
+          ? error.message
+          : ((error as { error_message?: string } | null)?.error_message ??
+            "An unexpected error occurred");
       toast.error(`Failed to generate 3D model: ${errorMessage}`);
     } finally {
       setIsGenerating(false);

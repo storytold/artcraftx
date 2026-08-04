@@ -17,11 +17,12 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { OmniGenAudioModelDetails, UploadMediaFn } from "@storyteller/api";
 import {
-  enqueueAudioGeneration,
+  buildAudioRequest,
   AUDIO_MODELS_REQUIRING_AUDIO_REF,
   OMNI_GENERATE_OUTAGE_MESSAGE,
   type AudioGenerationSettings,
 } from "@storyteller/omni-gen";
+import { GenerateAudio } from "@storyteller/tauri-api";
 import {
   getCreatorIconPathForModelId,
   getModelDescription,
@@ -83,6 +84,10 @@ interface PromptBoxAudioProps {
   /** Optional account-picker slot rendered at the very start of the toolbar
    *  (left of the model selector). */
   accountSelector?: ReactNode;
+  /** Stable id (`credential_{entropy}`) of the selected account credential,
+   *  sent with generation requests so the backend knows which stored
+   *  credential to generate with. */
+  credentialId?: string | null;
   /** Render the focus-mode layout inline, filling the parent's height,
    *  instead of the floating card + fullscreen modal. */
   fullBleed?: boolean;
@@ -95,6 +100,7 @@ export const PromptBoxAudio = ({
   onEnqueuePressed,
   credits,
   accountSelector,
+  credentialId,
   fullBleed = false,
 }: PromptBoxAudioProps) => {
   const prompt = usePromptAudioStore((s) => s.prompt);
@@ -393,23 +399,36 @@ export const PromptBoxAudio = ({
         pitch,
       };
 
-      const result = await enqueueAudioGeneration(selectedModel, settings);
+      // Route through the credential-driven Tauri command (the account
+      // selector's credential authenticates the request).
+      const body = buildAudioRequest(selectedModel, settings);
 
-      if (!result.success) {
-        if (result.errorCode === 402) {
-          toast.error("Not enough credits for this generation");
-        } else if (result.errorCode != null && result.errorCode >= 500) {
-          toast.error(OMNI_GENERATE_OUTAGE_MESSAGE);
-        } else {
-          toast.error(result.error ?? "Failed to start audio generation");
-        }
-        return;
-      }
+      await GenerateAudio({
+        credential_id: credentialId ?? undefined,
+        model: String(body.model),
+        prompt: body.prompt ?? undefined,
+        style_prompt: body.style_prompt ?? undefined,
+        audio_media_tokens: body.audio_media_tokens ?? undefined,
+        image_media_tokens: body.image_media_tokens ?? undefined,
+        keep_lyrics: body.keep_lyrics ?? undefined,
+        is_instrumental: body.is_instrumental ?? undefined,
+        is_loopable: body.is_loopable ?? undefined,
+        bpm: body.bpm ?? undefined,
+        musical_key: body.musical_key ? String(body.musical_key) : undefined,
+        sample_rate_hz: body.sample_rate_hz ?? undefined,
+        speed: body.speed ?? undefined,
+        volume: body.volume ?? undefined,
+        pitch: body.pitch ?? undefined,
+      });
 
-      await onEnqueuePressed?.(result.jobTokens);
+      await onEnqueuePressed?.([]);
     } catch (err) {
       console.error("PromptBoxAudio - enqueue failed", err);
-      toast.error("Failed to start audio generation. Please try again.");
+      const backendMessage = (err as { error_message?: string } | null)
+        ?.error_message;
+      toast.error(
+        backendMessage || "Failed to start audio generation. Please try again.",
+      );
     } finally {
       setIsEnqueueing(false);
     }

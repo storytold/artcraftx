@@ -6,12 +6,57 @@ import { GenerationProvider } from "@storyteller/api-enums";
 
 export const SPLAT_MODELS : SplatModel [] = [
   new SplatModel({
-    id: "marble_0p1_mini",
-    tauriId: "marble_0p1_mini",
-    fullName: "Marble 0.1 Mini",
+    id: "marble_1p1",
+    tauriId: "marble_1p1",
+    fullName: "Marble 1.1",
     category: "gaussian",
     creator: ModelCreator.WorldLabs,
-    selectorName: "Marble Mini",
+    selectorName: "Marble 1.1",
+    selectorDescription: "Latest generation, best quality",
+    selectorBadges: ["~5 min."],
+    providers: [
+      GenerationProvider.Artcraft,
+      GenerationProvider.WorldLabs,
+    ],
+    progressBarTime: 300000,
+  }),
+  new SplatModel({
+    id: "marble_1p1_plus",
+    tauriId: "marble_1p1_plus",
+    fullName: "Marble 1.1 Plus",
+    category: "gaussian",
+    creator: ModelCreator.WorldLabs,
+    selectorName: "Marble 1.1 Plus",
+    selectorDescription: "Highest quality, best for final renders",
+    selectorBadges: ["~5 min."],
+    providers: [
+      GenerationProvider.Artcraft,
+      GenerationProvider.WorldLabs,
+    ],
+    progressBarTime: 300000,
+  }),
+  new SplatModel({
+    id: "marble_1p0",
+    tauriId: "marble_1p0",
+    fullName: "Marble 1.0",
+    category: "gaussian",
+    creator: ModelCreator.WorldLabs,
+    selectorName: "Marble 1.0",
+    selectorDescription: "Previous generation, high quality",
+    selectorBadges: ["~5 min."],
+    providers: [
+      GenerationProvider.Artcraft,
+      GenerationProvider.WorldLabs,
+    ],
+    progressBarTime: 300000,
+  }),
+  new SplatModel({
+    id: "marble_1p0_draft",
+    tauriId: "marble_1p0_draft",
+    fullName: "Marble 1.0 Draft",
+    category: "gaussian",
+    creator: ModelCreator.WorldLabs,
+    selectorName: "Marble 1.0 Draft",
     selectorDescription: "Fast generation, good for quick drafts",
     selectorBadges: ["~30 sec."],
     providers: [
@@ -19,21 +64,6 @@ export const SPLAT_MODELS : SplatModel [] = [
       GenerationProvider.WorldLabs,
     ],
     progressBarTime: 45000,
-  }),
-  new SplatModel({
-    id: "marble_0p1_plus",
-    tauriId: "marble_0p1_plus",
-    fullName: "Marble 0.1 Plus",
-    category: "gaussian",
-    creator: ModelCreator.WorldLabs,
-    selectorName: "Marble Plus",
-    selectorDescription: "High quality, best for final renders",
-    selectorBadges: ["~5 min."],
-    providers: [
-      GenerationProvider.Artcraft,
-      GenerationProvider.WorldLabs,
-    ],
-    progressBarTime: 300000,
   }),
 ];
 

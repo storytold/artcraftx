@@ -13,6 +13,7 @@ import {
   type CompletedFile,
 } from "~/components/PromptShell";
 import { AccountSelector } from "~/components/account-selector/AccountSelector";
+import { useAccountSelectorStore } from "~/components/account-selector/accountSelectorStore";
 
 // The whole page is the composer: no feed, no gallery — results are written
 // straight to disk and the PromptShell shows the progress bar + receipt.
@@ -33,6 +34,7 @@ const CreateAudio = () => {
       models[0],
     [models, selectedModelId],
   );
+  const selectedAccountId = useAccountSelectorStore((s) => s.selectedAccountId);
   const audioCredits = useAudioCostEstimate({
     model: selectedModel?.model ?? "",
     audioReferenceCount: referenceAudios.length,
@@ -66,6 +68,7 @@ const CreateAudio = () => {
         uploadImage={UploadImageMedia}
         credits={audioCredits}
         accountSelector={<AccountSelector />}
+        credentialId={selectedAccountId}
         onEnqueuePressed={async () => {
           // Nudge the shared jobs poller so the in-flight state appears
           // immediately (one request can create several job tokens).
