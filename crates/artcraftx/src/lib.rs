@@ -36,7 +36,10 @@ use crate::commands::download::download_url_command::download_url_command;
 use crate::commands::enqueue::image_bg_removal::enqueue_image_bg_removal_command::enqueue_image_bg_removal_command;
 use crate::commands::enqueue::image_to_gaussian::enqueue_image_to_gaussian_command::enqueue_image_to_gaussian_command;
 use crate::commands::enqueue::image_to_object::enqueue_image_to_3d_object_command::enqueue_image_to_3d_object_command;
+use crate::commands::generate::generate_audio::generate_audio_command::generate_audio_command;
 use crate::commands::generate::generate_image::generate_image_command::generate_image_command;
+use crate::commands::generate::generate_mesh::generate_mesh_command::generate_mesh_command;
+use crate::commands::generate::generate_splat::generate_splat_command::generate_splat_command;
 use crate::commands::generate::generate_video::generate_video_command::generate_video_command;
 use crate::commands::flip_image::flip_image;
 use crate::commands::get_app_info_command::get_app_info_command;
@@ -227,7 +230,10 @@ pub fn run() {
     list_image_models_command,
     list_video_models_command,
     flip_image,
+    generate_audio_command,
     generate_image_command,
+    generate_mesh_command,
+    generate_splat_command,
     generate_video_command,
     get_app_info_command,
     get_app_preferences_command,

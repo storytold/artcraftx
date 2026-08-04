@@ -126,6 +126,46 @@ pub enum TaskModelType {
   WorldlabsMarble0p1Mini,
   #[serde(rename = "marble_0p1_plus")]
   WorldlabsMarble0p1Plus,
+  #[serde(rename = "hunyuan_3d_3_sketch")]
+  Hunyuan3d3Sketch,
+  #[serde(rename = "hunyuan_3d_3p1_pro")]
+  Hunyuan3d3p1Pro,
+  #[serde(rename = "hunyuan_3d_3p1_rapid")]
+  Hunyuan3d3p1Rapid,
+  #[serde(rename = "hunyuan_3d_3p1_part")]
+  Hunyuan3d3p1Part,
+  #[serde(rename = "hunyuan_3d_3p1_topology")]
+  Hunyuan3d3p1SmartTopology,
+  #[serde(rename = "tripo3d_h3p1")]
+  Tripo3dH3p1,
+  #[serde(rename = "meshy_v6")]
+  MeshyV6,
+  #[serde(rename = "rodin_2p5_fast")]
+  Rodin2p5Fast,
+
+  // Splat generation models
+  #[serde(rename = "marble_1p0")]
+  Marble1p0,
+  #[serde(rename = "marble_1p0_draft")]
+  Marble1p0Draft,
+  #[serde(rename = "marble_1p1")]
+  Marble1p1,
+  #[serde(rename = "marble_1p1_plus")]
+  Marble1p1Plus,
+  #[serde(rename = "triposplat")]
+  TripoSplat,
+
+  // Audio generation models
+  #[serde(rename = "suno_music")]
+  SunoMusic,
+  #[serde(rename = "suno_remix")]
+  SunoRemix,
+  #[serde(rename = "suno_sounds")]
+  SunoSounds,
+  #[serde(rename = "suno_sample")]
+  SunoSample,
+  #[serde(rename = "seed_audio_1p0")]
+  SeedAudio1p0,
 }
 
 impl_enum_display_and_debug_using_to_str!(TaskModelType);
@@ -194,6 +234,24 @@ impl TaskModelType {
       Self::WorldlabsMarble => "worldlabs_marble",
       Self::WorldlabsMarble0p1Mini => "marble_0p1_mini",
       Self::WorldlabsMarble0p1Plus => "marble_0p1_plus",
+      Self::Hunyuan3d3Sketch => "hunyuan_3d_3_sketch",
+      Self::Hunyuan3d3p1Pro => "hunyuan_3d_3p1_pro",
+      Self::Hunyuan3d3p1Rapid => "hunyuan_3d_3p1_rapid",
+      Self::Hunyuan3d3p1Part => "hunyuan_3d_3p1_part",
+      Self::Hunyuan3d3p1SmartTopology => "hunyuan_3d_3p1_topology",
+      Self::Tripo3dH3p1 => "tripo3d_h3p1",
+      Self::MeshyV6 => "meshy_v6",
+      Self::Rodin2p5Fast => "rodin_2p5_fast",
+      Self::Marble1p0 => "marble_1p0",
+      Self::Marble1p0Draft => "marble_1p0_draft",
+      Self::Marble1p1 => "marble_1p1",
+      Self::Marble1p1Plus => "marble_1p1_plus",
+      Self::TripoSplat => "triposplat",
+      Self::SunoMusic => "suno_music",
+      Self::SunoRemix => "suno_remix",
+      Self::SunoSounds => "suno_sounds",
+      Self::SunoSample => "suno_sample",
+      Self::SeedAudio1p0 => "seed_audio_1p0",
     }
   }
 
@@ -256,6 +314,24 @@ impl TaskModelType {
       "worldlabs_marble" => Ok(Self::WorldlabsMarble),
       "marble_0p1_mini" => Ok(Self::WorldlabsMarble0p1Mini),
       "marble_0p1_plus" => Ok(Self::WorldlabsMarble0p1Plus),
+      "hunyuan_3d_3_sketch" => Ok(Self::Hunyuan3d3Sketch),
+      "hunyuan_3d_3p1_pro" => Ok(Self::Hunyuan3d3p1Pro),
+      "hunyuan_3d_3p1_rapid" => Ok(Self::Hunyuan3d3p1Rapid),
+      "hunyuan_3d_3p1_part" => Ok(Self::Hunyuan3d3p1Part),
+      "hunyuan_3d_3p1_topology" => Ok(Self::Hunyuan3d3p1SmartTopology),
+      "tripo3d_h3p1" => Ok(Self::Tripo3dH3p1),
+      "meshy_v6" => Ok(Self::MeshyV6),
+      "rodin_2p5_fast" => Ok(Self::Rodin2p5Fast),
+      "marble_1p0" => Ok(Self::Marble1p0),
+      "marble_1p0_draft" => Ok(Self::Marble1p0Draft),
+      "marble_1p1" => Ok(Self::Marble1p1),
+      "marble_1p1_plus" => Ok(Self::Marble1p1Plus),
+      "triposplat" => Ok(Self::TripoSplat),
+      "suno_music" => Ok(Self::SunoMusic),
+      "suno_remix" => Ok(Self::SunoRemix),
+      "suno_sounds" => Ok(Self::SunoSounds),
+      "suno_sample" => Ok(Self::SunoSample),
+      "seed_audio_1p0" => Ok(Self::SeedAudio1p0),
       _ => Err(EnumError::CouldNotConvertFromString(value.to_string())),
     }
   }
@@ -321,6 +397,24 @@ impl TaskModelType {
       Self::WorldlabsMarble,
       Self::WorldlabsMarble0p1Mini,
       Self::WorldlabsMarble0p1Plus,
+      Self::Hunyuan3d3Sketch,
+      Self::Hunyuan3d3p1Pro,
+      Self::Hunyuan3d3p1Rapid,
+      Self::Hunyuan3d3p1Part,
+      Self::Hunyuan3d3p1SmartTopology,
+      Self::Tripo3dH3p1,
+      Self::MeshyV6,
+      Self::Rodin2p5Fast,
+      Self::Marble1p0,
+      Self::Marble1p0Draft,
+      Self::Marble1p1,
+      Self::Marble1p1Plus,
+      Self::TripoSplat,
+      Self::SunoMusic,
+      Self::SunoRemix,
+      Self::SunoSounds,
+      Self::SunoSample,
+      Self::SeedAudio1p0,
     ])
   }
 }
@@ -393,6 +487,24 @@ mod tests {
       assert_serialization(TaskModelType::WorldlabsMarble, "worldlabs_marble");
       assert_serialization(TaskModelType::WorldlabsMarble0p1Mini, "marble_0p1_mini");
       assert_serialization(TaskModelType::WorldlabsMarble0p1Plus, "marble_0p1_plus");
+      assert_serialization(TaskModelType::Hunyuan3d3Sketch, "hunyuan_3d_3_sketch");
+      assert_serialization(TaskModelType::Hunyuan3d3p1Pro, "hunyuan_3d_3p1_pro");
+      assert_serialization(TaskModelType::Hunyuan3d3p1Rapid, "hunyuan_3d_3p1_rapid");
+      assert_serialization(TaskModelType::Hunyuan3d3p1Part, "hunyuan_3d_3p1_part");
+      assert_serialization(TaskModelType::Hunyuan3d3p1SmartTopology, "hunyuan_3d_3p1_topology");
+      assert_serialization(TaskModelType::Tripo3dH3p1, "tripo3d_h3p1");
+      assert_serialization(TaskModelType::MeshyV6, "meshy_v6");
+      assert_serialization(TaskModelType::Rodin2p5Fast, "rodin_2p5_fast");
+      assert_serialization(TaskModelType::Marble1p0, "marble_1p0");
+      assert_serialization(TaskModelType::Marble1p0Draft, "marble_1p0_draft");
+      assert_serialization(TaskModelType::Marble1p1, "marble_1p1");
+      assert_serialization(TaskModelType::Marble1p1Plus, "marble_1p1_plus");
+      assert_serialization(TaskModelType::TripoSplat, "triposplat");
+      assert_serialization(TaskModelType::SunoMusic, "suno_music");
+      assert_serialization(TaskModelType::SunoRemix, "suno_remix");
+      assert_serialization(TaskModelType::SunoSounds, "suno_sounds");
+      assert_serialization(TaskModelType::SunoSample, "suno_sample");
+      assert_serialization(TaskModelType::SeedAudio1p0, "seed_audio_1p0");
     }
 
     #[test]
@@ -451,6 +563,24 @@ mod tests {
       assert_eq!(TaskModelType::WorldlabsMarble.to_str(), "worldlabs_marble");
       assert_eq!(TaskModelType::WorldlabsMarble0p1Mini.to_str(), "marble_0p1_mini");
       assert_eq!(TaskModelType::WorldlabsMarble0p1Plus.to_str(), "marble_0p1_plus");
+      assert_eq!(TaskModelType::Hunyuan3d3Sketch.to_str(), "hunyuan_3d_3_sketch");
+      assert_eq!(TaskModelType::Hunyuan3d3p1Pro.to_str(), "hunyuan_3d_3p1_pro");
+      assert_eq!(TaskModelType::Hunyuan3d3p1Rapid.to_str(), "hunyuan_3d_3p1_rapid");
+      assert_eq!(TaskModelType::Hunyuan3d3p1Part.to_str(), "hunyuan_3d_3p1_part");
+      assert_eq!(TaskModelType::Hunyuan3d3p1SmartTopology.to_str(), "hunyuan_3d_3p1_topology");
+      assert_eq!(TaskModelType::Tripo3dH3p1.to_str(), "tripo3d_h3p1");
+      assert_eq!(TaskModelType::MeshyV6.to_str(), "meshy_v6");
+      assert_eq!(TaskModelType::Rodin2p5Fast.to_str(), "rodin_2p5_fast");
+      assert_eq!(TaskModelType::Marble1p0.to_str(), "marble_1p0");
+      assert_eq!(TaskModelType::Marble1p0Draft.to_str(), "marble_1p0_draft");
+      assert_eq!(TaskModelType::Marble1p1.to_str(), "marble_1p1");
+      assert_eq!(TaskModelType::Marble1p1Plus.to_str(), "marble_1p1_plus");
+      assert_eq!(TaskModelType::TripoSplat.to_str(), "triposplat");
+      assert_eq!(TaskModelType::SunoMusic.to_str(), "suno_music");
+      assert_eq!(TaskModelType::SunoRemix.to_str(), "suno_remix");
+      assert_eq!(TaskModelType::SunoSounds.to_str(), "suno_sounds");
+      assert_eq!(TaskModelType::SunoSample.to_str(), "suno_sample");
+      assert_eq!(TaskModelType::SeedAudio1p0.to_str(), "seed_audio_1p0");
     }
 
     #[test]
@@ -509,6 +639,24 @@ mod tests {
       assert_eq!(TaskModelType::from_str("worldlabs_marble").unwrap(), TaskModelType::WorldlabsMarble);
       assert_eq!(TaskModelType::from_str("marble_0p1_mini").unwrap(), TaskModelType::WorldlabsMarble0p1Mini);
       assert_eq!(TaskModelType::from_str("marble_0p1_plus").unwrap(), TaskModelType::WorldlabsMarble0p1Plus);
+      assert_eq!(TaskModelType::from_str("hunyuan_3d_3_sketch").unwrap(), TaskModelType::Hunyuan3d3Sketch);
+      assert_eq!(TaskModelType::from_str("hunyuan_3d_3p1_pro").unwrap(), TaskModelType::Hunyuan3d3p1Pro);
+      assert_eq!(TaskModelType::from_str("hunyuan_3d_3p1_rapid").unwrap(), TaskModelType::Hunyuan3d3p1Rapid);
+      assert_eq!(TaskModelType::from_str("hunyuan_3d_3p1_part").unwrap(), TaskModelType::Hunyuan3d3p1Part);
+      assert_eq!(TaskModelType::from_str("hunyuan_3d_3p1_topology").unwrap(), TaskModelType::Hunyuan3d3p1SmartTopology);
+      assert_eq!(TaskModelType::from_str("tripo3d_h3p1").unwrap(), TaskModelType::Tripo3dH3p1);
+      assert_eq!(TaskModelType::from_str("meshy_v6").unwrap(), TaskModelType::MeshyV6);
+      assert_eq!(TaskModelType::from_str("rodin_2p5_fast").unwrap(), TaskModelType::Rodin2p5Fast);
+      assert_eq!(TaskModelType::from_str("marble_1p0").unwrap(), TaskModelType::Marble1p0);
+      assert_eq!(TaskModelType::from_str("marble_1p0_draft").unwrap(), TaskModelType::Marble1p0Draft);
+      assert_eq!(TaskModelType::from_str("marble_1p1").unwrap(), TaskModelType::Marble1p1);
+      assert_eq!(TaskModelType::from_str("marble_1p1_plus").unwrap(), TaskModelType::Marble1p1Plus);
+      assert_eq!(TaskModelType::from_str("triposplat").unwrap(), TaskModelType::TripoSplat);
+      assert_eq!(TaskModelType::from_str("suno_music").unwrap(), TaskModelType::SunoMusic);
+      assert_eq!(TaskModelType::from_str("suno_remix").unwrap(), TaskModelType::SunoRemix);
+      assert_eq!(TaskModelType::from_str("suno_sounds").unwrap(), TaskModelType::SunoSounds);
+      assert_eq!(TaskModelType::from_str("suno_sample").unwrap(), TaskModelType::SunoSample);
+      assert_eq!(TaskModelType::from_str("seed_audio_1p0").unwrap(), TaskModelType::SeedAudio1p0);
     }
 
     #[test]
@@ -525,7 +673,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskModelType::all_variants();
-      assert_eq!(variants.len(), 54);
+      assert_eq!(variants.len(), 72);
       // Image models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Schnell));
@@ -583,6 +731,24 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TaskModelType::WorldlabsMarble));
       assert_eq!(variants.pop_first(), Some(TaskModelType::WorldlabsMarble0p1Mini));
       assert_eq!(variants.pop_first(), Some(TaskModelType::WorldlabsMarble0p1Plus));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Hunyuan3d3Sketch));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Hunyuan3d3p1Pro));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Hunyuan3d3p1Rapid));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Hunyuan3d3p1Part));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Hunyuan3d3p1SmartTopology));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Tripo3dH3p1));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::MeshyV6));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Rodin2p5Fast));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Marble1p0));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Marble1p0Draft));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Marble1p1));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Marble1p1Plus));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::TripoSplat));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::SunoMusic));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::SunoRemix));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::SunoSounds));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::SunoSample));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::SeedAudio1p0));
       assert_eq!(variants.pop_first(), None);
     }
   }

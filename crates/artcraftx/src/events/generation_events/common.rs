@@ -67,6 +67,22 @@ pub enum GenerationModel {
   Hunyuan3d2_1,
   #[serde(rename = "hunyuan_3d_3")]
   Hunyuan3d3,
+  #[serde(rename = "hunyuan_3d_3_sketch")]
+  Hunyuan3d3Sketch,
+  #[serde(rename = "hunyuan_3d_3p1_pro")]
+  Hunyuan3d3p1Pro,
+  #[serde(rename = "hunyuan_3d_3p1_rapid")]
+  Hunyuan3d3p1Rapid,
+  #[serde(rename = "hunyuan_3d_3p1_part")]
+  Hunyuan3d3p1Part,
+  #[serde(rename = "hunyuan_3d_3p1_topology")]
+  Hunyuan3d3p1SmartTopology,
+  #[serde(rename = "tripo3d_h3p1")]
+  Tripo3dH3p1,
+  #[serde(rename = "meshy_v6")]
+  MeshyV6,
+  #[serde(rename = "rodin_2p5_fast")]
+  Rodin2p5Fast,
 
   #[serde(rename = "worldlabs_marble")]
   WorldlabsMarble,
@@ -74,6 +90,28 @@ pub enum GenerationModel {
   WorldlabsMarble0p1Mini,
   #[serde(rename = "worldlabs_marble_0p1_plus")]
   WorldlabsMarble0p1Plus,
+  #[serde(rename = "marble_1p0")]
+  Marble1p0,
+  #[serde(rename = "marble_1p0_draft")]
+  Marble1p0Draft,
+  #[serde(rename = "marble_1p1")]
+  Marble1p1,
+  #[serde(rename = "marble_1p1_plus")]
+  Marble1p1Plus,
+  #[serde(rename = "triposplat")]
+  TripoSplat,
+
+  // Audio generation models
+  #[serde(rename = "suno_music")]
+  SunoMusic,
+  #[serde(rename = "suno_remix")]
+  SunoRemix,
+  #[serde(rename = "suno_sounds")]
+  SunoSounds,
+  #[serde(rename = "suno_sample")]
+  SunoSample,
+  #[serde(rename = "seed_audio_1p0")]
+  SeedAudio1p0,
 
   // Generic Midjourney model, version unknown.
   #[serde(rename = "midjourney")]
@@ -142,6 +180,7 @@ pub enum GenerationModel {
 pub enum GenerationAction {
   GenerateImage,
   GenerateVideo,
+  GenerateAudio,
   RemoveBackground,
   #[serde(rename = "image_to_3d")]
   ImageTo3d,

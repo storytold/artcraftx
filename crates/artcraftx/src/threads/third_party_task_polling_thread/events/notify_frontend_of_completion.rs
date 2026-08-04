@@ -76,6 +76,11 @@ pub async fn notify_frontend_of_completion(
     TaskType::VideoGeneration => {
       notify_video_generation(app, task, completion)
     }
+    TaskType::AudioGeneration => {
+      // No typed audio notification yet; the generic GenerationCompleteEvent
+      // above already fired.
+      Ok(())
+    }
     TaskType::ObjectGeneration => {
       notify_object_generation(app, task, completion)
     }
@@ -259,6 +264,7 @@ fn task_type_to_generation_action(task_type: TaskType) -> GenerationAction {
   match task_type {
     TaskType::ImageGeneration => GenerationAction::GenerateImage,
     TaskType::VideoGeneration => GenerationAction::GenerateVideo,
+    TaskType::AudioGeneration => GenerationAction::GenerateAudio,
     TaskType::BackgroundRemoval => GenerationAction::RemoveBackground,
     TaskType::ObjectGeneration => GenerationAction::ImageTo3d,
     TaskType::GaussianGeneration => GenerationAction::GenerateGaussian,
@@ -328,6 +334,24 @@ fn task_model_type_to_generation_model(model: TaskModelType) -> Option<Generatio
     TaskModelType::Hunyuan3d2_0 => Some(GenerationModel::Hunyuan3d2_0),
     TaskModelType::Hunyuan3d2_1 => Some(GenerationModel::Hunyuan3d2_1),
     TaskModelType::Hunyuan3d3 => Some(GenerationModel::Hunyuan3d3),
+    TaskModelType::Hunyuan3d3Sketch => Some(GenerationModel::Hunyuan3d3Sketch),
+    TaskModelType::Hunyuan3d3p1Pro => Some(GenerationModel::Hunyuan3d3p1Pro),
+    TaskModelType::Hunyuan3d3p1Rapid => Some(GenerationModel::Hunyuan3d3p1Rapid),
+    TaskModelType::Hunyuan3d3p1Part => Some(GenerationModel::Hunyuan3d3p1Part),
+    TaskModelType::Hunyuan3d3p1SmartTopology => Some(GenerationModel::Hunyuan3d3p1SmartTopology),
+    TaskModelType::Tripo3dH3p1 => Some(GenerationModel::Tripo3dH3p1),
+    TaskModelType::MeshyV6 => Some(GenerationModel::MeshyV6),
+    TaskModelType::Rodin2p5Fast => Some(GenerationModel::Rodin2p5Fast),
+    TaskModelType::Marble1p0 => Some(GenerationModel::Marble1p0),
+    TaskModelType::Marble1p0Draft => Some(GenerationModel::Marble1p0Draft),
+    TaskModelType::Marble1p1 => Some(GenerationModel::Marble1p1),
+    TaskModelType::Marble1p1Plus => Some(GenerationModel::Marble1p1Plus),
+    TaskModelType::TripoSplat => Some(GenerationModel::TripoSplat),
+    TaskModelType::SunoMusic => Some(GenerationModel::SunoMusic),
+    TaskModelType::SunoRemix => Some(GenerationModel::SunoRemix),
+    TaskModelType::SunoSounds => Some(GenerationModel::SunoSounds),
+    TaskModelType::SunoSample => Some(GenerationModel::SunoSample),
+    TaskModelType::SeedAudio1p0 => Some(GenerationModel::SeedAudio1p0),
     TaskModelType::Midjourney => Some(GenerationModel::Midjourney),
     TaskModelType::Gemini25Flash => Some(GenerationModel::Gemini25Flash),
     TaskModelType::WorldlabsMarble => Some(GenerationModel::WorldlabsMarble),

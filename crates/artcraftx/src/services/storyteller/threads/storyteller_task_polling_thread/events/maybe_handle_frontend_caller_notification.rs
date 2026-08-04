@@ -83,6 +83,9 @@ pub async fn maybe_handle_frontend_caller_notification(
         job_result,
       ).await?;
     }
+    TaskType::AudioGeneration => {
+      // No typed audio notification yet; generic completion events still fire.
+    }
   }
 
   Ok(())
