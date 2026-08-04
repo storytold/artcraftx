@@ -1,8 +1,8 @@
 use artcraft_client::utils::api_host::ApiHost;
 use crate::error::artcraftx_error::ArtcraftXError;
-use crate::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
-use crate::commands::response::shorthand::ResponseOrErrorType;
-use crate::commands::response::success_response_wrapper::SerializeMarker;
+use crate::commands::utils::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
+use crate::commands::utils::response::shorthand::ResponseOrErrorType;
+use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::utils::download_url_to_user_download_dir::download_url_to_user_download_dir;
 use log::{error, info};

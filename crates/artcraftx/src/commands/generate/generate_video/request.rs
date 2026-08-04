@@ -6,7 +6,7 @@ use serde_derive::{Deserialize, Serialize};
 use tokens::tokens::characters::CharacterToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
-use crate::commands::response::success_response_wrapper::SerializeMarker;
+use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 
 /// This is used in the Tauri command bridge.
 /// Don't change the serializations without coordinating with the frontend.

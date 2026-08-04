@@ -1,6 +1,6 @@
 use crate::error::artcraftx_error::ArtcraftXError;
-use crate::commands::response::shorthand::ResponseOrErrorMessage;
-use crate::commands::response::success_response_wrapper::SerializeMarker;
+use crate::commands::utils::response::shorthand::ResponseOrErrorMessage;
+use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use anyhow::anyhow;

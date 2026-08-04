@@ -1,7 +1,7 @@
 use artcraft_client::utils::api_host::ApiHost;
-use crate::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
-use crate::commands::response::shorthand::ResponseOrError;
-use crate::commands::response::success_response_wrapper::SerializeMarker;
+use crate::commands::utils::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
+use crate::commands::utils::response::shorthand::ResponseOrError;
+use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 use artcraft_client::api_defs::generate::cost_estimate::estimate_image_cost::{
   EstimateImageCostError, EstimateImageCostErrorType, EstimateImageCostRequest,
   EstimateImageCostResponse,

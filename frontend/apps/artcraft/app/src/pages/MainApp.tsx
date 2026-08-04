@@ -27,10 +27,8 @@ import {
   useGenerationEnqueueFailureEvent,
   useGenerationEnqueueSuccessEvent,
   useGenerationFailedEvent,
-  useMediaFileDeletedEvent,
   useTextToImageGenerationCompleteEvent,
 } from "@storyteller/tauri-events";
-import { SoundManager } from "@storyteller/soundboard";
 import { useStoryboardPageEnabled } from "@storyteller/ui-settings-modal";
 
 import { useActiveJobs } from "~/hooks/useActiveJobs";
@@ -89,12 +87,6 @@ export const MainApp = () => {
   useFlashFileDownloadErrorEvent(async (event) => {
     console.log("Flash file download error event received:", event);
     toast.error(event.message || "File download failed");
-  });
-
-  useMediaFileDeletedEvent(async (event) => {
-    console.log("Media file deleted event received:", event);
-    await SoundManager.playFileDeleted();
-    toast.error("File deleted.");
   });
 
   // GPU detection — an app-wide concern, not 3D-only.

@@ -1,5 +1,5 @@
-use crate::commands::response::failure_response_wrapper::CommandErrorResponseWrapper;
-use crate::commands::response::success_response_wrapper::CommandSuccessResponseWrapper;
+use crate::commands::utils::response::failure_response_wrapper::CommandErrorResponseWrapper;
+use crate::commands::utils::response::success_response_wrapper::CommandSuccessResponseWrapper;
 
 // TODO(needs command response refactor):
 //  - get_app_preferences_command

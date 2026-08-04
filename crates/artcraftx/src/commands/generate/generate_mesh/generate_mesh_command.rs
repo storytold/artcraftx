@@ -5,8 +5,8 @@ use crate::commands::generate::generate_mesh::handle_credential_router::handle_c
 use crate::commands::generate::generate_mesh::request::{
   TauriGenerateMeshErrorType, TauriGenerateMeshRequest, TauriGenerateMeshResponse,
 };
-use crate::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
-use crate::commands::response::shorthand::Response;
+use crate::commands::utils::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
+use crate::commands::utils::response::shorthand::Response;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::credits_balance_changed_event::CreditsBalanceChangedEvent;
 use crate::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;

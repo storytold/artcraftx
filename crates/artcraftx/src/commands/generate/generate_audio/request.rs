@@ -3,7 +3,7 @@ use serde_derive::{Deserialize, Serialize};
 use enums::common::generation::common_musical_key::CommonMusicalKey;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
-use crate::commands::response::success_response_wrapper::SerializeMarker;
+use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 
 // ── Request ──
 

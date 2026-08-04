@@ -1,5 +1,5 @@
-use crate::commands::response::shorthand::ResponseOrErrorMessage;
-use crate::commands::response::success_response_wrapper::SerializeMarker;
+use crate::commands::utils::response::shorthand::ResponseOrErrorMessage;
+use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 use log::info;
 use serde_derive::Serialize;
 use tauri::AppHandle;

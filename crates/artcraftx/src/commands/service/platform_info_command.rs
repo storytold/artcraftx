@@ -1,5 +1,5 @@
-use crate::commands::response::shorthand::InfallibleResponse;
-use crate::commands::response::success_response_wrapper::SerializeMarker;
+use crate::commands::utils::response::shorthand::InfallibleResponse;
+use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 use crate::state::os_platform::OsPlatform;
 use log::info;
 use serde_derive::Serialize;

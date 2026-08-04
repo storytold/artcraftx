@@ -18,7 +18,6 @@ export * from "./lib/generate/GenerateVideo.js";
 export * from "./lib/generate/models/image/ListImageModels.js";
 export * from "./lib/generate/models/video/ListVideoModels.js";
 export * from "./lib/events/BasicEventWrapper.js";
-export * from "./lib/events/CanvasBgRemovedEvent.js";
 export * from "./lib/fal/FalBackgroundRemoval.js";
 export * from "./lib/fal/FalHunyuanImageTo3d.js";
 export * from "./lib/fal/FalKlingImageToVideo.js";

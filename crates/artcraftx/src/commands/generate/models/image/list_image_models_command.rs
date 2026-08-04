@@ -14,7 +14,7 @@ use artcraft_client::endpoints::omni_gen::models::image::omni_gen_list_image_mod
 use artcraft_client::utils::api_host::ApiHost;
 
 use crate::commands::generate::models::image::response_types::ListImageModelsResponse;
-use crate::commands::response::shorthand::ResponseOrErrorMessage;
+use crate::commands::utils::response::shorthand::ResponseOrErrorMessage;
 
 const MAX_ATTEMPTS: u32 = 3;
 const RETRY_BACKOFF: Duration = Duration::from_millis(250);

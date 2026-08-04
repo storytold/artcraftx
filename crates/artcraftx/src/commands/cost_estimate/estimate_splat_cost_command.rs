@@ -1,7 +1,7 @@
 use artcraft_client::utils::api_host::ApiHost;
-use crate::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
-use crate::commands::response::shorthand::ResponseOrError;
-use crate::commands::response::success_response_wrapper::SerializeMarker;
+use crate::commands::utils::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
+use crate::commands::utils::response::shorthand::ResponseOrError;
+use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 use artcraft_client::api_defs::omni_gen::cost_and_generate_requests::omni_gen_splat_cost_and_generate_request::OmniGenSplatCostAndGenerateRequest;
 use artcraft_client::api_defs::omni_gen::cost_response::omni_gen_splat_cost_response::OmniGenSplatCostResponse;
 use artcraft_client::endpoints::omni_gen::cost::splat::omni_gen_splat_cost::{omni_gen_splat_cost, OmniGenSplatCostArgs};

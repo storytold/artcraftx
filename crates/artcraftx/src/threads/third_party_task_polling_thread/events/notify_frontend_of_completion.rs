@@ -1,9 +1,7 @@
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
 use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
-use crate::events::functional_events::canvas_background_removal_complete_event::CanvasBackgroundRemovalCompleteEvent;
 use crate::events::functional_events::gaussian_generation_complete_event::{GaussianGenerationCompleteEvent, GeneratedGaussian};
-use crate::events::functional_events::image_edit_complete_event::{EditedImage, ImageEditCompleteEvent};
 use crate::events::functional_events::object_generation_complete_event::{GeneratedObject, ObjectGenerationCompleteEvent};
 use crate::events::functional_events::text_to_image_generation_complete_event::{GeneratedImage, TextToImageGenerationCompleteEvent};
 use crate::events::functional_events::video_generation_complete_event::{GeneratedVideo, VideoGenerationCompleteEvent};
@@ -69,7 +67,9 @@ pub async fn notify_frontend_of_completion(
       notify_image_generation(app, api_host, maybe_creds, task, completion).await
     }
     TaskType::ImageInpaintEdit => {
-      notify_image_edit(app, api_host, maybe_creds, task, completion).await
+      // Typed image-edit notification removed; the generic
+      // GenerationCompleteEvent above already fired.
+      Ok(())
     }
     TaskType::VideoGeneration => {
       notify_video_generation(app, task, completion)
@@ -86,7 +86,9 @@ pub async fn notify_frontend_of_completion(
       notify_gaussian_generation(app, task, completion)
     }
     TaskType::BackgroundRemoval => {
-      notify_background_removal(app, task, completion)
+      // Typed canvas-bg-removal notification removed; the generic
+      // GenerationCompleteEvent above already fired.
+      Ok(())
     }
   };
 
@@ -112,33 +114,6 @@ async fn notify_image_generation(
 
   let event = TextToImageGenerationCompleteEvent {
     generated_images,
-    maybe_frontend_subscriber_id: task.frontend_subscriber_id.clone(),
-    maybe_frontend_subscriber_payload: task.frontend_subscriber_payload.clone(),
-  };
-
-  event.send_infallible(app);
-  Ok(())
-}
-
-async fn notify_image_edit(
-  app: &AppHandle,
-  api_host: &ApiHost,
-  maybe_creds: Option<&StorytellerCredentialSet>,
-  task: &Task,
-  completion: &CompletionData,
-) -> Result<(), Box<dyn std::error::Error>> {
-  let images = collect_generated_images(api_host, maybe_creds, completion).await;
-
-  let edited_images: Vec<EditedImage> = images.into_iter()
-    .map(|img| EditedImage {
-      media_token: img.media_token,
-      cdn_url: img.cdn_url,
-      maybe_thumbnail_template: img.maybe_thumbnail_template,
-    })
-    .collect();
-
-  let event = ImageEditCompleteEvent {
-    edited_images,
     maybe_frontend_subscriber_id: task.frontend_subscriber_id.clone(),
     maybe_frontend_subscriber_payload: task.frontend_subscriber_payload.clone(),
   };
@@ -204,21 +179,6 @@ fn notify_gaussian_generation(
   Ok(())
 }
 
-fn notify_background_removal(
-  app: &AppHandle,
-  task: &Task,
-  completion: &CompletionData,
-) -> Result<(), Box<dyn std::error::Error>> {
-  let event = CanvasBackgroundRemovalCompleteEvent {
-    media_token: completion.primary_media_file_token.clone(),
-    image_cdn_url: completion.maybe_cdn_url.clone().unwrap_or_else(|| Url::parse("https://cdn.artcraft.ai/placeholder").unwrap()),
-    maybe_frontend_subscriber_id: task.frontend_subscriber_id.clone(),
-    maybe_frontend_subscriber_payload: task.frontend_subscriber_payload.clone(),
-  };
-
-  event.send_infallible(app);
-  Ok(())
-}
 
 // ── Helpers ──
 

@@ -47,26 +47,11 @@ pub enum TauriEventName {
   #[serde(rename = "subscription_plan_changed_event")]
   SubscriptionPlanChangedEvent,
 
-  /// Informational event:
-  /// A media file was deleted (and we'll send the token)
-  #[serde(rename = "media_file_deleted_event")]
-  MediaFileDeletedEvent,
-
-  /// Special event:
-  /// Background removal is complete
-  #[serde(rename = "canvas_bg_removed_event")]
-  CanvasBgRemovedEvent,
-
   /// Special event:
   /// Image generation is complete
   #[serde(rename = "text_to_image_generation_complete_event")]
   TextToImageGenerationCompleteEvent,
 
-  /// Special event:
-  /// Image edit is complete
-  #[serde(rename = "image_edit_complete_event")]
-  ImageEditCompleteEvent,
-  
   /// Special event:
   /// Object (3D mesh) generation is complete
   #[serde(rename = "object_generation_complete_event")]
@@ -91,12 +76,7 @@ pub enum TauriEventName {
   /// Show a billing modal (a suggestion to pay, etc. for a specific provider)
   #[serde(rename = "show_provider_billing_modal_event")]
   ShowProviderBillingModalEvent,
-  
-  /// Special event:
-  /// Show a login modal (or a suggestion to login)
-  #[serde(rename = "show_provider_login_modal_event")]
-  ShowProviderLoginModalEvent,
-  
+
   /// Special event:
   /// Show a dismissable modal explaining a credential problem (missing,
   /// unknown, or unusable credential for a generation request)
@@ -127,16 +107,12 @@ impl TauriEventName {
       Self::GenerationFailedEvent => "generation-failed-event",
       Self::CreditsBalanceChangedEvent => "credits_balance_changed_event",
       Self::SubscriptionPlanChangedEvent => "subscription_plan_changed_event",
-      Self::MediaFileDeletedEvent => "media_file_deleted_event",
-      Self::CanvasBgRemovedEvent => "canvas_bg_removed_event",
       Self::TextToImageGenerationCompleteEvent => "text_to_image_generation_complete_event",
-      Self::ImageEditCompleteEvent => "image_edit_complete_event",
       Self::ObjectGenerationCompleteEvent => "object_generation_complete_event",
       Self::GaussianGenerationCompleteEvent => "gaussian_generation_complete_event",
       Self::VideoGenerationCompleteEvent => "video_generation_complete_event",
       Self::RefreshAccountStateEvent => "refresh_account_state_event",
       Self::ShowProviderBillingModalEvent => "show_provider_billing_modal_event",
-      Self::ShowProviderLoginModalEvent => "show_provider_login_modal_event",
       Self::ShowCredentialErrorModalEvent => "show_credential_error_modal_event",
       Self::FlashUserInputErrorEvent => "flash_user_input_error_event",
       Self::FlashFileDownloadErrorEvent => "flash_file_download_error_event",
@@ -151,16 +127,12 @@ impl TauriEventName {
       "generation-failed-event" => Ok(Self::GenerationFailedEvent),
       "credits_balance_changed_event" => Ok(Self::CreditsBalanceChangedEvent),
       "subscription_plan_changed_event" => Ok(Self::SubscriptionPlanChangedEvent),
-      "media_file_deleted_event" => Ok(Self::MediaFileDeletedEvent),
-      "canvas_bg_removed_event" => Ok(Self::CanvasBgRemovedEvent),
       "text_to_image_generation_complete_event" => Ok(Self::TextToImageGenerationCompleteEvent),
-      "image_edit_complete_event" => Ok(Self::ImageEditCompleteEvent),
       "object_generation_complete_event" => Ok(Self::ObjectGenerationCompleteEvent),
       "gaussian_generation_complete_event" => Ok(Self::GaussianGenerationCompleteEvent),
       "video_generation_complete_event" => Ok(Self::VideoGenerationCompleteEvent),
       "refresh_account_state_event" => Ok(Self::RefreshAccountStateEvent),
       "show_provider_billing_modal_event" => Ok(Self::ShowProviderBillingModalEvent),
-      "show_provider_login_modal_event" => Ok(Self::ShowProviderLoginModalEvent),
       "show_credential_error_modal_event" => Ok(Self::ShowCredentialErrorModalEvent),
       "flash_user_input_error_event" => Ok(Self::FlashUserInputErrorEvent),
       "flash_file_download_error_event" => Ok(Self::FlashFileDownloadErrorEvent),
@@ -178,16 +150,12 @@ impl TauriEventName {
       Self::GenerationFailedEvent,
       Self::CreditsBalanceChangedEvent,
       Self::SubscriptionPlanChangedEvent,
-      Self::MediaFileDeletedEvent,
-      Self::CanvasBgRemovedEvent,
       Self::TextToImageGenerationCompleteEvent,
-      Self::ImageEditCompleteEvent,
       Self::ObjectGenerationCompleteEvent,
       Self::GaussianGenerationCompleteEvent,
       Self::VideoGenerationCompleteEvent,
       Self::RefreshAccountStateEvent,
       Self::ShowProviderBillingModalEvent,
-      Self::ShowProviderLoginModalEvent,
       Self::ShowCredentialErrorModalEvent,
       Self::FlashUserInputErrorEvent,
       Self::FlashFileDownloadErrorEvent,
@@ -211,16 +179,12 @@ mod tests {
       assert_serialization(TauriEventName::GenerationFailedEvent, "generation-failed-event");
       assert_serialization(TauriEventName::CreditsBalanceChangedEvent, "credits_balance_changed_event");
       assert_serialization(TauriEventName::SubscriptionPlanChangedEvent, "subscription_plan_changed_event");
-      assert_serialization(TauriEventName::MediaFileDeletedEvent, "media_file_deleted_event");
-      assert_serialization(TauriEventName::CanvasBgRemovedEvent, "canvas_bg_removed_event");
       assert_serialization(TauriEventName::TextToImageGenerationCompleteEvent, "text_to_image_generation_complete_event");
-      assert_serialization(TauriEventName::ImageEditCompleteEvent, "image_edit_complete_event");
       assert_serialization(TauriEventName::ObjectGenerationCompleteEvent, "object_generation_complete_event");
       assert_serialization(TauriEventName::GaussianGenerationCompleteEvent, "gaussian_generation_complete_event");
       assert_serialization(TauriEventName::VideoGenerationCompleteEvent, "video_generation_complete_event");
       assert_serialization(TauriEventName::RefreshAccountStateEvent, "refresh_account_state_event");
       assert_serialization(TauriEventName::ShowProviderBillingModalEvent, "show_provider_billing_modal_event"); 
-      assert_serialization(TauriEventName::ShowProviderLoginModalEvent, "show_provider_login_modal_event");
       assert_serialization(TauriEventName::ShowCredentialErrorModalEvent, "show_credential_error_modal_event");
       assert_serialization(TauriEventName::FlashUserInputErrorEvent, "flash_user_input_error_event");
       assert_serialization(TauriEventName::FlashFileDownloadErrorEvent, "flash_file_download_error_event");
@@ -234,16 +198,12 @@ mod tests {
       assert_eq!(TauriEventName::GenerationFailedEvent.to_str(), "generation-failed-event");
       assert_eq!(TauriEventName::CreditsBalanceChangedEvent.to_str(), "credits_balance_changed_event");
       assert_eq!(TauriEventName::SubscriptionPlanChangedEvent.to_str(), "subscription_plan_changed_event");
-      assert_eq!(TauriEventName::MediaFileDeletedEvent.to_str(), "media_file_deleted_event");
-      assert_eq!(TauriEventName::CanvasBgRemovedEvent.to_str(), "canvas_bg_removed_event");
       assert_eq!(TauriEventName::TextToImageGenerationCompleteEvent.to_str(), "text_to_image_generation_complete_event");
-      assert_eq!(TauriEventName::ImageEditCompleteEvent.to_str(), "image_edit_complete_event");
       assert_eq!(TauriEventName::ObjectGenerationCompleteEvent.to_str(), "object_generation_complete_event");
       assert_eq!(TauriEventName::GaussianGenerationCompleteEvent.to_str(), "gaussian_generation_complete_event");
       assert_eq!(TauriEventName::VideoGenerationCompleteEvent.to_str(), "video_generation_complete_event");
       assert_eq!(TauriEventName::RefreshAccountStateEvent.to_str(), "refresh_account_state_event");
       assert_eq!(TauriEventName::ShowProviderBillingModalEvent.to_str(), "show_provider_billing_modal_event");
-      assert_eq!(TauriEventName::ShowProviderLoginModalEvent.to_str(), "show_provider_login_modal_event");
       assert_eq!(TauriEventName::FlashUserInputErrorEvent.to_str(), "flash_user_input_error_event");
       assert_eq!(TauriEventName::FlashFileDownloadErrorEvent.to_str(), "flash_file_download_error_event");
     }
@@ -256,16 +216,12 @@ mod tests {
       assert_eq!(TauriEventName::from_str("generation-failed-event").unwrap(), TauriEventName::GenerationFailedEvent);
       assert_eq!(TauriEventName::from_str("credits_balance_changed_event").unwrap(), TauriEventName::CreditsBalanceChangedEvent);
       assert_eq!(TauriEventName::from_str("subscription_plan_changed_event").unwrap(), TauriEventName::SubscriptionPlanChangedEvent);
-      assert_eq!(TauriEventName::from_str("media_file_deleted_event").unwrap(), TauriEventName::MediaFileDeletedEvent);
-      assert_eq!(TauriEventName::from_str("canvas_bg_removed_event").unwrap(), TauriEventName::CanvasBgRemovedEvent);
       assert_eq!(TauriEventName::from_str("text_to_image_generation_complete_event").unwrap(), TauriEventName::TextToImageGenerationCompleteEvent);
-      assert_eq!(TauriEventName::from_str("image_edit_complete_event").unwrap(), TauriEventName::ImageEditCompleteEvent);
       assert_eq!(TauriEventName::from_str("object_generation_complete_event").unwrap(), TauriEventName::ObjectGenerationCompleteEvent);
       assert_eq!(TauriEventName::from_str("gaussian_generation_complete_event").unwrap(), TauriEventName::GaussianGenerationCompleteEvent);
       assert_eq!(TauriEventName::from_str("video_generation_complete_event").unwrap(), TauriEventName::VideoGenerationCompleteEvent);
       assert_eq!(TauriEventName::from_str("refresh_account_state_event").unwrap(), TauriEventName::RefreshAccountStateEvent);
       assert_eq!(TauriEventName::from_str("show_provider_billing_modal_event").unwrap(), TauriEventName::ShowProviderBillingModalEvent);
-      assert_eq!(TauriEventName::from_str("show_provider_login_modal_event").unwrap(), TauriEventName::ShowProviderLoginModalEvent);
       assert_eq!(TauriEventName::from_str("show_credential_error_modal_event").unwrap(), TauriEventName::ShowCredentialErrorModalEvent);
       assert_eq!(TauriEventName::from_str("flash_user_input_error_event").unwrap(), TauriEventName::FlashUserInputErrorEvent);
       assert_eq!(TauriEventName::from_str("flash_file_download_error_event").unwrap(), TauriEventName::FlashFileDownloadErrorEvent);
@@ -274,23 +230,19 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TauriEventName::all_variants();
-      assert_eq!(variants.len(), 19);
+      assert_eq!(variants.len(), 15);
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueSuccessEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueFailureEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationFailedEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::CreditsBalanceChangedEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::SubscriptionPlanChangedEvent));
-      assert_eq!(variants.pop_first(), Some(TauriEventName::MediaFileDeletedEvent));
-      assert_eq!(variants.pop_first(), Some(TauriEventName::CanvasBgRemovedEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::TextToImageGenerationCompleteEvent));
-      assert_eq!(variants.pop_first(), Some(TauriEventName::ImageEditCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ObjectGenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GaussianGenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::VideoGenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::RefreshAccountStateEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ShowProviderBillingModalEvent));
-      assert_eq!(variants.pop_first(), Some(TauriEventName::ShowProviderLoginModalEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ShowCredentialErrorModalEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::FlashUserInputErrorEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::FlashFileDownloadErrorEvent));

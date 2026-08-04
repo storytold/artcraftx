@@ -17,7 +17,7 @@ use artcraft_client::endpoints::omni_gen::models::video::omni_gen_list_video_mod
   OmniGenVideoModelDetails, OmniGenVideoModelProviderDetails, OmniGenVideoProviderModelDetails, OmniGenVideoModelsResponse,
 };
 
-use crate::commands::response::success_response_wrapper::SerializeMarker;
+use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 
 impl SerializeMarker for ListVideoModelsResponse {}
 

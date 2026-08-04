@@ -96,28 +96,6 @@ async fn send_additional_success_events(
   //if let Err(err) = result {
   //  error!("Failed to send text-to-image complete event: {:?}", err);
   //}
-
-  //let result = maybe_handle_inpainting_complete_event(
-  //  app_handle,
-  //  app_env_configs,
-  //  creds,
-  //  task,
-  //  job,
-  //).await;
-
-  //if let Err(err) = result {
-  //  error!("Failed to send image inpainting complete event: {:?}", err);
-  //}
-
-  //let result = maybe_send_background_removal_complete_event(
-  //  app_handle,
-  //  task,
-  //  job,
-  //).await;
-
-  //if let Err(err) = result {
-  //  error!("Failed to send background removal complete event: {:?}", err);
-  //}
 }
 
 fn get_thumbnail_template<'a>(job: &'a ListSessionJobsItem) -> Option<&'a str> {

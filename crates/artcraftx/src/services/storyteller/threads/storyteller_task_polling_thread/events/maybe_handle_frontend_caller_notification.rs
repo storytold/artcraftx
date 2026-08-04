@@ -1,8 +1,6 @@
 use artcraft_client::utils::api_host::ApiHost;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::events::functional_events::canvas_background_removal_complete_event::CanvasBackgroundRemovalCompleteEvent;
 use crate::events::functional_events::gaussian_generation_complete_event::{GaussianGenerationCompleteEvent, GeneratedGaussian};
-use crate::events::functional_events::image_edit_complete_event::{EditedImage, ImageEditCompleteEvent};
 use crate::events::functional_events::object_generation_complete_event::{GeneratedObject, ObjectGenerationCompleteEvent};
 use crate::events::functional_events::text_to_image_generation_complete_event::{GeneratedImage, TextToImageGenerationCompleteEvent};
 use crate::events::functional_events::video_generation_complete_event::{GeneratedVideo, VideoGenerationCompleteEvent};
@@ -43,12 +41,8 @@ pub async fn maybe_handle_frontend_caller_notification(
       ).await?;
     }
     TaskType::ImageInpaintEdit => {
-      let _r = handle_inpaint_image_generation(
-        app,
-        task,
-        job_result,
-        maybe_creds,
-      ).await?;
+      // Typed image-edit notification removed; generic completion events
+      // still fire.
     }
     TaskType::VideoGeneration => {
       let _r = handle_video_generation(
@@ -72,11 +66,8 @@ pub async fn maybe_handle_frontend_caller_notification(
       ).await?;
     }
     TaskType::BackgroundRemoval => {
-      let _r = handle_background_removal_generation(
-        app,
-        task,
-        job_result,
-      ).await?;
+      // Typed canvas-bg-removal notification removed; generic completion
+      // events still fire.
     }
     TaskType::AudioGeneration => {
       // No typed audio notification yet; generic completion events still fire.
@@ -125,54 +116,6 @@ async fn handle_image_generation(
 
   let event = TextToImageGenerationCompleteEvent {
     generated_images,
-    maybe_frontend_subscriber_id: task.frontend_subscriber_id.clone(),
-    maybe_frontend_subscriber_payload: task.frontend_subscriber_payload.clone(),
-  };
-
-  event.send_infallible(&app);
-
-  Ok(())
-}
-
-async fn handle_inpaint_image_generation(
-  app: &AppHandle,
-  task: &Task,
-  job_result: &ListSessionResultDetailsResponse,
-  maybe_creds: Option<&StorytellerCredentialSet>,
-) -> AnyhowResult<()> {
-
-  let edited_images = match job_result.maybe_batch_token.as_ref() {
-    None => {
-      vec![EditedImage {
-        media_token: MediaFileToken::new_from_str(&job_result.entity_token),
-        cdn_url: job_result.media_links.cdn_url.clone(),
-        maybe_thumbnail_template: job_result.media_links.maybe_thumbnail_template.clone(),
-      }]
-    }
-    Some(batch_token) => {
-      let result = list_batch_generated_redux_media_files(
-        &ApiHost::Storyteller,
-        maybe_creds,
-        batch_token,
-      ).await?;
-
-      if result.media_files.is_empty() {
-        return Err(anyhow!("No media files found for batch token: {}", batch_token));
-      }
-
-      result.media_files
-          .into_iter()
-          .map(|file| EditedImage {
-            media_token: file.token,
-            cdn_url: file.media_links.cdn_url,
-            maybe_thumbnail_template: file.media_links.maybe_thumbnail_template,
-          })
-          .collect()
-    }
-  };
-
-  let event = ImageEditCompleteEvent {
-    edited_images,
     maybe_frontend_subscriber_id: task.frontend_subscriber_id.clone(),
     maybe_frontend_subscriber_payload: task.frontend_subscriber_payload.clone(),
   };
@@ -251,20 +194,3 @@ async fn handle_gaussian_generation(
   Ok(())
 }
 
-async fn handle_background_removal_generation(
-  app: &AppHandle,
-  task: &Task,
-  job_result: &ListSessionResultDetailsResponse,
-) -> AnyhowResult<()> {
-
-  let event = CanvasBackgroundRemovalCompleteEvent {
-    media_token: MediaFileToken::new_from_str(&job_result.entity_token),
-    image_cdn_url: job_result.media_links.cdn_url.clone(),
-    maybe_frontend_subscriber_id: task.frontend_subscriber_id.clone(),
-    maybe_frontend_subscriber_payload: task.frontend_subscriber_payload.clone(),
-  };
-
-  event.send_infallible(&app);
-
-  Ok(())
-}

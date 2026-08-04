@@ -5,7 +5,7 @@ use enums::common::generation::common_mesh_quality::CommonMeshQuality;
 use enums::common::generation::common_polygon_type::CommonPolygonType;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
-use crate::commands::response::success_response_wrapper::SerializeMarker;
+use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 
 // ── Request ──
 

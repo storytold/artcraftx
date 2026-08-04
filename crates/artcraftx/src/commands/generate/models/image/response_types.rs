@@ -16,7 +16,7 @@ use artcraft_client::endpoints::omni_gen::models::image::omni_gen_list_image_mod
   OmniGenImageModelDetails, OmniGenImageModelProviderDetails, OmniGenImageProviderModelDetails, OmniGenImageModelsResponse,
 };
 
-use crate::commands::response::success_response_wrapper::SerializeMarker;
+use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 
 impl SerializeMarker for ListImageModelsResponse {}
 

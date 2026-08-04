@@ -18,12 +18,6 @@ export function ProviderSetupModal({
   const [showModal, setShowModal] = useState(false);
   const [provider, setProvider] = useState<GenerationProvider>(GenerationProvider.Artcraft);
 
-  useShowProviderLoginModalEvent(async (event) => {
-    console.log("Show provider login modal event received from Tauri:", event);
-    setProvider(event.provider);
-    setShowModal(true);
-  });
-
   const serviceProviderName = getServiceProviderName(provider);
 
   const modalTitle = `Set up ${serviceProviderName}`;
