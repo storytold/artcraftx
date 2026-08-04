@@ -4,8 +4,8 @@ use crate::state::task_database::TaskDatabase;
 use errors::AnyhowResult;
 use log::{error, info};
 use serde_derive::Serialize;
-use sqlite_database::queries::dismiss_all_tasks::dismiss_all_tasks;
-use sqlite_database::queries::nuke_all_tasks::nuke_all_tasks;
+use sqlite_database::queries::update::dismiss_all_tasks::dismiss_all_tasks;
+use sqlite_database::queries::update::nuke_all_tasks::nuke_all_tasks;
 use tauri::State;
 
 #[derive(Serialize)]

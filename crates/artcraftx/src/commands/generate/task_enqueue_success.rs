@@ -6,7 +6,7 @@ use sqlite_identifiers::enums::task_status::TaskStatus;
 use sqlite_identifiers::enums::task_type::TaskType;
 use sqlite_identifiers::enums::tauri_command_caller::TauriCommandCaller;
 use sqlite_database::error::SqliteTasksError;
-use sqlite_database::queries::create_task::{create_task, CreateTaskArgs};
+use sqlite_database::queries::create::create_task::{create_task, CreateTaskArgs};
 use sqlite_identifiers::ids::prompt_token::PromptToken;
 use sqlite_identifiers::ids::task_id::TaskId;
 

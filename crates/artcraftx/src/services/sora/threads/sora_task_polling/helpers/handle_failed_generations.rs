@@ -8,7 +8,7 @@ use errors::AnyhowResult;
 use log::info;
 use openai_sora_client::requests::common::task_id::TaskId;
 use sqlite_database::queries::task::Task;
-use sqlite_database::queries::update_task_status::{update_task_status, UpdateTaskArgs};
+use sqlite_database::queries::update::update_task_status::{update_task_status, UpdateTaskArgs};
 use std::collections::HashMap;
 use tauri::AppHandle;
 

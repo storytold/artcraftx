@@ -6,7 +6,7 @@ use sqlite_identifiers::enums::task_status::TaskStatus;
 use sqlite_identifiers::enums::task_type::TaskType;
 use log::{error, info};
 use sqlite_database::queries::task::Task;
-use sqlite_database::queries::update_task_status::{update_task_status, UpdateTaskArgs};
+use sqlite_database::queries::update::update_task_status::{update_task_status, UpdateTaskArgs};
 use tauri::AppHandle;
 
 pub async fn handle_fal_failure(

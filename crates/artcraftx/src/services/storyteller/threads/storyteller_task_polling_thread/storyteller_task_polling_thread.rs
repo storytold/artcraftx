@@ -12,7 +12,7 @@ use enums::common::job_status_plus::JobStatusPlus;
 use sqlite_identifiers::enums::task_status::TaskStatus;
 use errors::AnyhowResult;
 use log::error;
-use sqlite_database::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs};
+use sqlite_database::queries::read::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs};
 use sqlite_database::queries::task::Task;
 use std::collections::HashMap;
 use tauri::AppHandle;

@@ -20,9 +20,9 @@ use grok_consumer_client::requests::download_video_file::grok_download_video::Gr
 use grok_consumer_client::requests::media_posts::list_media_posts::grok_list_media_posts::{GrokMediaPostListRequest, VideoData};
 use uuid_utils::uuid::generate_random_uuid;
 use log::{error, info};
-use sqlite_database::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, TaskList};
+use sqlite_database::queries::read::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, TaskList};
 use sqlite_database::queries::task::Task;
-use sqlite_database::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
+use sqlite_database::queries::update::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
 use std::collections::HashMap;
 use std::time::Duration;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;

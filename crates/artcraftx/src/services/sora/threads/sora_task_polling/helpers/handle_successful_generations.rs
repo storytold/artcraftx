@@ -18,7 +18,7 @@ use uuid_utils::uuid::generate_random_uuid;
 use log::{error, info, warn};
 use openai_sora_client::requests::common::task_id::TaskId;
 use sqlite_database::queries::task::Task;
-use sqlite_database::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
+use sqlite_database::queries::update::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;

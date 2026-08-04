@@ -26,7 +26,7 @@ use fal_client::polling::poll_job_response::poll_job_response::PollJobResponse;
 use fal_client::polling::poll_job_response::success_case_extractors::PollResponseExtractedContents;
 use log::{error, info, warn};
 use sqlite_database::queries::task::Task;
-use sqlite_database::queries::update_successful_task_status_with_metadata::{
+use sqlite_database::queries::update::update_successful_task_status_with_metadata::{
   update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs,
 };
 use std::fs::File;

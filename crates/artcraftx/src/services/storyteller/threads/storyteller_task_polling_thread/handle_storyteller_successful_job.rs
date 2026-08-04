@@ -14,7 +14,7 @@ use errors::AnyhowResult;
 use log::error;
 use log::info;
 use sqlite_database::queries::task::Task;
-use sqlite_database::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
+use sqlite_database::queries::update::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
 use tauri::AppHandle;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 

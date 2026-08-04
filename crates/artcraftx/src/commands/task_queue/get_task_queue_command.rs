@@ -9,7 +9,7 @@ use sqlite_identifiers::enums::task_type::TaskType;
 use errors::AnyhowResult;
 use log::{debug, error, warn};
 use serde_derive::Serialize;
-use sqlite_database::queries::list_tasks_for_frontend::list_tasks_for_frontend;
+use sqlite_database::queries::read::list_tasks_for_frontend::list_tasks_for_frontend;
 use tauri::{AppHandle, State};
 use sqlite_identifiers::enums::task_failure_type::TaskFailureType;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;

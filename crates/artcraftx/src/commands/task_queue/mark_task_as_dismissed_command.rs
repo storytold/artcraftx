@@ -4,7 +4,7 @@ use crate::state::task_database::TaskDatabase;
 use errors::AnyhowResult;
 use log::{error, info};
 use serde_derive::{Deserialize, Serialize};
-use sqlite_database::queries::mark_task_as_dismissed::mark_task_as_dismissed;
+use sqlite_database::queries::update::mark_task_as_dismissed::mark_task_as_dismissed;
 use tauri::{AppHandle, State};
 use sqlite_identifiers::ids::task_id::TaskId;
 

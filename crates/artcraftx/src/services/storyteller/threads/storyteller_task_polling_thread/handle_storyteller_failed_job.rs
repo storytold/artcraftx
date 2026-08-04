@@ -11,7 +11,7 @@ use log::info;
 use sqlite_database::queries::task::Task;
 use tauri::AppHandle;
 use sqlite_identifiers::enums::task_failure_type::TaskFailureType;
-use sqlite_database::queries::update_task_status_with_rich_failure::{update_task_status_with_rich_failure, UpdateTaskWithRichFailureArgs};
+use sqlite_database::queries::update::update_task_status_with_rich_failure::{update_task_status_with_rich_failure, UpdateTaskWithRichFailureArgs};
 
 pub async fn handle_failed_job(
   app_handle: &AppHandle,

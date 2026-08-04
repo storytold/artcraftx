@@ -9,7 +9,7 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use sqlite_identifiers::enums::generation_provider::GenerationProvider;
 use errors::AnyhowResult;
 use log::error;
-use sqlite_database::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs};
+use sqlite_database::queries::read::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs};
 use sqlite_database::queries::task::Task;
 use std::collections::HashMap;
 use tauri::AppHandle;

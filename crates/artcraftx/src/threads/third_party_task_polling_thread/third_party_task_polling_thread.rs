@@ -5,7 +5,7 @@ use crate::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use sqlite_identifiers::enums::generation_provider::GenerationProvider;
 use log::{error, info, warn};
-use sqlite_database::queries::list_non_artcraft_pending_tasks::{
+use sqlite_database::queries::read::list_non_artcraft_pending_tasks::{
   list_non_artcraft_pending_tasks, ListNonArtcraftPendingTasksArgs,
 };
 use sqlite_database::queries::task::Task;
