@@ -19,7 +19,6 @@ export type AppId =
   | "IMAGE_WATERMARK_REMOVAL"
   | "IMAGE_TO_3D_OBJECT"
   | "IMAGE_TO_3D_WORLD"
-  | "REMOVE_BACKGROUND"
   | "ANGLES"
   | "STORYBOARD"
   | "BACKGROUND_CHANGE"
@@ -78,7 +77,6 @@ export const goToApp = (action?: string) => {
       "IMAGE_WATERMARK_REMOVAL",
       "IMAGE_TO_3D_OBJECT",
       "IMAGE_TO_3D_WORLD",
-      "REMOVE_BACKGROUND",
       "ANGLES",
       "STORYBOARD",
       "BACKGROUND_CHANGE",

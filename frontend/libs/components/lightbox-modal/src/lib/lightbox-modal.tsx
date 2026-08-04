@@ -14,12 +14,10 @@ import {
   faPause,
   faPencil,
   faPlay,
-  faTrashCan,
   faVideo,
   faWandMagicSparkles,
   faArrowRotateRight,
 } from "@fortawesome/pro-solid-svg-icons";
-import { MediaFileDelete } from "@storyteller/tauri-api";
 import { LoadingSpinner } from "@storyteller/ui-loading-spinner";
 import { Viewer3D } from "@storyteller/ui-viewer-3d";
 import { WaveformAudioPlayer } from "@storyteller/ui-audio-player";
@@ -41,8 +39,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy, faLink, faCheck } from "@fortawesome/pro-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
 import {
-  showActionReminder,
-  isActionReminderOpen,
 } from "@storyteller/ui-action-reminder-modal";
 import {
   getCreatorIconPathForModelId,
@@ -406,33 +402,6 @@ export function LightboxModal({
       emblaMainApi.scrollTo(index);
     },
     [emblaMainApi, emblaThumbsApi],
-  );
-
-  const onDeleteClicked = useCallback(
-    (mediaToken: string) => {
-      showActionReminder({
-        reminderType: "default",
-        title: "Delete this media?",
-        message: (
-          <p className="text-sm text-white/70">
-            This will permanently remove the media from your library. This
-            action cannot be undone.
-          </p>
-        ),
-        primaryActionText: "Delete",
-        secondaryActionText: "Cancel",
-        primaryActionBtnClassName: "bg-red text-white hover:bg-red/90",
-        onPrimaryAction: async () => {
-          try {
-            await MediaFileDelete(mediaToken);
-          } finally {
-            isActionReminderOpen.value = false;
-            onClose();
-          }
-        },
-      });
-    },
-    [onClose],
   );
 
   const onSelect = useCallback(() => {
@@ -1256,20 +1225,6 @@ export function LightboxModal({
                   </Button>
                 )}
 
-                {selectedMediaToken && onDeleteClicked && (
-                  <Button
-                    icon={faTrashCan}
-                    className="w-full py-1.5 text-[13px]"
-                    variant="destructive"
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      gtagEvent("delete_media_clicked");
-                      await onDeleteClicked(selectedMediaToken);
-                    }}
-                  >
-                    Delete
-                  </Button>
-                )}
               </div>
             )}
           </div>

@@ -5,7 +5,6 @@ import { MiscSettingsPane } from "./panes/MiscSettingsPane";
 import { AudioSettingsPane } from "./panes/AudioSettingsPane";
 import { AccountSettingsPane } from "./panes/AccountSettings/AccountSettingsPane";
 import { AboutSettingsPane } from "./panes/AboutSettingsPane";
-import { ProviderPrioritySettingsPane } from "./panes/ProviderPrioritySettingsPane";
 import { ExperimentalSettingsPane } from "./panes/ExperimentalSettingsPane";
 import { gtagEvent } from "@storyteller/google-analytics";
 import { BillingSettingsPane } from "./panes/BillingSettingsPane";
@@ -20,7 +19,6 @@ export type SettingsSection =
   | "accounts"
   | "alerts"
   | "about"
-  | "provider_priority"
   | "billing"
   | "experimental";
 
@@ -85,8 +83,6 @@ export const SettingsContent = ({
         );
       case "about":
         return <AboutSettingsPane />;
-      case "provider_priority":
-        return <ProviderPrioritySettingsPane />;
       case "billing":
         return <BillingSettingsPane />;
       case "experimental":

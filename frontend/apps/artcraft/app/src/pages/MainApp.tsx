@@ -47,7 +47,6 @@ import { VideoWatermarkRemover } from "./PageVideoWatermarkRemover";
 import { ImageWatermarkRemover } from "./PageImageWatermarkRemover";
 import { ImageTo3DObject } from "./PageImageTo3DObject";
 import { ImageTo3DWorld } from "./PageImageTo3DWorld";
-import { RemoveBackground } from "./PageRemoveBackground";
 import { Angles } from "./PageAngles";
 import { Storyboard } from "./PageStoryboard";
 import { PageBackgroundChange } from "./PageBackgroundChange";
@@ -209,12 +208,6 @@ const TabBody = () => {
       return (
         <div>
           <ImageTo3DWorld />
-        </div>
-      );
-    case "REMOVE_BACKGROUND":
-      return (
-        <div>
-          <RemoveBackground />
         </div>
       );
     case "ANGLES":

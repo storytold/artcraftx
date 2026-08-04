@@ -23,8 +23,8 @@ use crate::commands::credentials::edit_api_credential_command::edit_api_credenti
 use crate::commands::credentials::edit_web_credential_command::edit_web_credential_command;
 use crate::commands::credentials::list_credentials_command::list_credentials_command;
 use crate::commands::credentials::open_web_login_command::open_web_login_command;
-use crate::commands::app_preferences::get_app_preferences_command::get_app_preferences_command;
-use crate::commands::app_preferences::update_app_preference_command::update_app_preferences_command;
+use crate::commands::service::app_preferences::get_app_preferences_command::get_app_preferences_command;
+use crate::commands::service::app_preferences::update_app_preference_command::update_app_preferences_command;
 use crate::commands::cost_estimate::estimate_audio_cost_command::estimate_audio_cost_command;
 use crate::commands::cost_estimate::estimate_image_cost_command::estimate_image_cost_command;
 use crate::commands::cost_estimate::estimate_mesh_cost_command::estimate_mesh_cost_command;
@@ -35,22 +35,14 @@ use crate::commands::generate::models::video::list_video_models_command::list_vi
 use crate::commands::download::download_directory_reveal_command::download_directory_reveal_command;
 use crate::commands::download::download_media_file_command::download_media_file_command;
 use crate::commands::download::download_url_command::download_url_command;
-use crate::commands::background_removal::enqueue_image_bg_removal_command::enqueue_image_bg_removal_command;
 use crate::commands::generate::generate_audio::generate_audio_command::generate_audio_command;
 use crate::commands::generate::generate_image::generate_image_command::generate_image_command;
 use crate::commands::generate::generate_mesh::generate_mesh_command::generate_mesh_command;
 use crate::commands::generate::generate_splat::generate_splat_command::generate_splat_command;
 use crate::commands::generate::generate_video::generate_video_command::generate_video_command;
-use crate::commands::flip_image::flip_image;
-use crate::commands::get_app_info_command::get_app_info_command;
-use crate::commands::load_without_cors_command::load_without_cors_command;
-use crate::commands::media_files::media_file_delete_command::media_file_delete_command;
-use crate::commands::platform_info_command::platform_info_command;
-use crate::commands::providers::deprecated::get_provider_order_command::get_provider_order_command;
-use crate::commands::providers::deprecated::set_provider_order_command::set_provider_order_command;
-use crate::commands::providers::provider_clear_command::provider_clear_command;
-use crate::commands::providers::provider_list_command::provider_list_command;
-use crate::commands::providers::provider_set_api_key_command::provider_set_api_key_command;
+use crate::commands::service::get_app_info_command::get_app_info_command;
+use crate::commands::service::load_without_cors_command::load_without_cors_command;
+use crate::commands::service::platform_info_command::platform_info_command;
 use crate::commands::task_queue::get_task_queue_command::get_task_queue_command;
 use crate::commands::task_queue::mark_task_as_dismissed_command::mark_task_as_dismissed_command;
 use crate::commands::task_queue::tasks_nuke_all_command::tasks_nuke_all_command;
@@ -221,7 +213,6 @@ pub fn run() {
     download_directory_reveal_command,
     download_media_file_command,
     download_url_command,
-    enqueue_image_bg_removal_command,
     estimate_audio_cost_command,
     estimate_image_cost_command,
     estimate_mesh_cost_command,
@@ -229,7 +220,6 @@ pub fn run() {
     estimate_video_cost_command,
     list_image_models_command,
     list_video_models_command,
-    flip_image,
     generate_audio_command,
     generate_image_command,
     generate_mesh_command,
@@ -237,16 +227,10 @@ pub fn run() {
     generate_video_command,
     get_app_info_command,
     get_app_preferences_command,
-    get_provider_order_command,
     get_task_queue_command,
-    provider_clear_command,
-    provider_list_command,
-    provider_set_api_key_command,
     load_without_cors_command,
     mark_task_as_dismissed_command,
-    media_file_delete_command,
     platform_info_command,
-    set_provider_order_command,
     tasks_nuke_all_command,
     update_app_preferences_command,
   ]);
