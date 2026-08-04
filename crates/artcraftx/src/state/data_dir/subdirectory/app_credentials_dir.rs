@@ -5,7 +5,7 @@ use crate::error::artcraftx_error::ArtcraftXError;
 use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
-use tokens::tokens::sqlite::credentials::CredentialToken;
+use identifiers::CredentialId;
 
 /// The directory holding per-service credential TOML files
 /// (by default `~/Artcraft/artcraftx/credentials`).
@@ -53,22 +53,22 @@ impl AppCredentialsDir {
     paths.sort();
 
     let mut credentials = Vec::new();
-    let mut seen_tokens: HashSet<CredentialToken> = HashSet::new();
+    let mut seen_ids: HashSet<CredentialId> = HashSet::new();
     for path in paths {
       match Credential::load_from_file(&path) {
         Ok(mut credential) => {
-          // Tokens must be unique; a duplicate (eg. a copied file) gets a
-          // fresh token, persisted so it stays stable.
-          if seen_tokens.contains(&credential.token) {
-            credential.token = generate_token_not_in(&seen_tokens);
+          // Ids must be unique; a duplicate (eg. a copied file) gets a
+          // fresh id, persisted so it stays stable.
+          if seen_ids.contains(&credential.id) {
+            credential.id = generate_id_not_in(&seen_ids);
             if let Err(err) = self.save_credential(&credential) {
               log::warn!(
-                "Could not persist deduplicated credential token for {:?}: {}",
+                "Could not persist deduplicated credential id for {:?}: {}",
                 credential.source_path, err,
               );
             }
           }
-          seen_tokens.insert(credential.token.clone());
+          seen_ids.insert(credential.id.clone());
           credentials.push(credential);
         },
         Err(err) => {
@@ -136,23 +136,23 @@ impl AppCredentialsDir {
     Credential::load_from_file(path).map_err(ArtcraftXError::from)
   }
 
-  /// Find a credential by its token, the stable primary identifier.
-  pub fn find_credential_by_token(
+  /// Find a credential by its id, the stable primary identifier.
+  pub fn find_credential_by_id(
     &self,
-    token: &str,
+    id: &str,
   ) -> Result<Option<Credential>, ArtcraftXError> {
     Ok(self.load_credentials()?
         .into_iter()
-        .find(|credential| credential.token.as_str() == token))
+        .find(|credential| credential.id.as_str() == id))
   }
 
-  /// Generate a token no existing credential uses. Collisions are
+  /// Generate an id no existing credential uses. Collisions are
   /// astronomically unlikely; the check guards against them anyway.
-  pub fn generate_unique_credential_token(&self) -> CredentialToken {
-    let existing: HashSet<CredentialToken> = self.load_credentials()
-        .map(|credentials| credentials.into_iter().map(|c| c.token).collect())
+  pub fn generate_unique_credential_id(&self) -> CredentialId {
+    let existing: HashSet<CredentialId> = self.load_credentials()
+        .map(|credentials| credentials.into_iter().map(|c| c.id).collect())
         .unwrap_or_default();
-    generate_token_not_in(&existing)
+    generate_id_not_in(&existing)
   }
 
   /// Delete a credential file by id (file name).
@@ -163,11 +163,11 @@ impl AppCredentialsDir {
   }
 }
 
-fn generate_token_not_in(taken: &HashSet<CredentialToken>) -> CredentialToken {
+fn generate_id_not_in(taken: &HashSet<CredentialId>) -> CredentialId {
   loop {
-    let token = CredentialToken::generate();
-    if !taken.contains(&token) {
-      return token;
+    let id = CredentialId::generate();
+    if !taken.contains(&id) {
+      return id;
     }
   }
 }
@@ -220,7 +220,7 @@ mod tests {
     let creds_dir = AppCredentialsDir::new_from(dir.path());
 
     let credential = Credential {
-      token: CredentialToken::generate(),
+      id: CredentialId::generate(),
       service: CredentialServiceType::FalApi,
       name: None,
       secret: CredentialSecret::ApiKey(ApiKeyCredential::new("fal-key-123")),
@@ -253,7 +253,7 @@ mod tests {
   }
 
   #[test]
-  fn missing_token_is_backfilled_and_stable_across_loads() {
+  fn missing_id_is_backfilled_and_stable_across_loads() {
     let dir = tempfile::tempdir().unwrap();
     write_file(
       dir.path(),
@@ -264,18 +264,18 @@ mod tests {
     let creds_dir = AppCredentialsDir::new_from(dir.path());
     let first_load = creds_dir.load_credentials().unwrap();
     assert_eq!(first_load.len(), 1);
-    let token = first_load[0].token.clone();
-    assert!(token.as_str().starts_with("credential_"));
+    let id = first_load[0].id.clone();
+    assert!(id.as_str().starts_with("credential_"));
 
-    // The generated token was persisted, so a reload sees the same one.
+    // The generated id was persisted, so a reload sees the same one.
     let second_load = creds_dir.load_credentials().unwrap();
-    assert_eq!(second_load[0].token, token);
+    assert_eq!(second_load[0].id, id);
   }
 
   #[test]
-  fn duplicate_tokens_are_deduplicated_on_load() {
+  fn duplicate_ids_are_deduplicated_on_load() {
     let dir = tempfile::tempdir().unwrap();
-    let duplicated = "token = \"credential_copied\"\nservice = \"fal_api\"\n[api_key]\napi_key = \"x\"\n";
+    let duplicated = "id = \"credential_copied\"\nservice = \"fal_api\"\n[api_key]\napi_key = \"x\"\n";
     write_file(dir.path(), "fal_api.toml", duplicated);
     write_file(dir.path(), "fal_api_2.toml", duplicated);
 
@@ -283,31 +283,31 @@ mod tests {
     let credentials = creds_dir.load_credentials().unwrap();
 
     assert_eq!(credentials.len(), 2);
-    assert_ne!(credentials[0].token, credentials[1].token);
+    assert_ne!(credentials[0].id, credentials[1].id);
 
-    // The reassigned token was persisted, so a reload is stable.
+    // The reassigned id was persisted, so a reload is stable.
     let reloaded = creds_dir.load_credentials().unwrap();
-    let mut tokens: Vec<_> = credentials.iter().map(|c| c.token.clone()).collect();
-    let mut reloaded_tokens: Vec<_> = reloaded.iter().map(|c| c.token.clone()).collect();
-    tokens.sort();
-    reloaded_tokens.sort();
-    assert_eq!(tokens, reloaded_tokens);
+    let mut ids: Vec<_> = credentials.iter().map(|c| c.id.clone()).collect();
+    let mut reloaded_ids: Vec<_> = reloaded.iter().map(|c| c.id.clone()).collect();
+    ids.sort();
+    reloaded_ids.sort();
+    assert_eq!(ids, reloaded_ids);
   }
 
   #[test]
-  fn find_credential_by_token_matches() {
+  fn find_credential_by_id_matches() {
     let dir = tempfile::tempdir().unwrap();
     write_file(
       dir.path(),
       "fal_api.toml",
-      "token = \"credential_findme\"\nservice = \"fal_api\"\n[api_key]\napi_key = \"x\"\n",
+      "id = \"credential_findme\"\nservice = \"fal_api\"\n[api_key]\napi_key = \"x\"\n",
     );
 
     let creds_dir = AppCredentialsDir::new_from(dir.path());
-    let found = creds_dir.find_credential_by_token("credential_findme").unwrap();
-    assert_eq!(found.unwrap().id(), "fal_api.toml");
+    let found = creds_dir.find_credential_by_id("credential_findme").unwrap();
+    assert_eq!(found.unwrap().file_name(), "fal_api.toml");
 
-    let missing = creds_dir.find_credential_by_token("credential_nope").unwrap();
+    let missing = creds_dir.find_credential_by_id("credential_nope").unwrap();
     assert!(missing.is_none());
   }
 

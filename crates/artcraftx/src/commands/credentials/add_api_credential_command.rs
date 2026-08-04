@@ -40,7 +40,7 @@ pub async fn add_api_credential_command(
   let source_path = creds_dir.next_available_credential_path(service);
 
   let credential = Credential {
-    token: creds_dir.generate_unique_credential_token(),
+    id: creds_dir.generate_unique_credential_id(),
     service,
     name: normalize_name(name),
     secret: CredentialSecret::ApiKey(ApiKeyCredential::new(api_key)),

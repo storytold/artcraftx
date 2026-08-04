@@ -21,6 +21,9 @@ members = [
   # Desktop apps
   "crates/artcraftx",
 
+  # Strongly-typed identifiers for non-database entities
+  "crates/identifiers",
+
   # Shared libraries
   "crates/lib/build_metadata",
   "crates/lib/caching/memory_store",
@@ -95,6 +98,7 @@ gmicloud_client = { path = "crates/api_clients/gmicloud_client" }
 grok_api_client = { path = "crates/api_clients/grok_api_client" }
 grok_consumer_client = { path = "crates/api_clients/grok_consumer_client" }
 http_headers = { path = "crates/lib/http_headers" }
+identifiers = { path = "crates/identifiers" }
 images = { path = "crates/lib/files/images" }
 jwt_light = { path = "crates/lib/jwt_light" }
 memory_store = { path = "crates/lib/caching/memory_store" }

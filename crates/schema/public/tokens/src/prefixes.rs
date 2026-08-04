@@ -68,7 +68,6 @@ pub(crate) enum TokenPrefix {
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
 pub(crate) enum TauriTokenPrefix {
-  Credential,
   Task,
 }
 
@@ -163,7 +162,6 @@ impl PrefixGenerator for TokenPrefix {
 impl PrefixGenerator for TauriTokenPrefix {
   fn prefix(self) -> &'static str {
     match self {
-      TauriTokenPrefix::Credential => "credential_",
       TauriTokenPrefix::Task => "task_",
     }
   }

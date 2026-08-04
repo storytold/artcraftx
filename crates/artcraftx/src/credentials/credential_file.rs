@@ -6,7 +6,7 @@ use crate::credentials::credential_user_info::CredentialUserInfo;
 use crate::error::artcraftx_credential_error::ArtcraftXCredentialError;
 use serde_derive::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use tokens::tokens::sqlite::credentials::CredentialToken;
+use identifiers::CredentialId;
 
 /// The on-disk (TOML) shape of a credential file.
 ///
@@ -17,7 +17,7 @@ use tokens::tokens::sqlite::credentials::CredentialToken;
 /// Example file (`~/Artcraft/artcraftx/credentials/higgsfield.toml`):
 ///
 /// ```toml
-/// token = "credential_2f7h9k3mnp5qr8tv0wx4yz6ab"
+/// id = "credential_01j9dq3v5x8k2m7n4p6r9t0wxy"
 /// service = "higgsfield_cookies"
 ///
 /// [cookie]
@@ -29,9 +29,9 @@ use tokens::tokens::sqlite::credentials::CredentialToken;
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct CredentialFile {
   /// The credential's stable identity. Absent in older or hand-written
-  /// files; loading backfills a freshly generated token.
+  /// files; loading backfills a freshly generated id.
   #[serde(default, skip_serializing_if = "Option::is_none")]
-  pub token: Option<CredentialToken>,
+  pub id: Option<CredentialId>,
 
   pub service: CredentialServiceType,
 
@@ -103,7 +103,7 @@ impl CredentialFile {
     }
 
     Ok(Credential {
-      token: self.token.unwrap_or_else(CredentialToken::generate),
+      id: self.id.unwrap_or_else(CredentialId::generate),
       service: self.service,
       name: self.name,
       secret,
@@ -118,7 +118,7 @@ impl CredentialFile {
       CredentialSecret::ApiKey(api_key) => (None, Some(api_key.clone())),
     };
     Self {
-      token: Some(credential.token.clone()),
+      id: Some(credential.id.clone()),
       service: credential.service,
       name: credential.name.clone(),
       cookie,
@@ -234,27 +234,27 @@ mod tests {
     }
   }
 
-  mod token_tests {
+  mod id_tests {
     use super::*;
 
     #[test]
-    fn token_in_file_is_preserved() {
+    fn id_in_file_is_preserved() {
       let toml_text = r#"
-        token = "credential_test123"
+        id = "credential_test123"
         service = "fal_api"
         [api_key]
         api_key = "x"
       "#;
       let file: CredentialFile = toml::from_str(toml_text).unwrap();
       let credential = file.into_credential(PathBuf::from("test.toml")).unwrap();
-      assert_eq!(credential.token.as_str(), "credential_test123");
+      assert_eq!(credential.id.as_str(), "credential_test123");
     }
 
     #[test]
-    fn missing_token_generates_one() {
+    fn missing_id_generates_one() {
       let file: CredentialFile = toml::from_str(HAND_WRITTEN_API_KEY_FILE).unwrap();
       let credential = file.into_credential(PathBuf::from("test.toml")).unwrap();
-      assert!(credential.token.as_str().starts_with("credential_"));
+      assert!(credential.id.as_str().starts_with("credential_"));
     }
   }
 

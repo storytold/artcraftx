@@ -8,10 +8,10 @@ export interface CredentialPayload {
    * file. Hidden from users, but the effective primary identifier — pass it
    * back to edit/delete and use it to reference the credential anywhere.
    */
-  token: string;
+  id: string;
   /** File name within the credentials directory, e.g. `fal_api_2.toml`.
    *  Informational; changes if the user renames the file. */
-  id: string;
+  file_name: string;
   service: string;
   kind: "cookies" | "api_key";
   name: string | null;
@@ -110,14 +110,14 @@ export const addApiCredential = async (args: {
 };
 
 export const editApiCredential = async (args: {
-  credentialToken: string;
+  credentialId: string;
   apiKey?: string;
   name?: string;
 }): Promise<CredentialPayload> => {
   const response = await invoke<{ credential: CredentialPayload }>(
     "edit_api_credential_command",
     {
-      credentialToken: args.credentialToken,
+      credentialId: args.credentialId,
       apiKey: args.apiKey ?? null,
       name: args.name ?? null,
     }
@@ -126,9 +126,9 @@ export const editApiCredential = async (args: {
 };
 
 export const deleteCredential = async (
-  credentialToken: string
+  credentialId: string
 ): Promise<void> => {
-  await invoke("delete_credentials_command", { credentialToken });
+  await invoke("delete_credentials_command", { credentialId });
 };
 
 /**

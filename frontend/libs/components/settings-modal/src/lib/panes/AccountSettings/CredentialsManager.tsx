@@ -79,7 +79,7 @@ export const CredentialsManager = () => {
         <div className="flex flex-col gap-1.5">
           {credentials.map((credential) => (
             <CredentialRow
-              key={credential.token}
+              key={credential.id}
               credential={credential}
               onEdit={() => setEditing(credential)}
               onDelete={() => setDeleting(credential)}

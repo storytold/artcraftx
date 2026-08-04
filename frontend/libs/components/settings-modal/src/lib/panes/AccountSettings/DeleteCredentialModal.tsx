@@ -39,7 +39,7 @@ export const DeleteCredentialModal = ({
     try {
       // Deletes by file name (the credential id) so we're sure we're
       // removing exactly this one.
-      await deleteCredential(credential.token);
+      await deleteCredential(credential.id);
       onDeleted();
       onClose();
     } catch (e) {
@@ -66,7 +66,7 @@ export const DeleteCredentialModal = ({
           Delete the credential <span className="font-medium">{label}</span>?
         </p>
         <p className="text-sm text-base-fg/50">
-          This removes <span className="font-mono">{credential.id}</span> from
+          This removes <span className="font-mono">{credential.file_name}</span> from
           your credentials folder. This cannot be undone.
         </p>
 

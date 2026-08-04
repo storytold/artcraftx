@@ -47,7 +47,7 @@ export const EditCredentialModal = ({
     setErrorMessage("");
     try {
       await editApiCredential({
-        credentialToken: credential.token,
+        credentialId: credential.id,
         apiKey: apiKey.trim(),
         // Empty string clears the name on the Rust side.
         name: name.trim(),
@@ -80,7 +80,7 @@ export const EditCredentialModal = ({
             alt=""
             className="h-5 w-5 shrink-0 object-contain icon-auto-contrast"
           />
-          <span className="font-mono">{credential.id}</span>
+          <span className="font-mono">{credential.file_name}</span>
         </div>
 
         <div className="flex flex-col gap-1.5">

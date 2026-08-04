@@ -13,7 +13,7 @@ pub struct EditWebCredentialResponse {
 }
 
 /// Edit an existing web-login (cookie) credential, identified by its stable
-/// token.
+/// id.
 ///
 /// `name` replaces the label; an empty string clears it. `cookie_header`
 /// replaces the cookies when provided (non-empty). Omitted fields are left
@@ -21,28 +21,28 @@ pub struct EditWebCredentialResponse {
 #[tauri::command]
 pub async fn edit_web_credential_command(
   app_data_root: State<'_, AppDataRoot>,
-  credential_token: String,
+  credential_id: String,
   name: Option<String>,
   cookie_header: Option<String>,
 ) -> Result<EditWebCredentialResponse, String> {
-  info!("edit_web_credential_command called for: {}", credential_token);
+  info!("edit_web_credential_command called for: {}", credential_id);
 
   let creds_dir = app_data_root.credentials_dir();
 
   let mut credential = creds_dir
-      .find_credential_by_token(&credential_token)
+      .find_credential_by_id(&credential_id)
       .map_err(|err| {
-        error!("Error looking up credential {}: {}", credential_token, err);
-        format!("Error looking up credential {}: {}", credential_token, err)
+        error!("Error looking up credential {}: {}", credential_id, err);
+        format!("Error looking up credential {}: {}", credential_id, err)
       })?
       .ok_or_else(|| {
-        let message = format!("No credential found for token {}", credential_token);
+        let message = format!("No credential found for id {}", credential_id);
         error!("{}", message);
         message
       })?;
 
   let CredentialSecret::Cookies(existing_cookie) = &credential.secret else {
-    let message = format!("Credential {} is not a cookie credential", credential_token);
+    let message = format!("Credential {} is not a cookie credential", credential_id);
     error!("{}", message);
     return Err(message);
   };
@@ -70,8 +70,8 @@ pub async fn edit_web_credential_command(
   creds_dir
       .save_credential(&credential)
       .map_err(|err| {
-        error!("Error saving credential {}: {}", credential_token, err);
-        format!("Error saving credential {}: {}", credential_token, err)
+        error!("Error saving credential {}: {}", credential_id, err);
+        format!("Error saving credential {}: {}", credential_id, err)
       })?;
 
   Ok(EditWebCredentialResponse {
