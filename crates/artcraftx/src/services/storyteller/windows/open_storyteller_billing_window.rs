@@ -1,6 +1,5 @@
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
+use artcraft_client::utils::api_host::ApiHost;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::services::sora::windows::sora_login_window::sora_login_thread::sora_login_thread;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::services::storyteller::windows::storyteller_billing_window_thread::storyteller_billing_window_thread;
 use anyhow::anyhow;
@@ -28,7 +27,6 @@ pub const BILLING_WINDOW_NAME: &str = "artcraft_billing_window";
 
 pub struct OpenStorytellerBillingWindowArgs<'a> {
   pub app: &'a AppHandle,
-  pub app_env_configs: &'a AppEnvConfigs,
   pub app_data_root: &'a AppDataRoot,
   pub storyteller_creds_manager: &'a StorytellerCredentialManager,
   pub billing_window_case: BillingWindowCase,
@@ -80,7 +78,6 @@ pub async fn open_storyteller_billing_window(
   let checkout_url = match args.billing_window_case {
     BillingWindowCase::Subscription { plan, cadence } => {
       get_subscription_url(
-        args.app_env_configs,
         &creds,
         plan,
         cadence,
@@ -88,26 +85,22 @@ pub async fn open_storyteller_billing_window(
     },
     BillingWindowCase::CreditsPack { credits_pack } => {
       get_credits_pack_url(
-        args.app_env_configs,
         &creds,
         credits_pack,
       ).await?
     },
     BillingWindowCase::CustomerPortalCancelPlan => {
       get_customer_portal_cancel_plan_url(
-        args.app_env_configs,
         &creds,
       ).await?
     },
     BillingWindowCase::CustomerPortalManagePlan => {
       get_customer_portal_manage_plan_url(
-        args.app_env_configs,
         &creds,
       ).await?
     },
     BillingWindowCase::CustomerPortalSwitchPlan { plan, cadence } => {
       get_customer_portal_switch_plan_url(
-        args.app_env_configs,
         &creds,
         plan,
         cadence,
@@ -115,7 +108,6 @@ pub async fn open_storyteller_billing_window(
     },
     BillingWindowCase::CustomerPortalUpdatePaymentMethod => {
       get_customer_portal_update_payment_method_url(
-        args.app_env_configs,
         &creds,
       ).await?
     }
@@ -127,7 +119,6 @@ pub async fn open_storyteller_billing_window(
 }
 
 async fn get_subscription_url(
-  app_env_configs: &AppEnvConfigs,
   storyteller_creds: &StorytellerCredentialSet,
   plan: ArtcraftSubscriptionSlug,
   cadence: PlanBillingCadence,
@@ -141,7 +132,7 @@ async fn get_subscription_url(
   };
 
   let result = create_subscription_checkout(
-    &app_env_configs.storyteller_host,
+    &ApiHost::Storyteller,
     Some(&storyteller_creds),
     request,
   ).await?;
@@ -153,7 +144,6 @@ async fn get_subscription_url(
 }
 
 async fn get_credits_pack_url(
-  app_env_configs: &AppEnvConfigs,
   storyteller_creds: &StorytellerCredentialSet,
   credits_pack: ArtcraftCreditsPackSlug,
 ) -> AnyhowResult<Url> {
@@ -165,7 +155,7 @@ async fn get_credits_pack_url(
   };
 
   let result = create_credits_pack_checkout(
-    &app_env_configs.storyteller_host,
+    &ApiHost::Storyteller,
     Some(&storyteller_creds),
     request,
   ).await?;
@@ -175,7 +165,6 @@ async fn get_credits_pack_url(
 }
 
 async fn get_customer_portal_cancel_plan_url(
-  app_env_configs: &AppEnvConfigs,
   storyteller_creds: &StorytellerCredentialSet,
 ) -> AnyhowResult<Url> {
 
@@ -186,7 +175,7 @@ async fn get_customer_portal_cancel_plan_url(
   };
 
   let result = customer_portal_cancel_plan(
-    &app_env_configs.storyteller_host,
+    &ApiHost::Storyteller,
     Some(&storyteller_creds),
     request,
   ).await?;
@@ -196,7 +185,6 @@ async fn get_customer_portal_cancel_plan_url(
 }
 
 async fn get_customer_portal_manage_plan_url(
-  app_env_configs: &AppEnvConfigs,
   storyteller_creds: &StorytellerCredentialSet,
 ) -> AnyhowResult<Url> {
 
@@ -207,7 +195,7 @@ async fn get_customer_portal_manage_plan_url(
   };
 
   let result = customer_portal_manage_plan(
-    &app_env_configs.storyteller_host,
+    &ApiHost::Storyteller,
     Some(&storyteller_creds),
     request,
   ).await?;
@@ -217,7 +205,6 @@ async fn get_customer_portal_manage_plan_url(
 }
 
 async fn get_customer_portal_switch_plan_url(
-  app_env_configs: &AppEnvConfigs,
   storyteller_creds: &StorytellerCredentialSet,
   plan: ArtcraftSubscriptionSlug,
   cadence: PlanBillingCadenceConfirmation,
@@ -232,7 +219,7 @@ async fn get_customer_portal_switch_plan_url(
   };
 
   let result = customer_portal_switch_plan(
-    &app_env_configs.storyteller_host,
+    &ApiHost::Storyteller,
     Some(&storyteller_creds),
     request,
   ).await?;
@@ -242,7 +229,6 @@ async fn get_customer_portal_switch_plan_url(
 }
 
 async fn get_customer_portal_update_payment_method_url(
-  app_env_configs: &AppEnvConfigs,
   storyteller_creds: &StorytellerCredentialSet,
 ) -> AnyhowResult<Url> {
 
@@ -253,7 +239,7 @@ async fn get_customer_portal_update_payment_method_url(
   };
 
   let result = customer_portal_update_payment_method(
-    &app_env_configs.storyteller_host,
+    &ApiHost::Storyteller,
     Some(&storyteller_creds),
     request,
   ).await?;

@@ -7,8 +7,6 @@ use crate::events::functional_events::image_edit_complete_event::{EditedImage, I
 use crate::events::functional_events::object_generation_complete_event::{GeneratedObject, ObjectGenerationCompleteEvent};
 use crate::events::functional_events::text_to_image_generation_complete_event::{GeneratedImage, TextToImageGenerationCompleteEvent};
 use crate::events::functional_events::video_generation_complete_event::{GeneratedVideo, VideoGenerationCompleteEvent};
-use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
-use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
 use artcraft_client::endpoints::media_files::list_batch_generated_redux_media_files::list_batch_generated_redux_media_files;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::utils::api_host::ApiHost;
@@ -16,7 +14,7 @@ use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
 use enums::tauri::tasks::task_model_type::TaskModelType;
 use enums::tauri::tasks::task_type::TaskType;
-use log::{error, info, warn};
+use log::{error, warn};
 use sqlite_database::queries::task::Task;
 use tauri::AppHandle;
 use reqwest::Url;

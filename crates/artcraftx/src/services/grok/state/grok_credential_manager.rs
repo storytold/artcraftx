@@ -3,13 +3,11 @@ use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::grok::state::grok_credential_holder::GrokCredentialHolder;
 use crate::services::grok::state::grok_serializable_state::{GrokSerializableState, SERIALIZABLE_GROK_STATE_VERSION};
 use cookie_store::cookie_store::CookieStore;
-use errors::AnyhowResult;
 use grok_consumer_client::credentials::grok_client_secrets::GrokClientSecrets;
 use grok_consumer_client::credentials::grok_cookies::GrokCookies;
 use grok_consumer_client::credentials::grok_full_credentials::GrokFullCredentials;
 use grok_consumer_client::credentials::grok_user_data::GrokUserData;
-use log::{info, warn};
-use std::fs::read_to_string;
+use log::warn;
 use std::sync::{Arc, RwLock};
 
 #[derive(Clone)]
@@ -30,7 +28,7 @@ impl GrokCredentialManager {
   }
 
   pub fn initialize_from_disk_infallible(app_data_root: &AppDataRoot) -> Self {
-    let mut credential_data;
+    let credential_data;
 
     let result = GrokSerializableState::read_from_disk(app_data_root);
     match result {

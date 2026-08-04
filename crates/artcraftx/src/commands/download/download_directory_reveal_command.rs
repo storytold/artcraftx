@@ -1,23 +1,13 @@
-use crate::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
 use crate::error::artcraftx_error::ArtcraftXError;
-use crate::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
-use crate::commands::response::shorthand::{Response, ResponseOrErrorMessage, ResponseOrErrorType};
+use crate::commands::response::shorthand::ResponseOrErrorMessage;
 use crate::commands::response::success_response_wrapper::SerializeMarker;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
-use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::utils::download_url_to_temp_dir::download_url_to_temp_dir;
-use crate::utils::download_url_to_user_download_dir::download_url_to_user_download_dir;
 use anyhow::anyhow;
-use log::{error, info};
-use serde_derive::{Deserialize, Serialize};
-use std::path::PathBuf;
-use std::str::FromStr;
-use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
+use log::info;
+use serde_derive::Serialize;
 use tauri::{AppHandle, State};
 use tauri_plugin_opener::OpenerExt;
-use tokens::tokens::media_files::MediaFileToken;
 
 #[derive(Serialize)]
 pub struct DownloadDirectoryRevealSuccessResponse {

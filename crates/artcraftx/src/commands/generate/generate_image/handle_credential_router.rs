@@ -11,8 +11,8 @@ use router::generate::generate_image::generate_image_request_builder::GenerateIm
 use router::generate::generate_image::image_generation_draft_or_request::ImageGenerationDraftOrRequest;
 use tokens::tokens::media_files::MediaFileToken;
 
-use crate::api_adapters::models::image::tauri_image_model_to_generation_model::tauri_image_model_to_generation_model;
-use crate::api_adapters::models::image::tauri_image_model_to_router_model::tauri_image_model_to_router_model;
+use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_generation_model::tauri_image_model_to_generation_model;
+use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_router_model::tauri_image_model_to_router_model;
 use crate::commands::generate::generate_error::GenerateError;
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::common::generation_credential::{credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential};
@@ -23,7 +23,6 @@ use crate::commands::generate::generate_image::utils::parse_semantic_media_files
 use crate::credentials::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::credential::Credential;
 use crate::credentials::credential_service_type::CredentialServiceType;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 
 /// Credential-driven image generation: resolve the stored credential named
@@ -32,7 +31,6 @@ use crate::state::data_dir::app_data_root::AppDataRoot;
 pub async fn handle_credential_router(
   request: &TauriGenerateImageRequest,
   app_data_root: &AppDataRoot,
-  app_env_configs: &AppEnvConfigs,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let credential = resolve_generation_credential(
     request.credential_id.as_deref(),
@@ -58,7 +56,6 @@ pub async fn handle_credential_router(
       handle_fal_credential(
         request,
         &api_key.api_key,
-        app_env_configs,
       ).await
     }
     other => Err(credential_not_usable(
@@ -201,7 +198,7 @@ mod live_generation_tests {
 
   use super::*;
 
-  fn production_setup() -> (AppDataRoot, AppEnvConfigs, String) {
+  fn production_setup() -> (AppDataRoot, String) {
     let app_data_root = AppDataRoot::create_default().expect("app data root");
     let credential_id = app_data_root
         .credentials_dir()
@@ -213,14 +210,13 @@ mod live_generation_tests {
         .id
         .as_str()
         .to_string();
-    let app_env_configs = AppEnvConfigs { storyteller_host: ApiHost::Storyteller };
-    (app_data_root, app_env_configs, credential_id)
+    (app_data_root, credential_id)
   }
 
   #[tokio::test]
   #[ignore] // live: spends credits on api.storyteller.ai
   async fn live_generation_image_nano_banana() {
-    let (app_data_root, app_env_configs, credential_id) = production_setup();
+    let (app_data_root, credential_id) = production_setup();
 
     let request = TauriGenerateImageRequest {
       credential_id: Some(credential_id),
@@ -230,7 +226,7 @@ mod live_generation_tests {
       ..Default::default()
     };
 
-    let result = handle_credential_router(&request, &app_data_root, &app_env_configs).await;
+    let result = handle_credential_router(&request, &app_data_root).await;
     let success = result.expect("nano banana enqueue should succeed");
     println!("[live] nano banana enqueued: job_id={:?}", success.provider_job_id);
     assert!(success.provider_job_id.is_some());
@@ -239,7 +235,7 @@ mod live_generation_tests {
   #[tokio::test]
   #[ignore] // live: spends credits on api.storyteller.ai
   async fn live_generation_image_midjourney_8() {
-    let (app_data_root, app_env_configs, credential_id) = production_setup();
+    let (app_data_root, credential_id) = production_setup();
 
     let request = TauriGenerateImageRequest {
       credential_id: Some(credential_id),
@@ -248,7 +244,7 @@ mod live_generation_tests {
       ..Default::default()
     };
 
-    let result = handle_credential_router(&request, &app_data_root, &app_env_configs).await;
+    let result = handle_credential_router(&request, &app_data_root).await;
     match result {
       Ok(success) => {
         println!("[live] midjourney 8 enqueued: job_id={:?}", success.provider_job_id);

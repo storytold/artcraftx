@@ -1,21 +1,11 @@
 use crate::commands::response::shorthand::ResponseOrErrorMessage;
 use crate::commands::response::success_response_wrapper::SerializeMarker;
-use crate::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
-use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::provider_priority::{Provider, ProviderPriorityStore};
 use crate::state::task_database::TaskDatabase;
-use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
-use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use chrono::{DateTime, Utc};
 use errors::AnyhowResult;
-use log::{error, info, warn};
+use log::{error, info};
 use serde_derive::{Deserialize, Serialize};
-use sqlite_database::queries::list_tasks_for_frontend::list_tasks_for_frontend;
 use sqlite_database::queries::mark_task_as_dismissed::mark_task_as_dismissed;
-use artcraft_client::endpoints::media_files::delete_media_file::delete_media_file;
 use tauri::{AppHandle, State};
-use tokens::tokens::media_files::MediaFileToken;
 use tokens::tokens::sqlite::tasks::TaskId;
 
 #[derive(Deserialize)]
@@ -33,8 +23,7 @@ impl SerializeMarker for MarkTaskAsDismissedResponse {}
 #[tauri::command]
 pub async fn mark_task_as_dismissed_command(
   request: MarkTaskAsDismissedRequest,
-  app: AppHandle,
-  app_env_configs: State<'_, AppEnvConfigs>,
+  _app: AppHandle,
   task_database: State<'_, TaskDatabase>,
 ) -> ResponseOrErrorMessage<MarkTaskAsDismissedResponse> {
 

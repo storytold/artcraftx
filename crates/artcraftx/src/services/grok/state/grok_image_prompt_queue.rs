@@ -56,7 +56,7 @@ impl GrokImagePromptQueue {
 
   pub fn is_empty(&self) -> Result<bool, ArtcraftXError> {
     match self.prompt_queue.lock() {
-      Ok(mut queue) => {
+      Ok(queue) => {
         Ok(queue.is_empty())
       },
       Err(err) => {
@@ -68,7 +68,7 @@ impl GrokImagePromptQueue {
 
   pub fn len(&self) -> Result<usize, ArtcraftXError> {
     match self.prompt_queue.lock() {
-      Ok(mut queue) => {
+      Ok(queue) => {
         Ok(queue.len())
       },
       Err(err) => {

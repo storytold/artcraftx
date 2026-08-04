@@ -1,7 +1,5 @@
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::utils::clear_all_webview_cookies::clear_all_webview_cookies;
-use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
-use crate::services::midjourney::windows::midjourney_login_window_thread::midjourney_login_window_thread;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use once_cell::sync::Lazy;

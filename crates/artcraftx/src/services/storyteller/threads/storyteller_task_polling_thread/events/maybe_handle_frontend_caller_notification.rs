@@ -1,3 +1,4 @@
+use artcraft_client::utils::api_host::ApiHost;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::canvas_background_removal_complete_event::CanvasBackgroundRemovalCompleteEvent;
 use crate::events::functional_events::gaussian_generation_complete_event::{GaussianGenerationCompleteEvent, GeneratedGaussian};
@@ -5,24 +6,20 @@ use crate::events::functional_events::image_edit_complete_event::{EditedImage, I
 use crate::events::functional_events::object_generation_complete_event::{GeneratedObject, ObjectGenerationCompleteEvent};
 use crate::events::functional_events::text_to_image_generation_complete_event::{GeneratedImage, TextToImageGenerationCompleteEvent};
 use crate::events::functional_events::video_generation_complete_event::{GeneratedVideo, VideoGenerationCompleteEvent};
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use anyhow::anyhow;
 use artcraft_client::api_defs::jobs::list_session_jobs::{ListSessionJobsItem, ListSessionResultDetailsResponse};
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
 use enums::tauri::tasks::task_type::TaskType;
 use errors::AnyhowResult;
-use log::{error, warn};
-use sqlite_database::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs};
+use log::warn;
 use sqlite_database::queries::task::Task;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::endpoints::media_files::list_batch_generated_redux_media_files::list_batch_generated_redux_media_files;
 use tauri::AppHandle;
-use tokens::tokens::batch_generations::BatchGenerationToken;
 use tokens::tokens::media_files::MediaFileToken;
 
 pub async fn maybe_handle_frontend_caller_notification(
   app: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   maybe_creds: Option<&StorytellerCredentialSet>,
   task: &Task,
   job: &ListSessionJobsItem,
@@ -42,7 +39,6 @@ pub async fn maybe_handle_frontend_caller_notification(
         app,
         task,
         job_result,
-        app_env_configs,
         maybe_creds,
       ).await?;
     }
@@ -51,7 +47,6 @@ pub async fn maybe_handle_frontend_caller_notification(
         app,
         task,
         job_result,
-        app_env_configs,
         maybe_creds,
       ).await?;
     }
@@ -95,7 +90,6 @@ async fn handle_image_generation(
   app: &AppHandle,
   task: &Task,
   job_result: &ListSessionResultDetailsResponse,
-  app_env_configs: &AppEnvConfigs,
   maybe_creds: Option<&StorytellerCredentialSet>,
 ) -> AnyhowResult<()> {
 
@@ -109,7 +103,7 @@ async fn handle_image_generation(
     }
     Some(batch_token) => {
       let result = list_batch_generated_redux_media_files(
-        &app_env_configs.storyteller_host,
+        &ApiHost::Storyteller,
         maybe_creds,
         batch_token,
       ).await?;
@@ -144,7 +138,6 @@ async fn handle_inpaint_image_generation(
   app: &AppHandle,
   task: &Task,
   job_result: &ListSessionResultDetailsResponse,
-  app_env_configs: &AppEnvConfigs,
   maybe_creds: Option<&StorytellerCredentialSet>,
 ) -> AnyhowResult<()> {
 
@@ -158,7 +151,7 @@ async fn handle_inpaint_image_generation(
     }
     Some(batch_token) => {
       let result = list_batch_generated_redux_media_files(
-        &app_env_configs.storyteller_host,
+        &ApiHost::Storyteller,
         maybe_creds,
         batch_token,
       ).await?;

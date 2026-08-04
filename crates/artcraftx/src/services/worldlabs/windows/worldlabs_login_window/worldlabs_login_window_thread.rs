@@ -1,28 +1,15 @@
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::refresh_account_state_event::RefreshAccountStateEvent;
-use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
-use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::events::sendable_event_trait::SendableEvent;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::utils::window::get_webview_window_hostname::get_webview_window_hostname;
-use crate::utils::window::get_webview_window_url_path::get_webview_window_url_path;
-use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
-use crate::services::sora::events::sora_login_success_event::SoraLoginSuccessEvent;
-use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
-use crate::services::sora::windows::sora_login_window::extract_sora_webview_cookies::extract_sora_webview_cookies;
 use crate::services::worldlabs::state::worldlabs_bearer_bridge::WorldlabsBearerBridge;
 use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
 use crate::services::worldlabs::windows::worldlabs_login_window::worldlabs_javascript::WORLDLABS_JAVASCRIPT_EXPORT_BEARER_TOKENS;
 use crate::services::worldlabs::windows::worldlabs_login_window::worldlabs_login_webview_extract_cookies::worldlabs_login_webview_extract_cookies;
 use crate::services::worldlabs::windows::worldlabs_login_window::worldlabs_login_window_open::WORLDLABS_LOGIN_WINDOW_NAME;
-use anyhow::anyhow;
-use cookie_store::cookie_store::CookieStore;
 use enums::common::generation_provider::GenerationProvider;
 use errors::AnyhowResult;
 use log::{error, info};
-use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
-use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
-use openai_sora_client::utils::has_session_cookie::{has_session_cookie, SessionCookiePresence};
 use tauri::{AppHandle, Manager, WebviewWindow};
 use worldlabs_consumer_client::credentials::world_labs_bearer_token::WorldLabsBearerToken;
 use worldlabs_consumer_client::credentials::worldlabs_refresh_token::WorldLabsRefreshToken;
@@ -77,10 +64,10 @@ pub async fn worldlabs_login_window_thread(
 async fn check_login_window(
   app_handle: &AppHandle,
   webview_window: &WebviewWindow,
-  app_data_root: &AppDataRoot,
+  _app_data_root: &AppDataRoot,
   worldlabs_bearer_bridge: &WorldlabsBearerBridge,
   worldlabs_creds_manager: &WorldlabsCredentialManager,
-  visited_login: &mut bool,
+  _visited_login: &mut bool,
 ) -> AnyhowResult<bool> {
 
   // World labs has no distinct login page. Everything is in a single SPA.

@@ -10,7 +10,6 @@ use crate::commands::response::shorthand::Response;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::credits_balance_changed_event::CreditsBalanceChangedEvent;
 use crate::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::task_database::TaskDatabase;
 use log::{error, info};
@@ -21,7 +20,6 @@ pub async fn generate_image_command(
   request: TauriGenerateImageRequest,
   app: AppHandle,
   app_data_root: State<'_, AppDataRoot>,
-  app_env_configs: State<'_, AppEnvConfigs>,
   task_database: State<'_, TaskDatabase>,
 ) -> Response<TauriGenerateImageResponse, TauriGenerateImageErrorType, ()> {
 
@@ -32,7 +30,6 @@ pub async fn generate_image_command(
   let result = handle_credential_router(
     &request,
     &app_data_root,
-    &app_env_configs,
   ).await;
 
   match result {

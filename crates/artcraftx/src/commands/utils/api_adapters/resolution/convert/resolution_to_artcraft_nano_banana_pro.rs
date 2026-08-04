@@ -1,4 +1,4 @@
-use crate::api_adapters::resolution::common_resolution::CommonResolution;
+use crate::commands::utils::api_adapters::resolution::common_resolution::CommonResolution;
 use artcraft_client::api_defs::generate::image::multi_function::nano_banana_pro_multi_function_image_gen::NanoBananaProMultiFunctionImageGenImageResolution;
 
 pub fn resolution_to_artcraft_nano_banana_pro(resolution: CommonResolution) -> NanoBananaProMultiFunctionImageGenImageResolution {

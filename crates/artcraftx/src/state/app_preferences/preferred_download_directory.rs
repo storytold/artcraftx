@@ -1,7 +1,7 @@
 use errors::AnyhowError;
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::str::FromStr;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
@@ -53,7 +53,7 @@ impl FromStr for SystemDownloadDirectory {
   type Err = AnyhowError;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
-    match (s) {
+    match s  {
       "downloads" => Ok(SystemDownloadDirectory::Downloads),
       "documents" => Ok(SystemDownloadDirectory::Documents),
       _ => Err(AnyhowError::msg(format!("Invalid system download directory: {}", s))),

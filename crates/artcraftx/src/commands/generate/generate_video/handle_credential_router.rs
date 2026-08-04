@@ -1,7 +1,7 @@
 use log::info;
 
-use crate::api_adapters::models::video::tauri_video_model_to_generation_model::tauri_video_model_to_generation_model;
-use crate::api_adapters::models::video::tauri_video_model_to_router_model::tauri_video_model_to_router_model;
+use crate::commands::utils::api_adapters::models::video::tauri_video_model_to_generation_model::tauri_video_model_to_generation_model;
+use crate::commands::utils::api_adapters::models::video::tauri_video_model_to_router_model::tauri_video_model_to_router_model;
 use crate::commands::generate::generate_error::GenerateError;
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::common::generation_credential::{credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential};

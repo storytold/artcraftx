@@ -13,15 +13,14 @@ use router::generate::generate_image::generate_image_response::GenerateImageResp
 use router::generate::generate_image::image_generation_draft_or_request::ImageGenerationDraftOrRequest;
 use tokens::tokens::media_files::MediaFileToken;
 
-use crate::api_adapters::models::image::tauri_image_model_to_generation_model::tauri_image_model_to_generation_model;
-use crate::api_adapters::models::image::tauri_image_model_to_router_model::tauri_image_model_to_router_model;
+use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_generation_model::tauri_image_model_to_generation_model;
+use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_router_model::tauri_image_model_to_router_model;
 use crate::commands::generate::generate_error::GenerateError;
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;
 use crate::commands::generate::generate_image::tauri_image_model::TauriImageModel;
 use crate::commands::generate::generate_image::utils::convert_enums_to_router::{convert_aspect_ratio, convert_quality, convert_resolution};
 use crate::commands::generate::generate_image::utils::map_media_files_to_urls::map_media_file_tokens_to_cdn_urls;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 
 /// Generate via the router's FAL provider using a stored FAL API key
 /// credential. FAL only accepts URLs, so Artcraft media tokens are resolved
@@ -29,7 +28,6 @@ use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 pub async fn handle_fal_credential(
   request: &TauriGenerateImageRequest,
   api_key: &str,
-  app_env_configs: &AppEnvConfigs,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let tauri_model = request.model.ok_or(GenerateError::no_model_specified())?;
 
@@ -38,7 +36,7 @@ pub async fn handle_fal_credential(
       format!("Model {:?} is not supported via the FAL router path", tauri_model),
     ))?;
 
-  let image_inputs = resolve_image_inputs(request, &app_env_configs.storyteller_host).await?;
+  let image_inputs = resolve_image_inputs(request, &ApiHost::Storyteller).await?;
 
   let router_request = GenerateImageRequestBuilder {
     model: router_model,

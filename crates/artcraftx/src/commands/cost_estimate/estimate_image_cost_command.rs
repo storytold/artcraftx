@@ -1,26 +1,24 @@
+use artcraft_client::utils::api_host::ApiHost;
 use crate::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::commands::response::shorthand::ResponseOrError;
 use crate::commands::response::success_response_wrapper::SerializeMarker;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use artcraft_client::api_defs::generate::cost_estimate::estimate_image_cost::{
   EstimateImageCostError, EstimateImageCostErrorType, EstimateImageCostRequest,
   EstimateImageCostResponse,
 };
 use artcraft_client::endpoints::generate::cost_estimate::image::estimate_image_cost::estimate_image_cost;
-use log::{debug, info};
-use tauri::State;
+use log::debug;
 
 impl SerializeMarker for EstimateImageCostResponse {}
 
 #[tauri::command]
 pub async fn estimate_image_cost_command(
   request: EstimateImageCostRequest,
-  app_env_configs: State<'_, AppEnvConfigs>,
 ) -> ResponseOrError<EstimateImageCostResponse, EstimateImageCostError> {
   debug!("estimate_image_cost_command called: {:?}", request);
 
   let result = estimate_image_cost(
-    &app_env_configs.storyteller_host,
+    &ApiHost::Storyteller,
     None, // Credentials are not required for this endpoint.
     request,
   )

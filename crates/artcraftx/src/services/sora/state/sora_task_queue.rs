@@ -143,7 +143,7 @@ impl SoraTaskQueue {
         // TODO: Cleaner way to do this?
         let mut set : HashSet<&TaskId, _> = HashSet::with_capacity(task_ids.len());
         set.extend(task_ids);
-        lock.retain(|k, v| !set.contains(k));
+        lock.retain(|k, _v| !set.contains(k));
         Ok(())
       }
     }

@@ -1,24 +1,20 @@
 use crate::providers::credentials::provider_credential_loading_cache::ProviderCredentialLoadingCache;
 use crate::providers::credentials::payload::provider_credential_payload::ProviderCredentialPayload;
 use crate::providers::credentials::provider_credential_key::ProviderCredentialKey;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::task_database::TaskDatabase;
 use crate::threads::third_party_task_polling_thread::handlers::fal::handle_fal_complete::handle_fal_complete;
 use crate::threads::third_party_task_polling_thread::handlers::fal::handle_fal_failure::handle_fal_failure;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use enums::tauri::tasks::task_status::TaskStatus;
 use fal_client::creds::fal_api_key::FalApiKey;
 use fal_client::polling::poll_job_response::poll_job_response::{poll_job_response, PollJobResponseArgs};
 use fal_client::polling::poll_job_status::poll_job_status::{poll_job_status, FalJobStatus, PollJobStatusArgs};
 use log::{error, info, warn};
 use sqlite_database::queries::task::Task;
-use sqlite_database::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use tauri::AppHandle;
 
 pub async fn poll_fal_tasks(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -36,7 +32,6 @@ pub async fn poll_fal_tasks(
   for task in fal_tasks {
     let result = poll_single_fal_task(
       app_handle,
-      app_env_configs,
       app_data_root,
       task_database,
       storyteller_creds_manager,
@@ -56,7 +51,6 @@ pub async fn poll_fal_tasks(
 
 async fn poll_single_fal_task(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -139,7 +133,6 @@ async fn poll_single_fal_task(
   // Step 3: Handle completed job
   handle_fal_complete(
     app_handle,
-    app_env_configs,
     app_data_root,
     task_database,
     storyteller_creds_manager,

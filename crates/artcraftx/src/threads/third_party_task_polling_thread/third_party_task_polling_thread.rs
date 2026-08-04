@@ -1,5 +1,4 @@
 use crate::providers::credentials::provider_credential_loading_cache::ProviderCredentialLoadingCache;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::task_database::TaskDatabase;
 use crate::threads::third_party_task_polling_thread::handlers::fal::poll_fal_tasks::poll_fal_tasks;
@@ -21,7 +20,6 @@ const SLEEP_ON_ERROR: Duration = Duration::from_secs(30);
 
 pub async fn third_party_task_polling_thread(
   app_handle: AppHandle,
-  app_env_configs: AppEnvConfigs,
   app_data_root: AppDataRoot,
   task_database: TaskDatabase,
   storyteller_creds_manager: StorytellerCredentialManager,
@@ -32,7 +30,6 @@ pub async fn third_party_task_polling_thread(
   loop {
     let result = poll_iteration(
       &app_handle,
-      &app_env_configs,
       &app_data_root,
       &task_database,
       &storyteller_creds_manager,
@@ -49,7 +46,6 @@ pub async fn third_party_task_polling_thread(
 
 async fn poll_iteration(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -103,7 +99,6 @@ async fn poll_iteration(
 
   poll_fal_tasks(
     app_handle,
-    app_env_configs,
     app_data_root,
     task_database,
     storyteller_creds_manager,

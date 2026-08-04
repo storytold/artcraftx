@@ -1,4 +1,4 @@
-use crate::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
+use crate::commands::utils::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
 use openai_sora_client::requests::image_gen::common::ImageSize;
 
 pub fn aspect_ratio_to_sora_native_gpt_image_1(aspect_ratio: CommonAspectRatio) -> ImageSize {

@@ -1,4 +1,3 @@
-pub mod api_adapters;
 pub mod commands;
 pub mod credentials;
 pub mod error;
@@ -48,19 +47,14 @@ use crate::commands::task_queue::mark_task_as_dismissed_command::mark_task_as_di
 use crate::commands::task_queue::tasks_nuke_all_command::tasks_nuke_all_command;
 use crate::lifecycle::startup::handle_tauri_startup::handle_tauri_startup;
 use crate::lifecycle::startup::setup_main_window::setup_main_window;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
 use crate::state::artcraft_platform_info::ArtcraftPlatformInfo;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::provider_priority::ProviderPriorityStore;
-use crate::threads::discord_presence_thread::discord_presence_thread;
-use crate::threads::main_window_thread::main_window_thread::main_window_thread;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
-use crate::services::sora::threads::sora_task_polling::sora_task_polling_thread::sora_task_polling_thread;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::services::worldlabs::state::worldlabs_bearer_bridge::WorldlabsBearerBridge;
 use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
@@ -69,8 +63,6 @@ use log::error;
 use crate::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
 use tauri_plugin_dialog;
 use tauri_plugin_http;
-use tauri_plugin_log::Target;
-use tauri_plugin_log::TargetKind;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -106,11 +98,6 @@ pub fn run() {
   // Other state
   let sora_task_queue = SoraTaskQueue::new();
   let sora_task_queue_2 = sora_task_queue.clone();
-
-  let app_env_configs = AppEnvConfigs::load_from_filesystem(&app_data_root)
-    .expect("AppEnvConfigs should be loaded from disk");
-  
-  let app_env_configs_2 = app_env_configs.clone();
 
   let midjourney_creds_manager = MidjourneyCredentialManager::initialize_from_disk_infallible(&app_data_root);
   let midjourney_creds_manager_2 = midjourney_creds_manager.clone();
@@ -151,18 +138,16 @@ pub fn run() {
       let app = app.handle().clone();
       let handle = app.clone();
       let root = app_data_root_2.clone();
-      let env_config = app_env_configs_2.clone();
       let storyteller_creds = storyteller_creds_manager_2.clone();
       let sora_creds = sora_creds_manager_2.clone();
       let sora_tasks = sora_task_queue_2.clone();
 
       tauri::async_runtime::block_on(async move {
-        let result = setup_main_window(&app).await;
+        let _result = setup_main_window(&app).await;
 
         let result = handle_tauri_startup(
           handle,
           root,
-          env_config,
           artcraft_platform_info_2,
           artcraft_usage_tracker_2,
           storyteller_creds,
@@ -185,7 +170,6 @@ pub fn run() {
       Ok(())
     })
     .manage(app_data_root)
-    .manage(app_env_configs)
     .manage(app_preferences)
     .manage(artcraft_platform_info)
     .manage(artcraft_usage_tracker)

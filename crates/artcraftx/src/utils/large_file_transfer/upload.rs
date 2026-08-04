@@ -134,7 +134,7 @@ async fn upload_async(
 
   while let Some(result) = handles.next().await {
     match result {
-      Ok(Ok((part_number, headers, size))) => {
+      Ok(Ok((part_number, headers, _size))) => {
         //if let Some(ref callback) = callback {
         //  callback.call((size,), None)?;
         //}

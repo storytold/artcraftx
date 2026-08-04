@@ -2,17 +2,12 @@ use crate::services::midjourney::state::legacy_credential_paths::MidjourneyLegac
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::midjourney::state::midjourney_user_info::MidjourneyUserInfo;
 use crate::services::midjourney::state::serializable_midjourney_state::{SerializableMidjourneyState, SERIALIZABLE_MIDJOURNEY_STATE_VERSION};
-use crate::services::storyteller::state::read_storyteller_credentials_from_disk::read_storyteller_credentials_from_disk;
-use crate::services::storyteller::state::storyteller_credential_holder::StorytellerCredentialHolder;
 use cookie_store::cookie_store::CookieStore;
 use errors::AnyhowResult;
 use log::{info, warn};
 use std::fs::read_to_string;
 use std::sync::{Arc, RwLock};
 use midjourney_client::credentials::cookie_store_has_auth_cookies::cookie_store_has_auth_cookies;
-use artcraft_client::credentials::storyteller_avt_cookie::StorytellerAvtCookie;
-use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
-use artcraft_client::credentials::storyteller_session_cookie::StorytellerSessionCookie;
 
 #[derive(Clone)]
 pub struct MidjourneyCredentialManager {
@@ -32,8 +27,8 @@ impl MidjourneyCredentialManager {
   }
 
   pub fn initialize_from_disk_infallible(app_data_root: &AppDataRoot) -> Self {
-    let mut cookies;
-    let mut user_info;
+    let cookies;
+    let user_info;
     
     match read_midjourney_state_from_disk(app_data_root) {
       Err(err) => {

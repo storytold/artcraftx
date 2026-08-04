@@ -1,5 +1,3 @@
-use crate::commands::generate::generate_error::GenerateError;
-use crate::events::functional_events::show_provider_login_modal_event::ShowProviderLoginModalEvent;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use grok_consumer_client::credentials::grok_cookies::GrokCookies;
 use grok_consumer_client::credentials::grok_full_credentials::GrokFullCredentials;
@@ -7,7 +5,6 @@ use grok_consumer_client::error::grok_client_error::GrokClientError;
 use grok_consumer_client::error::grok_error::GrokError;
 use grok_consumer_client::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
 use log::{error, info, warn};
-use tauri::AppHandle;
 use crate::error::artcraftx_error::ArtcraftXError;
 
 pub async fn get_or_update_grok_full_credentials(grok_credential_manager: &GrokCredentialManager) -> Result<GrokFullCredentials, ArtcraftXError> {

@@ -1,11 +1,10 @@
+use artcraft_client::utils::api_host::ApiHost;
 use crate::commands::response::shorthand::InfallibleResponse;
 use crate::commands::response::success_response_wrapper::SerializeMarker;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::artcraft_platform_info::{ArtcraftOs, ArtcraftPlatformInfo};
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
-use crate::state::os_platform::OsPlatform;
 use chrono::{DateTime, Utc};
 use log::{info, warn};
 use serde_derive::Serialize;
@@ -46,13 +45,12 @@ pub enum DetectedOs {
 #[tauri::command]
 pub fn get_app_info_command(
   app_data_root: State<'_, AppDataRoot>,
-  app_env_configs: State<'_, AppEnvConfigs>,
   artcraft_platform_info: State<'_, ArtcraftPlatformInfo>,
   app_prefs: State<'_, AppPreferencesManager>,
 ) -> InfallibleResponse<AppInfoResponse> {
   info!("get_app_info_command called...");
   
-  let storyteller_host = app_env_configs.storyteller_host.to_api_hostname_and_scheme();
+  let storyteller_host = ApiHost::Storyteller.to_api_hostname_and_scheme();
 
   let os_platform = match artcraft_platform_info.os_platform {
     ArtcraftOs::Linux => DetectedOs::Linux,

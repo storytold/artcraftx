@@ -185,7 +185,7 @@ pub async fn download_async<P: AsRef<Path>>(
   // Output the chained result
   while let Some(result) = handles.next().await {
     match result {
-      Ok(Ok(size)) => {
+      Ok(Ok(_size)) => {
         //if let Some(ref callback) = callback {
         //  callback.call((size,), None)?;
         //}

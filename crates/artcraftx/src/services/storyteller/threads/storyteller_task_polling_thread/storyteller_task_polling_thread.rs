@@ -1,4 +1,4 @@
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
+use artcraft_client::utils::api_host::ApiHost;
 use crate::state::task_database::TaskDatabase;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::services::storyteller::threads::storyteller_task_polling_thread::handle_storyteller_failed_job::handle_failed_job;
@@ -19,14 +19,12 @@ use tauri::AppHandle;
 
 pub async fn storyteller_task_polling_thread(
   app_handle: AppHandle,
-  app_env_configs: AppEnvConfigs,
   task_database: TaskDatabase,
   storyteller_creds_manager: StorytellerCredentialManager,
 ) -> ! {
   loop {
     let res = polling_loop(
       &app_handle,
-      &app_env_configs,
       &task_database,
       &storyteller_creds_manager,
     ).await;
@@ -40,7 +38,6 @@ pub async fn storyteller_task_polling_thread(
 
 async fn polling_loop(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
 ) -> AnyhowResult<()> {
@@ -51,7 +48,7 @@ async fn polling_loop(
     let creds = storyteller_creds_manager.get_credentials()?;
 
     let result = list_session_jobs(
-      &app_env_configs.storyteller_host,
+      &ApiHost::Storyteller,
       creds.as_ref(),
       States::All,
     ).await;
@@ -82,7 +79,7 @@ async fn polling_loop(
 
     let tasks = tasks.tasks;
 
-    let jobs_by_id = jobs.iter()
+    let _jobs_by_id = jobs.iter()
         .map(|job| (job.job_token.to_string(), job))
         .collect::<HashMap<String, _>>();
 
@@ -109,7 +106,7 @@ async fn polling_loop(
             TaskStatus::CompleteSuccess => continue, // NB: We're done with this task.
             _ => {}
           }
-          handle_successful_job(app_handle, app_env_configs, creds.as_ref(), job, task, task_database).await?;
+          handle_successful_job(app_handle, creds.as_ref(), job, task, task_database).await?;
         }
         JobStatusPlus::CompleteFailure => {
           match task.status {

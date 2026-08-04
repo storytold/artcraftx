@@ -1,8 +1,6 @@
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::events::generation_events::common::GenerationAction;
 use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::events::sendable_event_trait::SendableEvent;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::task_database::TaskDatabase;
 use crate::utils::enum_conversion::generation_provider::to_generation_service_provider;
 use crate::utils::enum_conversion::task_type::to_generation_action;
@@ -22,7 +20,6 @@ use tokens::tokens::media_files::MediaFileToken;
 
 pub async fn handle_successful_job(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   creds: Option<&StorytellerCredentialSet>,
   job: &ListSessionJobsItem,
   task: &Task,
@@ -51,7 +48,7 @@ pub async fn handle_successful_job(
     return Ok(()); // If anything breaks with queries, don't spam events.
   }
 
-  send_additional_success_events(app_handle, app_env_configs, creds, job, task).await;
+  send_additional_success_events(app_handle, creds, job, task).await;
 
   let service = to_generation_service_provider(task.provider);
   let action = to_generation_action(task.task_type);
@@ -71,7 +68,6 @@ pub async fn handle_successful_job(
 
 async fn send_additional_success_events(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   creds: Option<&StorytellerCredentialSet>,
   job: &ListSessionJobsItem,
   task: &Task
@@ -80,7 +76,6 @@ async fn send_additional_success_events(
 
   let result = maybe_handle_frontend_caller_notification(
     app_handle,
-    app_env_configs,
     creds,
     task,
     job,

@@ -32,9 +32,6 @@ impl AppSettingsDir {
     self.path.join("app_preferences.json")
   }
 
-  pub fn get_app_env_configs_path(&self) -> PathBuf {
-    self.path.join("env_configs.json")
-  }
 
   pub fn get_provider_preferences_path(&self) -> PathBuf {
     self.path.join("provider_preferences.json")

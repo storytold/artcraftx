@@ -1,4 +1,4 @@
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
+use artcraft_client::utils::api_host::ApiHost;
 use crate::threads::third_party_task_polling_thread::events::notify_frontend_of_completion::{
   notify_frontend_of_completion, CompletionData,
 };
@@ -22,7 +22,6 @@ use artcraft_client::endpoints::media_files::upload_video_media_file_from_file::
 };
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
-use enums::tauri::tasks::task_type::TaskType;
 use fal_client::polling::poll_job_response::poll_job_response::PollJobResponse;
 use fal_client::polling::poll_job_response::success_case_extractors::PollResponseExtractedContents;
 use log::{error, info, warn};
@@ -42,7 +41,6 @@ use uuid_utils::uuid::generate_random_uuid;
 
 pub async fn handle_fal_complete(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -53,7 +51,6 @@ pub async fn handle_fal_complete(
 
   let result = handle_fal_complete_inner(
     app_handle,
-    app_env_configs,
     app_data_root,
     task_database,
     storyteller_creds_manager,
@@ -68,7 +65,6 @@ pub async fn handle_fal_complete(
 
 async fn handle_fal_complete_inner(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -118,7 +114,6 @@ async fn handle_fal_complete_inner(
 
     let media_token = upload_to_backend(
       &creds,
-      app_env_configs,
       &download_path,
       maybe_prompt_token.as_ref(),
       maybe_batch_token.as_ref(),
@@ -138,7 +133,7 @@ async fn handle_fal_complete_inner(
   let mut maybe_thumbnail_url_template = None;
 
   if let Some(media_file_token) = maybe_primary_media_file_token.as_ref() {
-    match get_media_file(&app_env_configs.storyteller_host, media_file_token).await {
+    match get_media_file(&ApiHost::Storyteller, media_file_token).await {
       Ok(response) => {
         maybe_cdn_url = Some(response.media_file.media_links.cdn_url.clone());
         maybe_cdn_url_str = Some(response.media_file.media_links.cdn_url.to_string());
@@ -174,7 +169,7 @@ async fn handle_fal_complete_inner(
 
       notify_frontend_of_completion(
         app_handle,
-        &app_env_configs.storyteller_host,
+        &ApiHost::Storyteller,
         Some(&creds),
         task,
         &completion,
@@ -191,7 +186,7 @@ async fn handle_fal_complete_inner(
 
 /// Collect downloadable media URLs from the extracted response contents.
 fn collect_media_urls(
-  task: &Task,
+  _task: &Task,
   extracted: &Option<PollResponseExtractedContents>,
 ) -> Result<(Vec<String>, TaskMediaFileClass), Box<dyn std::error::Error>> {
   let extracted = match extracted {
@@ -260,7 +255,6 @@ const INITIAL_RETRY_DELAY_SECS: u64 = 10;
 
 async fn upload_to_backend(
   creds: &StorytellerCredentialSet,
-  app_env_configs: &AppEnvConfigs,
   download_path: &PathBuf,
   maybe_prompt_token: Option<&PromptToken>,
   maybe_batch_token: Option<&BatchGenerationToken>,
@@ -269,7 +263,7 @@ async fn upload_to_backend(
   let mut retry_delay_secs = INITIAL_RETRY_DELAY_SECS;
 
   for attempt in 0..MAX_UPLOAD_RETRIES {
-    let result = try_upload(creds, app_env_configs, download_path, maybe_prompt_token, maybe_batch_token, media_class).await;
+    let result = try_upload(creds, download_path, maybe_prompt_token, maybe_batch_token, media_class).await;
 
     match result {
       Ok(token) => return Ok(token),
@@ -299,7 +293,6 @@ async fn upload_to_backend(
 
 async fn try_upload(
   creds: &StorytellerCredentialSet,
-  app_env_configs: &AppEnvConfigs,
   download_path: &PathBuf,
   maybe_prompt_token: Option<&PromptToken>,
   maybe_batch_token: Option<&BatchGenerationToken>,
@@ -308,7 +301,7 @@ async fn try_upload(
   let media_token = match media_class {
     TaskMediaFileClass::Video => {
       let result = upload_video_media_file_from_file(UploadVideoFromFileArgs {
-        api_host: &app_env_configs.storyteller_host,
+        api_host: &ApiHost::Storyteller,
         maybe_creds: Some(creds),
         path: download_path,
         maybe_prompt_token,
@@ -318,7 +311,7 @@ async fn try_upload(
     }
     TaskMediaFileClass::Dimensional => {
       let result = legacy_upload_media_file_from_file(LegacyUploadMediaFileFromFileArgs {
-        api_host: &app_env_configs.storyteller_host,
+        api_host: &ApiHost::Storyteller,
         maybe_creds: Some(creds),
         path: download_path,
         maybe_generation_provider: Some(GenerationProvider::Fal),
@@ -327,7 +320,7 @@ async fn try_upload(
     }
     _ => {
       let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
-        api_host: &app_env_configs.storyteller_host,
+        api_host: &ApiHost::Storyteller,
         maybe_creds: Some(creds),
         path: download_path,
         is_intermediate_system_file: false,

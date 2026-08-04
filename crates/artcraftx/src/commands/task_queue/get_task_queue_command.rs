@@ -1,22 +1,15 @@
 use crate::commands::response::shorthand::ResponseOrErrorMessage;
 use crate::commands::response::success_response_wrapper::SerializeMarker;
-use crate::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
-use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::provider_priority::{Provider, ProviderPriorityStore};
 use crate::state::task_database::TaskDatabase;
-use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
-use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use chrono::{DateTime, Utc};
 use enums::common::generation_provider::GenerationProvider;
 use enums::tauri::tasks::task_model_type::TaskModelType;
 use enums::tauri::tasks::task_status::TaskStatus;
 use enums::tauri::tasks::task_type::TaskType;
 use errors::AnyhowResult;
-use log::{debug, error, info, warn};
-use serde_derive::{Deserialize, Serialize};
+use log::{debug, error, warn};
+use serde_derive::Serialize;
 use sqlite_database::queries::list_tasks_for_frontend::list_tasks_for_frontend;
-use artcraft_client::endpoints::media_files::delete_media_file::delete_media_file;
 use tauri::{AppHandle, State};
 use enums::tauri::tasks::task_failure_type::TaskFailureType;
 use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
@@ -82,8 +75,7 @@ impl SerializeMarker for GetTaskQueueCommandResponse {}
 
 #[tauri::command]
 pub async fn get_task_queue_command(
-  app: AppHandle,
-  app_env_configs: State<'_, AppEnvConfigs>,
+  _app: AppHandle,
   task_database: State<'_, TaskDatabase>,
 ) -> ResponseOrErrorMessage<GetTaskQueueCommandResponse> {
 

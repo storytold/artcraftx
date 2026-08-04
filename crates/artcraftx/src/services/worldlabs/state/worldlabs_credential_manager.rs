@@ -3,9 +3,7 @@ use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::worldlabs::state::worldlabs_credential_holder::WorldlabsCredentialHolder;
 use crate::services::worldlabs::state::worldlabs_serializable_state::{WorldlabsSerializableState, SERIALIZABLE_WORLDLABS_STATE_VERSION};
 use cookie_store::cookie_store::CookieStore;
-use errors::AnyhowResult;
-use log::{info, warn};
-use std::fs::read_to_string;
+use log::warn;
 use std::sync::{Arc, RwLock};
 use worldlabs_consumer_client::credentials::world_labs_bearer_token::WorldLabsBearerToken;
 use worldlabs_consumer_client::credentials::world_labs_cookies::WorldLabsCookies;
@@ -29,7 +27,7 @@ impl WorldlabsCredentialManager {
   }
 
   pub fn initialize_from_disk_infallible(app_data_root: &AppDataRoot) -> Self {
-    let mut credential_data;
+    let credential_data;
 
     let result = WorldlabsSerializableState::read_from_disk(app_data_root);
     match result {

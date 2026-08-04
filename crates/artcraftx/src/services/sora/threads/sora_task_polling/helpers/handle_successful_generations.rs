@@ -1,18 +1,13 @@
+use artcraft_client::utils::api_host::ApiHost;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
-use crate::events::generation_events::generation_failed_event::GenerationFailedEvent;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use crate::state::task_database::TaskDatabase;
-use crate::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
-use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
-use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::sora::threads::sora_task_polling::helpers::download_extension::DownloadExtension;
 use crate::services::sora::threads::sora_task_polling::helpers::generation_type::GenerationType;
 use crate::services::sora::threads::sora_task_polling::helpers::upload_generation_to_backend::{upload_generation_to_backend, UploadGenerationToBackendArgs};
-use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
 use enums::common::generation_provider::GenerationProvider;
@@ -21,28 +16,18 @@ use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
 use uuid_utils::uuid::generate_random_uuid;
 use log::{error, info, warn};
-use once_cell::sync::Lazy;
-use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
-use openai_sora_client::recipes::list_classic_sora_tasks_with_session_auto_renew::list_classic_sora_tasks_with_session_auto_renew;
 use openai_sora_client::requests::common::task_id::TaskId;
-use openai_sora_client::requests::list_classic_tasks::list_classic_tasks::{PartialGeneration, PartialTaskResponse};
-use reqwest::Url;
-use sqlite_database::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, TaskList};
 use sqlite_database::queries::task::Task;
 use sqlite_database::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
-use sqlite_database::queries::update_task_status::{update_task_status, UpdateTaskArgs};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
-use artcraft_client::endpoints::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
-use artcraft_client::endpoints::media_files::upload_video_media_file_from_file::{upload_video_media_file_from_file, UploadVideoFromFileArgs};
 use artcraft_client::endpoints::prompts::create_prompt::create_prompt;
 use tauri::AppHandle;
-use tempdir::TempDir;
-use url_utils::download_extension::extract_download_extension_from_url::{extract_download_extension_from_url, extract_download_extension_from_url_str};
+use url_utils::download_extension::extract_download_extension_from_url::extract_download_extension_from_url_str;
 
 pub struct SuccessfulGeneration {
   pub prompt: Option<String>,
@@ -58,7 +43,6 @@ pub struct GenerationItem {
 pub async fn handle_classic_successful_generations(
   app_handle: &AppHandle,
   app_data_root: &AppDataRoot,
-  app_env_configs: &AppEnvConfigs,
   task_database: &TaskDatabase,
   storyteller_creds: &StorytellerCredentialSet,
   succeeded_tasks_by_id: &HashMap<TaskId, SuccessfulGeneration>,
@@ -98,7 +82,7 @@ pub async fn handle_classic_successful_generations(
     };
 
     let prompt_response = create_prompt(
-      &app_env_configs.storyteller_host,
+      &ApiHost::Storyteller,
       Some(&storyteller_creds),
       prompt_request
     ).await?;
@@ -114,7 +98,7 @@ pub async fn handle_classic_successful_generations(
       info!("Uploading to backend...");
 
       let media_token = upload_generation_to_backend(UploadGenerationToBackendArgs {
-        storyteller_api_host: &app_env_configs.storyteller_host,
+        storyteller_api_host: &ApiHost::Storyteller,
         storyteller_creds: &storyteller_creds,
         upload_path: download_path,
         maybe_prompt_token: Some(&prompt_response.prompt_token),
@@ -143,7 +127,7 @@ pub async fn handle_classic_successful_generations(
         info!("Looking up file to grab CDN and thumbnail URLs: {:?} ...", media_file_token);
 
         let lookup_result = get_media_file(
-          &app_env_configs.storyteller_host,
+          &ApiHost::Storyteller,
           media_file_token,
         ).await;
         match lookup_result {

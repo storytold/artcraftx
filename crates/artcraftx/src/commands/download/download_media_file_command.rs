@@ -1,18 +1,12 @@
-use crate::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
+use artcraft_client::utils::api_host::ApiHost;
 use crate::error::artcraftx_error::ArtcraftXError;
 use crate::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
-use crate::commands::response::shorthand::{Response, ResponseOrErrorType};
+use crate::commands::response::shorthand::ResponseOrErrorType;
 use crate::commands::response::success_response_wrapper::SerializeMarker;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
-use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::utils::download_url_to_temp_dir::download_url_to_temp_dir;
 use crate::utils::download_url_to_user_download_dir::download_url_to_user_download_dir;
-use anyhow::anyhow;
 use log::{error, info};
 use serde_derive::{Deserialize, Serialize};
-use std::path::PathBuf;
-use std::str::FromStr;
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
 use tauri::{AppHandle, State};
 use tokens::tokens::media_files::MediaFileToken;
@@ -44,7 +38,6 @@ pub async fn download_media_file_command(
   app: AppHandle,
   app_prefs: State<'_, AppPreferencesManager>,
   app_data_root: State<'_, AppDataRoot>,
-  app_env_configs: State<'_, AppEnvConfigs>,
 ) -> ResponseOrErrorType<DownloadMediaFileSuccessResponse, DownloadMediaFileErrorType> {
 
   info!("download_media_file_command called");
@@ -56,7 +49,6 @@ pub async fn download_media_file_command(
     &app,
     &app_prefs,
     &app_data_root,
-    &app_env_configs,
   ).await;
 
   if let Err(err) = result {
@@ -76,17 +68,16 @@ pub async fn download_media_file_command(
 
 pub async fn handle_request(
   request: DownloadMediaFileRequest,
-  app: &AppHandle,
+  _app: &AppHandle,
   app_prefs: &AppPreferencesManager,
-  app_data_root: &AppDataRoot,
-  app_env_configs: &AppEnvConfigs
+  app_data_root: &AppDataRoot
 ) -> Result<(), ArtcraftXError> {
 
   let app_prefs = app_prefs.get_clone()?;
 
   // TODO: Api should return the extension and suggested filename so we can better construct something.
   let media_file = get_media_file(
-    &app_env_configs.storyteller_host,
+    &ApiHost::Storyteller,
     &request.media_token,
   ).await?;
 

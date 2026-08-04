@@ -1,12 +1,10 @@
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::canvas_background_removal_complete_event::CanvasBackgroundRemovalCompleteEvent;
-use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use artcraft_client::api_defs::jobs::list_session_jobs::ListSessionJobsItem;
 use enums::tauri::tasks::task_type::TaskType;
 use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use errors::AnyhowResult;
 use log::error;
-use sqlite_database::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs};
 use sqlite_database::queries::task::Task;
 use tokens::tokens::media_files::MediaFileToken;
 

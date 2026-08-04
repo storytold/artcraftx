@@ -1,4 +1,4 @@
-use crate::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
+use crate::commands::utils::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
 use grok_consumer_client::requests::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
 
 pub fn aspect_ratio_to_grok_image(aspect_ratio: CommonAspectRatio) -> ClientMessageAspectRatio {

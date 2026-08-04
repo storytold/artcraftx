@@ -1,34 +1,16 @@
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::credits_balance_changed_event::CreditsBalanceChangedEvent;
-use crate::events::functional_events::refresh_account_state_event::RefreshAccountStateEvent;
 use crate::events::functional_events::subscription_plan_changed_event::SubscriptionPlanChangedEvent;
-use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
-use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
-use crate::events::sendable_event_trait::SendableEvent;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::utils::window::get_webview_window_hostname::get_webview_window_hostname;
-use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
-use crate::services::midjourney::state::midjourney_user_info::MidjourneyUserInfo;
-use crate::services::midjourney::windows::extract_midjourney_webview_cookies::extract_midjourney_webview_cookies;
-use crate::services::sora::events::sora_login_success_event::SoraLoginSuccessEvent;
-use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
-use crate::services::sora::windows::sora_login_window::extract_sora_webview_cookies::extract_sora_webview_cookies;
 use crate::services::storyteller::windows::open_storyteller_billing_window::BILLING_WINDOW_NAME;
 use anyhow::anyhow;
-use cookie_store::cookie_store::CookieStore;
-use enums::common::generation_provider::GenerationProvider;
 use errors::AnyhowResult;
 use log::{error, info};
-use midjourney_client::client::midjourney_hostname::MidjourneyHostname;
-use midjourney_client::credentials::cookie_store_has_auth_cookies::cookie_store_has_auth_cookies;
-use midjourney_client::recipes::get_user_info::{get_user_info, GetUserInfoRequest};
-use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
-use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
 use tauri::{AppHandle, Manager, WebviewWindow};
 
 pub async fn storyteller_billing_window_thread(
   app: AppHandle,
-  app_data_root: AppDataRoot,
+  _app_data_root: AppDataRoot,
 ) {
   loop {
     let billing_webview_window = match app.get_webview_window(BILLING_WINDOW_NAME) {
@@ -77,7 +59,7 @@ pub async fn storyteller_billing_window_thread(
 
 /// Returns true if we can exit.
 async fn check_billing_window(
-  app_handle: &AppHandle,
+  _app_handle: &AppHandle,
   webview_window: &WebviewWindow,
 ) -> AnyhowResult<bool> {
 

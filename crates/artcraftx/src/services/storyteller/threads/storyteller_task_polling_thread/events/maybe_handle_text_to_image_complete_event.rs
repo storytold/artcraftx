@@ -1,13 +1,12 @@
+use artcraft_client::utils::api_host::ApiHost;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::text_to_image_generation_complete_event::{GeneratedImage, TextToImageGenerationCompleteEvent};
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use anyhow::anyhow;
 use artcraft_client::api_defs::jobs::list_session_jobs::{ListSessionJobsItem, ListSessionResultDetailsResponse};
 use enums::tauri::tasks::task_type::TaskType;
 use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
 use errors::AnyhowResult;
 use log::{error, warn};
-use sqlite_database::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs};
 use sqlite_database::queries::task::Task;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::endpoints::media_files::list_batch_generated_redux_media_files::list_batch_generated_redux_media_files;
@@ -17,7 +16,6 @@ use tokens::tokens::media_files::MediaFileToken;
 
 pub async fn maybe_handle_text_to_image_complete_event(
   app: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   maybe_creds: Option<&StorytellerCredentialSet>,
   task: &Task,
   job: &ListSessionJobsItem,
@@ -45,7 +43,6 @@ pub async fn maybe_handle_text_to_image_complete_event(
     Some(batch_token) => {
       handle_batch(
         app,
-        app_env_configs,
         maybe_creds,
         task,
         job,
@@ -71,9 +68,9 @@ pub async fn maybe_handle_text_to_image_complete_event(
 }
 
 async fn handle_single(
-  app: &AppHandle,
+  _app: &AppHandle,
   task: &Task,
-  job: &ListSessionJobsItem,
+  _job: &ListSessionJobsItem,
   job_result: &ListSessionResultDetailsResponse,
 ) -> AnyhowResult<TextToImageGenerationCompleteEvent> {
   Ok(TextToImageGenerationCompleteEvent {
@@ -88,17 +85,16 @@ async fn handle_single(
 }
 
 async fn handle_batch(
-  app: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
+  _app: &AppHandle,
   maybe_creds: Option<&StorytellerCredentialSet>,
   task: &Task,
-  job: &ListSessionJobsItem,
-  job_result: &ListSessionResultDetailsResponse,
+  _job: &ListSessionJobsItem,
+  _job_result: &ListSessionResultDetailsResponse,
   batch_token: &BatchGenerationToken,
 ) -> AnyhowResult<TextToImageGenerationCompleteEvent> {
 
   let result = list_batch_generated_redux_media_files(
-    &app_env_configs.storyteller_host,
+    &ApiHost::Storyteller,
     maybe_creds,
     batch_token,
   ).await?;

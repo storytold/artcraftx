@@ -1,4 +1,4 @@
-use crate::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
+use crate::commands::utils::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
 use artcraft_client::api_defs::generate::image::multi_function::gpt_image_1p5_multi_function_image_gen::GptImage1p5MultiFunctionImageGenSize;
 
 pub fn aspect_ratio_to_artcraft_gpt_image_1p5(aspect_ratio: CommonAspectRatio) -> GptImage1p5MultiFunctionImageGenSize {

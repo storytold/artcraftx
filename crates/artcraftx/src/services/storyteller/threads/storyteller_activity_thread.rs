@@ -1,4 +1,4 @@
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
+use artcraft_client::utils::api_host::ApiHost;
 use crate::state::artcraft_platform_info::ArtcraftPlatformInfo;
 use crate::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
@@ -9,7 +9,6 @@ use artcraft_client::error::api_error::ApiError;
 use artcraft_client::error::storyteller_error::StorytellerError;
 use errors::AnyhowResult;
 use log::{debug, error, info};
-use sqlite_database::queries::list_tasks_by_provider_and_tokens::{list_tasks_by_provider_and_tokens, ListTasksArgs};
 use std::time::Instant;
 use tokens::tokens::app_session::AppSessionToken;
 
@@ -18,7 +17,6 @@ const CLIENT_NAME : &str = "artcraft";
 const ERROR_SLEEP_MILLIS : u64 = 1_000 * 60 * 3; // 3 minutes;
 
 pub async fn storyteller_activity_thread(
-  app_env_configs: AppEnvConfigs,
   artcraft_platform_info: ArtcraftPlatformInfo,
   artcraft_usage_tracker: ArtcraftUsageTracker,
   storyteller_creds_manager: StorytellerCredentialManager,
@@ -30,7 +28,6 @@ pub async fn storyteller_activity_thread(
 
   loop {
     let res = polling_loop(
-      &app_env_configs,
       &artcraft_usage_tracker,
       &storyteller_creds_manager,
       startup,
@@ -46,7 +43,6 @@ pub async fn storyteller_activity_thread(
 }
 
 async fn polling_loop(
-  app_env_configs: &AppEnvConfigs,
   artcraft_usage_tracker: &ArtcraftUsageTracker,
   storyteller_creds_manager: &StorytellerCredentialManager,
   startup: Instant,
@@ -102,7 +98,7 @@ async fn polling_loop(
     debug!("Logging active user with storyteller.");
 
     let result = log_active_user_v2(
-      &app_env_configs.storyteller_host,
+      &ApiHost::Storyteller,
       Some(&creds),
       request,
     ).await;

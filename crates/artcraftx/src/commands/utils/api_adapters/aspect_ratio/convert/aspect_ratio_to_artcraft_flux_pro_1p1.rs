@@ -1,4 +1,4 @@
-use crate::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
+use crate::commands::utils::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
 use artcraft_client::api_defs::generate::image::text::generate_flux_pro_11_text_to_image::GenerateFluxPro11TextToImageAspectRatio;
 
 pub fn aspect_ratio_to_artcraft_flux_pro_1p1(aspect_ratio: CommonAspectRatio) -> GenerateFluxPro11TextToImageAspectRatio {

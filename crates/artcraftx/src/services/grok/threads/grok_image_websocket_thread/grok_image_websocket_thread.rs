@@ -1,12 +1,11 @@
+use artcraft_client::utils::api_host::ApiHost;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::text_to_image_generation_complete_event::{GeneratedImage, TextToImageGenerationCompleteEvent};
 use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::task_database::TaskDatabase;
 use crate::utils::download_url_to_temp_dir::download_url_to_temp_dir;
-use crate::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::state::grok_image_prompt_queue::{GrokImagePromptQueue, PromptItem};
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
@@ -20,32 +19,25 @@ use errors::AnyhowResult;
 use grok_consumer_client::recipes::prompt_websocket_image_with_retry::{prompt_websocket_image_with_retry, PromptWebsocketImageWithRetryArgs};
 use grok_consumer_client::requests::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
 use grok_consumer_client::requests::image_websocket::grok_websocket::GrokWebsocket;
-use grok_consumer_client::requests::image_websocket::grok_wrapped_websocket::GrokWrappedWebsocket;
 use grok_consumer_client::requests::image_websocket::listen_for_websocket_images::{listen_for_websocket_images, ImageResults, ListenForWebsocketImagesArgs};
-use grok_consumer_client::requests::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
-use grok_consumer_client::requests::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
 use uuid_utils::uuid::generate_random_uuid;
 use log::{error, info, warn};
 use sqlite_database::queries::get_task_by_provider_and_provider_job_id::{get_task_by_provider_and_provider_job_id, GetTaskByProviderAndProviderJobIdArgs};
-use sqlite_database::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs};
 use sqlite_database::queries::task::Task;
 use sqlite_database::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
-use sqlite_database::queries::update_successful_task_status_with_metadata_by_provider::{update_successful_task_status_with_metadata_by_provider, UpdateSuccessfulTaskByProviderArgs};
 use std::time::Duration;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
 use artcraft_client::endpoints::media_files::list_batch_generated_redux_media_files::list_batch_generated_redux_media_files;
-use artcraft_client::endpoints::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs, UploadImageMediaFileSuccessResponse};
+use artcraft_client::endpoints::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
 use artcraft_client::endpoints::prompts::create_prompt::create_prompt;
 use artcraft_client::error::api_error::ApiError;
 use artcraft_client::error::storyteller_error::StorytellerError;
 use tauri::AppHandle;
 use tokens::tokens::batch_generations::BatchGenerationToken;
-use tokens::tokens::sqlite::tasks::TaskId;
 
 pub async fn grok_image_websocket_thread(
   app_handle: AppHandle,
-  app_env_configs: AppEnvConfigs,
   app_data_root: AppDataRoot,
   task_database: TaskDatabase,
   creds: GrokCredentialManager,
@@ -55,7 +47,6 @@ pub async fn grok_image_websocket_thread(
   loop {
     let res = inner_loop(
       &app_handle,
-      &app_env_configs,
       &app_data_root,
       &task_database,
       &creds,
@@ -72,7 +63,6 @@ pub async fn grok_image_websocket_thread(
 
 async fn inner_loop(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   grok_creds: &GrokCredentialManager,
@@ -144,7 +134,6 @@ async fn inner_loop(
 
       upload_images_to_storyteller(
         &app_handle,
-        &app_env_configs,
         &app_data_root,
         &task_database,
         &storyteller_creds_manager,
@@ -158,7 +147,6 @@ async fn inner_loop(
 
 async fn upload_images_to_storyteller(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -192,7 +180,7 @@ async fn upload_images_to_storyteller(
     maybe_duration_seconds: None,    };
 
     let prompt_response = create_prompt(
-      &app_env_configs.storyteller_host,
+      &ApiHost::Storyteller,
       Some(&storyteller_creds),
       request
     ).await?;
@@ -213,7 +201,7 @@ async fn upload_images_to_storyteller(
         info!("Uploading image {} of {} ...", i, images.images.len());
 
         let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
-          api_host: &app_env_configs.storyteller_host,
+          api_host: &ApiHost::Storyteller,
           maybe_creds: Some(&storyteller_creds),
           path: file.path(),
           is_intermediate_system_file: false,
@@ -271,7 +259,7 @@ async fn upload_images_to_storyteller(
       info!("Looking up file to grab CDN and thumbnail URLs: {:?} ...", media_file_token);
 
       let lookup_result = get_media_file(
-        &app_env_configs.storyteller_host,
+        &ApiHost::Storyteller,
         media_file_token,
       ).await;
       match lookup_result {
@@ -302,7 +290,6 @@ async fn upload_images_to_storyteller(
 
     send_frontend_ui_update(
       app_handle,
-      app_env_configs,
       Some(&storyteller_creds),
       &task,
       &batch_token,
@@ -314,14 +301,13 @@ async fn upload_images_to_storyteller(
 
 async fn send_frontend_ui_update(
   app: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   maybe_creds: Option<&StorytellerCredentialSet>,
   task: &Task,
   batch_token: &BatchGenerationToken,
 ) -> AnyhowResult<()> {
 
   let result = list_batch_generated_redux_media_files(
-    &app_env_configs.storyteller_host,
+    &ApiHost::Storyteller,
     maybe_creds,
     batch_token,
   ).await?;

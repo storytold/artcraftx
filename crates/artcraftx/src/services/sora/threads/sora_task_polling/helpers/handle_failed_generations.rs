@@ -1,20 +1,15 @@
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::events::generation_events::generation_failed_event::GenerationFailedEvent;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
-use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::task_database::TaskDatabase;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
-use crate::services::sora::threads::sora_task_polling::helpers::handle_successful_generations::GenerationItem;
 use enums::tauri::tasks::task_status;
 use errors::AnyhowResult;
 use log::info;
 use openai_sora_client::requests::common::task_id::TaskId;
-use openai_sora_client::requests::list_classic_tasks::list_classic_tasks::PartialTaskResponse;
 use sqlite_database::queries::task::Task;
 use sqlite_database::queries::update_task_status::{update_task_status, UpdateTaskArgs};
 use std::collections::HashMap;
-use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use tauri::AppHandle;
 
 pub struct FailedGeneration {

@@ -265,7 +265,7 @@ impl From<ArtcraftRouterError> for GenerateError {
       // direct World Labs provider isn't used here.
       ArtcraftRouterError::Provider(ProviderError::WorldLabs(_)) => Self::ArtcraftRouterNotYetSupportedProvider("world_labs"),
       ArtcraftRouterError::UnsupportedModel(model) => Self::NotYetImplemented(format!("Unsupported model: {}", model)),
-      ArtcraftRouterError::UnsupportedProviderAndModelForNewApi(message) => Self::ArtcraftRouterNotYetSupportedProvider("unsupported model for new router API"),
+      ArtcraftRouterError::UnsupportedProviderAndModelForNewApi(_message) => Self::ArtcraftRouterNotYetSupportedProvider("unsupported model for new router API"),
     }
   }
 }

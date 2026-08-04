@@ -1,6 +1,6 @@
 use crate::state::artcraft_usage_tracker::artcraft_usage_tracker_data::ArtcraftUsageTrackerData;
-use std::sync::{Arc, LockResult, RwLock};
-use log::{error, warn};
+use std::sync::{Arc, RwLock};
+use log::error;
 use crate::error::artcraftx_error::ArtcraftXError;
 use crate::state::artcraft_usage_tracker::artcraft_usage_type::{ArtcraftUsagePage, ArtcraftUsageType};
 

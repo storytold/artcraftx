@@ -9,14 +9,12 @@ use std::time::{Duration, Instant};
 
 use log::{debug, warn};
 use once_cell::sync::Lazy;
-use tauri::State;
 
 use artcraft_client::endpoints::omni_gen::models::video::omni_gen_list_video_models::{omni_gen_list_video_models, OmniGenListVideoModelsArgs, OmniGenVideoModelsResponse};
 use artcraft_client::utils::api_host::ApiHost;
 
 use crate::commands::generate::models::video::response_types::ListVideoModelsResponse;
 use crate::commands::response::shorthand::ResponseOrErrorMessage;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 
 const MAX_ATTEMPTS: u32 = 3;
 const RETRY_BACKOFF: Duration = Duration::from_millis(250);
@@ -32,14 +30,13 @@ static CACHE: Lazy<RwLock<Option<CacheEntry>>> = Lazy::new(|| RwLock::new(None))
 
 #[tauri::command]
 pub async fn list_video_models_command(
-  app_env_configs: State<'_, AppEnvConfigs>,
 ) -> ResponseOrErrorMessage<ListVideoModelsResponse> {
   if let Some(cached) = cached_response() {
     debug!("list_video_models_command: serving cached response");
     return Ok(cached.into());
   }
 
-  match fetch_with_retry(&app_env_configs.storyteller_host).await {
+  match fetch_with_retry(&ApiHost::Storyteller).await {
     Ok(api_response) => {
       let response: ListVideoModelsResponse = api_response.into();
       store_response(response.clone());

@@ -2,7 +2,6 @@ use crate::error::artcraftx_error::ArtcraftXError;
 use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use anyhow::anyhow;
-use errors::AnyhowResult;
 use log::{error, info};
 use std::fs::OpenOptions;
 use std::io::Write;

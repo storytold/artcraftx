@@ -1,4 +1,5 @@
 use crate::services::storyteller::state::legacy_credential_paths::StorytellerLegacyCredentialPaths;
+use crate::credentials::credential_service_type::CredentialServiceType;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::storyteller::state::read_storyteller_credentials_from_disk::read_storyteller_credentials_from_disk;
 use crate::services::storyteller::state::storyteller_credential_holder::StorytellerCredentialHolder;
@@ -51,7 +52,41 @@ impl StorytellerCredentialManager {
   }
 
   pub fn get_credentials(&self) -> AnyhowResult<Option<StorytellerCredentialSet>> {
-    self.holder.get_credentials()
+    if let Some(creds) = self.holder.get_credentials()? {
+      return Ok(Some(creds));
+    }
+
+    // Fall back to the stored `artcraft` account credential (the new
+    // credential system) so background polling works without a webview
+    // login. Cached in the holder after the first successful load.
+    match self.try_load_from_credentials_dir() {
+      Some(creds) => {
+        if let Err(err) = self.holder.set_credentials(&creds) {
+          warn!("Could not cache credentials from credentials dir: {:?}", err);
+        }
+        Ok(Some(creds))
+      }
+      None => Ok(None),
+    }
+  }
+
+  /// Load session cookies from the first `artcraft` (production) credential
+  /// in the app's credentials directory, if any.
+  fn try_load_from_credentials_dir(&self) -> Option<StorytellerCredentialSet> {
+    let credentials = self.app_data_root
+        .credentials_dir()
+        .load_credentials()
+        .ok()?;
+
+    let credential = credentials.into_iter()
+        .find(|c| c.service == CredentialServiceType::Artcraft)?;
+
+    let cookie = credential.cookies()?;
+
+    StorytellerCredentialSet::parse_multi_cookie_header(&cookie.cookie_header)
+        .ok()
+        .flatten()
+        .filter(|creds| !creds.is_empty())
   }
 
   pub fn get_credentials_required(&self) -> AnyhowResult<StorytellerCredentialSet> {

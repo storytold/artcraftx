@@ -1,59 +1,39 @@
+use artcraft_client::utils::api_host::ApiHost;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use crate::state::task_database::TaskDatabase;
 use crate::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::util::get_or_upgrade_grok_full_credentials::get_or_update_grok_full_credentials;
-use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
-use crate::services::midjourney::utils::download_midjourney_image::download_midjourney_image;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
-use cookie_store::cookie_store::CookieStore;
 use enums::common::generation_provider::GenerationProvider;
 use enums::common::generation::common_model_type::CommonModelType;
 use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
 use grok_consumer_client::credentials::grok_full_credentials::GrokFullCredentials;
-use grok_consumer_client::error::grok_error::GrokError;
-use grok_consumer_client::requests::download_video_file::download_video_file::{download_video_file, DownloadVideoFileArgs};
 use grok_consumer_client::requests::download_video_file::grok_download_video::GrokDownloadVideo;
-use grok_consumer_client::requests::media_posts::list_media_posts::grok_list_media_posts::{GrokMediaPostList, GrokMediaPostListRequest, VideoData};
+use grok_consumer_client::requests::media_posts::list_media_posts::grok_list_media_posts::{GrokMediaPostListRequest, VideoData};
 use uuid_utils::uuid::generate_random_uuid;
 use log::{error, info};
-use midjourney_client::client::midjourney_hostname::MidjourneyHostname;
-use midjourney_client::credentials::midjourney_user_id::MidjourneyUserId;
-use midjourney_client::endpoints::imagine::{imagine, ImagineItem, ImagineRequest, MidjourneyJobType};
-use midjourney_client::utils::get_image_url::get_image_url;
-use midjourney_client::utils::image_downloader_client::ImageDownloaderClient;
-use once_cell::sync::Lazy;
 use sqlite_database::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, TaskList};
 use sqlite_database::queries::task::Task;
 use sqlite_database::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
-use sqlite_database::queries::update_task_status::{update_task_status, UpdateTaskArgs};
-use std::collections::{HashMap, HashSet};
-use std::fs::File;
-use std::io::Write;
-use std::path::PathBuf;
+use std::collections::HashMap;
 use std::time::Duration;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
-use artcraft_client::endpoints::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
 use artcraft_client::endpoints::media_files::upload_video_media_file_from_file::{upload_video_media_file_from_file, UploadVideoFromFileArgs};
 use artcraft_client::endpoints::prompts::create_prompt::create_prompt;
 use artcraft_client::error::api_error::ApiError;
-use artcraft_client::error::storyteller_error::StorytellerError;
 use tauri::AppHandle;
-use tokens::tokens::batch_generations::BatchGenerationToken;
-use url::Url;
 
 pub async fn grok_video_task_polling_thread(
   app_handle: AppHandle,
-  app_env_configs: AppEnvConfigs,
   app_data_root: AppDataRoot,
   task_database: TaskDatabase,
   creds: GrokCredentialManager,
@@ -62,7 +42,6 @@ pub async fn grok_video_task_polling_thread(
   loop {
     let res = polling_loop(
       &app_handle,
-      &app_env_configs,
       &app_data_root,
       &task_database,
       &creds,
@@ -78,7 +57,6 @@ pub async fn grok_video_task_polling_thread(
 
 async fn polling_loop(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   grok_creds: &GrokCredentialManager,
@@ -117,7 +95,6 @@ async fn polling_loop(
 
     poll_grok_tasks(
       app_handle,
-      app_env_configs,
       app_data_root,
       task_database,
       &grok_full_creds,
@@ -131,7 +108,6 @@ async fn polling_loop(
 
 async fn poll_grok_tasks(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   grok_full_creds: &GrokFullCredentials,
@@ -186,7 +162,6 @@ async fn poll_grok_tasks(
 
     upload_grok_video(
       &app_handle,
-      &app_env_configs,
       app_data_root,
       task_database,
       &storyteller_creds,
@@ -206,7 +181,6 @@ async fn poll_grok_tasks(
 
 async fn upload_grok_video(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   storyteller_creds: &StorytellerCredentialSet,
@@ -230,7 +204,7 @@ async fn upload_grok_video(
     maybe_duration_seconds: None,  };
 
   let prompt_response = create_prompt(
-    &app_env_configs.storyteller_host,
+    &ApiHost::Storyteller,
     Some(storyteller_creds),
     request
   ).await?;
@@ -272,7 +246,7 @@ async fn upload_grok_video(
     // TODO: batch_generations.entity_token
 
     let result = upload_video_media_file_from_file(UploadVideoFromFileArgs {
-      api_host: &app_env_configs.storyteller_host,
+      api_host: &ApiHost::Storyteller,
       maybe_creds: Some(&storyteller_creds),
       path: &download_path,
       maybe_prompt_token: Some(&prompt_response.prompt_token),
@@ -311,7 +285,7 @@ async fn upload_grok_video(
     info!("Looking up file to grab CDN and thumbnail URLs: {:?} ...", media_file_token);
 
     let lookup_result = get_media_file(
-      &app_env_configs.storyteller_host,
+      &ApiHost::Storyteller,
       media_file_token,
     ).await;
     match lookup_result {

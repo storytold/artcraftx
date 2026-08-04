@@ -1,8 +1,6 @@
 use crate::events::basic_sendable_event_trait::{BasicEventStatus, BasicSendableEvent};
 use enums::tauri::ux::tauri_event_name::TauriEventName;
 use serde_derive::Serialize;
-use tokens::tokens::media_files::MediaFileToken;
-use url::Url;
 
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "snake_case")]

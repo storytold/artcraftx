@@ -1,9 +1,8 @@
+use artcraft_client::utils::api_host::ApiHost;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use crate::state::task_database::TaskDatabase;
 use crate::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
@@ -22,17 +21,11 @@ use log::{error, info};
 use midjourney_client::client::midjourney_hostname::MidjourneyHostname;
 use midjourney_client::credentials::midjourney_user_id::MidjourneyUserId;
 use midjourney_client::endpoints::imagine::{imagine, ImagineItem, ImagineRequest, MidjourneyJobType};
-use midjourney_client::utils::get_image_url::get_image_url;
 use midjourney_client::utils::image_downloader_client::ImageDownloaderClient;
-use once_cell::sync::Lazy;
 use sqlite_database::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, TaskList};
 use sqlite_database::queries::task::Task;
 use sqlite_database::queries::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
-use sqlite_database::queries::update_task_status::{update_task_status, UpdateTaskArgs};
-use std::collections::{HashMap, HashSet};
-use std::fs::File;
-use std::io::Write;
-use std::path::PathBuf;
+use std::collections::HashMap;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
 use artcraft_client::endpoints::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
@@ -41,13 +34,11 @@ use artcraft_client::error::api_error::ApiError;
 use artcraft_client::error::storyteller_error::StorytellerError;
 use tauri::AppHandle;
 use tokens::tokens::batch_generations::BatchGenerationToken;
-use url::Url;
 
 /// This thread is responsible for picking up tasks that fell through the cracks of
 /// the faster websocket thread.
 pub async fn midjourney_long_polling_thread(
   app_handle: AppHandle,
-  app_env_configs: AppEnvConfigs,
   app_data_root: AppDataRoot,
   task_database: TaskDatabase,
   creds: MidjourneyCredentialManager,
@@ -56,7 +47,6 @@ pub async fn midjourney_long_polling_thread(
   loop {
     let res = polling_loop(
       &app_handle,
-      &app_env_configs,
       &app_data_root,
       &task_database,
       &creds,
@@ -72,7 +62,6 @@ pub async fn midjourney_long_polling_thread(
 
 async fn polling_loop(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   creds: &MidjourneyCredentialManager,
@@ -126,7 +115,6 @@ async fn polling_loop(
 
     poll_midjourney_tasks(
       app_handle,
-      app_env_configs,
       app_data_root,
       task_database,
       &cookies,
@@ -141,7 +129,6 @@ async fn polling_loop(
 
 async fn poll_midjourney_tasks(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   mj_cookies: &CookieStore,
@@ -201,7 +188,6 @@ async fn poll_midjourney_tasks(
 
     upload_midjourney_batch(
       &app_handle,
-      &app_env_configs,
       app_data_root,
       task_database,
       &storyteller_creds,
@@ -221,7 +207,6 @@ async fn poll_midjourney_tasks(
 
 async fn upload_midjourney_batch(
   app_handle: &AppHandle,
-  app_env_configs: &AppEnvConfigs,
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   storyteller_creds: &StorytellerCredentialSet,
@@ -259,7 +244,7 @@ async fn upload_midjourney_batch(
     maybe_duration_seconds: None,  };
 
   let prompt_response = create_prompt(
-    &app_env_configs.storyteller_host,
+    &ApiHost::Storyteller,
     Some(storyteller_creds),
     request
   ).await?;
@@ -302,7 +287,7 @@ async fn upload_midjourney_batch(
       // TODO: batch_generations.entity_token
 
       let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
-        api_host: &app_env_configs.storyteller_host,
+        api_host: &ApiHost::Storyteller,
         maybe_creds: Some(&storyteller_creds),
         path: &download_path,
         is_intermediate_system_file: false,
@@ -346,7 +331,7 @@ async fn upload_midjourney_batch(
     info!("Looking up file to grab CDN and thumbnail URLs: {:?} ...", media_file_token);
 
     let lookup_result = get_media_file(
-      &app_env_configs.storyteller_host,
+      &ApiHost::Storyteller,
       media_file_token,
     ).await;
     match lookup_result {
@@ -388,7 +373,6 @@ async fn upload_midjourney_batch(
 
   let result = maybe_handle_text_to_image_complete_event(
     app_handle,
-    app_env_configs,
     Some(storyteller_creds),
     local_task,
     &batch_token,

@@ -1,27 +1,24 @@
+use artcraft_client::utils::api_host::ApiHost;
 use crate::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::commands::response::shorthand::ResponseOrError;
 use crate::commands::response::success_response_wrapper::SerializeMarker;
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
-use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_client::api_defs::generate::cost_estimate::estimate_video_cost::{
   EstimateVideoCostError, EstimateVideoCostErrorType, EstimateVideoCostRequest,
   EstimateVideoCostResponse,
 };
 use artcraft_client::endpoints::generate::cost_estimate::video::estimate_video_cost::estimate_video_cost;
-use log::{debug, info};
-use tauri::State;
+use log::debug;
 
 impl SerializeMarker for EstimateVideoCostResponse {}
 
 #[tauri::command]
 pub async fn estimate_video_cost_command(
   request: EstimateVideoCostRequest,
-  app_env_configs: State<'_, AppEnvConfigs>,
 ) -> ResponseOrError<EstimateVideoCostResponse, EstimateVideoCostError> {
   debug!("estimate_video_cost_command called: {:?}", request);
 
   let result = estimate_video_cost(
-    &app_env_configs.storyteller_host,
+    &ApiHost::Storyteller,
     None, // Credentials are not required for this endpoint.
     request,
   )

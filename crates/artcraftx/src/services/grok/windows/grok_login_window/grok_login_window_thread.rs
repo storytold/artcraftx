@@ -1,24 +1,14 @@
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::refresh_account_state_event::RefreshAccountStateEvent;
-use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
-use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::events::sendable_event_trait::SendableEvent;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::utils::window::get_webview_window_hostname::get_webview_window_hostname;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::windows::grok_login_window::grok_login_webview_extract_cookies::grok_login_webview_extract_cookies;
 use crate::services::grok::windows::grok_login_window::grok_login_window_open::GROK_LOGIN_WINDOW_NAME;
-use crate::services::sora::events::sora_login_success_event::SoraLoginSuccessEvent;
-use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
-use crate::services::sora::windows::sora_login_window::extract_sora_webview_cookies::extract_sora_webview_cookies;
-use anyhow::anyhow;
-use cookie_store::cookie_store::CookieStore;
 use enums::common::generation_provider::GenerationProvider;
 use errors::AnyhowResult;
 use log::{error, info};
-use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
-use openai_sora_client::recipes::maybe_upgrade_or_renew_session::maybe_upgrade_or_renew_session;
-use openai_sora_client::utils::has_session_cookie::{has_session_cookie, SessionCookiePresence};
 use tauri::{AppHandle, Manager, WebviewWindow};
 
 pub async fn grok_login_window_thread(
@@ -67,7 +57,7 @@ pub async fn grok_login_window_thread(
 async fn check_login_window(
   app_handle: &AppHandle,
   webview_window: &WebviewWindow,
-  app_data_root: &AppDataRoot,
+  _app_data_root: &AppDataRoot,
   grok_creds_manager: &GrokCredentialManager,
   visited_login: &mut bool,
 ) -> AnyhowResult<bool> {

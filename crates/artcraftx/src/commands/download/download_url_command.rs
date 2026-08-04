@@ -1,22 +1,14 @@
-use crate::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
 use crate::error::artcraftx_error::ArtcraftXError;
 use crate::commands::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
-use crate::commands::response::shorthand::{Response, ResponseOrErrorType};
+use crate::commands::response::shorthand::ResponseOrErrorType;
 use crate::commands::response::success_response_wrapper::SerializeMarker;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::warning_events::flash_file_download_error_event::{FlashFileDownloadErrorType, FlashFileDownloadErrorEvent};
-use crate::state::app_env_configs::app_env_configs::AppEnvConfigs;
-use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::utils::download_url_to_temp_dir::download_url_to_temp_dir;
 use crate::utils::download_url_to_user_download_dir::download_url_to_user_download_dir;
-use anyhow::anyhow;
 use log::{error, info};
 use serde_derive::{Deserialize, Serialize};
-use std::path::PathBuf;
-use std::str::FromStr;
-use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
 use tauri::{AppHandle, State};
 use url::Url;
 
@@ -46,7 +38,6 @@ pub async fn download_url_command(
   app: AppHandle,
   app_prefs: State<'_, AppPreferencesManager>,
   app_data_root: State<'_, AppDataRoot>,
-  app_env_configs: State<'_, AppEnvConfigs>,
 ) -> ResponseOrErrorType<DownloadUrlSuccessResponse, DownloadUrlErrorType> {
 
   info!("download_url_command called");
@@ -58,7 +49,6 @@ pub async fn download_url_command(
     &app,
     &app_prefs,
     &app_data_root,
-    &app_env_configs,
   ).await;
 
   if let Err(err) = result {
@@ -105,10 +95,9 @@ pub async fn download_url_command(
 
 pub async fn handle_request(
   request: DownloadUrlRequest,
-  app: &AppHandle,
+  _app: &AppHandle,
   app_prefs: &AppPreferencesManager,
-  app_data_root: &AppDataRoot,
-  app_env_configs: &AppEnvConfigs
+  app_data_root: &AppDataRoot
 ) -> Result<(), ArtcraftXError> {
 
   let app_prefs = app_prefs.get_clone()?;
