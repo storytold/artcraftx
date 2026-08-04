@@ -35,8 +35,6 @@ pub enum DebugLogType {
 }
 
 impl_enum_display_and_debug_using_to_str!(DebugLogType);
-impl_mysql_enum_coders!(DebugLogType);
-impl_mysql_from_row!(DebugLogType);
 
 impl DebugLogType {
   pub fn to_str(&self) -> &'static str {

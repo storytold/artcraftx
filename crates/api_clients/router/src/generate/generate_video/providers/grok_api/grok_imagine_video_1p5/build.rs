@@ -256,7 +256,7 @@ fn log_and_drop_reference_audio(refs: Option<AudioListRef>) {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::api::router_aspect_ratio::RouterAspectRatio;
   use crate::api::router_resolution::RouterResolution;

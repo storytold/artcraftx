@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use enums::common::generation::common_aspect_ratio::CommonAspectRatio;
 use enums::common::generation::common_video_model::CommonVideoModel;
 use enums::common::generation::common_resolution::CommonResolution;
-use enums::common::generation_provider::GenerationProvider;
+use sqlite_identifiers::generation_provider::GenerationProvider;
 
 pub const ESTIMATE_VIDEO_COST_PATH: &str = "/v1/generate/cost_estimate/video";
 

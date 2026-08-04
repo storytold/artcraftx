@@ -52,7 +52,7 @@ mod tests {
   use crate::api::image_ref::ImageRef;
   use crate::api::router_provider::RouterProvider;
   use crate::generate::generate_video::generate_video_request_builder::GenerateVideoRequestBuilder;
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   fn cost_cents(
     duration_seconds: Option<u16>,

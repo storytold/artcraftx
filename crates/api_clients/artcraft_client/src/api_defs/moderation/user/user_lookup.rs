@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 use tokens::tokens::users::UserToken;
 
 pub const MODERATOR_USER_LOOKUP_PATH: &str = "/v1/moderation/users/lookup";

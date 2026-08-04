@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 pub const UPLOAD_UPDATED_VIDEO_TIMELINE_PROJECT_URL_PATH: &str = "/v1/media_files/upload/project/video_timeline/update/{token}";
 

@@ -6,7 +6,7 @@ use log::{error, info};
 use serde_derive::{Deserialize, Serialize};
 use sqlite_database::queries::mark_task_as_dismissed::mark_task_as_dismissed;
 use tauri::{AppHandle, State};
-use tokens::tokens::sqlite::tasks::TaskId;
+use sqlite_identifiers::task_id::TaskId;
 
 #[derive(Deserialize)]
 pub struct MarkTaskAsDismissedRequest {

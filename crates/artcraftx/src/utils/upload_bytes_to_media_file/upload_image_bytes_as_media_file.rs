@@ -5,7 +5,7 @@ use artcraft_client::endpoints::media_files::upload_image_media_file_from_bytes:
   upload_image_media_file_from_bytes, ImageType, UploadImageBytesArgs,
 };
 use artcraft_client::utils::api_host::ApiHost;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 use crate::commands::generate::generate_error::GenerateError;
 

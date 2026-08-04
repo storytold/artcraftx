@@ -81,8 +81,6 @@ impl WeightsType {
 }
 
 impl_enum_display_and_debug_using_to_str!(WeightsType);
-impl_mysql_enum_coders!(WeightsType);
-impl_mysql_from_row!(WeightsType);
 
 #[cfg(test)]
 mod tests {

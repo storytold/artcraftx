@@ -55,8 +55,6 @@ pub enum PaymentEventType {
 }
 
 impl_enum_display_and_debug_using_to_str!(PaymentEventType);
-impl_mysql_enum_coders!(PaymentEventType);
-impl_mysql_from_row!(PaymentEventType);
 
 /// NB: Legacy API for older code.
 impl PaymentEventType {

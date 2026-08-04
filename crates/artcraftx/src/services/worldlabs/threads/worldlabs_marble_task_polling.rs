@@ -9,8 +9,8 @@ use crate::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
-use enums::common::generation_provider::GenerationProvider;
-use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
+use sqlite_identifiers::generation_provider::GenerationProvider;
+use sqlite_identifiers::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
 use uuid_utils::uuid::generate_random_uuid;
 use log::{error, info};

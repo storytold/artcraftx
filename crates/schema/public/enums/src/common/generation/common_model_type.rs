@@ -258,8 +258,6 @@ pub enum CommonModelType {
 }
 
 impl_enum_display_and_debug_using_to_str!(CommonModelType);
-impl_mysql_enum_coders!(CommonModelType);
-impl_mysql_from_row!(CommonModelType);
 
 // NB: We can derive `sqlx::Type` instead of using `impl_mysql_enum_coders`
 

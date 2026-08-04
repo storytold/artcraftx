@@ -31,7 +31,6 @@ pub enum SkipReason {
 
 // TODO(bt, 2023-02-08): This desperately needs Sqlite integration tests!
 impl_enum_display_and_debug_using_to_str!(SkipReason);
-impl_sqlite_enum_coders!(SkipReason);
 
 /// NB: Legacy API for older code.
 impl SkipReason {

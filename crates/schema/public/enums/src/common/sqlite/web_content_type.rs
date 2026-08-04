@@ -44,7 +44,6 @@ pub enum WebContentType {
 
 // TODO(bt, 2023-01-17): This desperately needs MySQL integration tests!
 impl_enum_display_and_debug_using_to_str!(WebContentType);
-impl_sqlite_enum_coders!(WebContentType);
 
 /// NB: Legacy API for older code.
 impl WebContentType {

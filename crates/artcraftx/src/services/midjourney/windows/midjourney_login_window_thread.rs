@@ -7,7 +7,7 @@ use crate::services::midjourney::state::midjourney_credential_manager::Midjourne
 use crate::services::midjourney::state::midjourney_user_info::MidjourneyUserInfo;
 use crate::services::midjourney::windows::extract_midjourney_webview_cookies::extract_midjourney_webview_cookies;
 use crate::services::midjourney::windows::open_midjourney_login_window::MIDJOURNEY_LOGIN_WINDOW_NAME;
-use enums::common::generation_provider::GenerationProvider;
+use sqlite_identifiers::generation_provider::GenerationProvider;
 use errors::AnyhowResult;
 use log::{error, info};
 use midjourney_client::client::midjourney_hostname::MidjourneyHostname;

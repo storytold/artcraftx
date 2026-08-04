@@ -4,7 +4,7 @@ use enums::common::generation::common_mesh_model::CommonMeshModel;
 use enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
 use enums::common::generation::common_mesh_quality::CommonMeshQuality;
 use enums::common::generation::common_polygon_type::CommonPolygonType;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 /// Shared request body for both the mesh cost estimate and mesh generation endpoints.
 #[derive(Clone, Serialize, Deserialize, Debug)]

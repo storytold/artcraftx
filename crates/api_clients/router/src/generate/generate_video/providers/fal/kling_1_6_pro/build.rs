@@ -389,7 +389,7 @@ mod tests {
     fn media_file_token_rejected_for_start_frame() {
       let mut b = base_builder();
       b.start_frame = Some(ImageRef::MediaFileToken(
-        tokens::tokens::media_files::MediaFileToken::new_from_str("mf_xxx"),
+        sqlite_identifiers::media_file_token::MediaFileToken::new_from_str("mf_xxx"),
       ));
       assert!(matches!(
         build_fal_kling_1_6_pro(b),

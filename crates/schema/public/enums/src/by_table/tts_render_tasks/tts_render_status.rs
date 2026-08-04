@@ -31,7 +31,6 @@ pub enum TtsRenderStatus {
 
 // TODO(bt, 2023-01-17): This desperately needs Sqlite integration tests!
 impl_enum_display_and_debug_using_to_str!(TtsRenderStatus);
-impl_sqlite_enum_coders!(TtsRenderStatus);
 
 /// NB: Legacy API for older code.
 impl TtsRenderStatus {

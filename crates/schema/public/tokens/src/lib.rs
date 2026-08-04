@@ -54,5 +54,4 @@ pub (crate) mod deterministic_rng;
 pub (crate) mod prefixes;
 
 pub mod tokens;
-pub mod traits;
 mod safe_entropy;

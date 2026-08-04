@@ -7,10 +7,7 @@ use crate::prefixes::TokenPrefix;
 
 /// The primary key for wallet_ledger_entries
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
-#[cfg_attr(feature = "database", derive(sqlx::Type))]
-#[cfg_attr(feature = "database", sqlx(transparent))]
 pub struct WalletLedgerEntryToken(pub String);
 
 impl_string_token!(WalletLedgerEntryToken);
-impl_mysql_token_from_row!(WalletLedgerEntryToken);
 impl_crockford_generator!(WalletLedgerEntryToken, 32usize, TokenPrefix::WalletLedgerEntry, CrockfordLower);

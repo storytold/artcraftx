@@ -1,7 +1,7 @@
 use serde_derive::{Deserialize, Serialize};
 
 use enums::common::generation::common_splat_model::CommonSplatModel;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 /// Shared request body for both the splat cost estimate and splat generation endpoints.
 #[derive(Clone, Serialize, Deserialize, Debug)]

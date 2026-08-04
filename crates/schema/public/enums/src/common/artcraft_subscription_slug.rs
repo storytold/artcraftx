@@ -17,8 +17,6 @@ pub enum ArtcraftSubscriptionSlug {
 }
 
 impl_enum_display_and_debug_using_to_str!(ArtcraftSubscriptionSlug);
-impl_mysql_enum_coders!(ArtcraftSubscriptionSlug);
-impl_mysql_from_row!(ArtcraftSubscriptionSlug);
 
 // NB: We can derive `sqlx::Type` instead of using `impl_mysql_enum_coders`
 

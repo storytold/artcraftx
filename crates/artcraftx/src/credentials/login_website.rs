@@ -1,5 +1,5 @@
 use crate::credentials::credential_service_type::CredentialServiceType;
-use enums::common::generation_provider::GenerationProvider;
+use sqlite_identifiers::generation_provider::GenerationProvider;
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 

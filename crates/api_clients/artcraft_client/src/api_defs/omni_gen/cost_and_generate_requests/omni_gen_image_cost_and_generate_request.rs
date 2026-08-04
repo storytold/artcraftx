@@ -4,7 +4,7 @@ use enums::common::generation::common_aspect_ratio::CommonAspectRatio;
 use enums::common::generation::common_image_model::CommonImageModel;
 use enums::common::generation::common_quality::CommonQuality;
 use enums::common::generation::common_resolution::CommonResolution;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 /// Shared request body for both the image cost estimate and image generation endpoints.
 #[derive(Clone, Serialize, Deserialize, Debug)]

@@ -27,7 +27,6 @@ pub enum ScrapingStatus {
 
 // TODO(bt, 2023-01-17): This desperately needs MySQL integration tests!
 impl_enum_display_and_debug_using_to_str!(ScrapingStatus);
-impl_sqlite_enum_coders!(ScrapingStatus);
 
 /// NB: Legacy API for older code.
 impl ScrapingStatus {

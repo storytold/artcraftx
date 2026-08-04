@@ -239,7 +239,7 @@ fn plan_pitch(
 
 #[cfg(test)]
 mod tests {
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::api::router_audio_model::RouterAudioModel;
   use crate::api::router_provider::RouterProvider;

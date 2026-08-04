@@ -227,7 +227,7 @@ mod tests {
     KinoviSeedance2p0MiniOutputResolution as KinoviOutputResolution,
   };
   use tokens::tokens::characters::CharacterToken;
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::api::audio_list_ref::AudioListRef;
   use crate::api::character_list_ref::CharacterListRef;

@@ -28,7 +28,6 @@ pub enum AuditLogEntityType {
 
 // TODO(bt, 2023-01-17): This desperately needs MySQL integration tests!
 impl_enum_display_and_debug_using_to_str!(AuditLogEntityType);
-impl_mysql_enum_coders!(AuditLogEntityType);
 
 /// NB: Legacy API for older code.
 impl AuditLogEntityType {

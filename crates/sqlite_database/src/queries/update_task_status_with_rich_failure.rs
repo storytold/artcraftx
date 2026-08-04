@@ -1,8 +1,8 @@
-use enums::tauri::tasks::task_failure_type::TaskFailureType;
+use sqlite_identifiers::task_failure_type::TaskFailureType;
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
-use enums::tauri::tasks::task_status::TaskStatus;
-use tokens::tokens::sqlite::tasks::TaskId;
+use sqlite_identifiers::task_status::TaskStatus;
+use sqlite_identifiers::task_id::TaskId;
 
 pub struct UpdateTaskWithRichFailureArgs<'a> {
   pub db: &'a TaskDbConnection,

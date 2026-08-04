@@ -6,7 +6,7 @@ use log::{info, warn};
 use reqwest::Client;
 use url::Url;
 
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 use crate::endpoints::media_files::get_media_file::{get_media_file, GetMediaFileSuccessResponse};
 use crate::error::api_error::ApiError;

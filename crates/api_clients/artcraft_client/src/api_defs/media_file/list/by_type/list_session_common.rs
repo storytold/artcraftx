@@ -7,8 +7,8 @@ use serde_derive::{Deserialize, Serialize};
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
-use tokens::tokens::media_files::MediaFileToken;
-use tokens::tokens::prompts::PromptToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::prompt_token::PromptToken;
 
 use crate::api_defs::common::responses::media_file_cover_image_details::MediaFileCoverImageDetails;
 use crate::api_defs::common::responses::media_links::MediaLinks;

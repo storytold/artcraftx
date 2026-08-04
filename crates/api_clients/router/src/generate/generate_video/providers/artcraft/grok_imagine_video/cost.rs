@@ -70,7 +70,7 @@ impl ArtcraftGrokImagineVideoCostState {
 
 #[cfg(test)]
 mod tests {
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::api::router_resolution::RouterResolution;
   use crate::api::router_video_model::RouterVideoModel;

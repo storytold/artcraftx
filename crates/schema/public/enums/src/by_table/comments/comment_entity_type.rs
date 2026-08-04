@@ -40,7 +40,6 @@ pub enum CommentEntityType {
 
 // TODO(bt, 2023-01-17): This desperately needs MySQL integration tests!
 impl_enum_display_and_debug_using_to_str!(CommentEntityType);
-impl_mysql_enum_coders!(CommentEntityType);
 
 /// NB: Legacy API for older code.
 impl CommentEntityType {

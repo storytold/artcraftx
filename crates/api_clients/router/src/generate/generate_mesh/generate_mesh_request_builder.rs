@@ -292,7 +292,7 @@ mod tests {
   }
 
   fn builder_with_token_image(provider: RouterProvider, model: RouterMeshModel) -> GenerateMeshRequestBuilder {
-    use tokens::tokens::media_files::MediaFileToken;
+    use sqlite_identifiers::media_file_token::MediaFileToken;
     GenerateMeshRequestBuilder {
       provider,
       model,

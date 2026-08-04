@@ -11,9 +11,9 @@ use crate::services::grok::util::get_or_upgrade_grok_full_credentials::get_or_up
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
-use enums::common::generation_provider::GenerationProvider;
+use sqlite_identifiers::generation_provider::GenerationProvider;
 use enums::common::generation::common_model_type::CommonModelType;
-use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
+use sqlite_identifiers::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
 use grok_consumer_client::credentials::grok_full_credentials::GrokFullCredentials;
 use grok_consumer_client::requests::download_video_file::grok_download_video::GrokDownloadVideo;

@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 pub const GENERATE_HUNYUAN_2_0_IMAGE_TO_3D_URL_PATH: &str = "/v1/generate/object/hunyuan_2.0_image_to_3d";
 

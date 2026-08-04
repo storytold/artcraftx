@@ -8,9 +8,9 @@ use enums::common::job_status_plus::JobStatusPlus;
 use enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use serde::Deserialize;
 use serde::Serialize;
-use tokens::tokens::batch_generations::BatchGenerationToken;
+use sqlite_identifiers::batch_generation_token::BatchGenerationToken;
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
-use tokens::tokens::prompts::PromptToken;
+use sqlite_identifiers::prompt_token::PromptToken;
 
 pub const LIST_SESSION_JOBS_URL_PATH: &str = "/v1/jobs/session";
 

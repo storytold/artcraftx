@@ -1,10 +1,9 @@
-use crate::providers::credentials::provider_credential_loading_cache::ProviderCredentialLoadingCache;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::task_database::TaskDatabase;
 use crate::threads::third_party_task_polling_thread::handlers::fal::poll_fal_tasks::poll_fal_tasks;
 use crate::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use enums::common::generation_provider::GenerationProvider;
+use sqlite_identifiers::generation_provider::GenerationProvider;
 use log::{error, info, warn};
 use sqlite_database::queries::list_non_artcraft_pending_tasks::{
   list_non_artcraft_pending_tasks, ListNonArtcraftPendingTasksArgs,
@@ -23,7 +22,6 @@ pub async fn third_party_task_polling_thread(
   app_data_root: AppDataRoot,
   task_database: TaskDatabase,
   storyteller_creds_manager: StorytellerCredentialManager,
-  credential_cache: ProviderCredentialLoadingCache,
 ) -> ! {
   let mut has_ever_seen_third_party_jobs = false;
 
@@ -33,7 +31,6 @@ pub async fn third_party_task_polling_thread(
       &app_data_root,
       &task_database,
       &storyteller_creds_manager,
-      &credential_cache,
       &mut has_ever_seen_third_party_jobs,
     ).await;
 
@@ -49,7 +46,6 @@ async fn poll_iteration(
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
-  credential_cache: &ProviderCredentialLoadingCache,
   has_ever_seen_third_party_jobs: &mut bool,
 ) -> Result<(), PollError> {
   let task_list = list_non_artcraft_pending_tasks(ListNonArtcraftPendingTasksArgs {
@@ -102,7 +98,6 @@ async fn poll_iteration(
     app_data_root,
     task_database,
     storyteller_creds_manager,
-    credential_cache,
     &fal_tasks,
   ).await;
 

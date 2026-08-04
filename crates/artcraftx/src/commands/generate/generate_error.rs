@@ -3,7 +3,7 @@ use anyhow::anyhow;
 use router::errors::artcraft_router_error::ArtcraftRouterError;
 use router::errors::provider_error::ProviderError;
 use base64::DecodeError;
-use enums::common::generation_provider::GenerationProvider;
+use sqlite_identifiers::generation_provider::GenerationProvider;
 use enums::common::generation::common_model_type::CommonModelType;
 use errors::AnyhowError;
 use grok_consumer_client::error::grok_error::GrokError;

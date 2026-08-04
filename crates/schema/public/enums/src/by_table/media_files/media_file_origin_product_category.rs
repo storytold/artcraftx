@@ -87,8 +87,6 @@ pub enum MediaFileOriginProductCategory {
 
 // TODO(bt, 2022-12-21): This desperately needs MySQL integration tests!
 impl_enum_display_and_debug_using_to_str!(MediaFileOriginProductCategory);
-impl_mysql_enum_coders!(MediaFileOriginProductCategory);
-impl_mysql_from_row!(MediaFileOriginProductCategory);
 
 /// NB: Legacy API for older code.
 impl MediaFileOriginProductCategory {

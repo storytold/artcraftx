@@ -42,8 +42,6 @@ pub enum MediaFileProjectType {
 }
 
 impl_enum_display_and_debug_using_to_str!(MediaFileProjectType);
-impl_mysql_enum_coders!(MediaFileProjectType);
-impl_mysql_from_row!(MediaFileProjectType);
 
 impl MediaFileProjectType {
   pub const fn to_str(&self) -> &'static str {

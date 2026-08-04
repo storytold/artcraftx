@@ -7,7 +7,7 @@
 
 use std::collections::BTreeSet;
 
-use crate::error::enum_error::EnumError;
+use crate::enum_error::EnumError;
 #[cfg(test)]
 use strum::EnumCount;
 #[cfg(test)]
@@ -28,11 +28,8 @@ pub enum GenerationProvider {
 }
 
 impl_enum_display_and_debug_using_to_str!(GenerationProvider);
-impl_mysql_enum_coders!(GenerationProvider);
-impl_mysql_from_row!(GenerationProvider);
 
 // For Tauri
-impl_sqlite_enum_coders!(GenerationProvider);
 
 // NB: We can derive `sqlx::Type` instead of using `impl_mysql_enum_coders`
 
@@ -76,8 +73,8 @@ impl GenerationProvider {
 
 #[cfg(test)]
 mod tests {
-  use crate::common::generation_provider::GenerationProvider;
-  use crate::error::enum_error::EnumError;
+  use crate::generation_provider::GenerationProvider;
+  use crate::enum_error::EnumError;
   use crate::test_helpers::assert_serialization;
 
   mod explicit_checks {

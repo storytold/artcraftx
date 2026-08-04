@@ -25,8 +25,6 @@ pub enum UploadedVideoDetectedModelFamily {
 }
 
 impl_enum_display_and_debug_using_to_str!(UploadedVideoDetectedModelFamily);
-impl_mysql_enum_coders!(UploadedVideoDetectedModelFamily);
-impl_mysql_from_row!(UploadedVideoDetectedModelFamily);
 
 impl UploadedVideoDetectedModelFamily {
   pub fn to_str(&self) -> &'static str {

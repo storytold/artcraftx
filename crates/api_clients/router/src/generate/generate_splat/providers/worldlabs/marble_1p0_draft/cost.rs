@@ -39,7 +39,7 @@ impl WorldLabsMarble1p0DraftModelCostState {
 
 #[cfg(test)]
 mod tests {
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::api::image_list_ref::ImageListRef;
   use crate::api::router_provider::RouterProvider;

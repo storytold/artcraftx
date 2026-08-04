@@ -44,6 +44,7 @@ members = [
 
   # Local task storage (SQLite, embedded migrations)
   "crates/sqlite_database",
+  "crates/sqlite_identifiers",
 
   # Schema (public): common strongly-typed tokens, ids, payloads, etc.
   "crates/schema/public/enums",
@@ -108,6 +109,7 @@ primitives = { path = "crates/lib/data/primitives" }
 router = { path = "crates/api_clients/router" }
 seedance2pro_client = { path = "crates/api_clients/seedance2pro_client" }
 sqlite_database = { path = "crates/sqlite_database" }
+sqlite_identifiers = { path = "crates/sqlite_identifiers" }
 test_data = { path = "crates/testing/test_data" }
 test_utils = { path = "crates/testing/test_utils" }
 tokens = { path = "crates/schema/public/tokens" }

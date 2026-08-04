@@ -17,8 +17,6 @@ use strum::EnumIter;
 
 
 #[derive(Clone, Copy, Eq, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(feature = "database", derive(sqlx::Type))]
-#[cfg_attr(feature = "database", sqlx(rename_all = "lowercase"))]
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
 #[serde(rename_all = "lowercase")]
 pub enum Visibility {
@@ -39,7 +37,6 @@ pub enum Visibility {
 
 
 impl_enum_display_and_debug_using_to_str!(Visibility);
-impl_mysql_from_row!(Visibility);
 
 // For reference, here's what the serde implementation might be if manually written.
 // This may be useful for designing composite types in the future:

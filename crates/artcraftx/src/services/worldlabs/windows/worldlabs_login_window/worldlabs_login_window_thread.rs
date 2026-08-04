@@ -7,7 +7,7 @@ use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCr
 use crate::services::worldlabs::windows::worldlabs_login_window::worldlabs_javascript::WORLDLABS_JAVASCRIPT_EXPORT_BEARER_TOKENS;
 use crate::services::worldlabs::windows::worldlabs_login_window::worldlabs_login_webview_extract_cookies::worldlabs_login_webview_extract_cookies;
 use crate::services::worldlabs::windows::worldlabs_login_window::worldlabs_login_window_open::WORLDLABS_LOGIN_WINDOW_NAME;
-use enums::common::generation_provider::GenerationProvider;
+use sqlite_identifiers::generation_provider::GenerationProvider;
 use errors::AnyhowResult;
 use log::{error, info};
 use tauri::{AppHandle, Manager, WebviewWindow};

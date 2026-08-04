@@ -28,6 +28,7 @@ enums.workspace = true
 errors.workspace = true
 uuid_utils.workspace = true
 mimetypes.workspace = true
+sqlite_identifiers.workspace = true
 tokens.workspace = true
 
 # External

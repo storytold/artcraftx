@@ -7,17 +7,17 @@ use crate::utils::constants::{APPLICATION_JSON, USER_AGENT};
 use crate::utils::filter_bad_response::filter_bad_response;
 use crate::utils::http_get_anonymous::http_get_anonymous;
 use chrono::{DateTime, Utc};
-use enums::common::generation_provider::GenerationProvider;
+use sqlite_identifiers::generation_provider::GenerationProvider;
 use uuid_utils::uuid::generate_random_uuid;
 use log::debug;
 use reqwest::multipart::{Form, Part};
 use reqwest::Client;
 use serde_derive::{Deserialize, Serialize};
 use std::path::Path;
-use tokens::tokens::batch_generations::BatchGenerationToken;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::batch_generation_token::BatchGenerationToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 use tokens::tokens::model_weights::ModelWeightToken;
-use tokens::tokens::prompts::PromptToken;
+use sqlite_identifiers::prompt_token::PromptToken;
 use uuid::uuid;
 
 pub struct LegacyUploadMediaFileFromFileArgs<'a, P: AsRef<Path>> {

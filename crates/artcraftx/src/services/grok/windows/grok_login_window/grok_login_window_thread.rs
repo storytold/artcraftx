@@ -6,7 +6,7 @@ use crate::utils::window::get_webview_window_hostname::get_webview_window_hostna
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::windows::grok_login_window::grok_login_webview_extract_cookies::grok_login_webview_extract_cookies;
 use crate::services::grok::windows::grok_login_window::grok_login_window_open::GROK_LOGIN_WINDOW_NAME;
-use enums::common::generation_provider::GenerationProvider;
+use sqlite_identifiers::generation_provider::GenerationProvider;
 use errors::AnyhowResult;
 use log::{error, info};
 use tauri::{AppHandle, Manager, WebviewWindow};

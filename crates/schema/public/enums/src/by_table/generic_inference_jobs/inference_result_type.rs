@@ -40,7 +40,6 @@ pub enum InferenceResultType {
 
 // TODO(bt, 2022-12-21): This desperately needs MySQL integration tests!
 impl_enum_display_and_debug_using_to_str!(InferenceResultType);
-impl_mysql_enum_coders!(InferenceResultType);
 
 /// NB: Legacy API for older code.
 impl InferenceResultType {

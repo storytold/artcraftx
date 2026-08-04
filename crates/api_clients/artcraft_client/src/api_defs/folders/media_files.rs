@@ -2,7 +2,7 @@ use serde_derive::{Deserialize, Serialize};
 
 use enums::by_table::media_files::media_file_class::MediaFileClass;
 use tokens::tokens::folders::FolderToken;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 // ── GET /v1/folders/media_files/{folder_token} ──
 //

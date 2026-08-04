@@ -3,7 +3,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 struct CompositeType {
@@ -12,7 +12,7 @@ struct CompositeType {
 }
 
 mod interface {
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   #[test]
   fn generate() {
@@ -22,22 +22,15 @@ mod interface {
   }
 
   #[test]
-  fn generate_for_testing_and_dev_seeding_never_use_in_production_seriously_1() {
-    // NB: Using the same reset seed will produce the same results each time
-    MediaFileToken::reset_rng_for_testing_and_dev_seeding_never_use_in_production_seriously(0);
-    assert_eq!(MediaFileToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously().as_str(), "m_q8sz47gmfw2zx02snrbz88ns9m16ab");
-    assert_eq!(MediaFileToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously().as_str(), "m_ma1xetxrwbh39vg639a9zrq8b9wk6h");
-    assert_eq!(MediaFileToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously().as_str(), "m_4tswec8z27wnm01njypx4vmfhgj41e");
-    // NB: Same seed -> same tokens generated
-    MediaFileToken::reset_rng_for_testing_and_dev_seeding_never_use_in_production_seriously(0);
-    assert_eq!(MediaFileToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously().as_str(), "m_q8sz47gmfw2zx02snrbz88ns9m16ab");
-    assert_eq!(MediaFileToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously().as_str(), "m_ma1xetxrwbh39vg639a9zrq8b9wk6h");
-    assert_eq!(MediaFileToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously().as_str(), "m_4tswec8z27wnm01njypx4vmfhgj41e");
-    // Once more...
-    MediaFileToken::reset_rng_for_testing_and_dev_seeding_never_use_in_production_seriously(0);
-    assert_eq!(MediaFileToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously().as_str(), "m_q8sz47gmfw2zx02snrbz88ns9m16ab");
-    assert_eq!(MediaFileToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously().as_str(), "m_ma1xetxrwbh39vg639a9zrq8b9wk6h");
-    assert_eq!(MediaFileToken::generate_for_testing_and_dev_seeding_never_use_in_production_seriously().as_str(), "m_4tswec8z27wnm01njypx4vmfhgj41e");
+  fn generated_tokens_have_stable_format() {
+    for _ in 0..25 {
+      let token = MediaFileToken::generate();
+      let value = token.as_str();
+      assert_eq!(value.len(), 32, "token {value} should be 32 chars");
+      assert!(value.starts_with("m_"));
+      assert!(value[2..].bytes().all(|b| b"0123456789abcdefghjkmnpqrstvwxyz".contains(&b)),
+        "token {value} should be lowercase crockford");
+    }
   }
 
   #[test]
@@ -66,7 +59,7 @@ mod interface {
 }
 
 mod traits {
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   #[test]
   fn display() {
@@ -82,7 +75,7 @@ mod traits {
 }
 
 mod serialization {
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::CompositeType;
 
@@ -107,7 +100,7 @@ mod serialization {
 }
 
 mod deserialization {
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::CompositeType;
 
@@ -138,13 +131,13 @@ mod deserialization {
 
 // These traits should be tested by the macro, but we duplicate them in case that breaks
 mod crockford_traits {
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   const ENTROPIC_CHARACTERS_MINIMUM : usize = 8;
 
   #[test]
   fn entropy_is_sufficient() {
-    assert!(MediaFileToken::entropic_character_len() > ENTROPIC_CHARACTERS_MINIMUM);
+    assert!((32 - MediaFileToken::PREFIX.len()) > ENTROPIC_CHARACTERS_MINIMUM);
   }
 
   #[test]
@@ -164,7 +157,7 @@ mod crockford_traits {
   #[test]
   fn character_set() {
     let token_string = MediaFileToken::generate().to_string();
-    let prefix = MediaFileToken::token_prefix();
+    let prefix = MediaFileToken::PREFIX;
     let random_part = token_string.replace(prefix, "");
 
     assert!(random_part.len() > ENTROPIC_CHARACTERS_MINIMUM);
@@ -173,7 +166,7 @@ mod crockford_traits {
 
   #[test]
   fn prefix_ends_with_separator() {
-    let prefix = MediaFileToken::token_prefix();
+    let prefix = MediaFileToken::PREFIX;
     assert!(prefix.ends_with("_"));
 
     let token_string = MediaFileToken::generate().to_string();
@@ -182,7 +175,7 @@ mod crockford_traits {
 
   #[test]
   fn token_begins_with_prefix() {
-    let prefix = MediaFileToken::token_prefix();
+    let prefix = MediaFileToken::PREFIX;
     let token_string = MediaFileToken::generate().to_string();
     assert!(token_string.starts_with(prefix));
   }

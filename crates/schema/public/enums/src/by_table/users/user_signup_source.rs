@@ -45,8 +45,6 @@ pub enum UserSignupSource {
 
 // TODO(bt, 2022-12-21): This desperately needs MySQL integration tests!
 impl_enum_display_and_debug_using_to_str!(UserSignupSource);
-impl_mysql_enum_coders!(UserSignupSource);
-impl_mysql_from_row!(UserSignupSource);
 
 /// NB: Legacy API for older code.
 impl UserSignupSource {

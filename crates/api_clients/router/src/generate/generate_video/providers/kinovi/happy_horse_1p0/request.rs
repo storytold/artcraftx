@@ -39,7 +39,7 @@ impl KinoviHappyHorse1p0RequestState {
 mod tests {
   use std::collections::HashMap;
 
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::api::router_aspect_ratio::RouterAspectRatio;
   use crate::api::router_resolution::RouterResolution;

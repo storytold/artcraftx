@@ -1,6 +1,4 @@
-use crate::providers::credentials::provider_credential_loading_cache::ProviderCredentialLoadingCache;
-use crate::providers::credentials::payload::provider_credential_payload::ProviderCredentialPayload;
-use crate::providers::credentials::provider_credential_key::ProviderCredentialKey;
+use crate::credentials::find_service_credentials::find_fal_api_key;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::task_database::TaskDatabase;
 use crate::threads::third_party_task_polling_thread::handlers::fal::handle_fal_complete::handle_fal_complete;
@@ -18,10 +16,9 @@ pub async fn poll_fal_tasks(
   app_data_root: &AppDataRoot,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
-  credential_cache: &ProviderCredentialLoadingCache,
   fal_tasks: &[&Task],
 ) {
-  let api_key = match load_fal_api_key(credential_cache) {
+  let api_key = match load_fal_api_key(app_data_root) {
     Some(key) => key,
     None => {
       warn!("[FalPolling] No FAL API key configured, skipping poll");
@@ -145,13 +142,8 @@ async fn poll_single_fal_task(
 
 // ── Helpers ──
 
-fn load_fal_api_key(credential_cache: &ProviderCredentialLoadingCache) -> Option<FalApiKey> {
-  match credential_cache.get_credentials(ProviderCredentialKey::FalApiKey) {
-    Ok(Some(ProviderCredentialPayload::ApiKey(data))) => {
-      Some(FalApiKey::from_str(data.as_str()))
-    }
-    _ => None,
-  }
+fn load_fal_api_key(app_data_root: &AppDataRoot) -> Option<FalApiKey> {
+  find_fal_api_key(app_data_root).map(|key| FalApiKey::from_str(&key))
 }
 
 /// Use the task's stored response URL first; fall back to the one from the status poll.

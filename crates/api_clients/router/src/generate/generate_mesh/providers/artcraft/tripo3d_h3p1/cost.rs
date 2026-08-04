@@ -89,7 +89,7 @@ impl ArtcraftTripo3dH3p1CostState {
 
 #[cfg(test)]
 mod tests {
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::api::image_list_ref::ImageListRef;
   use crate::api::image_ref::ImageRef;

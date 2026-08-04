@@ -7,11 +7,11 @@ use enums::common::generation::common_generation_mode::CommonGenerationMode;
 use enums::common::generation::common_model_class::CommonModelClass;
 use enums::common::generation::common_model_type::CommonModelType;
 use enums::common::generation::common_resolution::CommonResolution;
-use enums::common::generation_provider::GenerationProvider;
+use sqlite_identifiers::generation_provider::GenerationProvider;
 use std::collections::HashSet;
 
 use serde_derive::{Deserialize, Serialize};
-use tokens::tokens::prompts::PromptToken;
+use sqlite_identifiers::prompt_token::PromptToken;
 
 pub const BATCH_GET_PROMPTS_PATH: &str = "/v1/prompt/batch";
 

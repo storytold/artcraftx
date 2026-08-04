@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 pub const FLUX_PRO_KONTEXT_MAX_EDIT_IMAGE_PATH: &str = "/v1/generate/image/edit/flux_pro_kontext_max";
 

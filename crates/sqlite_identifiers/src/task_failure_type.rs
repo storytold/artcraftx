@@ -1,8 +1,6 @@
 use std::collections::BTreeSet;
 
-use crate::api_safe::by_table::generic_inference_jobs::frontend_failure_category_for_api_clients::FrontendFailureCategoryForApiClients;
-use crate::by_table::generic_inference_jobs::frontend_failure_category::FrontendFailureCategory;
-use crate::error::enum_error::EnumError;
+use crate::enum_error::EnumError;
 #[cfg(test)]
 use strum::EnumCount;
 #[cfg(test)]
@@ -44,58 +42,6 @@ pub enum TaskFailureType {
 impl_enum_display_and_debug_using_to_str!(TaskFailureType);
 
 impl TaskFailureType {
-
-  /// Convert the web API's `FrontendFailureCategory` to a Tauri-facing type, if there is a matching variant.
-  /// If there isn't a matching variant, return `Unknown`.
-  pub fn from_frontend_failure_category(category: FrontendFailureCategory) -> Self {
-    match category {
-      FrontendFailureCategory::ModelRulesViolation => Self::RuleBansUserContent, // NB: This is a legacy enum value.
-      FrontendFailureCategory::RuleBansUserImage => Self::RuleBansUserImage,
-      FrontendFailureCategory::RuleBansUserImageWithFaces => Self::RuleBansUserImageWithFaces,
-      FrontendFailureCategory::RuleBansUserTextPrompt => Self::RuleBansUserTextPrompt,
-      FrontendFailureCategory::RuleBansUserContent => Self::RuleBansUserContent,
-      FrontendFailureCategory::RuleBansGeneratedVideo => Self::RuleBansGeneratedVideo,
-      FrontendFailureCategory::RuleBansGeneratedAudio => Self::RuleBansGeneratedAudio,
-      FrontendFailureCategory::RuleBansGeneratedContent => Self::RuleBansGeneratedContent,
-      FrontendFailureCategory::NoForegroundSubjectDetected => Self::NoForegroundSubjectDetected,
-      FrontendFailureCategory::FormatNotSupported => Self::FormatNotSupported,
-      FrontendFailureCategory::GenerationFailed => Self::GenerationFailed,
-      _ => Self::Unknown,
-    }
-  }
-
-  /// Convert the API-client-facing `FrontendFailureCategoryForApiClients` to a Tauri-facing type.
-  /// `Unknown(String)` maps to `Unknown` with a debug log.
-  pub fn from_frontend_failure_category_for_api(category: &FrontendFailureCategoryForApiClients) -> Self {
-    match category {
-      FrontendFailureCategoryForApiClients::ModelRulesViolation => Self::RuleBansUserContent,
-      FrontendFailureCategoryForApiClients::RuleBansUserImage => Self::RuleBansUserImage,
-      FrontendFailureCategoryForApiClients::RuleBansUserImageWithFaces => Self::RuleBansUserImageWithFaces,
-      FrontendFailureCategoryForApiClients::RuleBansUserTextPrompt => Self::RuleBansUserTextPrompt,
-      FrontendFailureCategoryForApiClients::RuleBansUserContent => Self::RuleBansUserContent,
-      FrontendFailureCategoryForApiClients::RuleBansGeneratedVideo => Self::RuleBansGeneratedVideo,
-      FrontendFailureCategoryForApiClients::RuleBansGeneratedAudio => Self::RuleBansGeneratedAudio,
-      FrontendFailureCategoryForApiClients::RuleBansGeneratedContent => Self::RuleBansGeneratedContent,
-      FrontendFailureCategoryForApiClients::NoForegroundSubjectDetected => Self::NoForegroundSubjectDetected,
-      FrontendFailureCategoryForApiClients::FormatNotSupported => Self::FormatNotSupported,
-      FrontendFailureCategoryForApiClients::GenerationFailed => Self::GenerationFailed,
-
-      // Types ArtCraft doesn't care about
-      FrontendFailureCategoryForApiClients::FaceNotDetected => Self::Unknown,
-      FrontendFailureCategoryForApiClients::KeepAliveElapsed => Self::Unknown,
-      FrontendFailureCategoryForApiClients::NotYetImplemented => Self::Unknown,
-      FrontendFailureCategoryForApiClients::RetryableWorkerError => Self::Unknown,
-      FrontendFailureCategoryForApiClients::FilesizeTooLarge => Self::Unknown,
-      FrontendFailureCategoryForApiClients::ImageDimensionsTooSmall => Self::Unknown,
-      FrontendFailureCategoryForApiClients::ImageDimensionsTooLarge => Self::Unknown,
-
-      // Unknown (future-proof) variant
-      FrontendFailureCategoryForApiClients::Unknown(ref value) => {
-        log::debug!("Unknown FrontendFailureCategoryForApiClients variant: {}", value);
-        Self::Unknown
-      }
-    }
-  }
 
   pub const fn to_str(&self) -> &'static str {
     match self {
@@ -149,12 +95,12 @@ impl TaskFailureType {
 
 #[cfg(test)]
 mod tests {
-  use crate::tauri::tasks::task_failure_type::TaskFailureType;
+  use crate::task_failure_type::TaskFailureType;
   use crate::test_helpers::assert_serialization;
 
   mod explicit_checks {
     use super::*;
-    use crate::error::enum_error::EnumError;
+    use crate::enum_error::EnumError;
 
     #[test]
     fn test_serialization() {

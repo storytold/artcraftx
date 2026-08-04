@@ -22,7 +22,6 @@ pub enum ZsVoiceModelType {
 
 // TODO(bt, 2023-01-17): This desperately needs MySQL integration tests!
 impl_enum_display_and_debug_using_to_str!(ZsVoiceModelType);
-impl_mysql_enum_coders!(ZsVoiceModelType);
 
 /// NB: Legacy API for older code.
 impl ZsVoiceModelType {

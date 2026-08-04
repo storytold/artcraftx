@@ -47,8 +47,6 @@ pub enum StaffAuditAction {
 }
 
 impl_enum_display_and_debug_using_to_str!(StaffAuditAction);
-impl_mysql_enum_coders!(StaffAuditAction);
-impl_mysql_from_row!(StaffAuditAction);
 
 impl StaffAuditAction {
   pub fn to_str(&self) -> &'static str {

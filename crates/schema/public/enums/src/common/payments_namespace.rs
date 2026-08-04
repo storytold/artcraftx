@@ -18,8 +18,6 @@ pub enum PaymentsNamespace {
 }
 
 impl_enum_display_and_debug_using_to_str!(PaymentsNamespace);
-impl_mysql_enum_coders!(PaymentsNamespace);
-impl_mysql_from_row!(PaymentsNamespace);
 
 // NB: We can derive `sqlx::Type` instead of using `impl_mysql_enum_coders`
 

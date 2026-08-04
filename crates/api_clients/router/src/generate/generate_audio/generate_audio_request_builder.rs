@@ -293,7 +293,7 @@ mod tests {
   }
 
   fn builder_with_audio_token_ref(provider: RouterProvider, model: RouterAudioModel) -> GenerateAudioRequestBuilder {
-    use tokens::tokens::media_files::MediaFileToken;
+    use sqlite_identifiers::media_file_token::MediaFileToken;
     GenerateAudioRequestBuilder {
       audio_references: Some(AudioListRef::MediaFileTokens(vec![MediaFileToken::new("mf_test123".to_string())])),
       ..builder(provider, model)

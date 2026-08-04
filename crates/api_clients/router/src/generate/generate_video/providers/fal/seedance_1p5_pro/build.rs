@@ -287,7 +287,7 @@ fn to_i2v_aspect_ratio(a: PlanAspectRatio) -> EnqueueSeedance1p5ProImageToVideoA
 
 #[cfg(test)]
 mod tests {
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::api::router_video_model::RouterVideoModel;
   use crate::api::router_provider::RouterProvider;

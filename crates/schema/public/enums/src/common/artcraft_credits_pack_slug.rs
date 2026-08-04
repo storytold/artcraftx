@@ -26,8 +26,6 @@ pub enum ArtcraftCreditsPackSlug {
 }
 
 impl_enum_display_and_debug_using_to_str!(ArtcraftCreditsPackSlug);
-impl_mysql_enum_coders!(ArtcraftCreditsPackSlug);
-impl_mysql_from_row!(ArtcraftCreditsPackSlug);
 
 // NB: We can derive `sqlx::Type` instead of using `impl_mysql_enum_coders`
 

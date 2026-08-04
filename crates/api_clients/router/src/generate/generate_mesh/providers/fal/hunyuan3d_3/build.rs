@@ -234,7 +234,7 @@ mod tests {
 
     #[test]
     fn media_tokens_are_rejected() {
-      use tokens::tokens::media_files::MediaFileToken;
+      use sqlite_identifiers::media_file_token::MediaFileToken;
       let builder = GenerateMeshRequestBuilder {
         reference_images: Some(ImageListRef::MediaFileTokens(vec![
           MediaFileToken::new("mf_test123".to_string()),

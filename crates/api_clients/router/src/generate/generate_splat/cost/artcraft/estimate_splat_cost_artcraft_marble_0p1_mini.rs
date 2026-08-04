@@ -33,7 +33,7 @@ mod tests {
   use crate::api::router_provider::RouterProvider;
   use crate::generate::generate_splat::generate_splat_request::GenerateSplatRequest;
 
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   fn estimate_usd_cents(prompt: Option<&str>, image_tokens: Option<Vec<MediaFileToken>>) -> u64 {
     let request = GenerateSplatRequest {

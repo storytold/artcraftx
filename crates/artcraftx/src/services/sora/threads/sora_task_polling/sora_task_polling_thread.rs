@@ -6,7 +6,7 @@ use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::sora::threads::sora_task_polling::helpers::poll_classic_sora_tasks::poll_classic_sora_tasks;
 use crate::services::sora::threads::sora_task_polling::helpers::poll_sora_2_tasks::poll_sora_2_tasks;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use enums::common::generation_provider::GenerationProvider;
+use sqlite_identifiers::generation_provider::GenerationProvider;
 use errors::AnyhowResult;
 use log::error;
 use sqlite_database::queries::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs};

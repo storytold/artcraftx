@@ -4,8 +4,6 @@ use strum::EnumCount;
 use strum::EnumIter;
 
 #[derive(Clone, Copy, Eq, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(feature = "database", derive(sqlx::Type))]
-#[cfg_attr(feature = "database", sqlx(rename_all = "snake_case"))]
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
 #[serde(rename_all = "snake_case")]
 pub enum ViewAs {
@@ -22,7 +20,6 @@ pub enum ViewAs {
 
 
 impl_enum_display_and_debug_using_to_str!(ViewAs);
-impl_mysql_from_row!(ViewAs);
 
 impl Default for ViewAs {
     fn default() -> Self { Self::AnotherUser }

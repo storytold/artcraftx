@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use tokens::tokens::characters::CharacterToken;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 #[derive(Debug, Clone, Copy)]
 pub enum ClientType {

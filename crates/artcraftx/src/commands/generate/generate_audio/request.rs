@@ -1,7 +1,7 @@
-use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
+use sqlite_identifiers::tauri_command_caller::TauriCommandCaller;
 use serde_derive::{Deserialize, Serialize};
 use enums::common::generation::common_musical_key::CommonMusicalKey;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 use crate::commands::response::success_response_wrapper::SerializeMarker;
 

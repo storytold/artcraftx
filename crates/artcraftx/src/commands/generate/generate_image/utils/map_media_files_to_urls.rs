@@ -1,7 +1,7 @@
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
 use artcraft_client::utils::api_host::ApiHost;
 use log::info;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 use crate::commands::generate::generate_error::GenerateError;
 

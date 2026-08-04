@@ -27,7 +27,6 @@ pub enum MediaUploadType {
 
 // TODO(bt, 2022-12-21): This desperately needs MySQL integration tests!
 impl_enum_display_and_debug_using_to_str!(MediaUploadType);
-impl_mysql_enum_coders!(MediaUploadType);
 
 /// NB: Legacy API for older code.
 impl MediaUploadType {

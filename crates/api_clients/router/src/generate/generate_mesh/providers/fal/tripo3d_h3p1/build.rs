@@ -230,7 +230,7 @@ fn to_image_geometry_quality(quality: CommonMeshQuality) -> Tripo3dH3p1ImageGeom
 
 #[cfg(test)]
 mod tests {
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::api::image_list_ref::ImageListRef;
   use crate::api::image_ref::ImageRef;

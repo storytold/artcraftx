@@ -25,8 +25,6 @@ pub enum PaymentSource {
 }
 
 impl_enum_display_and_debug_using_to_str!(PaymentSource);
-impl_mysql_enum_coders!(PaymentSource);
-impl_mysql_from_row!(PaymentSource);
 
 /// NB: Legacy API for older code.
 impl PaymentSource {

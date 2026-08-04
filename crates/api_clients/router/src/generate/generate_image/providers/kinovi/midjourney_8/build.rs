@@ -148,7 +148,7 @@ pub(crate) fn plan_batch_count(
 #[cfg(test)]
 mod tests {
   use seedance2pro_client::generate::image::generate_midjourney_v8::KinoviMidjourneyBatchCount;
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::api::image_list_ref::ImageListRef;
   use crate::api::router_image_model::RouterImageModel;

@@ -1,7 +1,7 @@
 use artcraft_client::api_defs::users::login::{LoginErrorType, LoginRequest};
 use artcraft_client::endpoints::users::login::{login, LoginArgs, LoginError};
 use chrono::Utc;
-use enums::common::generation_provider::GenerationProvider;
+use sqlite_identifiers::generation_provider::GenerationProvider;
 use log::{error, info, warn};
 use serde_derive::Serialize;
 use tauri::{AppHandle, State};

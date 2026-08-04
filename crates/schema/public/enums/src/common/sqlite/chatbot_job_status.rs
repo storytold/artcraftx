@@ -27,7 +27,6 @@ pub enum ChatbotJobStatus {
 
 // TODO(bt, 2023-02-10): This desperately needs Sqlite integration tests!
 impl_enum_display_and_debug_using_to_str!(ChatbotJobStatus);
-impl_sqlite_enum_coders!(ChatbotJobStatus);
 
 /// NB: Legacy API for older code.
 impl ChatbotJobStatus {

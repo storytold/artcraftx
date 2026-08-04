@@ -57,8 +57,6 @@ pub enum MediaFileEngineCategory {
 
 // TODO(bt, 2022-12-21): This desperately needs MySQL integration tests!
 impl_enum_display_and_debug_using_to_str!(MediaFileEngineCategory);
-impl_mysql_enum_coders!(MediaFileEngineCategory);
-impl_mysql_from_row!(MediaFileEngineCategory);
 
 /// NB: Legacy API for older code.
 impl MediaFileEngineCategory {

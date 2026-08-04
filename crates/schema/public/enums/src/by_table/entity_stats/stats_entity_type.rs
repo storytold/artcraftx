@@ -26,8 +26,6 @@ pub enum StatsEntityType {
 
 // TODO(bt, 2023-01-17): This desperately needs MySQL integration tests!
 impl_enum_display_and_debug_using_to_str!(StatsEntityType);
-impl_mysql_enum_coders!(StatsEntityType);
-impl_mysql_from_row!(StatsEntityType);
 
 /// NB: Legacy API for older code.
 impl StatsEntityType {

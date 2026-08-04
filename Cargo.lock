@@ -196,6 +196,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+ "sqlite_identifiers",
  "tokens",
  "tokio",
  "url",
@@ -245,6 +246,7 @@ dependencies = [
  "serde_json",
  "serial_test",
  "sqlite_database",
+ "sqlite_identifiers",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",
@@ -2555,7 +2557,6 @@ dependencies = [
  "chrono",
  "cloudflare_errors",
  "cloudflare_mitigation",
- "cookie_store 0.0.1",
  "env",
  "env_logger",
  "errors",
@@ -5480,6 +5481,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+ "sqlite_identifiers",
  "strum",
  "test_data",
  "test_utils",
@@ -6345,9 +6347,22 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+ "sqlite_identifiers",
  "sqlx",
  "tempfile",
  "tokens",
+ "workspace-build-acceleration",
+]
+
+[[package]]
+name = "sqlite_identifiers"
+version = "0.0.1"
+dependencies = [
+ "rand 0.8.5",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "strum",
  "workspace-build-acceleration",
 ]
 
@@ -9034,7 +9049,6 @@ dependencies = [
  "chrono",
  "cloudflare_errors",
  "cloudflare_mitigation",
- "cookie_store 0.0.1",
  "env",
  "env_logger",
  "errors",

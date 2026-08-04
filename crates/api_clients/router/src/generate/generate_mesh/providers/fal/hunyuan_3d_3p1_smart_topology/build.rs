@@ -82,7 +82,7 @@ fn to_polygon_type(polygon_type: CommonPolygonType) -> Hunyuan3d3p1SmartTopology
 #[cfg(test)]
 mod tests {
   use enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::api::image_ref::ImageRef;
   use crate::api::mesh_ref::MeshRef;

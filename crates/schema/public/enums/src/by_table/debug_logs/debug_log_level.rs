@@ -25,8 +25,6 @@ pub enum DebugLogLevel {
 }
 
 impl_enum_display_and_debug_using_to_str!(DebugLogLevel);
-impl_mysql_enum_coders!(DebugLogLevel);
-impl_mysql_from_row!(DebugLogLevel);
 
 impl DebugLogLevel {
   pub fn to_str(&self) -> &'static str {

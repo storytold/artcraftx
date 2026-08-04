@@ -144,7 +144,7 @@ fn to_i2v_duration(d: PlanDuration) -> Veo2ImageToVideoDuration {
 
 #[cfg(test)]
 mod tests {
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::api::router_video_model::RouterVideoModel;
   use crate::api::router_provider::RouterProvider;

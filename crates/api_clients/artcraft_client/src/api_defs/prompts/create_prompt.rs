@@ -2,9 +2,9 @@ use enums::common::generation::common_aspect_ratio::CommonAspectRatio;
 use enums::common::generation::common_generation_mode::CommonGenerationMode;
 use enums::common::generation::common_model_type::CommonModelType;
 use enums::common::generation::common_resolution::CommonResolution;
-use enums::common::generation_provider::GenerationProvider;
+use sqlite_identifiers::generation_provider::GenerationProvider;
 use serde_derive::{Deserialize, Serialize};
-use tokens::tokens::prompts::PromptToken;
+use sqlite_identifiers::prompt_token::PromptToken;
 
 pub const CREATE_PROMPT_PATH: &str = "/v1/prompts/create";
 

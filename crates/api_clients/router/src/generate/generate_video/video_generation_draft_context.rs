@@ -5,7 +5,7 @@ use crate::errors::client_error::ClientError;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use tokens::tokens::characters::CharacterToken;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 #[derive(Clone, Default)]
 pub struct VideoGenerationDraftContext<'a> {

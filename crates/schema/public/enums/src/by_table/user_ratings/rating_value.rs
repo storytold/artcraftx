@@ -17,8 +17,6 @@ use strum::EnumIter;
 /// *DO NOT CHANGE VALUES WITHOUT A MIGRATION STRATEGY!*
 ///
 #[derive(Clone, Copy, Eq, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(feature = "database", derive(sqlx::Type))]
-#[cfg_attr(feature = "database", sqlx(rename_all = "lowercase"))]
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
 #[serde(rename_all = "lowercase")]
 pub enum UserRatingValue {

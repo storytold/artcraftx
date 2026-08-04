@@ -77,8 +77,6 @@ pub enum UploadedVideoDetectedModelType {
 }
 
 impl_enum_display_and_debug_using_to_str!(UploadedVideoDetectedModelType);
-impl_mysql_enum_coders!(UploadedVideoDetectedModelType);
-impl_mysql_from_row!(UploadedVideoDetectedModelType);
 
 impl UploadedVideoDetectedModelType {
   pub fn to_str(&self) -> &'static str {

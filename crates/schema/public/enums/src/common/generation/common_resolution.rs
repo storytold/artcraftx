@@ -36,8 +36,6 @@ pub enum CommonResolution {
 }
 
 impl_enum_display_and_debug_using_to_str!(CommonResolution);
-impl_mysql_enum_coders!(CommonResolution);
-impl_mysql_from_row!(CommonResolution);
 
 impl CommonResolution {
   pub fn to_str(&self) -> &'static str {

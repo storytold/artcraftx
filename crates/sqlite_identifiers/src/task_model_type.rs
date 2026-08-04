@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-use crate::error::enum_error::EnumError;
+use crate::enum_error::EnumError;
 #[cfg(test)]
 use strum::EnumCount;
 #[cfg(test)]
@@ -421,9 +421,9 @@ impl TaskModelType {
 
 #[cfg(test)]
 mod tests {
-  use crate::tauri::tasks::task_model_type::TaskModelType;
+  use crate::task_model_type::TaskModelType;
   use crate::test_helpers::assert_serialization;
-  use crate::error::enum_error::EnumError;
+  use crate::enum_error::EnumError;
 
   mod explicit_checks {
     use super::*;

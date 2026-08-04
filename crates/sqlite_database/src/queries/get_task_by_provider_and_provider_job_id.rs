@@ -1,13 +1,13 @@
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
 use crate::queries::task::Task;
-use enums::common::generation_provider::GenerationProvider;
-use enums::tauri::tasks::task_model_type::TaskModelType;
-use enums::tauri::tasks::task_status::TaskStatus;
-use enums::tauri::tasks::task_type::TaskType;
-use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
+use sqlite_identifiers::generation_provider::GenerationProvider;
+use sqlite_identifiers::task_model_type::TaskModelType;
+use sqlite_identifiers::task_status::TaskStatus;
+use sqlite_identifiers::task_type::TaskType;
+use sqlite_identifiers::tauri_command_caller::TauriCommandCaller;
 use sqlx::Error;
-use tokens::tokens::sqlite::tasks::TaskId;
+use sqlite_identifiers::task_id::TaskId;
 
 pub struct GetTaskByProviderAndProviderJobIdArgs<'a> {
   pub db: &'a TaskDbConnection,

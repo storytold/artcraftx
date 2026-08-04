@@ -19,8 +19,6 @@ use strum::EnumIter;
 /// DO NOT CHANGE VALUES WITHOUT A MIGRATION STRATEGY.
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
-#[cfg_attr(feature = "database", derive(sqlx::Type))]
-#[cfg_attr(feature = "database", sqlx(rename_all = "snake_case"))]
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
 #[serde(rename_all = "snake_case")]
 pub enum JobStatus {

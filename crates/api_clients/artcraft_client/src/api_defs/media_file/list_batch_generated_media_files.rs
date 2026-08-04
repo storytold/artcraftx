@@ -6,9 +6,9 @@ use enums::by_table::media_files::media_file_class::MediaFileClass;
 use enums::by_table::media_files::media_file_type::MediaFileType;
 use enums::common::visibility::Visibility;
 use serde_derive::{Deserialize, Serialize};
-use tokens::tokens::batch_generations::BatchGenerationToken;
-use tokens::tokens::media_files::MediaFileToken;
-use tokens::tokens::prompts::PromptToken;
+use sqlite_identifiers::batch_generation_token::BatchGenerationToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::prompt_token::PromptToken;
 
 pub const LIST_BATCH_GENERATED_REDUX_MEDIA_FILES_URL_PATH: &str = "/v1/media_files/batch_gen_redux";
 

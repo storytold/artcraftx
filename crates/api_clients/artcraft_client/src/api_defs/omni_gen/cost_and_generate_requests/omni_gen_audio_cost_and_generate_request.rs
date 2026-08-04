@@ -2,7 +2,7 @@ use serde_derive::{Deserialize, Serialize};
 
 use enums::common::generation::common_audio_model::CommonAudioModel;
 use enums::common::generation::common_musical_key::CommonMusicalKey;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 /// Shared request body for both the audio cost estimate and audio generation endpoints.
 #[derive(Clone, Serialize, Deserialize, Debug)]

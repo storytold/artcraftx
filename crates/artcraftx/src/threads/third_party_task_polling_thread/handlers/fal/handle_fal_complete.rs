@@ -20,8 +20,8 @@ use artcraft_client::endpoints::media_files::upload_image_media_file_from_file::
 use artcraft_client::endpoints::media_files::upload_video_media_file_from_file::{
   upload_video_media_file_from_file, UploadVideoFromFileArgs,
 };
-use enums::common::generation_provider::GenerationProvider;
-use enums::tauri::tasks::task_media_file_class::TaskMediaFileClass;
+use sqlite_identifiers::generation_provider::GenerationProvider;
+use sqlite_identifiers::task_media_file_class::TaskMediaFileClass;
 use fal_client::polling::poll_job_response::poll_job_response::PollJobResponse;
 use fal_client::polling::poll_job_response::success_case_extractors::PollResponseExtractedContents;
 use log::{error, info, warn};
@@ -34,9 +34,9 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::time::Duration;
 use tauri::AppHandle;
-use tokens::tokens::batch_generations::BatchGenerationToken;
-use tokens::tokens::media_files::MediaFileToken;
-use tokens::tokens::prompts::PromptToken;
+use sqlite_identifiers::batch_generation_token::BatchGenerationToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
+use sqlite_identifiers::prompt_token::PromptToken;
 use uuid_utils::uuid::generate_random_uuid;
 
 pub async fn handle_fal_complete(

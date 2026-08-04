@@ -3,16 +3,16 @@ use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::text_to_image_generation_complete_event::{GeneratedImage, TextToImageGenerationCompleteEvent};
 use anyhow::anyhow;
 use artcraft_client::api_defs::jobs::list_session_jobs::{ListSessionJobsItem, ListSessionResultDetailsResponse};
-use enums::tauri::tasks::task_type::TaskType;
-use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
+use sqlite_identifiers::task_type::TaskType;
+use sqlite_identifiers::tauri_command_caller::TauriCommandCaller;
 use errors::AnyhowResult;
 use log::{error, warn};
 use sqlite_database::queries::task::Task;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::endpoints::media_files::list_batch_generated_redux_media_files::list_batch_generated_redux_media_files;
 use tauri::AppHandle;
-use tokens::tokens::batch_generations::BatchGenerationToken;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::batch_generation_token::BatchGenerationToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 pub async fn maybe_handle_text_to_image_complete_event(
   app: &AppHandle,

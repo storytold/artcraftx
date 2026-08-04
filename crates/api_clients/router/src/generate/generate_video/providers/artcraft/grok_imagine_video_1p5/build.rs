@@ -42,7 +42,7 @@ mod tests {
   use enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
   use enums::common::generation::common_video_model::CommonVideoModel as CommonVideoModelEnum;
   use tokens::tokens::characters::CharacterToken;
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::api::character_list_ref::CharacterListRef;
   use crate::api::router_resolution::RouterResolution;

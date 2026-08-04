@@ -36,8 +36,6 @@ pub enum PlatformType {
 }
 
 impl_enum_display_and_debug_using_to_str!(PlatformType);
-impl_mysql_enum_coders!(PlatformType);
-impl_mysql_from_row!(PlatformType);
 
 impl PlatformType {
   pub fn to_str(&self) -> &'static str {

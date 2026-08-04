@@ -19,7 +19,6 @@ use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::services::worldlabs::state::worldlabs_bearer_bridge::WorldlabsBearerBridge;
 use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
-use crate::providers::credentials::provider_credential_loading_cache::ProviderCredentialLoadingCache;
 use crate::threads::third_party_task_polling_thread::third_party_task_polling_thread::third_party_task_polling_thread;
 use crate::services::worldlabs::threads::worldlabs_marble_task_polling::worldlabs_marble_task_polling;
 use errors::AnyhowResult;
@@ -38,7 +37,6 @@ pub async fn handle_tauri_startup(
   grok_image_prompt_queue: GrokImagePromptQueue,
   _worldlabs_bearer_bridge: WorldlabsBearerBridge,
   worldlabs_creds_manager: WorldlabsCredentialManager,
-  credential_cache: ProviderCredentialLoadingCache,
 ) -> AnyhowResult<()> {
 
   set_app_log_level(
@@ -109,7 +107,6 @@ pub async fn handle_tauri_startup(
     root.clone(),
     task_database.clone(),
     storyteller_creds_manager.clone(),
-    credential_cache,
   ));
 
   spawn_discord_presence_thread()?;

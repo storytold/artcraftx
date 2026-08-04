@@ -1,12 +1,12 @@
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::canvas_background_removal_complete_event::CanvasBackgroundRemovalCompleteEvent;
 use artcraft_client::api_defs::jobs::list_session_jobs::ListSessionJobsItem;
-use enums::tauri::tasks::task_type::TaskType;
-use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
+use sqlite_identifiers::task_type::TaskType;
+use sqlite_identifiers::tauri_command_caller::TauriCommandCaller;
 use errors::AnyhowResult;
 use log::error;
 use sqlite_database::queries::task::Task;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 pub async fn maybe_send_background_removal_complete_event(
   app: &tauri::AppHandle,

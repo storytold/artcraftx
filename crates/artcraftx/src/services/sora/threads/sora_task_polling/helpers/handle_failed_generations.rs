@@ -3,7 +3,7 @@ use crate::events::generation_events::common::{GenerationAction, GenerationServi
 use crate::events::generation_events::generation_failed_event::GenerationFailedEvent;
 use crate::state::task_database::TaskDatabase;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
-use enums::tauri::tasks::task_status;
+use sqlite_identifiers::task_status;
 use errors::AnyhowResult;
 use log::info;
 use openai_sora_client::requests::common::task_id::TaskId;

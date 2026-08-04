@@ -197,7 +197,7 @@ fn plan_material(
 mod tests {
   use enums::common::generation::common_mesh_quality::CommonMeshQuality;
   use enums::common::generation::common_polygon_type::CommonPolygonType;
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::api::mesh_ref::MeshRef;
   use crate::api::router_mesh_model::RouterMeshModel;

@@ -1,4 +1,4 @@
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 #[derive(Clone, Debug)]
 pub enum VideoRef {

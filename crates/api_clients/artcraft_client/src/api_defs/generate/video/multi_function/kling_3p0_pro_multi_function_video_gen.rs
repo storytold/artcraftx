@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 pub const KLING_3P0_PRO_MULTI_FUNCTION_VIDEO_PATH: &str = "/v1/generate/video/multi_function/kling_3p0_pro";
 

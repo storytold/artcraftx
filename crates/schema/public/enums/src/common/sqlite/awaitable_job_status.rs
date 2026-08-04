@@ -34,7 +34,6 @@ pub enum AwaitableJobStatus {
 
 // TODO(bt, 2023-02-08): This desperately needs Sqlite integration tests!
 impl_enum_display_and_debug_using_to_str!(AwaitableJobStatus);
-impl_sqlite_enum_coders!(AwaitableJobStatus);
 
 /// NB: Legacy API for older code.
 impl AwaitableJobStatus {

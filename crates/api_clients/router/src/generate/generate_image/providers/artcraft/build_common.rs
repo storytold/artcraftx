@@ -3,7 +3,7 @@ use enums::common::generation::common_aspect_ratio::CommonAspectRatio as CommonA
 use enums::common::generation::common_image_model::CommonImageModel as CommonImageModelEnum;
 use enums::common::generation::common_quality::CommonQuality as CommonQualityEnum;
 use enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 use crate::api::router_aspect_ratio::RouterAspectRatio;
 use crate::api::router_quality::RouterQuality;

@@ -1,6 +1,6 @@
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
-use tokens::tokens::sqlite::tasks::TaskId;
+use sqlite_identifiers::task_id::TaskId;
 
 /// Returns true if rows were updated.
 pub async fn mark_task_as_dismissed(

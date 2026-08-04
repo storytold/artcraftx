@@ -40,8 +40,6 @@ pub enum CommonGenerationMode {
 }
 
 impl_enum_display_and_debug_using_to_str!(CommonGenerationMode);
-impl_mysql_enum_coders!(CommonGenerationMode);
-impl_mysql_from_row!(CommonGenerationMode);
 
 impl CommonGenerationMode {
   pub fn to_str(&self) -> &'static str {

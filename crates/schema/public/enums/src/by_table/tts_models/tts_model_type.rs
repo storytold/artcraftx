@@ -21,7 +21,6 @@ pub enum TtsModelType {
 
 // TODO(bt, 2023-04-03): This desperately needs MySQL integration tests!
 impl_enum_display_and_debug_using_to_str!(TtsModelType);
-impl_mysql_enum_coders!(TtsModelType);
 
 /// NB: Legacy API for older code.
 impl TtsModelType {

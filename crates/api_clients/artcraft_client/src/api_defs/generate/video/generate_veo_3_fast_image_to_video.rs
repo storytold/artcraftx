@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 pub const GENERATE_VEO_3_FAST_IMAGE_TO_VIDEO_URL_PATH: &str = "/v1/generate/video/veo_3_fast_image_to_video";
 

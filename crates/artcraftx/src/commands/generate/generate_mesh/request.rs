@@ -1,9 +1,9 @@
-use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
+use sqlite_identifiers::tauri_command_caller::TauriCommandCaller;
 use serde_derive::{Deserialize, Serialize};
 use enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
 use enums::common::generation::common_mesh_quality::CommonMeshQuality;
 use enums::common::generation::common_polygon_type::CommonPolygonType;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 use crate::commands::response::success_response_wrapper::SerializeMarker;
 

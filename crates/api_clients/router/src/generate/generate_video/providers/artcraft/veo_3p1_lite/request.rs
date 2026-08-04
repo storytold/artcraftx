@@ -18,7 +18,7 @@ impl ArtcraftVeo3p1LiteRequestState {
 
 #[cfg(test)]
 mod tests {
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
   use artcraft_client::utils::api_host::ApiHost;

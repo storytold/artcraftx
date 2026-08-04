@@ -7,8 +7,6 @@ use crate::prefixes::TokenPrefix;
 
 /// The primary key for Audit Logs.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
-#[cfg_attr(feature = "database", derive(sqlx::Type))]
-#[cfg_attr(feature = "database", sqlx(transparent))]
 pub struct CommentToken(pub String);
 
 impl_string_token!(CommentToken);

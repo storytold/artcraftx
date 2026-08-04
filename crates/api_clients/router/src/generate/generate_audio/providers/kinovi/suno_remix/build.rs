@@ -45,7 +45,7 @@ pub(crate) fn build_kinovi_suno_remix_draft(
 
 #[cfg(test)]
 mod tests {
-  use tokens::tokens::media_files::MediaFileToken;
+  use sqlite_identifiers::media_file_token::MediaFileToken;
 
   use crate::api::audio_list_ref::AudioListRef;
   use crate::api::router_audio_model::RouterAudioModel;

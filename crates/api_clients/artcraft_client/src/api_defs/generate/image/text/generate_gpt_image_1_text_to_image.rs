@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 use tokens::tokens::generic_inference_jobs::InferenceJobToken;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 pub const GPT_IMAGE_1_TEXT_TO_IMAGE_PATH: &str = "/v1/generate/image/gpt_image_1_text_to_image";
 

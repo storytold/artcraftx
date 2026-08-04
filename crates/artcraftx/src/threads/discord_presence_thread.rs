@@ -5,7 +5,8 @@ use log::{debug, info};
 use rand::random_range;
 
 /// Our Discord App ID. Not sure if this is a secret.
-const DISCORD_APP_ID : &str = "1366596912593113138";
+// const DISCORD_APP_ID : &str = "1366596912593113138";
+const DISCORD_APP_ID : &str = "1534088661052817480";
 
 const DISCORD_ARTCRAFT_LOGO_SPIN : &str = "https://getartcraft.com/discord-status-icons/artcraft-a-spin-512x512.webp";
 const DISCORD_ARTCRAFT_LOGO_STATIC : &str = "https://getartcraft.com/discord-status-icons/artcraft-a-512x512.png";

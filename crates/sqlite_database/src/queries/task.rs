@@ -1,9 +1,9 @@
-use enums::common::generation_provider::GenerationProvider;
-use enums::tauri::tasks::task_model_type::TaskModelType;
-use enums::tauri::tasks::task_status::TaskStatus;
-use enums::tauri::tasks::task_type::TaskType;
-use enums::tauri::ux::tauri_command_caller::TauriCommandCaller;
-use tokens::tokens::sqlite::tasks::TaskId;
+use sqlite_identifiers::generation_provider::GenerationProvider;
+use sqlite_identifiers::task_model_type::TaskModelType;
+use sqlite_identifiers::task_status::TaskStatus;
+use sqlite_identifiers::task_type::TaskType;
+use sqlite_identifiers::tauri_command_caller::TauriCommandCaller;
+use sqlite_identifiers::task_id::TaskId;
 
 #[derive(Debug, Clone)]
 pub struct Task {

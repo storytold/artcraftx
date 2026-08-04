@@ -1,5 +1,5 @@
 use crate::events::basic_sendable_event_trait::{BasicEventStatus, BasicSendableEvent};
-use enums::common::generation_provider::GenerationProvider;
+use sqlite_identifiers::generation_provider::GenerationProvider;
 use enums::tauri::ux::tauri_event_name::TauriEventName;
 use serde_derive::Serialize;
 use tauri::AppHandle;

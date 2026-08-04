@@ -12,7 +12,7 @@ use log::info;
 use std::time::Duration;
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
 use artcraft_client::utils::api_host::ApiHost;
-use tokens::tokens::media_files::MediaFileToken;
+use sqlite_identifiers::media_file_token::MediaFileToken;
 
 const GROK_IMAGE_UPLOAD_TIMEOUT: Duration = Duration::from_millis(1000 * 30); // 30 seconds
 

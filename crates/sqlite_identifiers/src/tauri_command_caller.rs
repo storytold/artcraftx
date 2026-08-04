@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-use crate::error::enum_error::EnumError;
+use crate::enum_error::EnumError;
 #[cfg(test)]
 use strum::EnumCount;
 #[cfg(test)]
@@ -25,8 +25,6 @@ pub enum TauriCommandCaller {
 }
 
 impl_enum_display_and_debug_using_to_str!(TauriCommandCaller);
-impl_mysql_enum_coders!(TauriCommandCaller);
-impl_mysql_from_row!(TauriCommandCaller);
 
 // NB: We can derive `sqlx::Type` instead of using `impl_mysql_enum_coders`
 
@@ -67,8 +65,8 @@ impl TauriCommandCaller {
 
 #[cfg(test)]
 mod tests {
-  use crate::error::enum_error::EnumError;
-  use crate::tauri::ux::tauri_command_caller::TauriCommandCaller;
+  use crate::enum_error::EnumError;
+  use crate::tauri_command_caller::TauriCommandCaller;
   use crate::test_helpers::assert_serialization;
 
   mod explicit_checks {

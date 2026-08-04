@@ -40,7 +40,6 @@ impl WeightsFileType {
 }
 
 impl_enum_display_and_debug_using_to_str!(WeightsFileType);
-impl_mysql_enum_coders!(WeightsFileType);
 
 #[cfg(test)]
 mod tests {

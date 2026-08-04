@@ -41,8 +41,6 @@ pub enum StripeSubscriptionStatus {
 }
 
 impl_enum_display_and_debug_using_to_str!(StripeSubscriptionStatus);
-impl_mysql_enum_coders!(StripeSubscriptionStatus);
-impl_mysql_from_row!(StripeSubscriptionStatus);
 
 impl StripeSubscriptionStatus {
   pub fn to_str(self) -> &'static str {

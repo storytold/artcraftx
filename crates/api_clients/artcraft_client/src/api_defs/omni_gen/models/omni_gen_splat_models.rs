@@ -1,6 +1,6 @@
 use enums::common::generation::common_splat_model::CommonSplatModel;
 use enums::common::generation::model_creator::ModelCreator;
-use enums::common::generation_provider::GenerationProvider;
+use sqlite_identifiers::generation_provider::GenerationProvider;
 use serde_derive::Serialize;
 
 /// Splat model to default to if none is specified

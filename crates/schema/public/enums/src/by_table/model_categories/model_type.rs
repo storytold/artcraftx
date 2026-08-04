@@ -19,7 +19,6 @@ pub enum ModelType {
 
 // TODO(bt, 2023-01-16): This desperately needs MySQL integration tests!
 impl_enum_display_and_debug_using_to_str!(ModelType);
-impl_mysql_enum_coders!(ModelType);
 
 /// NB: Legacy API for older code.
 impl ModelType {
