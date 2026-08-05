@@ -10,15 +10,11 @@ import {
 } from "@storyteller/tauri-api";
 import { PreferenceName, UpdateAppPreferences } from "@storyteller/tauri-api";
 import { open } from "@tauri-apps/plugin-dialog";
-import { Switch } from "@storyteller/ui-switch";
 import { DownloadDirectoryReveal } from "@storyteller/tauri-api";
 import { Folder, RotateCcw, Search } from "lucide-react";
 import { Select, SelectValue } from "@storyteller/ui-select";
-import { SettingsBlock, SettingsRow } from "./SettingsRow";
-import {
-  getAskLocationBeforeDownload,
-  setAskLocationBeforeDownload,
-} from "@storyteller/api";
+import { useTauriPlatform } from "@storyteller/tauri-utils";
+import { SettingsBlock } from "./SettingsRow";
 
 const ARTCRAFT_CONVENTION = "artcraft_convention";
 const CUSTOM = "custom";
@@ -40,17 +36,21 @@ export const DownloadsSettingsPane = (args: DownloadsSettingsPaneProps) => {
     AppPreferencesPayload | undefined
   >(undefined);
 
+  const platform = useTauriPlatform();
+
+  // Match each OS's file-manager vocabulary.
+  const chooseLabel =
+    platform === "linux" ? "Choose directory" : "Choose folder";
+  const showLabel =
+    platform === "windows"
+      ? "Show in Explorer"
+      : platform === "macos"
+        ? "Show in Finder"
+        : "Show directory";
+
   const [filenameMode, setFilenameMode] = useState<string>(ARTCRAFT_CONVENTION);
   const [customFormat, setCustomFormat] = useState<string>(DEFAULT_CUSTOM_FORMAT);
   const [formatError, setFormatError] = useState<string | null>(null);
-
-  const [askLocationBeforeDownload, setAskLocationBeforeDownloadState] =
-    useState<boolean>(() => getAskLocationBeforeDownload());
-
-  const toggleAskLocationBeforeDownload = (enabled: boolean) => {
-    setAskLocationBeforeDownload(enabled);
-    setAskLocationBeforeDownloadState(enabled);
-  };
 
   const applyPreferences = (prefs: AppPreferencesPayload) => {
     setPreferences(prefs);
@@ -171,11 +171,11 @@ export const DownloadsSettingsPane = (args: DownloadsSettingsPaneProps) => {
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={openDirectoryPicker}>
             <Folder className="h-3.5 w-3.5" />
-            Choose folder
+            {chooseLabel}
           </Button>
           <Button variant="secondary" onClick={showDirectory}>
             <Search className="h-3.5 w-3.5" />
-            Show in explorer
+            {showLabel}
           </Button>
           <Button variant="ghost" onClick={clearDirectory}>
             <RotateCcw className="h-3.5 w-3.5" />
@@ -218,15 +218,6 @@ export const DownloadsSettingsPane = (args: DownloadsSettingsPaneProps) => {
           </div>
         )}
       </SettingsBlock>
-      <SettingsRow
-        title="Ask location before download"
-        description="When on, a file picker appears for every download so you choose where each file goes. When off, downloads go straight to the folder above."
-      >
-        <Switch
-          enabled={askLocationBeforeDownload}
-          setEnabled={toggleAskLocationBeforeDownload}
-        />
-      </SettingsRow>
     </div>
   );
 };

@@ -4,7 +4,6 @@ import {
   PromptsApi,
   downloadUrlToPath,
   pickDownloadDirectory,
-  promptDownloadLocationIfNeeded,
 } from "@storyteller/api";
 import type { Prompts } from "@storyteller/api";
 import { DownloadUrl } from "@storyteller/tauri-api";
@@ -66,19 +65,10 @@ function extensionForUrl(url: string, mediaClass?: string): string {
   return "bin";
 }
 
-/** Download a media file, prompting for a location when configured to. */
+/** Download a media file to the configured download directory. */
 export async function downloadMediaFileToDisk(url: string, mediaClass?: string) {
   try {
-    const chosenPath = await promptDownloadLocationIfNeeded(url);
-    if (chosenPath === null) {
-      // User dismissed the picker.
-      return;
-    }
-    if (typeof chosenPath === "string") {
-      await downloadUrlToPath(url, chosenPath);
-    } else {
-      await DownloadUrl(url);
-    }
+    await DownloadUrl(url);
     if (mediaClass === FilterMediaClasses.DIMENSIONAL) {
       toast.success(`Downloaded 3D model`);
     } else {

@@ -51,9 +51,16 @@ pub async fn handle_request(
       .preferred_download_directory
       .download_directory(app_data_root);
 
-  info!("Revealing item in directory: {:?}", download_directory);
+  info!("Opening download directory: {:?}", download_directory);
 
-  app.opener().reveal_item_in_dir(download_directory)
+  // NB: `open_path` opens the directory ITSELF in the system file manager;
+  // `reveal_item_in_dir` would open the PARENT with the directory selected.
+  let download_directory = download_directory
+      .to_str()
+      .ok_or_else(|| anyhow!("Download directory path isn't valid UTF-8: {:?}", download_directory))?
+      .to_string();
+
+  app.opener().open_path(download_directory, None::<&str>)
       .map_err(|err| anyhow!("Failed to open directory: {:?}", err))?;
 
   Ok(())

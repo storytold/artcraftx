@@ -20,8 +20,7 @@ import { useTauriAssetGalleryAdapter } from "./adapters/asset-gallery-adapter";
 // still persists across WebView restarts; a Tauri-specific filesystem-
 // backed adapter is a future option but not needed yet) and wires
 // every adapter through Tauri-native infra: addToast signal,
-// authentication.userInfo signal, MediaUploadApi / MediaFilesApi,
-// promptDownloadLocationIfNeeded for save-as.
+// authentication.userInfo signal, MediaUploadApi / MediaFilesApi.
 //
 // Mounted inside MainApp's tab switch — see MainApp.tsx case
 // "VIDEO_EDITOR".

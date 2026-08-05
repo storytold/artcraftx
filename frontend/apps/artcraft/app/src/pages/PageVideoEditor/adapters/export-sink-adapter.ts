@@ -3,19 +3,15 @@ import type {
   ExportSinkAdapter,
 } from "@storyteller/ui-video-editor";
 import { kindFromMime } from "@storyteller/ui-video-editor";
-import {
-  promptDownloadLocationIfNeeded,
-  downloadUrlToPath,
-} from "@storyteller/api";
+import { downloadUrlToPath } from "@storyteller/api";
 import { downloadDir } from "@tauri-apps/api/path";
 import { uploadByKind } from "./upload-by-kind";
 
 // Tauri ExportSinkAdapter.
 //
 // Two destinations the user controls from the export popover:
-//   - saveToDisk: native save-as dialog (promptDownloadLocationIfNeeded
-//     falls back to the OS Downloads dir when the "Ask location before
-//     download" setting is off) → downloadUrlToPath writes the file.
+//   - saveToDisk: downloadUrlToPath writes the file to the OS Downloads
+//     directory.
 //   - saveToLibrary: UploadNewVideo / UploadAudio / UploadImage mirrors
 //     the render into the user's Artcraft media library.
 //
@@ -31,16 +27,9 @@ import { uploadByKind } from "./upload-by-kind";
 const inFlight = new Set<string>();
 
 async function ensureSavePath(
-  url: string,
+  _url: string,
   filename: string,
 ): Promise<string | null> {
-  const chosen = await promptDownloadLocationIfNeeded(url);
-  if (chosen === null) {
-    // User explicitly cancelled the dialog.
-    return null;
-  }
-  if (typeof chosen === "string") return chosen;
-  // "Ask location before download" is off — default to Downloads/<filename>.
   const dir = await downloadDir();
   return `${dir}/${filename}`;
 }

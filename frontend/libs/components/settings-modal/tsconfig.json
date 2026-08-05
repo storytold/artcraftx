@@ -3,10 +3,10 @@
   "include": [],
   "references": [
     {
-      "path": "../../api"
+      "path": "../promptbox"
     },
     {
-      "path": "../promptbox"
+      "path": "../../tauri-utils"
     },
     {
       "path": "../../state/subscription"

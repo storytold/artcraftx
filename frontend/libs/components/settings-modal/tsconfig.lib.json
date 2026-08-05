@@ -44,10 +44,10 @@
   ],
   "references": [
     {
-      "path": "../../api/tsconfig.lib.json"
+      "path": "../promptbox/tsconfig.lib.json"
     },
     {
-      "path": "../promptbox/tsconfig.lib.json"
+      "path": "../../tauri-utils/tsconfig.lib.json"
     },
     {
       "path": "../../state/subscription/tsconfig.lib.json"
