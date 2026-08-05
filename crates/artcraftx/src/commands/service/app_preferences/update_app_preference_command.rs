@@ -1,5 +1,6 @@
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
-use crate::state::app_preferences::preferred_download_directory::PreferredDownloadDirectory;
+use crate::state::downloads::preferred_download_directory::PreferredDownloadDirectory;
+use crate::state::downloads::preferred_download_filename::PreferredDownloadFilename;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use anyhow::anyhow;
 use errors::AnyhowResult;
@@ -15,18 +16,24 @@ pub struct UpdateAppPreferencesRequest {
   pub value: Option<ValueType>,
 }
 
+/// NB: Untagged — variant ORDER matters. `DownloadFilename` must precede
+/// `String` (its unit variant arrives as the string "artcraft_convention"),
+/// and its custom variant keys on "custom_format" so it can't collide with
+/// `DownloadDirectory`'s "custom".
 #[derive(Deserialize, Debug)]
 #[serde(untagged)]
 pub enum ValueType {
   Bool(bool),
-  String(String),
   DownloadDirectory(PreferredDownloadDirectory),
+  DownloadFilename(PreferredDownloadFilename),
+  String(String),
 }
 
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PreferenceName {
   PreferredDownloadDirectory,
+  PreferredDownloadFilename,
   PlaySounds,
   DeleteFileSound,
   EnqueueSuccessSound,
@@ -78,6 +85,19 @@ async fn update_prefs(
           return Err(anyhow!("Invalid value: {:?}", request.value)),
       }
     }
+    PreferenceName::PreferredDownloadFilename => {
+      match request.value {
+        Some(ValueType::DownloadFilename(filename)) => {
+          if let PreferredDownloadFilename::Custom(format) = &filename {
+            PreferredDownloadFilename::validate_custom_format(format)
+                .map_err(|reason| anyhow!("Invalid filename format: {}", reason))?;
+          }
+          prefs.preferred_download_filename = filename;
+        }
+        _ =>
+          return Err(anyhow!("Invalid value: {:?}", request.value)),
+      }
+    }
     PreferenceName::PlaySounds => {
       match request.value {
         Some(ValueType::Bool(val)) => 
@@ -123,5 +143,39 @@ fn string_value(value: &ValueType) -> AnyhowResult<String> {
   match value {
     ValueType::String(val) => Ok(val.to_string()),
     _ => Err(anyhow!("Invalid value type: {:?}", value)),
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  /// The untagged `ValueType` decode is order-sensitive; pin the behavior.
+  #[test]
+  fn value_type_decoding() {
+    assert!(matches!(
+      serde_json::from_str::<ValueType>("true").unwrap(),
+      ValueType::Bool(true),
+    ));
+    assert!(matches!(
+      serde_json::from_str::<ValueType>("\"artcraft_convention\"").unwrap(),
+      ValueType::DownloadFilename(PreferredDownloadFilename::ArtcraftConvention),
+    ));
+    assert!(matches!(
+      serde_json::from_str::<ValueType>("{\"custom_format\":\"{model}_{date}\"}").unwrap(),
+      ValueType::DownloadFilename(PreferredDownloadFilename::Custom(_)),
+    ));
+    assert!(matches!(
+      serde_json::from_str::<ValueType>("{\"custom\":\"/tmp\"}").unwrap(),
+      ValueType::DownloadDirectory(PreferredDownloadDirectory::Custom(_)),
+    ));
+    assert!(matches!(
+      serde_json::from_str::<ValueType>("{\"system\":\"downloads\"}").unwrap(),
+      ValueType::DownloadDirectory(PreferredDownloadDirectory::System(_)),
+    ));
+    assert!(matches!(
+      serde_json::from_str::<ValueType>("\"done\"").unwrap(),
+      ValueType::String(_),
+    ));
   }
 }

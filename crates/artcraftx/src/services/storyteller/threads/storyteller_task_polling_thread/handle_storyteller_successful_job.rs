@@ -4,6 +4,8 @@ use crate::error::artcraftx_error::ArtcraftXError;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
+use crate::state::downloads::preferred_download_filename::{model_slug_from_model_type_str, DownloadFilenameParts};
+use chrono::Local;
 use crate::utils::download_url_to_download_dir_via_temp::download_url_to_download_dir_via_temp;
 use crate::utils::enum_conversion::generation_source::to_generation_service_provider;
 use crate::utils::enum_conversion::task_type::to_generation_action;
@@ -71,7 +73,7 @@ pub async fn handle_successful_job(
     return Ok(()); // If anything breaks with queries, don't spam events.
   }
 
-  download_all_files(app_data_root, app_preferences, job, &media_files).await;
+  download_all_files(app_data_root, app_preferences, job, task, &media_files).await;
 
   send_additional_success_events(app_handle, job, task, &media_files).await;
 
@@ -92,12 +94,14 @@ pub async fn handle_successful_job(
 }
 
 /// Download every file the job produced into the user's configured download
-/// directory (temp dir first, then moved into place). Fails open per file so
-/// one bad download doesn't lose the rest.
+/// directory (temp dir first, then moved into place), named per the user's
+/// preferred filename convention. Fails open per file so one bad download
+/// doesn't lose the rest.
 async fn download_all_files(
   app_data_root: &AppDataRoot,
   app_preferences: &AppPreferencesManager,
   job: &JobStatusPayload,
+  task: &Task,
   media_files: &[JobMediaFileInfo],
 ) {
   let app_prefs = match app_preferences.get_clone() {
@@ -122,8 +126,28 @@ async fn download_all_files(
         .collect::<Vec<_>>()
   };
 
-  for cdn_url in &cdn_urls {
-    match download_url_to_download_dir_via_temp(cdn_url, app_data_root, &app_prefs).await {
+  let model_slug = task.model_type
+      .as_ref()
+      .map(|model_type| model_slug_from_model_type_str(model_type.to_str()))
+      .unwrap_or_else(|| "artcraft".to_string());
+
+  let download_time = Local::now();
+
+  for (index, cdn_url) in cdn_urls.iter().enumerate() {
+    let extension = cdn_url.path()
+        .rsplit('.')
+        .next()
+        .unwrap_or("bin")
+        .to_string();
+
+    let filename = app_prefs.preferred_download_filename.build_filename(&DownloadFilenameParts {
+      model_slug: &model_slug,
+      download_time,
+      maybe_batch_index: (cdn_urls.len() > 1).then(|| index + 1),
+      extension: &extension,
+    });
+
+    match download_url_to_download_dir_via_temp(cdn_url, Some(&filename), app_data_root, &app_prefs).await {
       Ok(path) => {
         info!("Downloaded job {} file to {:?}", job.job_token.as_str(), path);
       }

@@ -36,8 +36,11 @@ export function PromptShell({
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const savedIdsRef = useRef<Set<string>>(new Set());
 
-  // Save each completed file exactly once. The Rust side already flashes a
-  // toast if a download fails, so errors only suppress the receipt here.
+  // Save each completed file exactly once. ArtCraft-provider files are
+  // already auto-saved to disk by the Rust polling thread (named per the
+  // user's filename convention), so they only get receipted here —
+  // downloading them again would create duplicates. The Rust side already
+  // flashes a toast if a download fails, so errors only suppress the receipt.
   useEffect(() => {
     if (!completed?.length) return;
     const fresh = completed.filter((f) => !savedIdsRef.current.has(f.id));
@@ -47,7 +50,12 @@ export function PromptShell({
     let cancelled = false;
     (async () => {
       const savedNames: string[] = [];
+      let savedOnDiskCount = 0;
       for (const file of fresh) {
+        if (file.provider === "artcraft") {
+          savedOnDiskCount += 1;
+          continue;
+        }
         try {
           await DownloadUrl(file.url);
           savedNames.push(fileNameFromUrl(file.url));
@@ -55,12 +63,15 @@ export function PromptShell({
           // Rust flashed the failure toast; nothing to receipt.
         }
       }
-      if (cancelled || savedNames.length === 0) return;
+      const total = savedNames.length + savedOnDiskCount;
+      if (cancelled || total === 0) return;
       setReceipt({
         text:
-          savedNames.length === 1
+          savedNames.length === 1 && savedOnDiskCount === 0
             ? savedNames[0]
-            : `${savedNames.length} files`,
+            : total === 1
+              ? "1 file"
+              : `${total} files`,
         key: Date.now(),
       });
     })();

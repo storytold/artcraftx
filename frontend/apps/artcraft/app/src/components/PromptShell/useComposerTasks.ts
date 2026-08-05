@@ -16,6 +16,10 @@ export interface CompletedFile {
   /** Unique per file (task id, or task id + batch index). */
   id: string;
   url: string;
+  /** Generation provider ("artcraft", "fal", ...) — ArtCraft files are
+   *  auto-saved by the Rust polling thread, so the frontend must not
+   *  download them again. */
+  provider?: string;
 }
 
 const TASK_TYPES: Record<ComposerTaskModality, ReadonlySet<string>> = {
@@ -112,9 +116,11 @@ async function expandTaskFiles(
   t: Awaited<ReturnType<typeof GetTaskQueue>>["tasks"][number],
   mediaFilesApi: MediaFilesApi,
 ): Promise<CompletedFile[]> {
+  const provider = t.provider ? String(t.provider) : undefined;
   const primary: CompletedFile = {
     id: t.id,
     url: t.completed_item!.primary_media_file.cdn_url,
+    provider,
   };
 
   const batchToken = t.completed_item?.maybe_batch_token;
@@ -131,7 +137,7 @@ async function expandTaskFiles(
       .map((file: any, index: number): CompletedFile | null => {
         const cdnUrl = file.media_links?.cdn_url;
         if (!cdnUrl) return null;
-        return { id: `${t.id}:${file.token ?? index}`, url: cdnUrl };
+        return { id: `${t.id}:${file.token ?? index}`, url: cdnUrl, provider };
       })
       .filter((f: CompletedFile | null): f is CompletedFile => f !== null);
     return files.length > 0 ? files : [primary];

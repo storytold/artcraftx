@@ -8,6 +8,9 @@ export interface AppPreferencesPayload {
   // Preferred download directory
   preferred_download_directory: PreferredDownloadDirectory,
 
+  // How downloaded generation files are named on disk.
+  preferred_download_filename: PreferredDownloadFilename,
+
   // Play sounds on events.
   play_sounds: boolean,
 
@@ -22,6 +25,15 @@ export interface AppPreferencesPayload {
 }
 
 export type PreferredDownloadDirectory = SystemDirectory | CustomDirectory;
+
+// "artcraft_convention" or a custom format string wrapper.
+// Custom formats accept {model}, {date}, {YYYY}, {YY}, {MM}, {DD}, {HH},
+// {mm}, {SS}, and {batch_index} tokens.
+export type PreferredDownloadFilename = "artcraft_convention" | CustomFilenameFormat;
+
+export interface CustomFilenameFormat {
+  custom_format: string,
+}
 
 export interface SystemDirectory {
   // If the directory is a system directory.

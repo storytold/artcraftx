@@ -2,6 +2,7 @@ import { Modal } from "@storyteller/ui-modal";
 import { useEffect, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { MiscSettingsPane } from "./panes/MiscSettingsPane";
+import { DownloadsSettingsPane } from "./panes/DownloadsSettingsPane";
 import { AudioSettingsPane } from "./panes/AudioSettingsPane";
 import { AccountSettingsPane } from "./panes/AccountSettings/AccountSettingsPane";
 import { AboutSettingsPane } from "./panes/AboutSettingsPane";
@@ -15,6 +16,7 @@ import { ExperimentalConfirmModal } from "./ExperimentalConfirmModal";
 
 export type SettingsSection =
   | "general"
+  | "downloads"
   | "appearance"
   | "accounts"
   | "alerts"
@@ -58,6 +60,7 @@ export const SettingsContent = ({
 
   const sections = [
     { id: "general" as const, label: "General" },
+    { id: "downloads" as const, label: "Downloads" },
     { id: "accounts" as const, label: "Accounts" },
     { id: "billing" as const, label: "Plan & Credits" },
     { id: "alerts" as const, label: "Alerts" },
@@ -75,6 +78,8 @@ export const SettingsContent = ({
         return <AudioSettingsPane />;
       case "general":
         return <MiscSettingsPane />;
+      case "downloads":
+        return <DownloadsSettingsPane />;
       case "accounts":
         return (
           <AccountSettingsPane

@@ -1,5 +1,6 @@
 use crate::state::app_preferences::app_preferences::AppPreferences;
-use crate::state::app_preferences::preferred_download_directory::PreferredDownloadDirectory;
+use crate::state::downloads::preferred_download_directory::PreferredDownloadDirectory;
+use crate::state::downloads::preferred_download_filename::PreferredDownloadFilename;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use errors::AnyhowResult;
 use serde_derive::{Deserialize, Serialize};
@@ -7,7 +8,8 @@ use serde_derive::{Deserialize, Serialize};
 /// Vector clock versioning string rather than semver.
 /// - Version 1 - initial version.
 /// - Version 2 - added "delete_file_sound", marked optionals "skip_serializing_if"
-const CURRENT_VERSION: &str = "2";
+/// - Version 3 - added "preferred_download_filename"
+const CURRENT_VERSION: &str = "3";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppPreferencesSerializable {
@@ -16,6 +18,11 @@ pub struct AppPreferencesSerializable {
   
   /// The downloads directory to use when a user downloads a file.
   pub preferred_download_directory: Option<PreferredDownloadDirectory>,
+
+  /// How downloaded generation files are named on disk.
+  #[serde(skip_serializing_if = "Option::is_none")]
+  #[serde(default)]
+  pub preferred_download_filename: Option<PreferredDownloadFilename>,
 
   /// Play sounds on events.
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -54,6 +61,7 @@ impl AppPreferencesSerializable {
     Self {
       version: CURRENT_VERSION.to_string(),
       preferred_download_directory: Some(preferences.preferred_download_directory.clone()),
+      preferred_download_filename: Some(preferences.preferred_download_filename.clone()),
       play_sounds: Some(preferences.play_sounds),
       delete_file_sound: preferences.delete_file_sound.clone(),
       generation_success_sound: preferences.generation_success_sound.clone(),
@@ -67,6 +75,10 @@ impl AppPreferencesSerializable {
 
     if let Some(preferred_download_directory) = &self.preferred_download_directory {
       preferences.preferred_download_directory = preferred_download_directory.clone();
+    }
+
+    if let Some(preferred_download_filename) = &self.preferred_download_filename {
+      preferences.preferred_download_filename = preferred_download_filename.clone();
     }
 
     if let Some(play_sounds) = self.play_sounds {

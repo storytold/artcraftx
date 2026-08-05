@@ -74,13 +74,15 @@ pub fn download_file_name_from_url(url: &Url) -> Result<String, ArtcraftXError> 
     url_file_name = format!("artcraft_{}", url_file_name);
   }
 
-  check_url_file_name_for_downloadability(&url_file_name)?;
+  check_download_file_name(&url_file_name)?;
 
   Ok(url_file_name)
 }
 
+/// Vet a filename (from any source) before writing it into the download
+/// directory.
 // TODO: This likely needs more protections.
-fn check_url_file_name_for_downloadability(filename: &str) -> Result<(), ArtcraftXError> {
+pub fn check_download_file_name(filename: &str) -> Result<(), ArtcraftXError> {
   if filename.trim().is_empty() {
     error!("Download filename is empty!");
     return Err(ArtcraftXError::BadDownloadFilename { path: "".into() }.into());

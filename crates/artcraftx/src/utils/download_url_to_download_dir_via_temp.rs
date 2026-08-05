@@ -1,7 +1,7 @@
 use crate::error::artcraftx_error::ArtcraftXError;
 use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::utils::download_url_to_user_download_dir::download_file_name_from_url;
+use crate::utils::download_url_to_user_download_dir::{check_download_file_name, download_file_name_from_url};
 use anyhow::anyhow;
 use log::info;
 use std::io::Write;
@@ -12,15 +12,26 @@ use url::Url;
 /// configured download directory. Downloading to temp first means partially
 /// downloaded files never land in the download directory.
 ///
+/// `maybe_filename` overrides the URL-derived filename (eg. to apply the
+/// user's preferred download filename convention). It is vetted with the
+/// same rules as URL-derived names.
+///
 /// Returns the final path. If a file with the same name already exists in the
 /// download directory, nothing is downloaded and
 /// [`ArtcraftXError::CannotDownloadFilePathAlreadyExists`] is returned.
 pub async fn download_url_to_download_dir_via_temp(
   url: &Url,
+  maybe_filename: Option<&str>,
   app_data_root: &AppDataRoot,
   app_prefs: &AppPreferences,
 ) -> Result<PathBuf, ArtcraftXError> {
-  let url_file_name = download_file_name_from_url(url)?;
+  let url_file_name = match maybe_filename {
+    Some(filename) => {
+      check_download_file_name(filename)?;
+      filename.to_string()
+    }
+    None => download_file_name_from_url(url)?,
+  };
 
   let download_directory = app_prefs
       .preferred_download_directory
@@ -90,7 +101,7 @@ mod tests {
     // A known completed generation output.
     let url = Url::parse("https://cdn-2.fakeyou.com/media/j/q/z/s/x/jqzsxxd8r20bnx42jw2dhdj6tq81q9xf/artcraft_jqzsxxd8r20bnx42jw2dhdj6tq81q9xf.png").unwrap();
 
-    let path = download_url_to_download_dir_via_temp(&url, &app_data_root, &app_prefs)
+    let path = download_url_to_download_dir_via_temp(&url, None, &app_data_root, &app_prefs)
         .await
         .expect("download should succeed");
 
@@ -100,7 +111,7 @@ mod tests {
     assert!(path.starts_with(app_prefs.preferred_download_directory.download_directory(&app_data_root)));
 
     // Second attempt must refuse to clobber.
-    let second = download_url_to_download_dir_via_temp(&url, &app_data_root, &app_prefs).await;
+    let second = download_url_to_download_dir_via_temp(&url, None, &app_data_root, &app_prefs).await;
     assert!(matches!(second, Err(ArtcraftXError::CannotDownloadFilePathAlreadyExists { .. })));
 
     std::fs::remove_file(&path).expect("cleanup");
