@@ -9,7 +9,7 @@ use crate::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
 use uuid_utils::uuid::generate_random_uuid;
@@ -109,7 +109,7 @@ async fn polling_loop(
 
     let local_tasks = list_tasks_by_provider_and_status(ListTasksByProviderAndStatusArgs {
       db: task_database.get_connection(),
-      provider: GenerationProvider::WorldLabs,
+      provider: GenerationSource::WorldLabs,
       task_statuses: &TASK_DATABASE_PENDING_STATUSES,
     }).await?;
 
@@ -231,7 +231,7 @@ async fn upload_spz_splat(
       api_host: &ApiHost::Storyteller,
       maybe_creds: Some(&storyteller_creds),
       path: &spz_download_filename,
-      maybe_generation_provider: Some(GenerationProvider::WorldLabs),
+      maybe_generation_provider: Some(GenerationSource::WorldLabs),
     }).await;
 
     match result {

@@ -1,7 +1,7 @@
 use crate::commands::credentials::credential_payload::CredentialPayload;
 use crate::credentials::cookie_credential::CookieCredential;
 use crate::credentials::credential::{Credential, CredentialSecret};
-use crate::credentials::credential_service_type::{CredentialKind, CredentialServiceType};
+use core_types::enums::generation_source::{CredentialKind, GenerationSource};
 use crate::credentials::credential_user_info::CredentialUserInfo;
 use crate::error::artcraftx_error::ArtcraftXError;
 use crate::state::data_dir::app_data_root::AppDataRoot;
@@ -13,7 +13,7 @@ use tauri::State;
 
 /// The captured result of a web login, ready to persist.
 pub struct WebCredentialSave {
-  pub service: CredentialServiceType,
+  pub service: GenerationSource,
   pub cookie_header: String,
   pub maybe_user_info: Option<CredentialUserInfo>,
 }
@@ -94,7 +94,7 @@ pub struct AddWebCredentialResponse {
 #[tauri::command]
 pub async fn add_web_credential_command(
   app_data_root: State<'_, AppDataRoot>,
-  service: CredentialServiceType,
+  service: GenerationSource,
   cookie_header: String,
   name: Option<String>,
 ) -> Result<AddWebCredentialResponse, String> {

@@ -6,7 +6,7 @@ use crate::utils::window::get_webview_window_hostname::get_webview_window_hostna
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::windows::grok_login_window::grok_login_webview_extract_cookies::grok_login_webview_extract_cookies;
 use crate::services::grok::windows::grok_login_window::grok_login_window_open::GROK_LOGIN_WINDOW_NAME;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use errors::AnyhowResult;
 use log::{error, info};
 use tauri::{AppHandle, Manager, WebviewWindow};
@@ -160,7 +160,7 @@ async fn check_login_window(
   }
 
   let event = RefreshAccountStateEvent {
-    provider: Some(GenerationProvider::Grok),
+    provider: Some(GenerationSource::Grok),
   };
 
   if let Err(err) = event.send(&app_handle) {

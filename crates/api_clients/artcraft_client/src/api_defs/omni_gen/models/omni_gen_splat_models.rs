@@ -1,6 +1,6 @@
 use artcraft_enums::common::generation::common_splat_model::CommonSplatModel;
 use artcraft_enums::common::generation::model_creator::ModelCreator;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use serde_derive::Serialize;
 
 /// Splat model to default to if none is specified
@@ -21,7 +21,7 @@ pub struct OmniGenSplatModelsResponse {
 
 #[derive(Serialize, Clone)]
 pub struct OmniGenSplatModelProviderDetails {
-  pub provider: GenerationProvider,
+  pub provider: GenerationSource,
   pub models: Vec<OmniGenSplatProviderModelDetails>,
 }
 

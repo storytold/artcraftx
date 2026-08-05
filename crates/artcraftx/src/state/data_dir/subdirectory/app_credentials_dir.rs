@@ -1,11 +1,11 @@
 use crate::credentials::credential::Credential;
-use crate::credentials::credential_service_type::CredentialServiceType;
+use core_types::enums::generation_source::GenerationSource;
 use crate::error::artcraftx_credential_error::ArtcraftXCredentialError;
 use crate::error::artcraftx_error::ArtcraftXError;
 use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
-use identifiers::CredentialId;
+use core_types::identifiers::credential_id::CredentialId;
 
 /// The directory holding per-service credential TOML files
 /// (by default `~/Artcraft/artcraftx/credentials`).
@@ -95,7 +95,7 @@ impl AppCredentialsDir {
   /// Next unused managed path for a service, following the naming scheme
   /// `{service}.toml`, then `{service}_2.toml`, `{service}_3.toml`, ...
   /// (Users are free to rename the files afterwards.)
-  pub fn next_available_credential_path(&self, service: CredentialServiceType) -> PathBuf {
+  pub fn next_available_credential_path(&self, service: GenerationSource) -> PathBuf {
     let stem = service.to_str();
     let first = self.file_path_for(stem);
     if !first.exists() {
@@ -183,7 +183,6 @@ mod tests {
   use super::*;
   use crate::credentials::api_key_credential::ApiKeyCredential;
   use crate::credentials::credential::CredentialSecret;
-  use crate::credentials::credential_service_type::CredentialServiceType;
 
   fn write_file(dir: &Path, name: &str, contents: &str) {
     std::fs::write(dir.join(name), contents).unwrap();
@@ -210,8 +209,8 @@ mod tests {
     let credentials = creds_dir.load_credentials().unwrap();
 
     assert_eq!(credentials.len(), 2);
-    assert_eq!(credentials[0].service, CredentialServiceType::ArtcraftCookies);
-    assert_eq!(credentials[1].service, CredentialServiceType::FalApi);
+    assert_eq!(credentials[0].service, GenerationSource::ArtcraftCookies);
+    assert_eq!(credentials[1].service, GenerationSource::FalApi);
   }
 
   #[test]
@@ -221,7 +220,7 @@ mod tests {
 
     let credential = Credential {
       id: CredentialId::generate(),
-      service: CredentialServiceType::FalApi,
+      service: GenerationSource::FalApi,
       name: None,
       secret: CredentialSecret::ApiKey(ApiKeyCredential::new("fal-key-123")),
       user_info: None,
@@ -238,7 +237,7 @@ mod tests {
   fn next_available_path_numbers_duplicates() {
     let dir = tempfile::tempdir().unwrap();
     let creds_dir = AppCredentialsDir::new_from(dir.path());
-    let service = CredentialServiceType::FalApi;
+    let service = GenerationSource::FalApi;
 
     let first = creds_dir.next_available_credential_path(service);
     assert_eq!(first.file_name().unwrap(), "fal_api.toml");

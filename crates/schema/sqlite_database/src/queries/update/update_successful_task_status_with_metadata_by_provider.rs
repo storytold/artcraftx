@@ -1,4 +1,4 @@
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
@@ -10,7 +10,7 @@ const SUCCESSFUL_STATUS : &str = TaskStatus::CompleteSuccess.to_str();
 
 pub struct UpdateSuccessfulTaskByProviderArgs<'a> {
   pub db: &'a TaskDbConnection,
-  pub provider: GenerationProvider,
+  pub provider: GenerationSource,
   pub provider_job_id: &'a str,
   pub maybe_batch_token: Option<&'a BatchGenerationToken>,
   pub maybe_primary_media_file_token: Option<&'a MediaFileToken>,

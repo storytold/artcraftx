@@ -6,7 +6,7 @@ use artcraft_client::credentials::storyteller_credential_set::StorytellerCredent
 use artcraft_client::endpoints::media_files::upload_image_media_file_from_file::{upload_image_media_file_from_file, UploadImageFromFileArgs};
 use artcraft_client::endpoints::media_files::upload_video_media_file_from_file::{upload_video_media_file_from_file, UploadVideoFromFileArgs};
 use artcraft_client::utils::api_host::ApiHost;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::ids::batch_generation_token::BatchGenerationToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 use sqlite_identifiers::ids::prompt_token::PromptToken;
@@ -25,7 +25,7 @@ pub(super) struct UploadGenerationToBackendArgs<'a, P: AsRef<Path>> {
 
   // /// If provided, this is the service provider that created the image.
   // /// NOTE: Cannot set `is_intermediate_system_file = true` if this is set.
-  // pub maybe_generation_provider: Option<GenerationProvider>,
+  // pub maybe_generation_provider: Option<GenerationSource>,
 
   /// If provided, this groups the file into a batch
   /// TODO: This shouldn't be set clientside without the backend generating the token 
@@ -48,7 +48,7 @@ pub(super) async fn upload_generation_to_backend<P: AsRef<Path>>(args: UploadGen
         is_intermediate_system_file: false,
         maybe_prompt_token: args.maybe_prompt_token,
         maybe_batch_token: None, // TODO: This should be added soon.
-        maybe_generation_provider: Some(GenerationProvider::Sora),
+        maybe_generation_provider: Some(GenerationSource::Sora),
       }).await?;
 
       info!("Uploaded image to API backend: {:?}", result.media_file_token);
@@ -60,7 +60,7 @@ pub(super) async fn upload_generation_to_backend<P: AsRef<Path>>(args: UploadGen
         maybe_creds: Some(&args.storyteller_creds),
         path: args.upload_path,
         maybe_prompt_token: args.maybe_prompt_token,
-        maybe_generation_provider: Some(GenerationProvider::Sora),
+        maybe_generation_provider: Some(GenerationSource::Sora),
       }).await?;
 
       info!("Uploaded video to API backend: {:?}", result.media_file_token);

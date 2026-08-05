@@ -1,5 +1,5 @@
 use crate::services::storyteller::state::legacy_credential_paths::StorytellerLegacyCredentialPaths;
-use crate::credentials::credential_service_type::CredentialServiceType;
+use core_types::enums::generation_source::GenerationSource;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::storyteller::state::read_storyteller_credentials_from_disk::read_storyteller_credentials_from_disk;
 use crate::services::storyteller::state::storyteller_credential_holder::StorytellerCredentialHolder;
@@ -79,7 +79,7 @@ impl StorytellerCredentialManager {
         .ok()?;
 
     let credential = credentials.into_iter()
-        .find(|c| c.service == CredentialServiceType::Artcraft)?;
+        .find(|c| c.service == GenerationSource::Artcraft)?;
 
     let cookie = credential.cookies()?;
 

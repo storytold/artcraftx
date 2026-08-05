@@ -8,7 +8,9 @@ use crate::events::functional_events::video_generation_complete_event::{Generate
 use artcraft_client::endpoints::media_files::list_batch_generated_redux_media_files::list_batch_generated_redux_media_files;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::utils::api_host::ApiHost;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
+
+use crate::utils::enum_conversion::generation_source::to_generation_service_provider;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use sqlite_identifiers::enums::task_model_type::TaskModelType;
 use sqlite_identifiers::enums::task_type::TaskType;
@@ -52,7 +54,7 @@ pub async fn notify_frontend_of_completion(
   // Fire the generic generation-complete event (for the task queue UI).
   let generation_action = task_type_to_generation_action(task.task_type);
   let generation_model = task.model_type.and_then(task_model_type_to_generation_model);
-  let generation_service = provider_to_generation_service(task.provider);
+  let generation_service = to_generation_service_provider(task.provider);
 
   let complete_event = GenerationCompleteEvent {
     action: Some(generation_action),
@@ -215,17 +217,6 @@ fn task_type_to_generation_action(task_type: TaskType) -> GenerationAction {
     TaskType::AudioGeneration => GenerationAction::GenerateAudio,
     TaskType::MeshGeneration => GenerationAction::ImageTo3d,
     TaskType::SplatGeneration => GenerationAction::GenerateGaussian,
-  }
-}
-
-fn provider_to_generation_service(provider: GenerationProvider) -> GenerationServiceProvider {
-  match provider {
-    GenerationProvider::Artcraft => GenerationServiceProvider::Artcraft,
-    GenerationProvider::Fal => GenerationServiceProvider::Fal,
-    GenerationProvider::Grok => GenerationServiceProvider::Grok,
-    GenerationProvider::Midjourney => GenerationServiceProvider::Midjourney,
-    GenerationProvider::Sora => GenerationServiceProvider::Sora,
-    GenerationProvider::WorldLabs => GenerationServiceProvider::WorldLabs,
   }
 }
 

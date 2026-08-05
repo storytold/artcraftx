@@ -1,5 +1,5 @@
 use crate::events::basic_sendable_event_trait::{BasicEventStatus, BasicSendableEvent};
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use artcraft_enums::tauri::ux::tauri_event_name::TauriEventName;
 use serde_derive::Serialize;
 
@@ -10,7 +10,7 @@ use serde_derive::Serialize;
 pub struct RefreshAccountStateEvent {
   /// The frontend can optionally decide whether it wants to refresh based 
   /// on the impacted provider account.
-  pub provider: Option<GenerationProvider>,
+  pub provider: Option<GenerationSource>,
 }
 
 impl BasicSendableEvent for RefreshAccountStateEvent {

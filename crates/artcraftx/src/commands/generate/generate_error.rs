@@ -3,7 +3,7 @@ use anyhow::anyhow;
 use router::errors::artcraft_router_error::ArtcraftRouterError;
 use router::errors::provider_error::ProviderError;
 use base64::DecodeError;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use artcraft_enums::common::generation::common_model_type::CommonModelType;
 use errors::AnyhowError;
 use grok_consumer_client::error::grok_error::GrokError;
@@ -31,7 +31,7 @@ pub enum GenerateError {
   
   /// Wrong provider for the model
   BadProviderForModel {
-    provider: GenerationProvider,
+    provider: GenerationSource,
     model: CommonModelType,
   },
 

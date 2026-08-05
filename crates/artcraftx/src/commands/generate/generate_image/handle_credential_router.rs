@@ -1,4 +1,4 @@
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::task_type::TaskType;
 use log::{info, warn};
 use router::api::image_list_ref::ImageListRef;
@@ -22,7 +22,6 @@ use crate::commands::generate::generate_image::tauri_generate_image_request::Tau
 use crate::commands::generate::generate_image::utils::parse_semantic_media_files::{parse_semantic_media_files, SemanticMediaFiles};
 use crate::credentials::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::credential::Credential;
-use crate::credentials::credential_service_type::CredentialServiceType;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 
 /// Credential-driven image generation: resolve the stored credential named
@@ -44,12 +43,12 @@ pub async fn handle_credential_router(
   );
 
   match credential.service {
-    CredentialServiceType::Artcraft
-    | CredentialServiceType::ArtcraftLocal
-    | CredentialServiceType::ArtcraftCookies => {
+    GenerationSource::Artcraft
+    | GenerationSource::ArtcraftLocal
+    | GenerationSource::ArtcraftCookies => {
       handle_artcraft_credential(request, &credential).await
     }
-    CredentialServiceType::FalApi => {
+    GenerationSource::FalApi => {
       let api_key = credential.api_key().ok_or_else(|| {
         credential_not_usable(&credential, "the FAL credential has no API key")
       })?;
@@ -150,7 +149,7 @@ async fn handle_artcraft_credential(
   Ok(TaskEnqueueSuccess {
     task_type: TaskType::ImageGeneration,
     model: Some(tauri_image_model_to_generation_model(tauri_model)),
-    provider: GenerationProvider::Artcraft,
+    provider: GenerationSource::Artcraft,
     provider_job_id: Some(payload.inference_job_token.to_string()),
     maybe_queue_status_url: None,
     maybe_queue_response_url: None,
@@ -205,7 +204,7 @@ mod live_generation_tests {
         .load_credentials()
         .expect("load credentials")
         .into_iter()
-        .find(|c| c.service == CredentialServiceType::Artcraft)
+        .find(|c| c.service == GenerationSource::Artcraft)
         .expect("no `artcraft` (production) credential on disk")
         .id
         .as_str()

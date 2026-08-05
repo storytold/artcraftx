@@ -2,7 +2,7 @@ use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
 use artcraft_enums::common::generation::common_generation_mode::CommonGenerationMode;
 use artcraft_enums::common::generation::common_model_type::CommonModelType;
 use artcraft_enums::common::generation::common_resolution::CommonResolution;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use serde_derive::{Deserialize, Serialize};
 use sqlite_identifiers::ids::prompt_token::PromptToken;
 
@@ -23,7 +23,7 @@ pub struct CreatePromptRequest {
   pub model_type: Option<CommonModelType>,
 
   /// OPTIONAL. The service used.
-  pub generation_provider: Option<GenerationProvider>,
+  pub generation_provider: Option<GenerationSource>,
 
   /// OPTIONAL. The generation mode (eg. keyframe, reference, inpaint, etc.)
   pub maybe_generation_mode: Option<CommonGenerationMode>,

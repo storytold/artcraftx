@@ -1,7 +1,7 @@
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
 use chrono::{DateTime, Utc};
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::task_failure_type::TaskFailureType;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use sqlite_identifiers::enums::task_model_type::TaskModelType;
@@ -21,7 +21,7 @@ pub struct TaskItem {
   pub status: TaskStatus,
   pub task_type: TaskType,
   pub model_type: Option<TaskModelType>,
-  pub provider: Option<GenerationProvider>,
+  pub provider: Option<GenerationSource>,
   pub provider_job_id: Option<String>,
   pub frontend_caller: Option<TauriCommandCaller>,
   pub frontend_subscriber_id: Option<String>,
@@ -82,7 +82,7 @@ pub async fn list_tasks_for_frontend(
           .map(|model| TaskModelType::from_str(&model))
           .transpose()?,
       provider: raw.provider
-          .map(|provider| GenerationProvider::from_str(&provider))
+          .map(|provider| GenerationSource::from_str(&provider))
           .transpose()?,
       provider_job_id: raw.provider_job_id,
       frontend_caller: raw.frontend_caller

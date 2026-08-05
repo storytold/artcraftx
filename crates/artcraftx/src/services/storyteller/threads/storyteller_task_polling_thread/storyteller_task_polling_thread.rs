@@ -7,7 +7,7 @@ use anyhow::anyhow;
 use artcraft_client::endpoints::jobs::list_session_jobs::{list_session_jobs, States};
 use artcraft_client::error::api_error::ApiError;
 use artcraft_client::error::storyteller_error::StorytellerError;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use artcraft_enums::common::job_status_plus::JobStatusPlus;
 use sqlite_identifiers::enums::task_status::TaskStatus;
 use errors::AnyhowResult;
@@ -73,7 +73,7 @@ async fn polling_loop(
 
     let tasks = list_tasks_by_provider_and_tokens(ListTasksArgs {
       db: task_database.get_connection(),
-      provider: GenerationProvider::Artcraft,
+      provider: GenerationSource::Artcraft,
       provider_job_ids: Some(job_ids),
     }).await?;
 

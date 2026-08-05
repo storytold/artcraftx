@@ -1,6 +1,6 @@
 use artcraft_enums::common::generation::common_audio_model::CommonAudioModel;
 use artcraft_enums::common::generation::model_creator::ModelCreator;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use serde_derive::Serialize;
 
 /// Audio model to default to if none is specified
@@ -21,7 +21,7 @@ pub struct OmniGenAudioModelsResponse {
 
 #[derive(Serialize, Clone)]
 pub struct OmniGenAudioModelProviderDetails {
-  pub provider: GenerationProvider,
+  pub provider: GenerationSource,
   pub models: Vec<OmniGenAudioProviderModelDetails>,
 }
 

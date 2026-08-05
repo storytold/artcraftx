@@ -7,7 +7,7 @@ use crate::services::sora::events::sora_login_success_event::SoraLoginSuccessEve
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::windows::sora_login_window::extract_sora_webview_cookies::extract_sora_webview_cookies;
 use crate::services::sora::windows::sora_login_window::open_sora_login_window::LOGIN_WINDOW_NAME;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use errors::AnyhowResult;
 use log::{error, info};
 use openai_sora_client::creds::sora_credential_set::SoraCredentialSet;
@@ -138,7 +138,7 @@ async fn check_login_window(
 
 fn send_frontend_login_events(app_handle: &AppHandle) {
   let event = RefreshAccountStateEvent {
-    provider: Some(GenerationProvider::Sora),
+    provider: Some(GenerationSource::Sora),
   };
 
   event.send_infallible(app_handle);

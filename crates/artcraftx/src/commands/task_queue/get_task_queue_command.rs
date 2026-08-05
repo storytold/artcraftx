@@ -2,7 +2,7 @@ use crate::commands::utils::response::shorthand::ResponseOrErrorMessage;
 use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 use crate::state::database::task_database::TaskDatabase;
 use chrono::{DateTime, Utc};
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::task_model_type::TaskModelType;
 use sqlite_identifiers::enums::task_status::TaskStatus;
 use sqlite_identifiers::enums::task_type::TaskType;
@@ -30,7 +30,7 @@ pub struct TaskQueueItem {
   pub task_type: TaskType,
   pub model_type: Option<TaskModelType>,
 
-  pub provider: Option<GenerationProvider>,
+  pub provider: Option<GenerationSource>,
   pub provider_job_id: Option<String>,
 
   /// If the item is done, these will be filled out.

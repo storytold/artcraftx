@@ -96,7 +96,7 @@ async fn check_billing_window(
   // TODO: Send success events:
 
   // let event = RefreshAccountStateEvent {
-  //   provider: Some(GenerationProvider::Midjourney),
+  //   provider: Some(GenerationSource::Midjourney),
   // };
   //
   // if let Err(err) = event.send(&app_handle) {

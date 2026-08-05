@@ -11,7 +11,7 @@ use crate::services::grok::util::get_or_upgrade_grok_full_credentials::get_or_up
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use artcraft_enums::common::generation::common_model_type::CommonModelType;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
@@ -89,7 +89,7 @@ async fn polling_loop(
 
     let local_tasks = list_tasks_by_provider_and_status(ListTasksByProviderAndStatusArgs {
       db: task_database.get_connection(),
-      provider: GenerationProvider::Grok,
+      provider: GenerationSource::Grok,
       task_statuses: &TASK_DATABASE_PENDING_STATUSES,
     }).await?;
 
@@ -195,7 +195,7 @@ async fn upload_grok_video(
     positive_prompt: grok_video_post.prompt.clone(),
     negative_prompt: None,
     model_type: Some(CommonModelType::GrokVideo),
-    generation_provider: Some(GenerationProvider::Grok),
+    generation_provider: Some(GenerationSource::Grok),
     maybe_generation_mode: None,
     maybe_aspect_ratio: None,
     maybe_resolution: None,
@@ -250,7 +250,7 @@ async fn upload_grok_video(
       maybe_creds: Some(&storyteller_creds),
       path: &download_path,
       maybe_prompt_token: Some(&prompt_response.prompt_token),
-      maybe_generation_provider: Some(GenerationProvider::Grok),
+      maybe_generation_provider: Some(GenerationSource::Grok),
     }).await;
 
     match result {

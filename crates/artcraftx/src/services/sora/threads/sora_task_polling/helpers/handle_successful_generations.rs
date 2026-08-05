@@ -10,7 +10,7 @@ use crate::services::sora::threads::sora_task_polling::helpers::generation_type:
 use crate::services::sora::threads::sora_task_polling::helpers::upload_generation_to_backend::{upload_generation_to_backend, UploadGenerationToBackendArgs};
 use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use artcraft_enums::common::generation::common_model_type::CommonModelType;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
@@ -72,7 +72,7 @@ pub async fn handle_classic_successful_generations(
       positive_prompt: generation.prompt.clone(),
       negative_prompt: None,
       model_type: Some(generation.model_type),
-      generation_provider: Some(GenerationProvider::Sora),
+      generation_provider: Some(GenerationSource::Sora),
       maybe_generation_mode: None,
       maybe_aspect_ratio: None,
       maybe_resolution: None,

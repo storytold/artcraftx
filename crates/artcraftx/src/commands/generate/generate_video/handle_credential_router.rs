@@ -9,7 +9,7 @@ use crate::commands::generate::generate_video::artcraft::handle_artcraft_video_v
 use crate::commands::generate::generate_video::request::TauriGenerateVideoRequest;
 use crate::credentials::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::credential::Credential;
-use crate::credentials::credential_service_type::CredentialServiceType;
+use core_types::enums::generation_source::GenerationSource;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 
 /// Credential-driven video generation: resolve the stored credential named
@@ -31,9 +31,9 @@ pub async fn handle_credential_router(
   );
 
   match credential.service {
-    CredentialServiceType::Artcraft
-    | CredentialServiceType::ArtcraftLocal
-    | CredentialServiceType::ArtcraftCookies => {
+    GenerationSource::Artcraft
+    | GenerationSource::ArtcraftLocal
+    | GenerationSource::ArtcraftCookies => {
       handle_artcraft_credential(request, &credential).await
     }
     other => Err(credential_not_usable(
@@ -91,7 +91,7 @@ mod live_generation_tests {
         .load_credentials()
         .expect("load credentials")
         .into_iter()
-        .find(|c| c.service == CredentialServiceType::Artcraft)
+        .find(|c| c.service == GenerationSource::Artcraft)
         .expect("no `artcraft` (production) credential on disk")
         .id
         .as_str()

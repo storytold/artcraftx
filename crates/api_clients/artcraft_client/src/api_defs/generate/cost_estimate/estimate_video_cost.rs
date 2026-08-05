@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
 use artcraft_enums::common::generation::common_video_model::CommonVideoModel;
 use artcraft_enums::common::generation::common_resolution::CommonResolution;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 
 pub const ESTIMATE_VIDEO_COST_PATH: &str = "/v1/generate/cost_estimate/video";
 
@@ -17,7 +17,7 @@ pub struct EstimateVideoCostRequest {
   pub model: CommonVideoModel,
 
   /// The provider to route the generation through.
-  pub provider: GenerationProvider,
+  pub provider: GenerationSource,
 
   /// The type of generation (determines how many input images are involved).
   /// This is a tagged enum, so it looks like:
@@ -98,7 +98,7 @@ mod tests {
   fn test_serialization_tagging1() {
     let request = EstimateVideoCostRequest {
       model: CommonVideoModel::GrokVideo,
-      provider: GenerationProvider::Artcraft,
+      provider: GenerationSource::Artcraft,
       generation_mode: GenerationMode::TextToVideo,
       aspect_ratio: None,
       resolution: None,
@@ -115,7 +115,7 @@ mod tests {
   fn test_serialization_tagging2() {
     let request = EstimateVideoCostRequest {
       model: CommonVideoModel::GrokVideo,
-      provider: GenerationProvider::Artcraft,
+      provider: GenerationSource::Artcraft,
       generation_mode: GenerationMode::ReferenceImageToVideo { count: 1 },
       aspect_ratio: None,
       resolution: None,

@@ -1,7 +1,7 @@
 use crate::commands::credentials::credential_payload::CredentialPayload;
 use crate::credentials::api_key_credential::ApiKeyCredential;
 use crate::credentials::credential::{Credential, CredentialSecret};
-use crate::credentials::credential_service_type::{CredentialKind, CredentialServiceType};
+use core_types::enums::generation_source::{CredentialKind, GenerationSource};
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use log::{error, info};
 use serde_derive::Serialize;
@@ -19,7 +19,7 @@ pub struct AddApiCredentialResponse {
 #[tauri::command]
 pub async fn add_api_credential_command(
   app_data_root: State<'_, AppDataRoot>,
-  service: CredentialServiceType,
+  service: GenerationSource,
   api_key: String,
   name: Option<String>,
 ) -> Result<AddApiCredentialResponse, String> {

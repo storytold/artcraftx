@@ -1,4 +1,4 @@
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::task_type::TaskType;
 use log::{info, warn};
 use router::api::router_provider::RouterProvider;
@@ -18,7 +18,6 @@ use crate::commands::generate::common::generation_credential::{credential_not_us
 use crate::commands::generate::generate_audio::request::TauriGenerateAudioRequest;
 use crate::credentials::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::credential::Credential;
-use crate::credentials::credential_service_type::CredentialServiceType;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 
 /// Credential-driven audio generation: resolve the stored credential named
@@ -40,9 +39,9 @@ pub async fn handle_credential_router(
   );
 
   match credential.service {
-    CredentialServiceType::Artcraft
-    | CredentialServiceType::ArtcraftLocal
-    | CredentialServiceType::ArtcraftCookies => {
+    GenerationSource::Artcraft
+    | GenerationSource::ArtcraftLocal
+    | GenerationSource::ArtcraftCookies => {
       handle_artcraft_credential(request, &credential).await
     }
     other => Err(credential_not_usable(
@@ -129,7 +128,7 @@ async fn handle_artcraft_credential(
   Ok(TaskEnqueueSuccess {
     task_type: TaskType::AudioGeneration,
     model: Some(generation_model),
-    provider: GenerationProvider::Artcraft,
+    provider: GenerationSource::Artcraft,
     provider_job_id: Some(payload.inference_job_token.to_string()),
     maybe_queue_status_url: None,
     maybe_queue_response_url: None,

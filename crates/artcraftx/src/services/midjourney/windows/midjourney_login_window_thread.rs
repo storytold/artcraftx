@@ -7,7 +7,7 @@ use crate::services::midjourney::state::midjourney_credential_manager::Midjourne
 use crate::services::midjourney::state::midjourney_user_info::MidjourneyUserInfo;
 use crate::services::midjourney::windows::extract_midjourney_webview_cookies::extract_midjourney_webview_cookies;
 use crate::services::midjourney::windows::open_midjourney_login_window::MIDJOURNEY_LOGIN_WINDOW_NAME;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use errors::AnyhowResult;
 use log::{error, info};
 use midjourney_client::client::midjourney_hostname::MidjourneyHostname;
@@ -163,7 +163,7 @@ async fn check_login_window(
   }
 
   let event = RefreshAccountStateEvent {
-    provider: Some(GenerationProvider::Midjourney),
+    provider: Some(GenerationSource::Midjourney),
   };
 
   if let Err(err) = event.send(&app_handle) {

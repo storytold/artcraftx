@@ -1,11 +1,11 @@
 use crate::credentials::api_key_credential::ApiKeyCredential;
 use crate::credentials::cookie_credential::CookieCredential;
 use crate::credentials::credential_file::CredentialFile;
-use crate::credentials::credential_service_type::{CredentialKind, CredentialServiceType};
+use core_types::enums::generation_source::{CredentialKind, GenerationSource};
 use crate::credentials::credential_user_info::CredentialUserInfo;
 use crate::error::artcraftx_credential_error::ArtcraftXCredentialError;
 use std::path::{Path, PathBuf};
-use identifiers::CredentialId;
+use core_types::identifiers::credential_id::CredentialId;
 
 /// A validated, in-app credential.
 ///
@@ -19,7 +19,7 @@ pub struct Credential {
   /// TOML file. Hidden from users, but the effective primary identifier —
   /// file names can be freely renamed.
   pub id: CredentialId,
-  pub service: CredentialServiceType,
+  pub service: GenerationSource,
   /// Optional user-facing label to tell multiple credentials for the same
   /// service apart. Empty by default.
   pub name: Option<String>,
@@ -106,7 +106,7 @@ mod tests {
 
     let credential = Credential {
       id: CredentialId::generate(),
-      service: CredentialServiceType::FalApi,
+      service: GenerationSource::FalApi,
       name: Some("work account".to_string()),
       secret: CredentialSecret::ApiKey(ApiKeyCredential::new("fal-secret-key-12345")),
       user_info: None,
@@ -116,7 +116,7 @@ mod tests {
 
     let loaded = Credential::load_from_file(&path).unwrap();
     assert_eq!(loaded.id, credential.id);
-    assert_eq!(loaded.service, CredentialServiceType::FalApi);
+    assert_eq!(loaded.service, GenerationSource::FalApi);
     assert_eq!(loaded.name.as_deref(), Some("work account"));
     assert_eq!(loaded.api_key().unwrap().api_key, "fal-secret-key-12345");
     assert_eq!(loaded.api_key().unwrap().printable_partial_prefix, "fal-s");

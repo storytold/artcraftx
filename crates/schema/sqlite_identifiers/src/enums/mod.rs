@@ -1,5 +1,4 @@
 pub mod enum_error;
-pub mod generation_provider;
 pub mod task_failure_type;
 pub mod task_media_file_class;
 pub mod task_model_type;

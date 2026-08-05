@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-/// Forward-compatible, self-contained API-client copy of the server's `GenerationProvider` enum.
+/// Forward-compatible, self-contained API-client copy of the server's `GenerationSource` enum.
 ///
 /// Serialized as a string. Any value this client build does not recognize is preserved
 /// verbatim in [`Unknown`], so newer server variants never break deserialization and

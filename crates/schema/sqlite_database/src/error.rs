@@ -1,3 +1,4 @@
+use core_types::enums::enum_error::EnumError as CoreEnumError;
 use sqlite_identifiers::enums::enum_error::EnumError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
@@ -33,5 +34,12 @@ impl From<sqlx::Error> for SqliteTasksError {
 impl From<EnumError> for SqliteTasksError {
   fn from(err: EnumError) -> Self {
     SqliteTasksError::EnumError(err)
+  }
+}
+
+impl From<CoreEnumError> for SqliteTasksError {
+  fn from(err: CoreEnumError) -> Self {
+    let CoreEnumError::CouldNotConvertFromString(value) = err;
+    SqliteTasksError::EnumError(EnumError::CouldNotConvertFromString(value))
   }
 }

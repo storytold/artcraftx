@@ -17,7 +17,7 @@ use router::client::router_client::RouterClient;
 use router::generate::generate_video::generate_video_request_builder::GenerateVideoRequestBuilder;
 use router::generate::generate_video::generate_video_response::GenerateVideoResponse;
 use router::generate::generate_video::video_generation_draft_or_request::VideoGenerationDraftOrRequest;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::task_type::TaskType;
 use log::{error, info};
 
@@ -79,7 +79,7 @@ pub async fn handle_artcraft_video_via_router(
   Ok(TaskEnqueueSuccess {
     task_type: TaskType::VideoGeneration,
     model: Some(generation_model),
-    provider: GenerationProvider::Artcraft,
+    provider: GenerationSource::Artcraft,
     provider_job_id: Some(job_id),
     maybe_queue_status_url: None,
     maybe_prompt_token: None,

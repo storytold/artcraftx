@@ -68,7 +68,7 @@ macro_rules! define_id {
 
       /// Generate a fresh, time-ordered id.
       pub fn generate() -> Self {
-        Self($crate::id_core::mint($prefix))
+        Self($crate::identifiers::utils::id_core::mint($prefix))
       }
 
       /// Borrow the underlying string.
@@ -90,9 +90,9 @@ macro_rules! define_id {
     }
 
     impl ::std::str::FromStr for $name {
-      type Err = $crate::id_core::ParseIdError;
+      type Err = $crate::identifiers::utils::id_core::ParseIdError;
       fn from_str(s: &str) -> ::std::result::Result<Self, Self::Err> {
-        $crate::id_core::validate(s, $prefix)?;
+        $crate::identifiers::utils::id_core::validate(s, $prefix)?;
         Ok(Self(s.to_string()))
       }
     }

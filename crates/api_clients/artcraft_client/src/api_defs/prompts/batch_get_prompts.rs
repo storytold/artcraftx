@@ -7,7 +7,7 @@ use artcraft_enums::common::generation::common_generation_mode::CommonGeneration
 use artcraft_enums::common::generation::common_model_class::CommonModelClass;
 use artcraft_enums::common::generation::common_model_type::CommonModelType;
 use artcraft_enums::common::generation::common_resolution::CommonResolution;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use std::collections::HashSet;
 
 use serde_derive::{Deserialize, Serialize};
@@ -38,7 +38,7 @@ pub struct BatchPromptInfo {
   pub maybe_model_class: Option<CommonModelClass>,
 
   /// The service provider used
-  pub maybe_generation_provider: Option<GenerationProvider>,
+  pub maybe_generation_provider: Option<GenerationSource>,
 
   /// Positive prompt (technically optional, but usually present)
   pub maybe_positive_prompt: Option<String>,

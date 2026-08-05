@@ -12,7 +12,7 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
 use cookie_store::cookie_store::CookieStore;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use artcraft_enums::common::generation::common_model_type::CommonModelType;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
@@ -109,7 +109,7 @@ async fn polling_loop(
 
     let local_tasks = list_tasks_by_provider_and_status(ListTasksByProviderAndStatusArgs {
       db: task_database.get_connection(),
-      provider: GenerationProvider::Midjourney,
+      provider: GenerationSource::Midjourney,
       task_statuses: &TASK_DATABASE_PENDING_STATUSES,
     }).await?;
 
@@ -235,7 +235,7 @@ async fn upload_midjourney_batch(
     positive_prompt: midjourney_item.full_command.clone(),
     negative_prompt: None,
     model_type: Some(model_type),
-    generation_provider: Some(GenerationProvider::Midjourney),
+    generation_provider: Some(GenerationSource::Midjourney),
     maybe_generation_mode: None,
     maybe_aspect_ratio: None,
     maybe_resolution: None,
@@ -293,7 +293,7 @@ async fn upload_midjourney_batch(
         is_intermediate_system_file: false,
         maybe_prompt_token: Some(&prompt_response.prompt_token),
         maybe_batch_token: Some(&batch_token),
-        maybe_generation_provider: Some(GenerationProvider::Midjourney),
+        maybe_generation_provider: Some(GenerationSource::Midjourney),
       }).await;
 
       match result {

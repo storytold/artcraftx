@@ -190,6 +190,7 @@ dependencies = [
  "chrono",
  "cloudflare_errors",
  "cookie",
+ "core_types",
  "errors",
  "log",
  "mimetypes",
@@ -246,6 +247,7 @@ dependencies = [
  "bytes",
  "chrono",
  "cookie_store 0.0.1",
+ "core_types",
  "directories",
  "dirs",
  "discord-rich-presence",
@@ -254,7 +256,6 @@ dependencies = [
  "filesys",
  "futures",
  "grok_consumer_client",
- "identifiers",
  "image",
  "images",
  "indexmap 2.13.0",
@@ -1227,6 +1228,18 @@ dependencies = [
  "bitflags 2.11.0",
  "core-foundation 0.10.0",
  "libc",
+]
+
+[[package]]
+name = "core_types"
+version = "0.0.1"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "strum",
+ "ulid",
+ "workspace-build-acceleration",
 ]
 
 [[package]]
@@ -3136,16 +3149,6 @@ name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
-
-[[package]]
-name = "identifiers"
-version = "0.0.1"
-dependencies = [
- "serde",
- "serde_json",
- "ulid",
- "workspace-build-acceleration",
-]
 
 [[package]]
 name = "idna"
@@ -6352,6 +6355,7 @@ version = "0.0.1"
 dependencies = [
  "anyhow",
  "chrono",
+ "core_types",
  "errors",
  "log",
  "once_cell",

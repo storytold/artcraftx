@@ -1,7 +1,7 @@
 use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
 use artcraft_enums::common::generation::common_resolution::CommonResolution;
 use artcraft_enums::common::generation::common_quality::CommonQuality;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::tauri_command_caller::TauriCommandCaller;
 use serde_derive::{Deserialize, Serialize};
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
@@ -20,7 +20,7 @@ pub struct TauriGenerateImageRequest {
 
   /// The provider to use (defaults to Artcraft/Storyteller).
   /// Not all (provider, model) combinations are valid.
-  pub provider: Option<GenerationProvider>,
+  pub provider: Option<GenerationSource>,
 
   /// The model to use.
   pub model: Option<TauriImageModel>,

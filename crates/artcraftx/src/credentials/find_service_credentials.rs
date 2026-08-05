@@ -1,7 +1,7 @@
 use log::warn;
 
 use crate::credentials::credential::Credential;
-use crate::credentials::credential_service_type::CredentialServiceType;
+use core_types::enums::generation_source::GenerationSource;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 
 /// Find the first stored credential for a service, if any.
@@ -11,7 +11,7 @@ use crate::state::data_dir::app_data_root::AppDataRoot;
 /// API key).
 pub fn find_first_credential_for_service(
   app_data_root: &AppDataRoot,
-  service: CredentialServiceType,
+  service: GenerationSource,
 ) -> Option<Credential> {
   let credentials = match app_data_root.credentials_dir().load_credentials() {
     Ok(credentials) => credentials,
@@ -26,6 +26,6 @@ pub fn find_first_credential_for_service(
 
 /// The first stored FAL API key, if any.
 pub fn find_fal_api_key(app_data_root: &AppDataRoot) -> Option<String> {
-  find_first_credential_for_service(app_data_root, CredentialServiceType::FalApi)
+  find_first_credential_for_service(app_data_root, GenerationSource::FalApi)
       .and_then(|credential| credential.api_key().map(|key| key.api_key.clone()))
 }

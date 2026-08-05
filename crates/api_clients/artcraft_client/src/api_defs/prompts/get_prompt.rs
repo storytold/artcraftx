@@ -7,7 +7,7 @@ use artcraft_enums::common::generation::common_bitrate::CommonBitrate;
 use artcraft_enums::common::generation::common_generation_mode::CommonGenerationMode;
 use artcraft_enums::common::generation::common_model_type::CommonModelType;
 use artcraft_enums::common::generation::common_resolution::CommonResolution;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use artcraft_enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use serde_derive::{Deserialize, Serialize};
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
@@ -42,7 +42,7 @@ pub struct PromptInfo {
   pub maybe_model_class: Option<CommonModelClass>,
 
   /// The service provider used
-  pub maybe_generation_provider: Option<GenerationProvider>,
+  pub maybe_generation_provider: Option<GenerationSource>,
 
   /// Positive prompt (technically optional, but usually present)
   pub maybe_positive_prompt: Option<String>,

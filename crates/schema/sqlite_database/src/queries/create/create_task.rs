@@ -1,6 +1,6 @@
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::task_model_type::TaskModelType;
 use sqlite_identifiers::enums::task_status::TaskStatus;
 use sqlite_identifiers::enums::task_type::TaskType;
@@ -13,7 +13,7 @@ pub struct CreateTaskArgs<'a> {
   pub status: TaskStatus,
   pub task_type: TaskType,
   pub model_type: Option<TaskModelType>,
-  pub provider: GenerationProvider,
+  pub provider: GenerationSource,
   pub provider_job_id: Option<&'a str>,
   pub queue_status_url: Option<&'a str>,
   pub queue_response_url: Option<&'a str>,

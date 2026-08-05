@@ -7,7 +7,7 @@ use crate::utils::constants::{APPLICATION_JSON, USER_AGENT};
 use crate::utils::filter_bad_response::filter_bad_response;
 use crate::utils::http_get_anonymous::http_get_anonymous;
 use chrono::{DateTime, Utc};
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use uuid_utils::uuid::generate_random_uuid;
 use log::debug;
 use reqwest::multipart::{Form, Part};
@@ -35,7 +35,7 @@ pub struct UploadImageFromFileArgs<'a, P: AsRef<Path>> {
   pub maybe_prompt_token: Option<&'a PromptToken>,
 
   /// If provided, the third-party provider that generated this file.
-  pub maybe_generation_provider: Option<GenerationProvider>,
+  pub maybe_generation_provider: Option<GenerationSource>,
 
   /// If provided, this groups the file into a batch
   /// TODO: This shouldn't be set clientside without the backend generating the token 

@@ -1,5 +1,5 @@
 use artcraft_client::utils::api_host::ApiHost;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::task_type::TaskType;
 use log::{info, warn};
 use router::api::image_list_ref::ImageListRef;
@@ -133,7 +133,7 @@ fn build_task_enqueue_success(
   Ok(TaskEnqueueSuccess {
     task_type: TaskType::ImageGeneration,
     model: Some(tauri_image_model_to_generation_model(tauri_model)),
-    provider: GenerationProvider::Fal,
+    provider: GenerationSource::Fal,
     provider_job_id: Some(provider_job_id),
     maybe_queue_status_url: fal_payload.maybe_status_url,
     maybe_queue_response_url: fal_payload.maybe_response_url,

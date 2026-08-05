@@ -4,7 +4,7 @@ use crate::utils::api_host::ApiHost;
 use crate::utils::constants::{APPLICATION_JSON, USER_AGENT};
 use crate::utils::filter_bad_response::filter_bad_response;
 use crate::utils::http_get_anonymous::http_get_anonymous;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use chrono::{DateTime, Utc};
 use uuid_utils::uuid::generate_random_uuid;
 use log::debug;
@@ -25,7 +25,7 @@ pub async fn upload_new_engine_asset_from_file<P: AsRef<Path>>(
   api_host: &ApiHost,
   maybe_creds: Option<&StorytellerCredentialSet>,
   path: P,
-  maybe_generation_provider: Option<GenerationProvider>,
+  maybe_generation_provider: Option<GenerationSource>,
 ) -> Result<UploadImageMediaFileSuccessResponse, ApiError> {
 
   let url = get_route(api_host);

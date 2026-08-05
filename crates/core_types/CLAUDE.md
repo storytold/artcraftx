@@ -1,8 +1,13 @@
-# identifiers — the concrete strongly-typed id types
+# core_types — the highest-level shared types
 
-Every non-database entity id gets a distinct type defined here (`CredentialId`, …). This crate is
-the one the rest of the workspace depends on for these ids. The *machinery* (minting, validation,
-the `define_id!` macro) lives in the `id_core` module of this crate.
+The whole workspace depends on this crate; it must stay dependency-light.
+
+- `enums/generation_source.rs` — `GenerationSource`: where a generation comes from (the service +
+  auth mechanism behind a credential, and the provider recorded for tasks). Stored in credential
+  TOML files and the sqlite tasks database — NEVER change existing string values.
+- `identifiers/` — the concrete strongly-typed id types. Every non-database entity id gets a
+  distinct type here (`CredentialId`, …). The *machinery* (minting, validation, the `define_id!`
+  macro) lives in `identifiers/utils/id_core.rs`.
 
 Database identifiers live elsewhere: `sqlite_identifiers` for the local tasks database, `artcraft_tokens`
 for the server API.

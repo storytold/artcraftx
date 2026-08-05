@@ -7,22 +7,6 @@
 --
 -- Migration history:
 --   tasks_v1.sqlite - initial version
---   tasks_v2.sqlite - added model_type (nullable)
---   tasks_v3.sqlite - added frontend_caller, comments
---   tasks_v4.sqlite - added is_dismissed_by_user
---   tasks_v5.sqlite - added five fields:
---      on_complete_batch_token,
---      on_complete_primary_media_file_token,
---      on_complete_primary_media_file_class,
---      on_complete_primary_media_file_cdn_url,
---      on_complete_primary_media_file_thumbnail_url_template,
---   tasks_v6.sqlite - added two fields:
---      on_failure_type
---      on_failure_message
---   tasks_v7.sqlite - added prompt token + two fields (for fal):
---      prompt_token
---      queue_status_url
---      queue_response_url
 
 CREATE TABLE tasks (
     -- Task auto-incrementing primary key.

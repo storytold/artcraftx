@@ -19,6 +19,7 @@ name = "artcraft_client"
 path = "src/lib.rs"
 
 [dependencies]
+core_types.workspace = true
 # Workspace hack (faster compile times)
 workspace-build-acceleration.workspace = true
 

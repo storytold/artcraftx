@@ -1,5 +1,5 @@
 [package]
-name = "identifiers"
+name = "core_types"
 edition = "2021"
 version = "0.0.1"
 authors = [
@@ -12,7 +12,7 @@ publish = false
 normal = ["workspace-build-acceleration"]
 
 [lib]
-name = "identifiers"
+name = "core_types"
 path = "src/lib.rs"
 
 [dependencies]
@@ -21,6 +21,7 @@ workspace-build-acceleration.workspace = true
 
 # Serialization (define_id! expansion references ::serde)
 serde.workspace = true
+serde_derive.workspace = true
 
 # Id entropy (time-ordered ULIDs)
 ulid = "1"
@@ -28,3 +29,6 @@ ulid = "1"
 [dev-dependencies]
 # Test serialization
 serde_json.workspace = true
+
+# Enum iteration in tests
+strum = { workspace = true, features = ["derive"] }

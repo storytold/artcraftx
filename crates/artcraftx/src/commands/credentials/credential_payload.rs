@@ -1,8 +1,8 @@
 use crate::credentials::credential::Credential;
-use crate::credentials::credential_service_type::{CredentialKind, CredentialServiceType};
+use core_types::enums::generation_source::{CredentialKind, GenerationSource};
 use chrono::{DateTime, Utc};
 use serde_derive::Serialize;
-use identifiers::CredentialId;
+use core_types::identifiers::credential_id::CredentialId;
 
 /// Frontend-facing view of a stored credential.
 #[derive(Serialize)]
@@ -15,7 +15,7 @@ pub struct CredentialPayload {
   /// (e.g. `fal_api_2.toml`). Informational; may change if the user renames
   /// the file.
   pub file_name: String,
-  pub service: CredentialServiceType,
+  pub service: GenerationSource,
   pub kind: CredentialKind,
   /// Optional user-facing label. Empty by default.
   pub name: Option<String>,

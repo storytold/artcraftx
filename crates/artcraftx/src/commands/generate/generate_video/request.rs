@@ -1,6 +1,6 @@
 use router::api::router_aspect_ratio::RouterAspectRatio;
 use router::api::router_resolution::RouterResolution;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::tauri_command_caller::TauriCommandCaller;
 use serde_derive::{Deserialize, Serialize};
 use artcraft_tokens::tokens::characters::CharacterToken;
@@ -98,7 +98,7 @@ pub struct TauriGenerateVideoRequest {
   /// credential's service.
   pub credential_id: Option<String>,
 
-  pub provider: Option<GenerationProvider>,
+  pub provider: Option<GenerationSource>,
   pub model: Option<TauriVideoModel>,
 
   pub prompt: Option<String>,

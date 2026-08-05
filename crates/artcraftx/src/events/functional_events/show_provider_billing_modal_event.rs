@@ -1,5 +1,5 @@
 use crate::events::basic_sendable_event_trait::{BasicEventStatus, BasicSendableEvent};
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use artcraft_enums::tauri::ux::tauri_event_name::TauriEventName;
 use serde_derive::Serialize;
 use tauri::AppHandle;
@@ -9,11 +9,11 @@ use tauri::AppHandle;
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub struct ShowProviderBillingModalEvent {
-  pub provider: GenerationProvider,
+  pub provider: GenerationSource,
 }
 
 impl ShowProviderBillingModalEvent {
-  pub fn send_for_provider(provider: GenerationProvider, app: &AppHandle) {
+  pub fn send_for_provider(provider: GenerationSource, app: &AppHandle) {
     let event = Self { provider };
     event.send_infallible(&app);
   }

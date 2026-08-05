@@ -6,7 +6,7 @@ use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::sora::threads::sora_task_polling::helpers::poll_classic_sora_tasks::poll_classic_sora_tasks;
 use crate::services::sora::threads::sora_task_polling::helpers::poll_sora_2_tasks::poll_sora_2_tasks;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use errors::AnyhowResult;
 use log::error;
 use sqlite_database::queries::read::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs};
@@ -49,7 +49,7 @@ async fn local_task_polling_loop(
   loop {
     let local_sqlite_database = list_tasks_by_provider_and_status(ListTasksByProviderAndStatusArgs {
       db: task_database.get_connection(),
-      provider: GenerationProvider::Sora,
+      provider: GenerationSource::Sora,
       task_statuses: &TASK_DATABASE_PENDING_STATUSES,
     }).await?;
 

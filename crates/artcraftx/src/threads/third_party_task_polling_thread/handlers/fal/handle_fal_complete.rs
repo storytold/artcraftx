@@ -20,7 +20,7 @@ use artcraft_client::endpoints::media_files::upload_image_media_file_from_file::
 use artcraft_client::endpoints::media_files::upload_video_media_file_from_file::{
   upload_video_media_file_from_file, UploadVideoFromFileArgs,
 };
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use fal_client::polling::poll_job_response::poll_job_response::PollJobResponse;
 use fal_client::polling::poll_job_response::success_case_extractors::PollResponseExtractedContents;
@@ -305,7 +305,7 @@ async fn try_upload(
         maybe_creds: Some(creds),
         path: download_path,
         maybe_prompt_token,
-        maybe_generation_provider: Some(GenerationProvider::Fal),
+        maybe_generation_provider: Some(GenerationSource::Fal),
       }).await?;
       result.media_file_token
     }
@@ -314,7 +314,7 @@ async fn try_upload(
         api_host: &ApiHost::Storyteller,
         maybe_creds: Some(creds),
         path: download_path,
-        maybe_generation_provider: Some(GenerationProvider::Fal),
+        maybe_generation_provider: Some(GenerationSource::Fal),
       }).await?;
       result.media_file_token
     }
@@ -326,7 +326,7 @@ async fn try_upload(
         is_intermediate_system_file: false,
         maybe_prompt_token,
         maybe_batch_token,
-        maybe_generation_provider: Some(GenerationProvider::Fal),
+        maybe_generation_provider: Some(GenerationSource::Fal),
       }).await?;
       result.media_file_token
     }

@@ -1,7 +1,7 @@
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
 use crate::queries::task::{RawTask, Task};
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::task_model_type::TaskModelType;
 use sqlite_identifiers::enums::task_status::TaskStatus;
 use sqlite_identifiers::enums::task_type::TaskType;
@@ -11,7 +11,7 @@ use sqlite_identifiers::ids::task_id::TaskId;
 
 pub struct ListTasksArgs<'a> {
   pub db: &'a TaskDbConnection,
-  pub provider: GenerationProvider,
+  pub provider: GenerationSource,
   pub provider_job_ids: Option<Vec<String>>,
 }
 
@@ -73,7 +73,7 @@ pub async fn list_tasks_by_provider_and_tokens(
       model_type: task.model_type
           .map(|model| TaskModelType::from_str(&model))
           .transpose()?,
-      provider: GenerationProvider::from_str(&task.provider)?,
+      provider: GenerationSource::from_str(&task.provider)?,
       provider_job_id: task.provider_job_id,
       queue_status_url: task.queue_status_url,
       queue_response_url: task.queue_response_url,

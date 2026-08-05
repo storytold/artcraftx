@@ -3,7 +3,7 @@ use artcraft_enums::common::generation::common_image_model::CommonImageModel;
 use artcraft_enums::common::generation::common_quality::CommonQuality;
 use artcraft_enums::common::generation::common_resolution::CommonResolution;
 use artcraft_enums::common::generation::model_creator::ModelCreator;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use serde_derive::{Deserialize, Serialize};
 
 /// Query string parameters for the image models endpoint.
@@ -40,7 +40,7 @@ pub struct OmniGenImageModelsResponse {
 
 #[derive(Serialize, Clone)]
 pub struct OmniGenImageModelProviderDetails {
-  pub provider: GenerationProvider,
+  pub provider: GenerationSource,
   pub models: Vec<OmniGenImageProviderModelDetails>,
 }
 

@@ -1,7 +1,7 @@
 use crate::connection::TaskDbConnection;
 use crate::error::SqliteTasksError;
 use crate::queries::task::{RawTask, Task};
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::task_model_type::TaskModelType;
 use sqlite_identifiers::enums::task_status::TaskStatus;
 use sqlite_identifiers::enums::task_type::TaskType;
@@ -23,7 +23,7 @@ pub struct NonArtcraftTaskList {
 pub async fn list_non_artcraft_pending_tasks(
   args: ListNonArtcraftPendingTasksArgs<'_>,
 ) -> Result<NonArtcraftTaskList, SqliteTasksError> {
-  let artcraft_provider = GenerationProvider::Artcraft.to_string();
+  let artcraft_provider = GenerationSource::Artcraft.to_string();
 
   let mut query_builder: QueryBuilder<Sqlite> = QueryBuilder::new(r#"
     SELECT
@@ -67,7 +67,7 @@ pub async fn list_non_artcraft_pending_tasks(
       model_type: task.model_type
         .map(|model| TaskModelType::from_str(&model))
         .transpose()?,
-      provider: GenerationProvider::from_str(&task.provider)?,
+      provider: GenerationSource::from_str(&task.provider)?,
       provider_job_id: task.provider_job_id,
       queue_status_url: task.queue_status_url,
       queue_response_url: task.queue_response_url,

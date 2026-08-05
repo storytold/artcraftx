@@ -1,4 +1,4 @@
-use crate::credentials::credential_service_type::CredentialServiceType;
+use core_types::enums::generation_source::GenerationSource;
 use crate::credentials::login_website::LoginWebsite;
 use once_cell::sync::Lazy;
 use reqwest::Url;
@@ -57,7 +57,7 @@ pub trait LoginWindowSite: Send + Sync {
   fn destination_hostnames(&self) -> &[&str];
 
   /// The credential service that a successful login is saved under.
-  fn credential_service(&self) -> CredentialServiceType {
+  fn credential_service(&self) -> GenerationSource {
     self.login_website().credential_service()
   }
 

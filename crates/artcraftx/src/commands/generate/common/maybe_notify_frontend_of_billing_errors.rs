@@ -1,6 +1,6 @@
 use crate::commands::generate::generate_error::{BillingIssueReason, BillingProvider, GenerateError, ProviderFailureReason};
 use crate::events::functional_events::show_provider_billing_modal_event::ShowProviderBillingModalEvent;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use log::warn;
 use artcraft_client::error::api_error::ApiError;
 use artcraft_client::error::storyteller_error::StorytellerError;
@@ -28,11 +28,11 @@ fn billing_error(
   reason: &BillingIssueReason,
 ) {
   let provider = match reason.provider {
-    BillingProvider::Artcraft => GenerationProvider::Artcraft,
-    BillingProvider::Fal => GenerationProvider::Fal,
-    BillingProvider::Kinovi => GenerationProvider::Artcraft, // NB: We don't support Kinovi yet.
-    BillingProvider::Midjourney => GenerationProvider::Midjourney,
-    BillingProvider::Sora => GenerationProvider::Sora,
+    BillingProvider::Artcraft => GenerationSource::Artcraft,
+    BillingProvider::Fal => GenerationSource::Fal,
+    BillingProvider::Kinovi => GenerationSource::Artcraft, // NB: We don't support Kinovi yet.
+    BillingProvider::Midjourney => GenerationSource::Midjourney,
+    BillingProvider::Sora => GenerationSource::Sora,
   };
   warn!("Billing issue with: {:?}", provider);
   ShowProviderBillingModalEvent::send_for_provider(provider, app);
@@ -47,7 +47,7 @@ fn provider_billing_error(
   match error {
     ProviderFailureReason::StorytellerError(StorytellerError::Api(ApiError::PaymentRequired(reason))) => {
       warn!("Billing issue with Artcraft/Storyteller: {}", reason);
-      provider = GenerationProvider::Artcraft;
+      provider = GenerationSource::Artcraft;
     }
     _ => {
       return;

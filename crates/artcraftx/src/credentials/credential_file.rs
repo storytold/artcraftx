@@ -1,12 +1,12 @@
 use crate::credentials::api_key_credential::ApiKeyCredential;
 use crate::credentials::cookie_credential::CookieCredential;
 use crate::credentials::credential::{Credential, CredentialSecret};
-use crate::credentials::credential_service_type::CredentialServiceType;
+use core_types::enums::generation_source::GenerationSource;
 use crate::credentials::credential_user_info::CredentialUserInfo;
 use crate::error::artcraftx_credential_error::ArtcraftXCredentialError;
 use serde_derive::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use identifiers::CredentialId;
+use core_types::identifiers::credential_id::CredentialId;
 
 /// The on-disk (TOML) shape of a credential file.
 ///
@@ -33,7 +33,7 @@ pub struct CredentialFile {
   #[serde(default, skip_serializing_if = "Option::is_none")]
   pub id: Option<CredentialId>,
 
-  pub service: CredentialServiceType,
+  pub service: GenerationSource,
 
   /// Optional user-facing label. Empty by default.
   #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -131,7 +131,7 @@ impl CredentialFile {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::credentials::credential_service_type::CredentialKind;
+  use core_types::enums::generation_source::CredentialKind;
 
   const HAND_WRITTEN_COOKIE_FILE: &str = r#"
     service = "artcraft_cookies"
@@ -157,7 +157,7 @@ mod tests {
     #[test]
     fn parses_hand_written_cookie_file() {
       let file: CredentialFile = toml::from_str(HAND_WRITTEN_COOKIE_FILE).unwrap();
-      assert_eq!(file.service, CredentialServiceType::ArtcraftCookies);
+      assert_eq!(file.service, GenerationSource::ArtcraftCookies);
       assert_eq!(file.cookie.unwrap().cookie_header, "session=abc123");
       let user_info = file.user_info.unwrap();
       assert_eq!(user_info.username.as_deref(), Some("creator123"));
@@ -167,7 +167,7 @@ mod tests {
     #[test]
     fn parses_hand_written_api_key_file_without_prefix() {
       let file: CredentialFile = toml::from_str(HAND_WRITTEN_API_KEY_FILE).unwrap();
-      assert_eq!(file.service, CredentialServiceType::FalApi);
+      assert_eq!(file.service, GenerationSource::FalApi);
       assert_eq!(file.api_key.unwrap().api_key, "fal-secret-key-12345");
     }
 

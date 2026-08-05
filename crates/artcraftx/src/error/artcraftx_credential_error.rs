@@ -1,4 +1,4 @@
-use crate::credentials::credential_service_type::{CredentialKind, CredentialServiceType};
+use core_types::enums::generation_source::{CredentialKind, GenerationSource};
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
@@ -19,7 +19,7 @@ pub enum ArtcraftXCredentialError {
   // Validation errors
   MissingSecret { path: PathBuf },
   AmbiguousSecret { path: PathBuf },
-  SecretKindMismatch { path: PathBuf, service: CredentialServiceType, found: CredentialKind },
+  SecretKindMismatch { path: PathBuf, service: GenerationSource, found: CredentialKind },
 }
 
 impl Error for ArtcraftXCredentialError {}

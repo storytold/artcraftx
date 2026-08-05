@@ -3,7 +3,7 @@ use crate::state::database::task_database::TaskDatabase;
 use crate::threads::third_party_task_polling_thread::handlers::fal::poll_fal_tasks::poll_fal_tasks;
 use crate::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use log::{error, info, warn};
 use sqlite_database::queries::read::list_non_artcraft_pending_tasks::{
   list_non_artcraft_pending_tasks, ListNonArtcraftPendingTasksArgs,
@@ -68,11 +68,11 @@ async fn poll_iteration(
   *has_ever_seen_third_party_jobs = true;
 
   let fal_tasks: Vec<&Task> = tasks.iter()
-    .filter(|t| t.provider == GenerationProvider::Fal)
+    .filter(|t| t.provider == GenerationSource::Fal)
     .collect();
 
   let non_fal_tasks: Vec<&Task> = tasks.iter()
-    .filter(|t| t.provider != GenerationProvider::Fal)
+    .filter(|t| t.provider != GenerationSource::Fal)
     .collect();
 
   if !non_fal_tasks.is_empty() {

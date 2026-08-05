@@ -1,7 +1,7 @@
 use artcraft_client::api_defs::users::login::{LoginErrorType, LoginRequest};
 use artcraft_client::endpoints::users::login::{login, LoginArgs, LoginError};
 use chrono::Utc;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use log::{error, info, warn};
 use serde_derive::Serialize;
 use tauri::{AppHandle, State};
@@ -10,7 +10,6 @@ use crate::commands::credentials::credential_payload::CredentialPayload;
 use crate::credentials::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::cookie_credential::CookieCredential;
 use crate::credentials::credential::{Credential, CredentialSecret};
-use crate::credentials::credential_service_type::CredentialServiceType;
 use crate::credentials::credential_user_info::CredentialUserInfo;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::refresh_account_state_event::RefreshAccountStateEvent;
@@ -59,7 +58,7 @@ pub enum ArtcraftLoginErrorType {
 pub async fn artcraft_login_command(
   app: AppHandle,
   app_data_root: State<'_, AppDataRoot>,
-  service: CredentialServiceType,
+  service: GenerationSource,
   username_or_email: String,
   password: String,
 ) -> Result<ArtcraftLoginResponse, ArtcraftLoginCommandError> {
@@ -67,7 +66,7 @@ pub async fn artcraft_login_command(
 
   let is_password_login_service = matches!(
     service,
-    CredentialServiceType::Artcraft | CredentialServiceType::ArtcraftLocal,
+    GenerationSource::Artcraft | GenerationSource::ArtcraftLocal,
   );
 
   let maybe_api_host = maybe_artcraft_api_host_for_service(service)
@@ -111,7 +110,7 @@ pub async fn artcraft_login_command(
   )?;
 
   RefreshAccountStateEvent {
-    provider: Some(GenerationProvider::Artcraft),
+    provider: Some(GenerationSource::Artcraft),
   }.send_infallible(&app);
 
   Ok(ArtcraftLoginResponse {
@@ -123,7 +122,7 @@ pub async fn artcraft_login_command(
 /// so each login adds another account).
 fn save_session_credential(
   app_data_root: &AppDataRoot,
-  service: CredentialServiceType,
+  service: GenerationSource,
   signed_session: &str,
   username_or_email: String,
 ) -> Result<Credential, ArtcraftLoginCommandError> {

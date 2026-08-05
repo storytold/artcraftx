@@ -4,7 +4,7 @@ use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
 use artcraft_enums::common::generation::common_image_model::CommonImageModel;
 use artcraft_enums::common::generation::common_quality::CommonQuality;
 use artcraft_enums::common::generation::common_resolution::CommonResolution;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 
 pub const ESTIMATE_IMAGE_COST_PATH: &str = "/v1/generate/cost_estimate/image";
 
@@ -15,7 +15,7 @@ pub struct EstimateImageCostRequest {
   pub model: CommonImageModel,
 
   /// The provider to route the generation through.
-  pub provider: GenerationProvider,
+  pub provider: GenerationSource,
 
   /// The type of generation (determines whether input images are involved).
   /// This is a tagged enum, so it looks like:
@@ -93,7 +93,7 @@ mod tests {
   fn test_serialization_text_to_image() {
     let request = EstimateImageCostRequest {
       model: CommonImageModel::NanoBananaPro,
-      provider: GenerationProvider::Artcraft,
+      provider: GenerationSource::Artcraft,
       generation_mode: GenerationMode::TextToImage,
       aspect_ratio: None,
       resolution: None,
@@ -108,7 +108,7 @@ mod tests {
   fn test_serialization_image_edit() {
     let request = EstimateImageCostRequest {
       model: CommonImageModel::NanoBananaPro,
-      provider: GenerationProvider::Artcraft,
+      provider: GenerationSource::Artcraft,
       generation_mode: GenerationMode::ImageEdit { count: 2 },
       aspect_ratio: None,
       resolution: None,

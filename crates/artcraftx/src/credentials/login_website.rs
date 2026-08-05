@@ -1,5 +1,4 @@
-use crate::credentials::credential_service_type::CredentialServiceType;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 
@@ -7,7 +6,7 @@ use std::fmt::{Display, Formatter};
 ///
 /// The frontend passes one of these to the `open_web_login_command`; the
 /// login window module then knows which URLs to visit and which
-/// [`CredentialServiceType`] to save the resulting cookies under.
+/// [`GenerationSource`] to save the resulting cookies under.
 ///
 /// The string values are serialized to/from the frontend. NEVER change an
 /// existing value; only add new ones.
@@ -30,24 +29,24 @@ pub enum LoginWebsite {
 impl LoginWebsite {
   /// The credential service (and cookie file `service = "..."`) that a
   /// successful login for this website is stored under.
-  pub fn credential_service(&self) -> CredentialServiceType {
+  pub fn credential_service(&self) -> GenerationSource {
     match self {
-      Self::ArtCraft => CredentialServiceType::ArtcraftCookies,
-      Self::OpenArt => CredentialServiceType::OpenArtCookies,
-      Self::Higgsfield => CredentialServiceType::HiggsfieldCookies,
-      Self::Runway => CredentialServiceType::RunwayCookies,
-      Self::Magnific => CredentialServiceType::MagnificCookies,
-      Self::XAi => CredentialServiceType::XAiCookies,
+      Self::ArtCraft => GenerationSource::ArtcraftCookies,
+      Self::OpenArt => GenerationSource::OpenArtCookies,
+      Self::Higgsfield => GenerationSource::HiggsfieldCookies,
+      Self::Runway => GenerationSource::RunwayCookies,
+      Self::Magnific => GenerationSource::MagnificCookies,
+      Self::XAi => GenerationSource::XAiCookies,
     }
   }
 
   /// The generation provider impacted by this login, if any. Used to tell the
   /// frontend which account state to refresh. `None` means "not tied to a
   /// known generation provider" (refresh broadly).
-  pub fn generation_provider(&self) -> Option<GenerationProvider> {
+  pub fn generation_provider(&self) -> Option<GenerationSource> {
     match self {
-      Self::ArtCraft => Some(GenerationProvider::Artcraft),
-      Self::XAi => Some(GenerationProvider::Grok),
+      Self::ArtCraft => Some(GenerationSource::Artcraft),
+      Self::XAi => Some(GenerationSource::Grok),
       Self::OpenArt | Self::Higgsfield | Self::Runway | Self::Magnific => None,
     }
   }
@@ -86,15 +85,15 @@ mod tests {
   fn maps_to_cookie_service_type() {
     assert_eq!(
       LoginWebsite::ArtCraft.credential_service(),
-      CredentialServiceType::ArtcraftCookies,
+      GenerationSource::ArtcraftCookies,
     );
     assert_eq!(
       LoginWebsite::OpenArt.credential_service(),
-      CredentialServiceType::OpenArtCookies,
+      GenerationSource::OpenArtCookies,
     );
     assert_eq!(
       LoginWebsite::Higgsfield.credential_service(),
-      CredentialServiceType::HiggsfieldCookies,
+      GenerationSource::HiggsfieldCookies,
     );
   }
 }

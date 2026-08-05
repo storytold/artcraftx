@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use artcraft_enums::common::generation::common_splat_model::CommonSplatModel;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 
 pub const ESTIMATE_SPLAT_COST_PATH: &str = "/v1/generate/cost_estimate/splat";
 
@@ -12,7 +12,7 @@ pub struct EstimateSplatCostRequest {
   pub model: CommonSplatModel,
 
   /// The provider to route the generation through.
-  pub provider: GenerationProvider,
+  pub provider: GenerationSource,
 
   /// Whether the request includes a reference image.
   pub has_reference_image: Option<bool>,

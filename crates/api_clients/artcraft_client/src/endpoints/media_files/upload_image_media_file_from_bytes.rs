@@ -6,7 +6,7 @@ use crate::utils::api_host::ApiHost;
 use crate::utils::constants::{APPLICATION_JSON, USER_AGENT};
 use crate::utils::filter_bad_response::filter_bad_response;
 use crate::utils::http_get_anonymous::http_get_anonymous;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use chrono::{DateTime, Utc};
 use uuid_utils::uuid::generate_random_uuid;
 use log::debug;
@@ -34,7 +34,7 @@ pub struct UploadImageBytesArgs<'a> {
   pub is_intermediate_system_file: bool,
 
   /// If provided, the third-party provider that generated this file.
-  pub maybe_generation_provider: Option<GenerationProvider>,
+  pub maybe_generation_provider: Option<GenerationSource>,
 }
 
 #[derive(Clone, Copy, Debug)]

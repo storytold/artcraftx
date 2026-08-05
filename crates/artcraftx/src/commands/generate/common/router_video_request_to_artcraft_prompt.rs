@@ -8,7 +8,7 @@ use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio a
 use artcraft_enums::common::generation::common_generation_mode::CommonGenerationMode;
 use artcraft_enums::common::generation::common_model_type::CommonModelType;
 use artcraft_enums::common::generation::common_resolution::CommonResolution as EnumsResolution;
-use sqlite_identifiers::enums::generation_provider::GenerationProvider;
+use core_types::enums::generation_source::GenerationSource;
 use uuid_utils::uuid::generate_random_uuid;
 
 pub fn router_video_request_to_artcraft_prompt(
@@ -87,15 +87,15 @@ fn video_model_to_common_model_type(model: RouterVideoModel) -> Option<CommonMod
   }
 }
 
-fn provider_to_generation_provider(provider: RouterProvider) -> GenerationProvider {
+fn provider_to_generation_provider(provider: RouterProvider) -> GenerationSource {
   match provider {
-    RouterProvider::Artcraft => GenerationProvider::Artcraft,
-    RouterProvider::Fal => GenerationProvider::Fal,
+    RouterProvider::Artcraft => GenerationSource::Artcraft,
+    RouterProvider::Fal => GenerationSource::Fal,
     // Unused providers -> ArtCraft
-    RouterProvider::Seedance2Pro => GenerationProvider::Artcraft ,
-    RouterProvider::GmiCloud => GenerationProvider::Artcraft,
-    RouterProvider::GrokApi => GenerationProvider::Artcraft,
-    RouterProvider::WorldLabs => GenerationProvider::Artcraft,
+    RouterProvider::Seedance2Pro => GenerationSource::Artcraft ,
+    RouterProvider::GmiCloud => GenerationSource::Artcraft,
+    RouterProvider::GrokApi => GenerationSource::Artcraft,
+    RouterProvider::WorldLabs => GenerationSource::Artcraft,
   }
 }
 
@@ -169,7 +169,7 @@ mod tests {
     let prompt = router_video_request_to_artcraft_prompt(&builder);
     assert_eq!(prompt.positive_prompt.as_deref(), Some("a dog running on the beach"));
     assert_eq!(prompt.model_type, Some(CommonModelType::Kling3p0Standard));
-    assert_eq!(prompt.generation_provider, Some(GenerationProvider::Fal));
+    assert_eq!(prompt.generation_provider, Some(GenerationSource::Fal));
     assert_eq!(prompt.maybe_generation_mode, Some(CommonGenerationMode::Text));
     assert!(prompt.negative_prompt.is_none());
     assert!(prompt.maybe_aspect_ratio.is_none());

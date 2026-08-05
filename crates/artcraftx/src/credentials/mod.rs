@@ -19,6 +19,5 @@ pub mod cookie_credential;
 pub mod credential;
 pub mod credential_file;
 pub mod find_service_credentials;
-pub mod credential_service_type;
 pub mod credential_user_info;
 pub mod login_website;
