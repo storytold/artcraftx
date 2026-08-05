@@ -52,26 +52,23 @@ pub async fn download_url_command(
   ).await;
 
   if let Err(err) = result {
+    // Already on disk = success. Download filenames derive from the content
+    // hash, so the existing file IS the requested file. This also happens
+    // routinely now that completed ArtCraft jobs are auto-downloaded by the
+    // backend polling thread while the frontend auto-save races it.
+    if let ArtcraftXError::CannotDownloadFilePathAlreadyExists { path } = &err {
+      info!("File already downloaded (treating as success): {:?}", path);
+      return Ok(DownloadUrlSuccessResponse {}.into());
+    }
+
     error!("Error downloading media: {:?}", err);
 
-    let mut endpoint_message = "unknown error when downloading file";
-    let mut error_type = DownloadUrlErrorType::UnknownError;
+    let endpoint_message = "unknown error when downloading file";
+    let error_type = DownloadUrlErrorType::UnknownError;
 
-    let mut flash_error_type = FlashFileDownloadErrorType::UnknownError;
-    let mut flash_filename = None;
-    let mut flash_message = Some("Failed to download file".to_string());
-
-    match err {
-      ArtcraftXError::CannotDownloadFilePathAlreadyExists { path } => {
-        endpoint_message = "file already downloaded";
-        error_type = DownloadUrlErrorType::FilesystemError;
-
-        flash_error_type = FlashFileDownloadErrorType::FileAlreadyDownloaded;
-        flash_message = Some(format!("File already downloaded: {:?}", path));
-        flash_filename = Some(path);
-      }
-      _ => {}, // NB: Fall-through
-    }
+    let flash_error_type = FlashFileDownloadErrorType::UnknownError;
+    let flash_filename = None;
+    let flash_message = Some("Failed to download file".to_string());
 
     let event = FlashFileDownloadErrorEvent {
       filename: flash_filename,

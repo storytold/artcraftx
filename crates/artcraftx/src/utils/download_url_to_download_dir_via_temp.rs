@@ -57,14 +57,18 @@ pub async fn download_url_to_download_dir_via_temp(
 
   info!("Downloaded {:?} to temp; moving to {:?}", url.as_str(), destination);
 
-  // Move into place. `persist` is a rename, which fails across filesystems
-  // (the user's download directory may be on another volume) — fall back to
-  // copy + cleanup.
+  // Move into place. `persist_noclobber` is a rename, which can fail two
+  // ways: another downloader won the race (destination now exists — that's
+  // fine, filenames derive from the content hash so it's the same file), or
+  // the download directory is on another volume (cross-device rename) — fall
+  // back to a copy.
   match temp_file.persist_noclobber(&destination) {
     Ok(_file) => {}
     Err(persist_error) => {
       let temp_file = persist_error.file;
-      std::fs::copy(temp_file.path(), &destination)?;
+      if !destination.exists() {
+        std::fs::copy(temp_file.path(), &destination)?;
+      }
       // NB: The temp file cleans itself up on drop.
     }
   }
