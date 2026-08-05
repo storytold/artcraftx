@@ -184,8 +184,6 @@ name = "artcraft_client"
 version = "0.0.1"
 dependencies = [
  "anyhow",
- "artcraft_enums",
- "artcraft_tokens",
  "backoff",
  "chrono",
  "cloudflare_errors",
@@ -194,43 +192,19 @@ dependencies = [
  "errors",
  "log",
  "mimetypes",
+ "regex",
  "reqwest 0.12.23",
  "serde",
  "serde_derive",
  "serde_json",
  "sqlite_identifiers",
+ "strum",
  "tokio",
+ "toml 1.0.7+spec-1.1.0",
  "url",
  "url-builder",
  "uuid 1.22.0",
  "uuid_utils",
- "workspace-build-acceleration",
-]
-
-[[package]]
-name = "artcraft_enums"
-version = "0.0.1"
-dependencies = [
- "log",
- "regex",
- "serde",
- "serde_derive",
- "serde_json",
- "strum",
- "toml 1.0.7+spec-1.1.0",
- "workspace-build-acceleration",
-]
-
-[[package]]
-name = "artcraft_tokens"
-version = "0.0.1"
-dependencies = [
- "once_cell",
- "rand 0.8.5",
- "serde",
- "serde_derive",
- "serde_json",
- "strum",
  "workspace-build-acceleration",
 ]
 
@@ -240,8 +214,6 @@ version = "0.0.1"
 dependencies = [
  "anyhow",
  "artcraft_client",
- "artcraft_enums",
- "artcraft_tokens",
  "base64 0.22.1",
  "build_metadata",
  "bytes",
@@ -5487,8 +5459,6 @@ version = "0.0.1"
 dependencies = [
  "anyhow",
  "artcraft_client",
- "artcraft_enums",
- "artcraft_tokens",
  "fal_client",
  "gmicloud_client",
  "grok_api_client",

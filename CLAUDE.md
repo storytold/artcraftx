@@ -18,8 +18,6 @@ artcraftx/
 │   ├── lib/                             # Various utility libraries
 │   ├── router/                          # Provider routing for generation requests (Artcraft, Fal, ...)
 │   ├── schema/                          # Data definition layer
-│   │   ├── artcraft_enums/              # Enum variants stored as strings
-│   │   ├── artcraft_tokens/             # Identifiers with Stripe-like ID prefixes, eg. "user_{entropy}"
 │   │   ├── sqlite_database/             # Desktop app's "tasks" SQLite database: queries + embedded migrations
 │   │   └── sqlite_identifiers/          # Enums and IDs used in sqlite queries as enums or keys
 │   ├── testing/                         # Test data and test utilities
