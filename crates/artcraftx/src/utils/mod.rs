@@ -1,5 +1,6 @@
 pub mod clear_all_webview_cookies;
 pub mod download_media_file_to_temp_dir;
+pub mod download_url_to_download_dir_via_temp;
 pub mod download_url_to_temp_dir;
 pub mod download_url_to_user_download_dir;
 pub mod enum_conversion;

@@ -79,6 +79,7 @@ pub fn run() {
 
   println!("Loading app preferences...");
   let app_preferences = load_app_preferences_or_default(&app_data_root);
+  let app_preferences_2 = app_preferences.clone();
   
 
   // NB: tauri-plugin-http stores the credentials on disk, so we can defer to that for now.
@@ -145,6 +146,7 @@ pub fn run() {
         let result = handle_tauri_startup(
           handle,
           root,
+          app_preferences_2,
           artcraft_platform_info_2,
           artcraft_usage_tracker_2,
           storyteller_creds,

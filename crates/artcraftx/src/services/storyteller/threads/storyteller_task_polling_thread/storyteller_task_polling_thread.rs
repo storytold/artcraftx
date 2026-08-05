@@ -1,4 +1,6 @@
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
+use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::storyteller::threads::storyteller_task_polling_thread::handle_storyteller_failed_job::handle_failed_job;
 use crate::services::storyteller::threads::storyteller_task_polling_thread::handle_storyteller_successful_job::handle_successful_job;
 use crate::state::database::task_database::TaskDatabase;
@@ -20,12 +22,16 @@ use tauri::AppHandle;
 
 pub async fn storyteller_task_polling_thread(
   app_handle: AppHandle,
+  app_data_root: AppDataRoot,
+  app_preferences: AppPreferencesManager,
   task_database: TaskDatabase,
   storyteller_creds_manager: StorytellerCredentialManager,
 ) -> ! {
   loop {
     let res = polling_loop(
       &app_handle,
+      &app_data_root,
+      &app_preferences,
       &task_database,
       &storyteller_creds_manager,
     ).await;
@@ -39,6 +45,8 @@ pub async fn storyteller_task_polling_thread(
 
 async fn polling_loop(
   app_handle: &AppHandle,
+  app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
 ) -> AnyhowResult<()> {
@@ -101,7 +109,7 @@ async fn polling_loop(
 
       match job.status.status {
         JobStatusPlus::CompleteSuccess => {
-          handle_successful_job(app_handle, creds.as_ref(), job, task, task_database).await?;
+          handle_successful_job(app_handle, app_data_root, app_preferences, creds.as_ref(), job, task, task_database).await?;
         }
         JobStatusPlus::CompleteFailure | JobStatusPlus::Dead => {
           handle_failed_job(app_handle, job, task, task_database).await?;

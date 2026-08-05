@@ -7,6 +7,7 @@ use crate::lifecycle::startup::tasks::spawn_sora_task_polling_thread::spawn_sora
 use crate::lifecycle::startup::tasks::spawn_storyteller_threads::spawn_storyteller_threads;
 use crate::state::runtime::artcraft_platform_info::ArtcraftPlatformInfo;
 use crate::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
+use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;
@@ -27,6 +28,7 @@ use tauri::AppHandle;
 pub async fn handle_tauri_startup(
   app: AppHandle,
   root: AppDataRoot,
+  app_preferences: AppPreferencesManager,
   artcraft_platform_info: ArtcraftPlatformInfo,
   artcraft_usage_tracker: ArtcraftUsageTracker,
   storyteller_creds_manager: StorytellerCredentialManager,
@@ -54,6 +56,8 @@ pub async fn handle_tauri_startup(
 
   spawn_storyteller_threads(
     &app,
+    &root,
+    &app_preferences,
     &artcraft_usage_tracker,
     &artcraft_platform_info,
     &task_database,

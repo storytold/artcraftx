@@ -1,6 +1,10 @@
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
+use crate::error::artcraftx_error::ArtcraftXError;
+use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
+use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
+use crate::utils::download_url_to_download_dir_via_temp::download_url_to_download_dir_via_temp;
 use crate::utils::enum_conversion::generation_source::to_generation_service_provider;
 use crate::utils::enum_conversion::task_type::to_generation_action;
 use super::events::maybe_handle_frontend_caller_notification::maybe_handle_frontend_caller_notification;
@@ -24,6 +28,8 @@ use tauri::AppHandle;
 
 pub async fn handle_successful_job(
   app_handle: &AppHandle,
+  app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
   creds: Option<&StorytellerCredentialSet>,
   job: &JobStatusPayload,
   task: &Task,
@@ -65,6 +71,8 @@ pub async fn handle_successful_job(
     return Ok(()); // If anything breaks with queries, don't spam events.
   }
 
+  download_all_files(app_data_root, app_preferences, job, &media_files).await;
+
   send_additional_success_events(app_handle, job, task, &media_files).await;
 
   let service = to_generation_service_provider(task.provider);
@@ -81,6 +89,52 @@ pub async fn handle_successful_job(
   }
 
   Ok(())
+}
+
+/// Download every file the job produced into the user's configured download
+/// directory (temp dir first, then moved into place). Fails open per file so
+/// one bad download doesn't lose the rest.
+async fn download_all_files(
+  app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
+  job: &JobStatusPayload,
+  media_files: &[JobMediaFileInfo],
+) {
+  let app_prefs = match app_preferences.get_clone() {
+    Ok(prefs) => prefs,
+    Err(err) => {
+      error!("Can't read app preferences; skipping downloads for job {}: {:?}", job.job_token.as_str(), err);
+      return;
+    }
+  };
+
+  // Every listed file; fall back to the job's single result entity when the
+  // media-file listing is empty.
+  let cdn_urls = if media_files.is_empty() {
+    job.maybe_result
+        .as_ref()
+        .map(|result| result.media_links.cdn_url.clone())
+        .into_iter()
+        .collect::<Vec<_>>()
+  } else {
+    media_files.iter()
+        .map(|file| file.media_links.cdn_url.clone())
+        .collect::<Vec<_>>()
+  };
+
+  for cdn_url in &cdn_urls {
+    match download_url_to_download_dir_via_temp(cdn_url, app_data_root, &app_prefs).await {
+      Ok(path) => {
+        info!("Downloaded job {} file to {:?}", job.job_token.as_str(), path);
+      }
+      Err(ArtcraftXError::CannotDownloadFilePathAlreadyExists { path }) => {
+        info!("Job {} file already downloaded: {:?}", job.job_token.as_str(), path);
+      }
+      Err(err) => {
+        error!("Failed to download job {} file {}: {:?}", job.job_token.as_str(), cdn_url, err);
+      }
+    }
+  }
 }
 
 /// Fetch every media file the job produced. Fails open with an empty list

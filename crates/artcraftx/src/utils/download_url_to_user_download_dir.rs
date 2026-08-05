@@ -14,23 +14,7 @@ pub async fn download_url_to_user_download_dir(
   app_prefs: &AppPreferences,
 ) -> Result<PathBuf, ArtcraftXError> {
 
-  let url_file_name = {
-    let path_segments = url.path_segments()
-        .ok_or_else(|| ArtcraftXError::AnyhowError(anyhow!("URL does not have path segments (1): {:?}", url)))?;
-
-    let mut url_file_name = path_segments.last()
-        .ok_or_else(|| ArtcraftXError::AnyhowError(anyhow!("URL does not have path segments (2): {:?}", url)))?
-        .trim()
-        .to_string();
-
-    if !url_file_name.to_lowercase().starts_with("artcraft") {
-      url_file_name = format!("artcraft_{}", url_file_name);
-    }
-
-    url_file_name
-  };
-
-  check_url_file_name_for_downloadability(&url_file_name)?;
+  let url_file_name = download_file_name_from_url(url)?;
 
   let download_directory = app_prefs
       .preferred_download_directory
@@ -74,6 +58,25 @@ pub async fn download_url_to_user_download_dir(
   file.write_all(&response_bytes)?;
 
   Ok(download_filename)
+}
+
+/// Derive (and vet) the local filename to save a download under from its URL.
+pub fn download_file_name_from_url(url: &Url) -> Result<String, ArtcraftXError> {
+  let path_segments = url.path_segments()
+      .ok_or_else(|| ArtcraftXError::AnyhowError(anyhow!("URL does not have path segments (1): {:?}", url)))?;
+
+  let mut url_file_name = path_segments.last()
+      .ok_or_else(|| ArtcraftXError::AnyhowError(anyhow!("URL does not have path segments (2): {:?}", url)))?
+      .trim()
+      .to_string();
+
+  if !url_file_name.to_lowercase().starts_with("artcraft") {
+    url_file_name = format!("artcraft_{}", url_file_name);
+  }
+
+  check_url_file_name_for_downloadability(&url_file_name)?;
+
+  Ok(url_file_name)
 }
 
 // TODO: This likely needs more protections.
