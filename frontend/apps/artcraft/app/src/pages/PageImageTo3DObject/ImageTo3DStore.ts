@@ -376,17 +376,18 @@ export const useImageTo3DStore = create<ImageTo3DState>((set, get) => ({
 
 interface ObjectGenerationEvent {
   data: {
-    generated_object?: {
+    generated_objects?: {
       cdn_url: string;
       media_token: string;
-    };
+    }[];
     maybe_frontend_subscriber_id?: string;
   };
 }
 
 listen<ObjectGenerationEvent>("object_generation_complete_event", (event) => {
   const payload = event.payload?.data;
-  if (payload?.maybe_frontend_subscriber_id && payload?.generated_object) {
+  const generatedObject = payload?.generated_objects?.[0];
+  if (payload?.maybe_frontend_subscriber_id && generatedObject) {
     console.log(
       "[ImageTo3DStore] Global event received for subscriber:",
       payload.maybe_frontend_subscriber_id,
@@ -394,8 +395,8 @@ listen<ObjectGenerationEvent>("object_generation_complete_event", (event) => {
     useImageTo3DStore
       .getState()
       .completeGeneration(
-        payload.generated_object.cdn_url,
-        payload.generated_object.media_token,
+        generatedObject.cdn_url,
+        generatedObject.media_token,
         payload.maybe_frontend_subscriber_id,
       );
 
@@ -403,8 +404,8 @@ listen<ObjectGenerationEvent>("object_generation_complete_event", (event) => {
     useImageTo3DStore
       .getState()
       .captureAndUploadCover(
-        payload.generated_object.cdn_url,
-        payload.generated_object.media_token,
+        generatedObject.cdn_url,
+        generatedObject.media_token,
       );
   }
 });

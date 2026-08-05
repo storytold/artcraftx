@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 const EVENT_NAME : string = 'video_generation_complete_event';
 
 export interface VideoGenerationCompleteEvent {
-  generated_video?: GeneratedVideo,
+  generated_videos: GeneratedVideo[],
   maybe_frontend_subscriber_id?: string,
   maybe_frontend_subscriber_payload?: string,
 }

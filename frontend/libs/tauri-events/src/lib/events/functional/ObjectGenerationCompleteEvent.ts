@@ -5,7 +5,7 @@ import { useEffect } from "react";
 const EVENT_NAME: string = "object_generation_complete_event";
 
 export interface ObjectGenerationCompleteEvent {
-  generated_object?: GeneratedObject;
+  generated_objects: GeneratedObject[];
   maybe_frontend_subscriber_id?: string;
   maybe_frontend_subscriber_payload?: string;
 }

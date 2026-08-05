@@ -178,10 +178,10 @@ export function useDesktopGenerationFeed(options: {
   });
 
   useVideoGenerationCompleteEvent(async (event) => {
-    if (mediaType !== "video" || !event.generated_video) return;
-    const video = event.generated_video;
-    addCompletedItems([
-      {
+    if (mediaType !== "video" || !event.generated_videos?.length) return;
+    const createdAt = new Date().toISOString();
+    addCompletedItems(
+      event.generated_videos.map((video) => ({
         id: video.media_token,
         label: "Video Generation",
         thumbnail:
@@ -189,10 +189,10 @@ export function useDesktopGenerationFeed(options: {
             width: THUMBNAIL_SIZES.LARGE,
           }) ?? null,
         fullImage: video.cdn_url,
-        createdAt: new Date().toISOString(),
-        mediaClass: "video",
-      },
-    ]);
+        createdAt,
+        mediaClass: "video" as const,
+      })),
+    );
     load();
   });
 

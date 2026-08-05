@@ -65,14 +65,15 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
   // Keep the local batch store in sync (other listeners may rely on it).
   useVideoGenerationCompleteEvent(
     async (event: VideoGenerationCompleteEvent) => {
-      if (!event.generated_video) return;
-      completeBatch(
-        {
-          cdn_url: event.generated_video.cdn_url,
-          media_token: event.generated_video.media_token,
-        },
-        event.maybe_frontend_subscriber_id,
-      );
+      for (const video of event.generated_videos ?? []) {
+        completeBatch(
+          {
+            cdn_url: video.cdn_url,
+            media_token: video.media_token,
+          },
+          event.maybe_frontend_subscriber_id,
+        );
+      }
     },
   );
 

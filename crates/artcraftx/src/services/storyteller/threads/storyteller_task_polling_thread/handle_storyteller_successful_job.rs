@@ -1,54 +1,71 @@
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
-use crate::events::sendable_event_trait::SendableEvent;
 use crate::state::database::task_database::TaskDatabase;
 use crate::utils::enum_conversion::generation_source::to_generation_service_provider;
 use crate::utils::enum_conversion::task_type::to_generation_action;
 use super::events::maybe_handle_frontend_caller_notification::maybe_handle_frontend_caller_notification;
-use artcraft_client::api_defs::jobs::list_session_jobs::ListSessionJobsItem;
+use artcraft_client::api_defs::jobs::get_job_status::JobStatusPayload;
+use artcraft_client::api_defs::media_file::list_media_files_by_job::JobMediaFileInfo;
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
+use artcraft_client::endpoints::media_files::list_media_files_by_job::list_media_files_by_job;
 use artcraft_client::enums::by_table::generic_inference_jobs::inference_category::InferenceCategory;
-use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
+use artcraft_client::enums::by_table::media_files::media_file_class::MediaFileClass;
+use artcraft_client::utils::api_host::ApiHost;
 use errors::AnyhowResult;
 use log::error;
 use log::info;
+use log::warn;
 use sqlite_database::queries::task::Task;
 use sqlite_database::queries::update::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
-use tauri::AppHandle;
+use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
+use tauri::AppHandle;
 
 pub async fn handle_successful_job(
   app_handle: &AppHandle,
   creds: Option<&StorytellerCredentialSet>,
-  job: &ListSessionJobsItem,
+  job: &JobStatusPayload,
   task: &Task,
   task_database: &TaskDatabase,
 ) -> AnyhowResult<()> {
-  let maybe_primary_media_file_token = job.maybe_result
-      .as_ref()
-      .map(|result| MediaFileToken::new_from_str(&result.entity_token));
+  // A job can produce MULTIPLE files (e.g. a 4-image batch). List them all so
+  // every file is delivered, not just the job's primary result entity.
+  let media_files = list_all_job_media_files(creds, job).await;
+
+  // Primary media file: the first listed file, falling back to the job's
+  // single result entity (some generation paths don't populate the
+  // media-file -> source-job linkage yet).
+  let maybe_primary_media_file_token = media_files.first()
+      .map(|file| file.token.clone())
+      .or_else(|| {
+        job.maybe_result
+            .as_ref()
+            .map(|result| MediaFileToken::new_from_str(&result.entity_token))
+      });
 
   let updated = update_successful_task_status_with_metadata(UpdateSuccessfulTaskArgs {
     db: task_database.get_connection(),
     task_id: &task.id,
-    maybe_batch_token: job.maybe_result
-        .as_ref()
-        .map(|result| result.maybe_batch_token.as_ref())
-        .flatten(),
+    maybe_batch_token: media_files.first()
+        .and_then(|file| file.maybe_batch_token.as_ref()),
     maybe_primary_media_file_token: maybe_primary_media_file_token.as_ref(),
-    maybe_primary_media_file_class: get_media_file_class(job),
-    maybe_primary_media_file_thumbnail_url_template: get_thumbnail_template(job),
-    maybe_primary_media_file_cdn_url: job.maybe_result
-        .as_ref()
-        .map(|result| result.media_links.cdn_url.as_str()),
+    maybe_primary_media_file_class: get_media_file_class(job, media_files.first()),
+    maybe_primary_media_file_thumbnail_url_template: get_thumbnail_template(job, media_files.first()),
+    maybe_primary_media_file_cdn_url: media_files.first()
+        .map(|file| file.media_links.cdn_url.as_str())
+        .or_else(|| {
+          job.maybe_result
+              .as_ref()
+              .map(|result| result.media_links.cdn_url.as_str())
+        }),
   }).await?;
 
   if !updated {
     return Ok(()); // If anything breaks with queries, don't spam events.
   }
 
-  send_additional_success_events(app_handle, creds, job, task).await;
+  send_additional_success_events(app_handle, job, task, &media_files).await;
 
   let service = to_generation_service_provider(task.provider);
   let action = to_generation_action(task.task_type);
@@ -66,39 +83,59 @@ pub async fn handle_successful_job(
   Ok(())
 }
 
+/// Fetch every media file the job produced. Fails open with an empty list
+/// (callers fall back to the job's single result entity).
+async fn list_all_job_media_files(
+  creds: Option<&StorytellerCredentialSet>,
+  job: &JobStatusPayload,
+) -> Vec<JobMediaFileInfo> {
+  let creds = match creds {
+    Some(creds) => creds,
+    None => {
+      warn!("No credentials; can't list media files for job {}", job.job_token.as_str());
+      return Vec::new();
+    }
+  };
+
+  match list_media_files_by_job(&ApiHost::Storyteller, creds, &job.job_token).await {
+    Ok(response) => response.media_files,
+    Err(err) => {
+      warn!("Failed to list media files for job {}: {:?}", job.job_token.as_str(), err);
+      Vec::new()
+    }
+  }
+}
+
 async fn send_additional_success_events(
   app_handle: &AppHandle,
-  creds: Option<&StorytellerCredentialSet>,
-  job: &ListSessionJobsItem,
-  task: &Task
+  job: &JobStatusPayload,
+  task: &Task,
+  media_files: &[JobMediaFileInfo],
 ) {
   info!("Attempting to dispatch events for completed Storyteller job: {:?}", task);
 
   let result = maybe_handle_frontend_caller_notification(
     app_handle,
-    creds,
     task,
     job,
+    media_files,
   ).await;
 
   if let Err(err) = result {
     error!("Failed to send generation complete event: {:?}", err);
   }
-
-  //let result = maybe_handle_text_to_image_complete_event(
-  //  app_handle,
-  //  app_env_configs,
-  //  creds,
-  //  task,
-  //  job,
-  //).await;
-
-  //if let Err(err) = result {
-  //  error!("Failed to send text-to-image complete event: {:?}", err);
-  //}
 }
 
-fn get_thumbnail_template<'a>(job: &'a ListSessionJobsItem) -> Option<&'a str> {
+fn get_thumbnail_template<'a>(
+  job: &'a JobStatusPayload,
+  maybe_primary_file: Option<&'a JobMediaFileInfo>,
+) -> Option<&'a str> {
+  if let Some(file) = maybe_primary_file {
+    if let Some(template) = media_links_to_thumbnail_template(&file.media_links) {
+      return Some(template);
+    }
+  }
+
   let links = match job.maybe_result.as_ref() {
     None => return None,
     Some(result) => &result.media_links,
@@ -107,7 +144,22 @@ fn get_thumbnail_template<'a>(job: &'a ListSessionJobsItem) -> Option<&'a str> {
   media_links_to_thumbnail_template(links)
 }
 
-fn get_media_file_class(job: &ListSessionJobsItem) -> Option<TaskMediaFileClass> {
+fn get_media_file_class(
+  job: &JobStatusPayload,
+  maybe_primary_file: Option<&JobMediaFileInfo>,
+) -> Option<TaskMediaFileClass> {
+  // The listed media file's class is authoritative when we have it.
+  if let Some(file) = maybe_primary_file {
+    match file.media_class {
+      MediaFileClass::Audio => return Some(TaskMediaFileClass::Audio),
+      MediaFileClass::Image => return Some(TaskMediaFileClass::Image),
+      MediaFileClass::Video => return Some(TaskMediaFileClass::Video),
+      MediaFileClass::Mesh => return Some(TaskMediaFileClass::Mesh),
+      MediaFileClass::Splat => return Some(TaskMediaFileClass::Splat),
+      _ => {} // Fall-through (Unknown / legacy Dimensional / Project): infer below.
+    }
+  }
+
   match job.request.inference_category {
     InferenceCategory::BackgroundRemoval => return Some(TaskMediaFileClass::Image),
     InferenceCategory::ImageGeneration => return Some(TaskMediaFileClass::Image),
@@ -116,12 +168,11 @@ fn get_media_file_class(job: &ListSessionJobsItem) -> Option<TaskMediaFileClass>
     _ => {}, // Fall-through
   }
 
-  let result = match job.maybe_result.as_ref() {
-    None => return None,
-    Some(result) => result,
+  let url = match (maybe_primary_file, job.maybe_result.as_ref()) {
+    (Some(file), _) => file.media_links.cdn_url.as_str(),
+    (None, Some(result)) => result.media_links.cdn_url.as_str(),
+    (None, None) => return None,
   };
-
-  let url = result.media_links.cdn_url.as_str();
 
   if url.ends_with("jpg")
       || url.ends_with("jpeg")

@@ -1,5 +1,5 @@
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::events::generation_events::common::{GenerationAction, GenerationModel, GenerationServiceProvider};
+use crate::events::generation_events::common::{GenerationAction, GenerationModel};
 use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::events::functional_events::gaussian_generation_complete_event::{GaussianGenerationCompleteEvent, GeneratedGaussian};
 use crate::events::functional_events::object_generation_complete_event::{GeneratedObject, ObjectGenerationCompleteEvent};
@@ -8,7 +8,6 @@ use crate::events::functional_events::video_generation_complete_event::{Generate
 use artcraft_client::endpoints::media_files::list_batch_generated_redux_media_files::list_batch_generated_redux_media_files;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::utils::api_host::ApiHost;
-use core_types::enums::generation_source::GenerationSource;
 
 use crate::utils::enum_conversion::generation_source::to_generation_service_provider;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
@@ -120,11 +119,11 @@ fn notify_video_generation(
   completion: &CompletionData,
 ) -> Result<(), Box<dyn std::error::Error>> {
   let event = VideoGenerationCompleteEvent {
-    generated_video: Some(GeneratedVideo {
+    generated_videos: vec![GeneratedVideo {
       media_token: completion.primary_media_file_token.clone(),
       cdn_url: completion.maybe_cdn_url.clone().unwrap_or_else(|| Url::parse("https://cdn.artcraft.ai/placeholder").unwrap()),
       maybe_thumbnail_template: completion.maybe_thumbnail_url_template.clone(),
-    }),
+    }],
     maybe_frontend_subscriber_id: task.frontend_subscriber_id.clone(),
     maybe_frontend_subscriber_payload: task.frontend_subscriber_payload.clone(),
   };
@@ -139,11 +138,11 @@ fn notify_object_generation(
   completion: &CompletionData,
 ) -> Result<(), Box<dyn std::error::Error>> {
   let event = ObjectGenerationCompleteEvent {
-    generated_object: Some(GeneratedObject {
+    generated_objects: vec![GeneratedObject {
       media_token: completion.primary_media_file_token.clone(),
       cdn_url: completion.maybe_cdn_url.clone().unwrap_or_else(|| Url::parse("https://cdn.artcraft.ai/placeholder").unwrap()),
       maybe_thumbnail_template: completion.maybe_thumbnail_url_template.clone(),
-    }),
+    }],
     maybe_frontend_subscriber_id: task.frontend_subscriber_id.clone(),
     maybe_frontend_subscriber_payload: task.frontend_subscriber_payload.clone(),
   };
@@ -158,11 +157,11 @@ fn notify_gaussian_generation(
   completion: &CompletionData,
 ) -> Result<(), Box<dyn std::error::Error>> {
   let event = GaussianGenerationCompleteEvent {
-    generated_gaussian: Some(GeneratedGaussian {
+    generated_gaussians: vec![GeneratedGaussian {
       media_token: completion.primary_media_file_token.clone(),
       cdn_url: completion.maybe_cdn_url.clone().unwrap_or_else(|| Url::parse("https://cdn.artcraft.ai/placeholder").unwrap()),
       maybe_thumbnail_template: completion.maybe_thumbnail_url_template.clone(),
-    }),
+    }],
     maybe_frontend_subscriber_id: task.frontend_subscriber_id.clone(),
     maybe_frontend_subscriber_payload: task.frontend_subscriber_payload.clone(),
   };

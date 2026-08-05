@@ -7,7 +7,7 @@ use url::Url;
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub struct ObjectGenerationCompleteEvent {
-  pub generated_object: Option<GeneratedObject>,
+  pub generated_objects: Vec<GeneratedObject>,
   pub maybe_frontend_subscriber_id: Option<String>,
   pub maybe_frontend_subscriber_payload: Option<String>,
 }

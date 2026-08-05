@@ -215,11 +215,11 @@ export const useImageTo3DWorldStore = create<ImageTo3DWorldState>(
 
 interface GaussianGenerationEvent {
   data: {
-    generated_gaussian?: {
+    generated_gaussians?: {
       cdn_url: string;
       media_token: string;
       maybe_thumbnail_template?: string;
-    };
+    }[];
     maybe_frontend_subscriber_id?: string;
   };
 }
@@ -228,7 +228,8 @@ listen<GaussianGenerationEvent>(
   "gaussian_generation_complete_event",
   (event) => {
     const payload = event.payload?.data;
-    if (payload?.maybe_frontend_subscriber_id && payload?.generated_gaussian) {
+    const generatedGaussian = payload?.generated_gaussians?.[0];
+    if (payload?.maybe_frontend_subscriber_id && generatedGaussian) {
       console.log(
         "[ImageTo3DWorldStore] Gaussian event received for subscriber:",
         payload.maybe_frontend_subscriber_id,
@@ -236,14 +237,14 @@ listen<GaussianGenerationEvent>(
       useImageTo3DWorldStore
         .getState()
         .completeGeneration(
-          payload.generated_gaussian.cdn_url,
-          payload.generated_gaussian.media_token,
+          generatedGaussian.cdn_url,
+          generatedGaussian.media_token,
           payload.maybe_frontend_subscriber_id,
         );
 
       useImageTo3DWorldStore
         .getState()
-        .uploadCoverFromPreview(payload.generated_gaussian.media_token);
+        .uploadCoverFromPreview(generatedGaussian.media_token);
     }
   },
 );

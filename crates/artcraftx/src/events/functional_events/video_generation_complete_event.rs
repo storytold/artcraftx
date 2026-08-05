@@ -7,7 +7,7 @@ use url::Url;
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub struct VideoGenerationCompleteEvent {
-  pub generated_video: Option<GeneratedVideo>,
+  pub generated_videos: Vec<GeneratedVideo>,
   pub maybe_frontend_subscriber_id: Option<String>,
   pub maybe_frontend_subscriber_payload: Option<String>,
 }

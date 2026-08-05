@@ -7,7 +7,7 @@ use url::Url;
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub struct GaussianGenerationCompleteEvent {
-  pub generated_gaussian: Option<GeneratedGaussian>,
+  pub generated_gaussians: Vec<GeneratedGaussian>,
   pub maybe_frontend_subscriber_id: Option<String>,
   pub maybe_frontend_subscriber_payload: Option<String>,
 }
