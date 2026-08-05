@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_mesh_model::CommonMeshModel as CommonMeshModelEnum;
+use artcraft_client::enums::common::generation::common_mesh_model::CommonMeshModel as CommonMeshModelEnum;
 
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::generate::generate_mesh::generate_mesh_request_builder::GenerateMeshRequestBuilder;

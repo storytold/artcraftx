@@ -1,5 +1,5 @@
 use crate::events::basic_sendable_event_trait::{BasicEventStatus, BasicSendableEvent};
-use artcraft_enums::tauri::ux::tauri_event_name::TauriEventName;
+use artcraft_client::enums::tauri::ux::tauri_event_name::TauriEventName;
 use serde_derive::Serialize;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 use url::Url;

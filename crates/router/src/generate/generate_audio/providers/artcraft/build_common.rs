@@ -1,5 +1,5 @@
 use artcraft_client::api_defs::omni_gen::cost_and_generate_requests::omni_gen_audio_cost_and_generate_request::OmniGenAudioCostAndGenerateRequest;
-use artcraft_enums::common::generation::common_audio_model::CommonAudioModel as CommonAudioModelEnum;
+use artcraft_client::enums::common::generation::common_audio_model::CommonAudioModel as CommonAudioModelEnum;
 
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::generate::generate_audio::generate_audio_request_builder::GenerateAudioRequestBuilder;
@@ -52,7 +52,7 @@ mod tests {
 
   #[test]
   fn all_fields_are_forwarded() {
-    use artcraft_enums::common::generation::common_musical_key::CommonMusicalKey;
+    use artcraft_client::enums::common::generation::common_musical_key::CommonMusicalKey;
 
     let builder = GenerateAudioRequestBuilder {
       prompt: Some("a song".to_string()),

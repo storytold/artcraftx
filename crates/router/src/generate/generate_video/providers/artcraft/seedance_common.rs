@@ -2,7 +2,7 @@
 //!
 //! ArtCraft credits equal USD cents (100 credits = $1.00).
 
-use artcraft_enums::common::generation::common_resolution::CommonResolution;
+use artcraft_client::enums::common::generation::common_resolution::CommonResolution;
 
 // 4K is priced uniformly across the non-Fast Seedance 2.0 models. Rates are held
 // in hundredths of a USD cent per second so the math is exact integer arithmetic

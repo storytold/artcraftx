@@ -1,6 +1,6 @@
-use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
-use artcraft_enums::common::generation::common_mesh_quality::CommonMeshQuality;
-use artcraft_enums::common::generation::common_polygon_type::CommonPolygonType;
+use artcraft_client::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+use artcraft_client::enums::common::generation::common_mesh_quality::CommonMeshQuality;
+use artcraft_client::enums::common::generation::common_polygon_type::CommonPolygonType;
 
 use crate::generate::generate_mesh::mesh_generation_cost_estimate::MeshGenerationCostEstimate;
 use crate::generate::generate_mesh::providers::artcraft::tripo3d_h3p1::request::ArtcraftTripo3dH3p1RequestState;

@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-use artcraft_tokens::tokens::api_keys::ApiKeyToken;
+use crate::tokens::api_keys::ApiKeyToken;
 
 // ── POST /v1/api_keys/create ──
 

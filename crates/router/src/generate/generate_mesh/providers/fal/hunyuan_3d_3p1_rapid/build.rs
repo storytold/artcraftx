@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+use artcraft_client::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
 use fal_client::requests::api::mesh::image::hunyuan_3d_3p1_rapid_image_to_mesh::api::Hunyuan3d3p1RapidImageToMeshRequest;
 use fal_client::requests::api::mesh::text::hunyuan_3d_3p1_rapid_text_to_mesh::api::Hunyuan3d3p1RapidTextToMeshRequest;
 
@@ -112,7 +112,7 @@ fn plan_enable_geometry(
 
 #[cfg(test)]
 mod tests {
-  use artcraft_enums::common::generation::common_polygon_type::CommonPolygonType;
+  use artcraft_client::enums::common::generation::common_polygon_type::CommonPolygonType;
 
   use crate::api::image_list_ref::ImageListRef;
   use crate::api::image_ref::ImageRef;

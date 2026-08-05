@@ -1,5 +1,5 @@
 use artcraft_client::api_defs::omni_gen::cost_and_generate_requests::omni_gen_splat_cost_and_generate_request::OmniGenSplatCostAndGenerateRequest;
-use artcraft_enums::common::generation::common_splat_model::CommonSplatModel as CommonSplatModelEnum;
+use artcraft_client::enums::common::generation::common_splat_model::CommonSplatModel as CommonSplatModelEnum;
 
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::generate::generate_splat::generate_splat_request_builder::GenerateSplatRequestBuilder;

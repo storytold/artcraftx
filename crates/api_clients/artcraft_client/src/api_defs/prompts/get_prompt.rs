@@ -1,18 +1,18 @@
 use crate::api_defs::common::responses::media_links::MediaLinks;
 use chrono::{DateTime, Utc};
-use artcraft_enums::by_table::prompt_context_items::prompt_context_semantic_type::PromptContextSemanticType;
-use artcraft_enums::by_table::prompts::prompt_type::PromptType;
-use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
-use artcraft_enums::common::generation::common_bitrate::CommonBitrate;
-use artcraft_enums::common::generation::common_generation_mode::CommonGenerationMode;
-use artcraft_enums::common::generation::common_model_type::CommonModelType;
-use artcraft_enums::common::generation::common_resolution::CommonResolution;
+use crate::enums::by_table::prompt_context_items::prompt_context_semantic_type::PromptContextSemanticType;
+use crate::enums::by_table::prompts::prompt_type::PromptType;
+use crate::enums::common::generation::common_aspect_ratio::CommonAspectRatio;
+use crate::enums::common::generation::common_bitrate::CommonBitrate;
+use crate::enums::common::generation::common_generation_mode::CommonGenerationMode;
+use crate::enums::common::generation::common_model_type::CommonModelType;
+use crate::enums::common::generation::common_resolution::CommonResolution;
 use core_types::enums::generation_source::GenerationSource;
-use artcraft_enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
+use crate::enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
 use serde_derive::{Deserialize, Serialize};
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 use sqlite_identifiers::ids::prompt_token::PromptToken;
-use artcraft_enums::common::generation::common_model_class::CommonModelClass;
+use crate::enums::common::generation::common_model_class::CommonModelClass;
 
 pub const GET_PROMPT_PATH: &str = "/v1/prompts/{token}";
 

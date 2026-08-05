@@ -4,9 +4,9 @@
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 
-use artcraft_enums::by_table::media_files::media_file_class::MediaFileClass;
-use artcraft_enums::by_table::media_files::media_file_type::MediaFileType;
-use artcraft_enums::common::visibility::Visibility;
+use crate::enums::by_table::media_files::media_file_class::MediaFileClass;
+use crate::enums::by_table::media_files::media_file_type::MediaFileType;
+use crate::enums::common::visibility::Visibility;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 use sqlite_identifiers::ids::prompt_token::PromptToken;
 

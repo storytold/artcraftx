@@ -3,7 +3,7 @@
 //! Fal only accepts media URLs — media file tokens are rejected. Callers
 //! must resolve tokens to URLs before building for the Fal provider.
 
-use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+use artcraft_client::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
 
 use crate::api::image_list_ref::ImageListRef;
 use crate::api::image_ref::ImageRef;

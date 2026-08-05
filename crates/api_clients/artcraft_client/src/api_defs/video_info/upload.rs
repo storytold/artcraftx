@@ -5,7 +5,7 @@
 
 use serde_derive::{Deserialize, Serialize};
 
-use artcraft_tokens::tokens::uploaded_videos::UploadedVideoToken;
+use crate::tokens::uploaded_videos::UploadedVideoToken;
 
 use crate::api_defs::video_info::read_only::{
   DreaminaVideoInfo, KlingVideoInfo, SeedanceVideoInfo, SoraVideoInfo, VeoVideoInfo,

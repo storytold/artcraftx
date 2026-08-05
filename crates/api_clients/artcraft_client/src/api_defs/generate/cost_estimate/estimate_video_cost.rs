@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
-use artcraft_enums::common::generation::common_video_model::CommonVideoModel;
-use artcraft_enums::common::generation::common_resolution::CommonResolution;
+use crate::enums::common::generation::common_aspect_ratio::CommonAspectRatio;
+use crate::enums::common::generation::common_video_model::CommonVideoModel;
+use crate::enums::common::generation::common_resolution::CommonResolution;
 use core_types::enums::generation_source::GenerationSource;
 
 pub const ESTIMATE_VIDEO_COST_PATH: &str = "/v1/generate/cost_estimate/video";

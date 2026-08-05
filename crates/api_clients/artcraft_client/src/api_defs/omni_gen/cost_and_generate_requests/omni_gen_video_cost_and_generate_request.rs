@@ -1,11 +1,11 @@
 use serde_derive::{Deserialize, Serialize};
 
-use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
-use artcraft_enums::common::generation::common_bitrate::CommonBitrate;
-use artcraft_enums::common::generation::common_quality::CommonQuality;
-use artcraft_enums::common::generation::common_resolution::CommonResolution;
-use artcraft_enums::common::generation::common_video_model::CommonVideoModel;
-use artcraft_tokens::tokens::characters::CharacterToken;
+use crate::enums::common::generation::common_aspect_ratio::CommonAspectRatio;
+use crate::enums::common::generation::common_bitrate::CommonBitrate;
+use crate::enums::common::generation::common_quality::CommonQuality;
+use crate::enums::common::generation::common_resolution::CommonResolution;
+use crate::enums::common::generation::common_video_model::CommonVideoModel;
+use crate::tokens::characters::CharacterToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 /// Shared request body for both the video cost estimate and video generation endpoints.

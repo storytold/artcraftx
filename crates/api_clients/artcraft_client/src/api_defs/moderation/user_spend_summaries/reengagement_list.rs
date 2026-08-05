@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
-use artcraft_tokens::tokens::users::UserToken;
+use crate::tokens::users::UserToken;
 
 pub const MODERATOR_REENGAGEMENT_LIST_PATH: &str =
   "/v1/moderation/user_spend_summaries/reengagement_list";

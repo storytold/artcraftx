@@ -1,8 +1,8 @@
 use chrono::{DateTime, Utc};
-use artcraft_enums::by_table::users::user_signup_method::UserSignupMethod;
-use artcraft_enums::by_table::users::user_signup_source::UserSignupSource;
+use crate::enums::by_table::users::user_signup_method::UserSignupMethod;
+use crate::enums::by_table::users::user_signup_source::UserSignupSource;
 use serde_derive::{Deserialize, Serialize};
-use artcraft_tokens::tokens::users::UserToken;
+use crate::tokens::users::UserToken;
 
 pub const MODERATOR_LIST_USERS_BY_SIGNUP_DATE_PATH: &str = "/v1/moderation/users/list_all_by_signup_date";
 

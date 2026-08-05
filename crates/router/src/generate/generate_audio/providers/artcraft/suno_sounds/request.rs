@@ -20,7 +20,7 @@ impl ArtcraftSunoSoundsRequestState {
 mod tests {
   use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
   use artcraft_client::utils::api_host::ApiHost;
-  use artcraft_enums::common::generation::common_musical_key::CommonMusicalKey;
+  use artcraft_client::enums::common::generation::common_musical_key::CommonMusicalKey;
 
   use crate::api::router_audio_model::RouterAudioModel;
   use crate::api::router_provider::RouterProvider;

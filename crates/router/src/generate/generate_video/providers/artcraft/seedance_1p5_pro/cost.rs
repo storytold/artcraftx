@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
+use artcraft_client::enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
 use fal_client::requests::traits::fal_request_cost_calculator_trait::FalRequestCostCalculator;
 use fal_client::requests_old::webhook::video::text::enqueue_seedance_1p5_pro_text_to_video_webhook::{
   EnqueueSeedance1p5ProTextToVideoDuration, EnqueueSeedance1p5ProTextToVideoRequest,

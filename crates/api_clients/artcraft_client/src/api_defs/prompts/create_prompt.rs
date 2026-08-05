@@ -1,7 +1,7 @@
-use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
-use artcraft_enums::common::generation::common_generation_mode::CommonGenerationMode;
-use artcraft_enums::common::generation::common_model_type::CommonModelType;
-use artcraft_enums::common::generation::common_resolution::CommonResolution;
+use crate::enums::common::generation::common_aspect_ratio::CommonAspectRatio;
+use crate::enums::common::generation::common_generation_mode::CommonGenerationMode;
+use crate::enums::common::generation::common_model_type::CommonModelType;
+use crate::enums::common::generation::common_resolution::CommonResolution;
 use core_types::enums::generation_source::GenerationSource;
 use serde_derive::{Deserialize, Serialize};
 use sqlite_identifiers::ids::prompt_token::PromptToken;

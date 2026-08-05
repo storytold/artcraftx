@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use artcraft_tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use crate::tokens::generic_inference_jobs::InferenceJobToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 pub const SORA_2_PRO_MULTI_FUNCTION_VIDEO_VIDEO_PATH: &str = "/v1/generate/video/multi_function/sora_2_pro";

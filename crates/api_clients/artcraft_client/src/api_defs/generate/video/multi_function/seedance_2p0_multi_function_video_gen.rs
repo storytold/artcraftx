@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use artcraft_tokens::tokens::characters::CharacterToken;
-use artcraft_tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use crate::tokens::characters::CharacterToken;
+use crate::tokens::generic_inference_jobs::InferenceJobToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 pub const SEEDANCE_2P0_MULTI_FUNCTION_VIDEO_GEN_PATH: &str = "/v1/generate/video/multi_function/seedance_2p0";

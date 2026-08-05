@@ -10,11 +10,29 @@ use artcraft_client::error::storyteller_error::StorytellerError;
 use errors::AnyhowResult;
 use log::{debug, error, info};
 use std::time::Instant;
-use artcraft_tokens::tokens::app_session::AppSessionToken;
+use artcraft_client::tokens::app_session::AppSessionToken;
 
 const CLIENT_NAME : &str = "artcraft";
 
 const ERROR_SLEEP_MILLIS : u64 = 1_000 * 60 * 3; // 3 minutes;
+
+/// App session tokens are the one token minted client-side: an opaque
+/// per-app-run analytics id in the server's historical format
+/// (`app_session_` + 20 chars of mixed-case Crockford base32).
+const APP_SESSION_ENTROPY_CHARSET: &[u8] = b"0123456789ABCDEFGHJKMNPQRSTVWXYZabcdefghjkmnpqrstvwxyz";
+const APP_SESSION_ENTROPY_LENGTH: usize = 20;
+
+fn generate_app_session_token() -> AppSessionToken {
+  use rand::Rng;
+  let mut rng = rand::thread_rng();
+  let entropy: String = (0..APP_SESSION_ENTROPY_LENGTH)
+      .map(|_| {
+        let idx = rng.gen_range(0..APP_SESSION_ENTROPY_CHARSET.len());
+        APP_SESSION_ENTROPY_CHARSET[idx] as char
+      })
+      .collect();
+  AppSessionToken::new(format!("app_session_{entropy}"))
+}
 
 pub async fn storyteller_activity_thread(
   artcraft_platform_info: ArtcraftPlatformInfo,
@@ -22,7 +40,7 @@ pub async fn storyteller_activity_thread(
   storyteller_creds_manager: StorytellerCredentialManager,
 ) -> ! {
   let startup = Instant::now();
-  let app_session_token = AppSessionToken::generate();
+  let app_session_token = generate_app_session_token();
 
   info!("Session started at {:?} with token: {:?}", startup, app_session_token);
 

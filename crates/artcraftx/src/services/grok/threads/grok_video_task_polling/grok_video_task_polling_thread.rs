@@ -12,7 +12,7 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
 use core_types::enums::generation_source::GenerationSource;
-use artcraft_enums::common::generation::common_model_type::CommonModelType;
+use artcraft_client::enums::common::generation::common_model_type::CommonModelType;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
 use grok_consumer_client::credentials::grok_full_credentials::GrokFullCredentials;

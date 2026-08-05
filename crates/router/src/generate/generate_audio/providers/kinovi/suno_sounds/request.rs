@@ -38,7 +38,7 @@ impl KinoviSunoSoundsRequestState {
 
 #[cfg(test)]
 mod tests {
-  use artcraft_enums::common::generation::common_musical_key::CommonMusicalKey;
+  use artcraft_client::enums::common::generation::common_musical_key::CommonMusicalKey;
   use seedance2pro_client::creds::seedance2pro_session::Seedance2ProSession;
 
   use crate::api::router_audio_model::RouterAudioModel;

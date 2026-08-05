@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_model_type::CommonModelType;
+use artcraft_client::enums::common::generation::common_model_type::CommonModelType;
 
 use crate::commands::generate::generate_image::tauri_image_model::TauriImageModel;
 

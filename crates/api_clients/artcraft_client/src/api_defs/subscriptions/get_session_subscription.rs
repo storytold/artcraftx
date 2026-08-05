@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
-use artcraft_enums::common::payments_namespace::PaymentsNamespace;
+use crate::enums::common::payments_namespace::PaymentsNamespace;
 use serde_derive::{Deserialize, Serialize};
-use artcraft_tokens::tokens::user_subscriptions::UserSubscriptionToken;
+use crate::tokens::user_subscriptions::UserSubscriptionToken;
 
 // TODO: Maybe make "artcraft_subscription" or "fakeyou_subscription" with strongly typed slugs?
 

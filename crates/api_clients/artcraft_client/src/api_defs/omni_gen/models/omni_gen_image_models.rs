@@ -1,8 +1,8 @@
-use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
-use artcraft_enums::common::generation::common_image_model::CommonImageModel;
-use artcraft_enums::common::generation::common_quality::CommonQuality;
-use artcraft_enums::common::generation::common_resolution::CommonResolution;
-use artcraft_enums::common::generation::model_creator::ModelCreator;
+use crate::enums::common::generation::common_aspect_ratio::CommonAspectRatio;
+use crate::enums::common::generation::common_image_model::CommonImageModel;
+use crate::enums::common::generation::common_quality::CommonQuality;
+use crate::enums::common::generation::common_resolution::CommonResolution;
+use crate::enums::common::generation::model_creator::ModelCreator;
 use core_types::enums::generation_source::GenerationSource;
 use serde_derive::{Deserialize, Serialize};
 

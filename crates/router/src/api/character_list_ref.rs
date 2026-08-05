@@ -1,4 +1,4 @@
-use artcraft_tokens::tokens::characters::CharacterToken;
+use artcraft_client::tokens::characters::CharacterToken;
 
 /// Forward-compatible character reference list.
 #[derive(Clone, Debug)]

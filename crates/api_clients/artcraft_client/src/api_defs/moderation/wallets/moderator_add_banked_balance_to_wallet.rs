@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use artcraft_tokens::tokens::wallets::WalletToken;
+use crate::tokens::wallets::WalletToken;
 
 pub const MODERATOR_ADD_BANKED_BALANCE_TO_WALLET_PATH: &str = "/v1/moderation/wallet/{wallet_token}/add_banked_balance";
 

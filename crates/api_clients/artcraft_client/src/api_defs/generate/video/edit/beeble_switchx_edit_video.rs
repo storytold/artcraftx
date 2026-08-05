@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use artcraft_tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use crate::tokens::generic_inference_jobs::InferenceJobToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 pub const BEEBLE_SWITCHX_EDIT_VIDEO_PATH: &str = "/v1/generate/video/edit/beeble_switchx";

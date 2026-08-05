@@ -1,7 +1,7 @@
-use artcraft_enums::common::generation::common_mesh_model::CommonMeshModel;
-use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
-use artcraft_enums::common::generation::common_polygon_type::CommonPolygonType;
-use artcraft_enums::common::generation::model_creator::ModelCreator;
+use crate::enums::common::generation::common_mesh_model::CommonMeshModel;
+use crate::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+use crate::enums::common::generation::common_polygon_type::CommonPolygonType;
+use crate::enums::common::generation::model_creator::ModelCreator;
 use core_types::enums::generation_source::GenerationSource;
 use serde_derive::Serialize;
 

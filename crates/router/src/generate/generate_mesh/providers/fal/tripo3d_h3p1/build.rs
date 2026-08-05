@@ -1,6 +1,6 @@
-use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
-use artcraft_enums::common::generation::common_mesh_quality::CommonMeshQuality;
-use artcraft_enums::common::generation::common_polygon_type::CommonPolygonType;
+use artcraft_client::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+use artcraft_client::enums::common::generation::common_mesh_quality::CommonMeshQuality;
+use artcraft_client::enums::common::generation::common_polygon_type::CommonPolygonType;
 use fal_client::requests::api::mesh::image::tripo3d_h3p1_image_to_mesh::api::{
   Tripo3dH3p1ImageGeometryQuality, Tripo3dH3p1ImageTextureQuality, Tripo3dH3p1ImageToMeshRequest,
 };

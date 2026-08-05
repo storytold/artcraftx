@@ -1,8 +1,8 @@
 use artcraft_client::api_defs::omni_gen::cost_and_generate_requests::omni_gen_image_cost_and_generate_request::OmniGenImageCostAndGenerateRequest;
-use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio as CommonAspectRatioEnum;
-use artcraft_enums::common::generation::common_image_model::CommonImageModel as CommonImageModelEnum;
-use artcraft_enums::common::generation::common_quality::CommonQuality as CommonQualityEnum;
-use artcraft_enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
+use artcraft_client::enums::common::generation::common_aspect_ratio::CommonAspectRatio as CommonAspectRatioEnum;
+use artcraft_client::enums::common::generation::common_image_model::CommonImageModel as CommonImageModelEnum;
+use artcraft_client::enums::common::generation::common_quality::CommonQuality as CommonQualityEnum;
+use artcraft_client::enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::api::router_aspect_ratio::RouterAspectRatio;

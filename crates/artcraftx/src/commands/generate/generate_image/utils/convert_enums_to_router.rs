@@ -1,9 +1,9 @@
 use router::api::router_aspect_ratio::RouterAspectRatio;
 use router::api::router_quality::RouterQuality;
 use router::api::router_resolution::RouterResolution;
-use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio as EnumsAspectRatio;
-use artcraft_enums::common::generation::common_quality::CommonQuality as EnumsQuality;
-use artcraft_enums::common::generation::common_resolution::CommonResolution as EnumsResolution;
+use artcraft_client::enums::common::generation::common_aspect_ratio::CommonAspectRatio as EnumsAspectRatio;
+use artcraft_client::enums::common::generation::common_quality::CommonQuality as EnumsQuality;
+use artcraft_client::enums::common::generation::common_resolution::CommonResolution as EnumsResolution;
 
 pub fn convert_aspect_ratio(value: EnumsAspectRatio) -> RouterAspectRatio {
   match value {

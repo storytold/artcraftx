@@ -51,8 +51,8 @@ pub(crate) fn build_fal_hunyuan_3d_3p1_part_state(
 
 #[cfg(test)]
 mod tests {
-  use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
-  use artcraft_enums::common::generation::common_polygon_type::CommonPolygonType;
+  use artcraft_client::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+  use artcraft_client::enums::common::generation::common_polygon_type::CommonPolygonType;
   use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::image_ref::ImageRef;

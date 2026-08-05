@@ -7,10 +7,10 @@
 
 use serde_derive::{Deserialize, Serialize};
 
-use artcraft_enums::by_table::uploaded_video_notes::uploaded_video_note_reported_model_type::UploadedVideoNoteReportedModelType;
-use artcraft_enums::by_table::uploaded_video_notes::uploaded_video_note_reported_website::UploadedVideoNoteReportedWebsite;
-use artcraft_tokens::tokens::uploaded_video_notes::UploadVideoNoteToken;
-use artcraft_tokens::tokens::uploaded_videos::UploadedVideoToken;
+use crate::enums::by_table::uploaded_video_notes::uploaded_video_note_reported_model_type::UploadedVideoNoteReportedModelType;
+use crate::enums::by_table::uploaded_video_notes::uploaded_video_note_reported_website::UploadedVideoNoteReportedWebsite;
+use crate::tokens::uploaded_video_notes::UploadVideoNoteToken;
+use crate::tokens::uploaded_videos::UploadedVideoToken;
 
 /// Request body for `POST /v1/video_info/notes`.
 #[derive(Deserialize, Debug, Clone)]

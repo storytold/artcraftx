@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use artcraft_tokens::tokens::users::UserToken;
+use crate::tokens::users::UserToken;
 
 /// Everything we need to refer to a user on the public web interface.
 #[derive(Serialize, Deserialize, Debug)]

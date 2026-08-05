@@ -1,4 +1,4 @@
-use artcraft_enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
+use crate::enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use serde_derive::{Deserialize, Serialize};
 
 pub const CUSTOMER_PORTAL_SWITCH_PLAN_URL_PATH: &str = "/v1/stripe_artcraft/portal/switch_plan";

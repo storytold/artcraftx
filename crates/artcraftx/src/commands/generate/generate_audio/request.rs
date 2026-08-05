@@ -1,6 +1,6 @@
 use sqlite_identifiers::enums::tauri_command_caller::TauriCommandCaller;
 use serde_derive::{Deserialize, Serialize};
-use artcraft_enums::common::generation::common_musical_key::CommonMusicalKey;
+use artcraft_client::enums::common::generation::common_musical_key::CommonMusicalKey;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::commands::utils::response::success_response_wrapper::SerializeMarker;

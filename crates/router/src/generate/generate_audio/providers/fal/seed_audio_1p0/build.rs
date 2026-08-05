@@ -540,7 +540,7 @@ mod tests {
 
     #[test]
     fn unsupported_options_error_out() {
-      use artcraft_enums::common::generation::common_musical_key::CommonMusicalKey;
+      use artcraft_client::enums::common::generation::common_musical_key::CommonMusicalKey;
       let cases: Vec<GenerateAudioRequestBuilder> = vec![
         GenerateAudioRequestBuilder { style_prompt: Some("EDM".to_string()), ..base_builder() },
         GenerateAudioRequestBuilder { keep_lyrics: Some(true), ..base_builder() },

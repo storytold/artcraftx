@@ -8,7 +8,7 @@ use artcraft_client::endpoints::jobs::list_session_jobs::{list_session_jobs, Sta
 use artcraft_client::error::api_error::ApiError;
 use artcraft_client::error::storyteller_error::StorytellerError;
 use core_types::enums::generation_source::GenerationSource;
-use artcraft_enums::common::job_status_plus::JobStatusPlus;
+use artcraft_client::enums::common::job_status_plus::JobStatusPlus;
 use sqlite_identifiers::enums::task_status::TaskStatus;
 use errors::AnyhowResult;
 use log::error;

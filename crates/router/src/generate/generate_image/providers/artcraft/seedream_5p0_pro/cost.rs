@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
+use artcraft_client::enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
 
 use crate::generate::generate_image::image_generation_cost_estimate::ImageGenerationCostEstimate;
 use crate::generate::generate_image::providers::artcraft::seedream_5p0_pro::request::ArtcraftSeedream5p0ProRequestState;

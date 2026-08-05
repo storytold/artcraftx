@@ -217,7 +217,7 @@ mod tests {
     KinoviSeedance2p0BatchCount as KinoviBatchCount,
     KinoviSeedance2p0OutputResolution as KinoviOutputResolution,
   };
-  use artcraft_tokens::tokens::characters::CharacterToken;
+  use artcraft_client::tokens::characters::CharacterToken;
   use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::audio_list_ref::AudioListRef;

@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
-use artcraft_tokens::tokens::user_spend_events::UserSpendEventToken;
-use artcraft_tokens::tokens::users::UserToken;
+use crate::tokens::user_spend_events::UserSpendEventToken;
+use crate::tokens::users::UserToken;
 
 pub const MODERATOR_LIST_USER_SPEND_EVENTS_PATH: &str =
   "/v1/moderation/user_spend_events/list";

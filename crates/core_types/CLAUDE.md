@@ -9,7 +9,7 @@ The whole workspace depends on this crate; it must stay dependency-light.
   distinct type here (`CredentialId`, …). The *machinery* (minting, validation, the `define_id!`
   macro) lives in `identifiers/utils/id_core.rs`.
 
-Database identifiers live elsewhere: `sqlite_identifiers` for the local tasks database, `artcraft_tokens`
+Database identifiers live elsewhere: `sqlite_identifiers` for the local tasks database, `artcraft_client::tokens`
 for the server API.
 
 ## The rule: NEVER stringly-typed ids

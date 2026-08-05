@@ -1,4 +1,4 @@
-use artcraft_enums::common::artcraft_credits_pack_slug::ArtcraftCreditsPackSlug;
+use crate::enums::common::artcraft_credits_pack_slug::ArtcraftCreditsPackSlug;
 use serde_derive::{Deserialize, Serialize};
 
 pub const CREATE_CREDITS_PACK_CHECKOUT_URL_PATH: &str = "/v1/stripe_artcraft/checkout/credits_pack";

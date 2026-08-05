@@ -49,7 +49,7 @@ mod tests {
 
   #[test]
   fn round_trips_through_common_splat_model() {
-    use artcraft_enums::common::generation::common_splat_model::CommonSplatModel;
+    use artcraft_client::enums::common::generation::common_splat_model::CommonSplatModel;
 
     let cases = [
       (RouterSplatModel::Marble0p1Mini, CommonSplatModel::Marble0p1Mini),

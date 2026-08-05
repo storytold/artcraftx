@@ -8,7 +8,7 @@
 //! the entire point. NEVER use bare `String` ids.
 //!
 //! Database identifiers live elsewhere: `sqlite_identifiers` for the local
-//! tasks database, `artcraft_tokens` for the server API.
+//! tasks database, `artcraft_client::tokens` for the server API.
 
 #[macro_use]
 pub mod utils;

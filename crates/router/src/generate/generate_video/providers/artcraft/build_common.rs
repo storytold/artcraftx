@@ -1,8 +1,8 @@
 use artcraft_client::api_defs::omni_gen::cost_and_generate_requests::omni_gen_video_cost_and_generate_request::OmniGenVideoCostAndGenerateRequest;
-use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio as CommonAspectRatioEnum;
-use artcraft_enums::common::generation::common_bitrate::CommonBitrate as CommonBitrateEnum;
-use artcraft_enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
-use artcraft_enums::common::generation::common_video_model::CommonVideoModel as CommonVideoModelEnum;
+use artcraft_client::enums::common::generation::common_aspect_ratio::CommonAspectRatio as CommonAspectRatioEnum;
+use artcraft_client::enums::common::generation::common_bitrate::CommonBitrate as CommonBitrateEnum;
+use artcraft_client::enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
+use artcraft_client::enums::common::generation::common_video_model::CommonVideoModel as CommonVideoModelEnum;
 
 use crate::api::router_aspect_ratio::RouterAspectRatio;
 use crate::api::router_bitrate::RouterBitrate;

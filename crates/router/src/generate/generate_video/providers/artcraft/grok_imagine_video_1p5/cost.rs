@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_resolution::CommonResolution;
+use artcraft_client::enums::common::generation::common_resolution::CommonResolution;
 
 use grok_api_client::api::requests::videos::video_generation::video_generation::{
   VideoGenerationRequest as GrokVideoGenerationRequest,

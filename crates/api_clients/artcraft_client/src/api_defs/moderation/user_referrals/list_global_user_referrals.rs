@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
-use artcraft_tokens::tokens::user_referral_codes::UserReferralCodeToken;
-use artcraft_tokens::tokens::users::UserToken;
+use crate::tokens::user_referral_codes::UserReferralCodeToken;
+use crate::tokens::users::UserToken;
 
 // --- Request ---
 

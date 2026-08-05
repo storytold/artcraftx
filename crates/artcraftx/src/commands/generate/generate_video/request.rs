@@ -3,7 +3,7 @@ use router::api::router_resolution::RouterResolution;
 use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::tauri_command_caller::TauriCommandCaller;
 use serde_derive::{Deserialize, Serialize};
-use artcraft_tokens::tokens::characters::CharacterToken;
+use artcraft_client::tokens::characters::CharacterToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::commands::utils::response::success_response_wrapper::SerializeMarker;

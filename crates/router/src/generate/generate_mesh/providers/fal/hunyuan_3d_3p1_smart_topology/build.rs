@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_polygon_type::CommonPolygonType;
+use artcraft_client::enums::common::generation::common_polygon_type::CommonPolygonType;
 use fal_client::requests::api::mesh::topology::hunyuan_3d_3p1_smart_topology::api::{
   Hunyuan3d3p1SmartTopologyInputFileType, Hunyuan3d3p1SmartTopologyPolygonType,
   Hunyuan3d3p1SmartTopologyRequest,
@@ -81,7 +81,7 @@ fn to_polygon_type(polygon_type: CommonPolygonType) -> Hunyuan3d3p1SmartTopology
 
 #[cfg(test)]
 mod tests {
-  use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+  use artcraft_client::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
   use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::image_ref::ImageRef;

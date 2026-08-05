@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-use artcraft_tokens::tokens::tags::TagToken;
+use crate::tokens::tags::TagToken;
 
 // ── DELETE /v1/tags/{tag_token} ──
 

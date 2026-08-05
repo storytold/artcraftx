@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use artcraft_enums::common::generation::common_splat_model::CommonSplatModel;
+use crate::enums::common::generation::common_splat_model::CommonSplatModel;
 use core_types::enums::generation_source::GenerationSource;
 
 pub const ESTIMATE_SPLAT_COST_PATH: &str = "/v1/generate/cost_estimate/splat";

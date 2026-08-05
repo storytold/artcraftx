@@ -1,6 +1,6 @@
 use serde_derive::Deserialize;
 
-use artcraft_tokens::tokens::tags::TagToken;
+use crate::tokens::tags::TagToken;
 
 // ── GET /v1/tags/media_files/with_tag/{tag_token} ──
 //

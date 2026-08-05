@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use artcraft_tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use crate::tokens::generic_inference_jobs::InferenceJobToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 pub const GENERATE_SEEDANCE_1_0_LITE_IMAGE_TO_VIDEO_URL_PATH: &str = "/v1/generate/video/seedance_1.0_lite_image_to_video";

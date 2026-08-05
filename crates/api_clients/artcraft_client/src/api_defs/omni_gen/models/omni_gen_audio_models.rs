@@ -1,5 +1,5 @@
-use artcraft_enums::common::generation::common_audio_model::CommonAudioModel;
-use artcraft_enums::common::generation::model_creator::ModelCreator;
+use crate::enums::common::generation::common_audio_model::CommonAudioModel;
+use crate::enums::common::generation::model_creator::ModelCreator;
 use core_types::enums::generation_source::GenerationSource;
 use serde_derive::Serialize;
 

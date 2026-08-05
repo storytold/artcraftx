@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_resolution::CommonResolution;
+use artcraft_client::enums::common::generation::common_resolution::CommonResolution;
 
 use crate::generate::generate_video::providers::artcraft::seedance_common::seedance_2p0_four_k_usd_cents;
 use crate::generate::generate_video::providers::artcraft::seedance_2p0_u::request::ArtcraftSeedance2p0UltraRequestState;
@@ -145,7 +145,7 @@ mod tests {
   }
 
   mod four_k_pricing {
-    use artcraft_enums::common::generation::common_resolution::CommonResolution;
+    use artcraft_client::enums::common::generation::common_resolution::CommonResolution;
 
     fn artcraft_4k_cents(duration_seconds: u16, batch_count: u16, has_video_reference: bool) -> u64 {
       super::super::ArtcraftSeedance2p0UltraCostState {

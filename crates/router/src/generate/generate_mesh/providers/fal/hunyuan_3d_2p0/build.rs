@@ -56,8 +56,8 @@ pub(crate) fn build_fal_hunyuan_3d_2p0_state(
 
 #[cfg(test)]
 mod tests {
-  use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
-  use artcraft_enums::common::generation::common_polygon_type::CommonPolygonType;
+  use artcraft_client::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+  use artcraft_client::enums::common::generation::common_polygon_type::CommonPolygonType;
 
   use crate::api::image_list_ref::ImageListRef;
   use crate::api::image_ref::ImageRef;

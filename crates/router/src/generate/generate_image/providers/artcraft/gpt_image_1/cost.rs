@@ -1,5 +1,5 @@
-use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio as CommonAspectRatioEnum;
-use artcraft_enums::common::generation::common_quality::CommonQuality as CommonQualityEnum;
+use artcraft_client::enums::common::generation::common_aspect_ratio::CommonAspectRatio as CommonAspectRatioEnum;
+use artcraft_client::enums::common::generation::common_quality::CommonQuality as CommonQualityEnum;
 
 use crate::generate::generate_image::image_generation_cost_estimate::ImageGenerationCostEstimate;
 use crate::generate::generate_image::providers::artcraft::gpt_image_1::request::ArtcraftGptImage1RequestState;

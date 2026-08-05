@@ -1,5 +1,5 @@
 use router::api::router_aspect_ratio::RouterAspectRatio;
-use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio as EnumsCommonAspectRatio;
+use artcraft_client::enums::common::generation::common_aspect_ratio::CommonAspectRatio as EnumsCommonAspectRatio;
 
 /// Map from the router's CommonAspectRatio to the enums crate's CommonAspectRatio.
 pub fn router_aspect_ratio_to_enums_aspect_ratio(ratio: RouterAspectRatio) -> EnumsCommonAspectRatio {

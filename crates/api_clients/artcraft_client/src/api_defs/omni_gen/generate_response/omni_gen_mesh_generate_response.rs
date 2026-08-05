@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use artcraft_tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use crate::tokens::generic_inference_jobs::InferenceJobToken;
 
 /// Response body for the omni-gen mesh generation endpoint.
 #[derive(Serialize, Deserialize)]

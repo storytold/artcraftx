@@ -8,19 +8,19 @@ use crate::api_defs::common::responses::media_links::MediaLinks;
 use crate::api_defs::common::responses::simple_entity_stats::SimpleEntityStats;
 use crate::api_defs::common::responses::user_details_light::UserDetailsLight;
 use chrono::{DateTime, Utc};
-use artcraft_enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
-use artcraft_enums::by_table::media_files::media_file_class::MediaFileClass;
-use artcraft_enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
-use artcraft_enums::by_table::media_files::media_file_type::MediaFileType;
-use artcraft_enums::by_table::model_weights::weights_category::WeightsCategory;
-use artcraft_enums::common::visibility::Visibility;
-use artcraft_enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
-use artcraft_enums::by_table::model_weights::weights_types::WeightsType;
+use crate::enums::by_table::media_files::media_file_animation_type::MediaFileAnimationType;
+use crate::enums::by_table::media_files::media_file_class::MediaFileClass;
+use crate::enums::by_table::media_files::media_file_engine_category::MediaFileEngineCategory;
+use crate::enums::by_table::media_files::media_file_type::MediaFileType;
+use crate::enums::by_table::model_weights::weights_category::WeightsCategory;
+use crate::enums::common::visibility::Visibility;
+use crate::enums::no_table::style_transfer::style_transfer_name::StyleTransferName;
+use crate::enums::by_table::model_weights::weights_types::WeightsType;
 use log::debug;
 use serde_derive::Deserialize;
 use sqlite_identifiers::ids::batch_generation_token::BatchGenerationToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
-use artcraft_tokens::tokens::model_weights::ModelWeightToken;
+use crate::tokens::model_weights::ModelWeightToken;
 use sqlite_identifiers::ids::prompt_token::PromptToken;
 
 /// Get details about a media file from our backend

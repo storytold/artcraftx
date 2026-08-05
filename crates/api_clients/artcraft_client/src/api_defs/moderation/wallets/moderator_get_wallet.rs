@@ -1,8 +1,8 @@
 use chrono::{DateTime, Utc};
-use artcraft_enums::common::payments_namespace::PaymentsNamespace;
+use crate::enums::common::payments_namespace::PaymentsNamespace;
 use serde_derive::{Deserialize, Serialize};
-use artcraft_tokens::tokens::users::UserToken;
-use artcraft_tokens::tokens::wallets::WalletToken;
+use crate::tokens::users::UserToken;
+use crate::tokens::wallets::WalletToken;
 
 pub const MODERATOR_GET_WALLET_PATH: &str = "/v1/moderation/wallet/{wallet_token}";
 

@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-use artcraft_tokens::tokens::folders::FolderToken;
+use crate::tokens::folders::FolderToken;
 
 use crate::api_defs::folders::common::FolderInfo;
 

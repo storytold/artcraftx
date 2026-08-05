@@ -4,10 +4,10 @@ use router::api::router_resolution::RouterResolution;
 use router::api::router_video_model::RouterVideoModel;
 use router::api::router_provider::RouterProvider;
 use router::generate::generate_video::generate_video_request_builder::GenerateVideoRequestBuilder;
-use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio as EnumsAspectRatio;
-use artcraft_enums::common::generation::common_generation_mode::CommonGenerationMode;
-use artcraft_enums::common::generation::common_model_type::CommonModelType;
-use artcraft_enums::common::generation::common_resolution::CommonResolution as EnumsResolution;
+use artcraft_client::enums::common::generation::common_aspect_ratio::CommonAspectRatio as EnumsAspectRatio;
+use artcraft_client::enums::common::generation::common_generation_mode::CommonGenerationMode;
+use artcraft_client::enums::common::generation::common_model_type::CommonModelType;
+use artcraft_client::enums::common::generation::common_resolution::CommonResolution as EnumsResolution;
 use core_types::enums::generation_source::GenerationSource;
 use uuid_utils::uuid::generate_random_uuid;
 

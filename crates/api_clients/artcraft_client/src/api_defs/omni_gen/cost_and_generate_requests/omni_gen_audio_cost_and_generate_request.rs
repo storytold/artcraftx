@@ -1,7 +1,7 @@
 use serde_derive::{Deserialize, Serialize};
 
-use artcraft_enums::common::generation::common_audio_model::CommonAudioModel;
-use artcraft_enums::common::generation::common_musical_key::CommonMusicalKey;
+use crate::enums::common::generation::common_audio_model::CommonAudioModel;
+use crate::enums::common::generation::common_musical_key::CommonMusicalKey;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 /// Shared request body for both the audio cost estimate and audio generation endpoints.

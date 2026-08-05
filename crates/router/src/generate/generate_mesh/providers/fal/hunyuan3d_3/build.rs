@@ -1,5 +1,5 @@
-use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
-use artcraft_enums::common::generation::common_polygon_type::CommonPolygonType;
+use artcraft_client::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+use artcraft_client::enums::common::generation::common_polygon_type::CommonPolygonType;
 use fal_client::requests::api::mesh::image::hunyuan3d_3_image_to_mesh::api::{
   Hunyuan3d3ImageToMeshGenerateType, Hunyuan3d3ImageToMeshPolygonType, Hunyuan3d3ImageToMeshRequest,
 };

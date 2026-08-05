@@ -1,5 +1,5 @@
 use artcraft_client::api_defs::omni_gen::cost_and_generate_requests::omni_gen_mesh_cost_and_generate_request::OmniGenMeshCostAndGenerateRequest;
-use artcraft_enums::common::generation::common_mesh_model::CommonMeshModel as CommonMeshModelEnum;
+use artcraft_client::enums::common::generation::common_mesh_model::CommonMeshModel as CommonMeshModelEnum;
 
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::generate::generate_mesh::generate_mesh_request_builder::GenerateMeshRequestBuilder;
@@ -45,8 +45,8 @@ pub fn build_artcraft_omni_mesh_request(
 
 #[cfg(test)]
 mod tests {
-  use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
-  use artcraft_enums::common::generation::common_polygon_type::CommonPolygonType;
+  use artcraft_client::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+  use artcraft_client::enums::common::generation::common_polygon_type::CommonPolygonType;
   use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::image_list_ref::ImageListRef;

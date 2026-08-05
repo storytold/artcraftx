@@ -2,9 +2,9 @@ use crate::api_defs::common::responses::media_file_cover_image_details::MediaFil
 use crate::api_defs::common::responses::media_links::MediaLinks;
 use crate::api_defs::common::responses::user_details_light::UserDetailsLight;
 use chrono::{DateTime, Utc};
-use artcraft_enums::by_table::media_files::media_file_class::MediaFileClass;
-use artcraft_enums::by_table::media_files::media_file_type::MediaFileType;
-use artcraft_enums::common::visibility::Visibility;
+use crate::enums::by_table::media_files::media_file_class::MediaFileClass;
+use crate::enums::by_table::media_files::media_file_type::MediaFileType;
+use crate::enums::common::visibility::Visibility;
 use serde_derive::{Deserialize, Serialize};
 use sqlite_identifiers::ids::batch_generation_token::BatchGenerationToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;

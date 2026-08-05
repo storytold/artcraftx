@@ -32,8 +32,10 @@ CREATE TABLE tasks (
     provider TEXT,
 
     -- The primary key for the job in the provider's system.
+    -- Sometimes this may not be enough to look up the job
     provider_job_id TEXT,
 
+    -- TODO: Need to store prompts
     -- OPTIONAL.
     -- For third party jobs, we need to record the prompt details upfront.
     -- We create a prompt record and store the token to associate once the task completes.
@@ -66,25 +68,32 @@ CREATE TABLE tasks (
     -- results (when the job completes)
     queue_response_url TEXT,
 
+    -- TODO: Necessary? Can probably kill this.
     -- OPTIONAL.
     -- When the generation completes, the batch token (if any).
     -- This will point to a collection of multiple files.
     on_complete_batch_token TEXT,
 
+    -- TODO: Point to files. Rather, have a files table.
     -- OPTIONAL.
     -- When the generation completes, the media token of the "primary" media file.
     -- We'll probably always generate homogenous types, but just in case this is the first or primary item in a batch.
     on_complete_primary_media_file_token TEXT,
 
+    -- TODO: Point to files. Rather, have a files table.
+    -- TODO: Do we need this?
     -- OPTIONAL.
     -- When the generation completes, the file type of the primary media file.
     -- We'll probably always generate homogenous types, but just in case this is the first or primary item in a batch.
     on_complete_primary_media_file_class TEXT,
 
+    -- TODO: Point to files. Rather, have a files table.
+    -- TODO: Do we need this?
     -- OPTIONAL.
     -- The URL to the media file.
     on_complete_primary_media_file_cdn_url TEXT,
 
+    -- TODO: Point to files. Rather, have a files table.
     -- OPTIONAL.
     -- The URL template for the thumbnail of the primary media file.
     on_complete_primary_media_file_thumbnail_url_template TEXT,

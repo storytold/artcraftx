@@ -1,5 +1,5 @@
-use artcraft_enums::common::generation::common_splat_model::CommonSplatModel;
-use artcraft_enums::common::generation::model_creator::ModelCreator;
+use crate::enums::common::generation::common_splat_model::CommonSplatModel;
+use crate::enums::common::generation::model_creator::ModelCreator;
 use core_types::enums::generation_source::GenerationSource;
 use serde_derive::Serialize;
 

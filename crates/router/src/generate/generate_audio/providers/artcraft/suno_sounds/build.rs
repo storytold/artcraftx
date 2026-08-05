@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_audio_model::CommonAudioModel as CommonAudioModelEnum;
+use artcraft_client::enums::common::generation::common_audio_model::CommonAudioModel as CommonAudioModelEnum;
 
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::generate::generate_audio::audio_generation_draft_or_request::AudioGenerationDraftOrRequest;

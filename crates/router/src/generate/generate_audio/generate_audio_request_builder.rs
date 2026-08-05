@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_musical_key::CommonMusicalKey;
+use artcraft_client::enums::common::generation::common_musical_key::CommonMusicalKey;
 
 use crate::api::audio_list_ref::AudioListRef;
 use crate::api::image_list_ref::ImageListRef;

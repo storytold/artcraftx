@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use std::sync::Arc;
 
-use artcraft_tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use artcraft_client::tokens::generic_inference_jobs::InferenceJobToken;
 
 #[derive(Clone, Debug)]
 pub struct ArtcraftSplatResponsePayload {

@@ -35,7 +35,7 @@ impl ArtcraftGrokImagineVideo1p5RequestState {
 mod tests {
   use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
   use artcraft_client::utils::api_host::ApiHost;
-  use artcraft_enums::common::generation::common_video_model::CommonVideoModel as CommonVideoModelEnum;
+  use artcraft_client::enums::common::generation::common_video_model::CommonVideoModel as CommonVideoModelEnum;
 
   use super::*;
 

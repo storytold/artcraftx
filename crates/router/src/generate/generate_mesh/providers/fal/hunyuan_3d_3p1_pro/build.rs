@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+use artcraft_client::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
 use fal_client::requests::api::mesh::image::hunyuan_3d_3p1_pro_image_to_mesh::api::{
   Hunyuan3d3p1ProImageToMeshGenerateType, Hunyuan3d3p1ProImageToMeshRequest,
 };
@@ -141,8 +141,8 @@ fn plan_text_generate_type(
 
 #[cfg(test)]
 mod tests {
-  use artcraft_enums::common::generation::common_mesh_quality::CommonMeshQuality;
-  use artcraft_enums::common::generation::common_polygon_type::CommonPolygonType;
+  use artcraft_client::enums::common::generation::common_mesh_quality::CommonMeshQuality;
+  use artcraft_client::enums::common::generation::common_polygon_type::CommonPolygonType;
 
   use crate::api::image_list_ref::ImageListRef;
   use crate::api::image_ref::ImageRef;

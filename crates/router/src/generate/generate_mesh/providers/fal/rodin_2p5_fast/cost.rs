@@ -45,7 +45,7 @@ impl FalRodin2p5FastTextCostState {
 
 #[cfg(test)]
 mod tests {
-  use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+  use artcraft_client::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
 
   use crate::api::image_list_ref::ImageListRef;
   use crate::api::router_mesh_model::RouterMeshModel;

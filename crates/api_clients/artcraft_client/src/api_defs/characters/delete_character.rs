@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-use artcraft_tokens::tokens::characters::CharacterToken;
+use crate::tokens::characters::CharacterToken;
 
 /// Path parameters for deleting a character.
 #[derive(Deserialize)]

@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_video_model::CommonVideoModel as CommonVideoModelEnum;
+use artcraft_client::enums::common::generation::common_video_model::CommonVideoModel as CommonVideoModelEnum;
 
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::generate::generate_video::generate_video_request_builder::GenerateVideoRequestBuilder;
@@ -22,11 +22,11 @@ pub fn build_artcraft_seedance_2p0(builder: GenerateVideoRequestBuilder) -> Resu
 
 #[cfg(test)]
 mod tests {
-  use artcraft_enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
-  use artcraft_enums::common::generation::common_video_model::CommonVideoModel as CommonVideoModelEnum;
-  use artcraft_enums::common::generation::common_bitrate::CommonBitrate as CommonBitrateEnum;
+  use artcraft_client::enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
+  use artcraft_client::enums::common::generation::common_video_model::CommonVideoModel as CommonVideoModelEnum;
+  use artcraft_client::enums::common::generation::common_bitrate::CommonBitrate as CommonBitrateEnum;
   use crate::api::router_bitrate::RouterBitrate;
-  use artcraft_tokens::tokens::characters::CharacterToken;
+  use artcraft_client::tokens::characters::CharacterToken;
   use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::character_list_ref::CharacterListRef;

@@ -25,12 +25,10 @@ workspace-build-acceleration.workspace = true
 
 # Internal
 cloudflare_errors.workspace = true
-artcraft_enums.workspace = true
 errors.workspace = true
 uuid_utils.workspace = true
 mimetypes.workspace = true
 sqlite_identifiers.workspace = true
-artcraft_tokens.workspace = true
 
 # External
 anyhow.workspace = true
@@ -54,3 +52,8 @@ url-builder = "0.1.1"
 
 [dev-dependencies]
 tokio.workspace = true
+
+# Enum test utilities
+strum.workspace = true
+toml.workspace = true
+regex.workspace = true

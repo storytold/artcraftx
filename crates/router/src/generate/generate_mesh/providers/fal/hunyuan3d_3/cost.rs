@@ -56,7 +56,7 @@ pub(crate) fn fal_mesh_cost_estimate(cost_in_usd_cents: u64) -> MeshGenerationCo
 
 #[cfg(test)]
 mod tests {
-  use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+  use artcraft_client::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
 
   use crate::api::image_list_ref::ImageListRef;
   use crate::api::image_ref::ImageRef;

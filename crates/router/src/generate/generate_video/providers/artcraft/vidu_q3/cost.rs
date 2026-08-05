@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
+use artcraft_client::enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
 
 use crate::generate::generate_video::video_generation_cost_estimate::VideoGenerationCostEstimate;
 use crate::generate::generate_video::providers::artcraft::vidu_q3::request::ArtcraftViduQ3RequestState;
@@ -61,7 +61,7 @@ fn is_high_res(resolution: Option<CommonResolutionEnum>) -> bool {
 
 #[cfg(test)]
 mod tests {
-  use artcraft_enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
+  use artcraft_client::enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
 
   use crate::api::router_provider::RouterProvider;
   use crate::api::router_resolution::RouterResolution;

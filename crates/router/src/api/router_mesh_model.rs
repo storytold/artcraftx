@@ -74,7 +74,7 @@ mod tests {
 
   #[test]
   fn round_trips_through_common_mesh_model() {
-    use artcraft_enums::common::generation::common_mesh_model::CommonMeshModel;
+    use artcraft_client::enums::common::generation::common_mesh_model::CommonMeshModel;
 
     let cases = [
       (RouterMeshModel::Hunyuan3d2p0, CommonMeshModel::Hunyuan3d2p0),

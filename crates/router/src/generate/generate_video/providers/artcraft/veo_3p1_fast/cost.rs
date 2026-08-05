@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
+use artcraft_client::enums::common::generation::common_resolution::CommonResolution as CommonResolutionEnum;
 
 use crate::generate::generate_video::video_generation_cost_estimate::VideoGenerationCostEstimate;
 use crate::generate::generate_video::providers::artcraft::veo_3p1_fast::request::ArtcraftVeo3p1FastRequestState;

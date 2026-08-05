@@ -3,7 +3,7 @@ use crate::error::storyteller_error::StorytellerError;
 use crate::utils::api_host::ApiHost;
 use crate::utils::basic_json_get_request::basic_json_get_request;
 use crate::api_defs::subscriptions::get_session_subscription::GetSessionSubscriptionResponse;
-use artcraft_enums::common::payments_namespace::PaymentsNamespace;
+use crate::enums::common::payments_namespace::PaymentsNamespace;
 use log::debug;
 
 pub async fn get_session_subscription(

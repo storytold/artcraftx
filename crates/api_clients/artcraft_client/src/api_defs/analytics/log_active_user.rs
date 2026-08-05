@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use artcraft_tokens::tokens::app_session::AppSessionToken;
+use crate::tokens::app_session::AppSessionToken;
 
 /// This is used in Artcraft versions 0.0.1 (several) through 0.3.0
 /// Clients to this version do not send generation count data (even if the endpoint supports it).

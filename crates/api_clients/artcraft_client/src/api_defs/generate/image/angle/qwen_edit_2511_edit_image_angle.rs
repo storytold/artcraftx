@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use artcraft_tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use crate::tokens::generic_inference_jobs::InferenceJobToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 pub const QWEN_EDIT_2511_EDIT_IMAGE_ANGLE_PATH: &str = "/v1/generate/image/angle/qwen_edit_2511";

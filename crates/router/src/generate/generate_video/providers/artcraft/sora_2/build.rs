@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_video_model::CommonVideoModel as CommonVideoModelEnum;
+use artcraft_client::enums::common::generation::common_video_model::CommonVideoModel as CommonVideoModelEnum;
 
 use crate::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;

@@ -38,7 +38,7 @@ impl ArtcraftHunyuan3d3p1RapidCostState {
 
 #[cfg(test)]
 mod tests {
-  use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+  use artcraft_client::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
   use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::image_list_ref::ImageListRef;

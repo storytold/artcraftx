@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_image_model::CommonImageModel as CommonImageModelEnum;
+use artcraft_client::enums::common::generation::common_image_model::CommonImageModel as CommonImageModelEnum;
 
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::generate::generate_image::generate_image_request_builder::GenerateImageRequestBuilder;

@@ -1,11 +1,11 @@
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 
-use artcraft_enums::by_table::debug_logs::debug_log_level::DebugLogLevel;
-use artcraft_enums::by_table::debug_logs::debug_log_type::DebugLogType;
-use artcraft_enums::error::enum_error::EnumError;
-use artcraft_tokens::tokens::non_unique::debug_logs_event_token::DebugLogEventToken;
-use artcraft_tokens::tokens::users::UserToken;
+use crate::enums::by_table::debug_logs::debug_log_level::DebugLogLevel;
+use crate::enums::by_table::debug_logs::debug_log_type::DebugLogType;
+use crate::enums::error::enum_error::EnumError;
+use crate::tokens::non_unique::debug_logs_event_token::DebugLogEventToken;
+use crate::tokens::users::UserToken;
 
 use crate::api_defs::moderation::debug_logs::debug_log_entry::ModerationDebugLogUser;
 

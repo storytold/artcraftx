@@ -1,5 +1,5 @@
-use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
-use artcraft_enums::common::generation::common_polygon_type::CommonPolygonType;
+use artcraft_client::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+use artcraft_client::enums::common::generation::common_polygon_type::CommonPolygonType;
 use fal_client::requests::api::mesh::image::meshy_v6_image_to_mesh::api::MeshyV6ImageToMeshRequest;
 use fal_client::requests::api::mesh::text::meshy_v6_text_to_mesh::api::{
   MeshyV6ModelType, MeshyV6TextToMeshRequest, MeshyV6Topology,
@@ -180,7 +180,7 @@ fn to_topology(polygon_type: CommonPolygonType) -> MeshyV6Topology {
 
 #[cfg(test)]
 mod tests {
-  use artcraft_enums::common::generation::common_mesh_quality::CommonMeshQuality;
+  use artcraft_client::enums::common::generation::common_mesh_quality::CommonMeshQuality;
   use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::image_list_ref::ImageListRef;

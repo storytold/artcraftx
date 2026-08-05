@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use artcraft_tokens::tokens::generic_inference_jobs::InferenceJobToken;
+use crate::tokens::generic_inference_jobs::InferenceJobToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 pub const GENERATE_HUNYUAN_2_1_IMAGE_TO_3D_URL_PATH: &str = "/v1/generate/object/hunyuan_2.1_image_to_3d";

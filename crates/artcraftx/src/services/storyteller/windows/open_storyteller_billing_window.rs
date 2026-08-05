@@ -9,8 +9,8 @@ use artcraft_client::api_defs::stripe_artcraft::customer_portal_cancel_plan::Str
 use artcraft_client::api_defs::stripe_artcraft::customer_portal_manage_plan::StripeArtcraftCustomerPortalManagePlanRequest;
 use artcraft_client::api_defs::stripe_artcraft::customer_portal_switch_plan::{PlanBillingCadenceConfirmation, StripeArtcraftCustomerPortalSwitchPlanRequest};
 use artcraft_client::api_defs::stripe_artcraft::customer_portal_update_payment_method::StripeArtcraftCustomerPortalUpdatePaymentMethodRequest;
-use artcraft_enums::common::artcraft_credits_pack_slug::ArtcraftCreditsPackSlug;
-use artcraft_enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
+use artcraft_client::enums::common::artcraft_credits_pack_slug::ArtcraftCreditsPackSlug;
+use artcraft_client::enums::common::artcraft_subscription_slug::ArtcraftSubscriptionSlug;
 use errors::AnyhowResult;
 use log::info;
 use reqwest::Url;

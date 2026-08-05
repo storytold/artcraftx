@@ -1,6 +1,6 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use artcraft_tokens::tokens::characters::CharacterToken;
+use artcraft_client::tokens::characters::CharacterToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 #[derive(Debug, Clone, Copy)]

@@ -1,4 +1,4 @@
-use artcraft_enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
+use artcraft_client::enums::common::generation::common_mesh_output_type::CommonMeshOutputType;
 
 use crate::generate::generate_mesh::mesh_generation_cost_estimate::MeshGenerationCostEstimate;
 use crate::generate::generate_mesh::providers::artcraft::hunyuan_3d_2p1::request::ArtcraftHunyuan3d2p1RequestState;

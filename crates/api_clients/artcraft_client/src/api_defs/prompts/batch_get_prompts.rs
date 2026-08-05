@@ -1,12 +1,12 @@
 use crate::api_defs::prompts::get_prompt::GetPromptImageContextItem;
 use chrono::{DateTime, Utc};
-use artcraft_enums::by_table::prompts::prompt_type::PromptType;
-use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
-use artcraft_enums::common::generation::common_bitrate::CommonBitrate;
-use artcraft_enums::common::generation::common_generation_mode::CommonGenerationMode;
-use artcraft_enums::common::generation::common_model_class::CommonModelClass;
-use artcraft_enums::common::generation::common_model_type::CommonModelType;
-use artcraft_enums::common::generation::common_resolution::CommonResolution;
+use crate::enums::by_table::prompts::prompt_type::PromptType;
+use crate::enums::common::generation::common_aspect_ratio::CommonAspectRatio;
+use crate::enums::common::generation::common_bitrate::CommonBitrate;
+use crate::enums::common::generation::common_generation_mode::CommonGenerationMode;
+use crate::enums::common::generation::common_model_class::CommonModelClass;
+use crate::enums::common::generation::common_model_type::CommonModelType;
+use crate::enums::common::generation::common_resolution::CommonResolution;
 use core_types::enums::generation_source::GenerationSource;
 use std::collections::HashSet;
 

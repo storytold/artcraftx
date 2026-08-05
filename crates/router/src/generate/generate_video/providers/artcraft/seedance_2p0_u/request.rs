@@ -18,7 +18,7 @@ impl ArtcraftSeedance2p0UltraRequestState {
 
 #[cfg(test)]
 mod tests {
-  use artcraft_tokens::tokens::characters::CharacterToken;
+  use artcraft_client::tokens::characters::CharacterToken;
   use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::api::character_list_ref::CharacterListRef;

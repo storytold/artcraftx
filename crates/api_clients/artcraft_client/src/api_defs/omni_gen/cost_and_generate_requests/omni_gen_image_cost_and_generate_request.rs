@@ -1,9 +1,9 @@
 use serde_derive::{Deserialize, Serialize};
 
-use artcraft_enums::common::generation::common_aspect_ratio::CommonAspectRatio;
-use artcraft_enums::common::generation::common_image_model::CommonImageModel;
-use artcraft_enums::common::generation::common_quality::CommonQuality;
-use artcraft_enums::common::generation::common_resolution::CommonResolution;
+use crate::enums::common::generation::common_aspect_ratio::CommonAspectRatio;
+use crate::enums::common::generation::common_image_model::CommonImageModel;
+use crate::enums::common::generation::common_quality::CommonQuality;
+use crate::enums::common::generation::common_resolution::CommonResolution;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 /// Shared request body for both the image cost estimate and image generation endpoints.

@@ -38,7 +38,7 @@ mod tests {
 
   #[test]
   fn round_trips_through_common_audio_model() {
-    use artcraft_enums::common::generation::common_audio_model::CommonAudioModel;
+    use artcraft_client::enums::common::generation::common_audio_model::CommonAudioModel;
 
     let cases = [
       (RouterAudioModel::SunoMusic, CommonAudioModel::SunoMusic),

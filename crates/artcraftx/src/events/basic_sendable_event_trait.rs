@@ -1,5 +1,5 @@
 use crate::events::sendable_event_error::SendableEventError;
-use artcraft_enums::tauri::ux::tauri_event_name::TauriEventName;
+use artcraft_client::enums::tauri::ux::tauri_event_name::TauriEventName;
 use log::{error, info};
 use serde::Serialize;
 use std::fmt::Debug;

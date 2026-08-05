@@ -4,7 +4,7 @@ use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::client_error::ClientError;
 use std::collections::HashMap;
 use std::fmt::Debug;
-use artcraft_tokens::tokens::characters::CharacterToken;
+use artcraft_client::tokens::characters::CharacterToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 #[derive(Clone, Default)]
