@@ -286,7 +286,7 @@ async fn upload_spz_splat(
     task_id: &local_task.id,
     maybe_batch_token: None,
     maybe_primary_media_file_token: maybe_primary_media_file_token.as_ref(),
-    maybe_primary_media_file_class: Some(TaskMediaFileClass::Dimensional),
+    maybe_primary_media_file_class: Some(TaskMediaFileClass::Splat),
     maybe_primary_media_file_thumbnail_url_template: maybe_thumbnail_url_template.as_deref(),
     maybe_primary_media_file_cdn_url: maybe_cdn_url.as_deref(),
   }).await?;

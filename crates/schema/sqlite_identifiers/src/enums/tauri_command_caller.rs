@@ -6,22 +6,22 @@ use strum::EnumCount;
 #[cfg(test)]
 use strum::EnumIter;
 
-/// Defines the names of the Tauri-sent events that the frontend subscribes to.
-/// These event names are also stored in the database, so keep them short-ish.
+/// Which frontend page/component invoked a Tauri command.
+/// These values are stored in the tasks database, so keep them short-ish.
 #[cfg_attr(test, derive(EnumIter, EnumCount))]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TauriCommandCaller {
-  /// The 2D canvas
-  Canvas,
-  /// The inpainting editor
-  ImageEditor,
-  /// The text-to-image page
-  TextToImage,
-  /// The image-to-video page
-  ImageToVideo,
-  /// A mini-app (doesn't specify which one)
-  MiniApp,
+  /// The image generation page
+  ImagePage,
+  /// The video generation page
+  VideoPage,
+  /// The audio generation page
+  AudioPage,
+  /// The mesh (3D object) generation page
+  MeshPage,
+  /// The splat (3D world) generation page
+  SplatPage,
 }
 
 impl_enum_display_and_debug_using_to_str!(TauriCommandCaller);
@@ -31,21 +31,21 @@ impl_enum_display_and_debug_using_to_str!(TauriCommandCaller);
 impl TauriCommandCaller {
   pub fn to_str(&self) -> &'static str {
     match self {
-      Self::Canvas => "canvas",
-      Self::ImageEditor => "image_editor",
-      Self::TextToImage => "text_to_image",
-      Self::ImageToVideo => "image_to_video",
-      Self::MiniApp => "mini_app",
+      Self::ImagePage => "image_page",
+      Self::VideoPage => "video_page",
+      Self::AudioPage => "audio_page",
+      Self::MeshPage => "mesh_page",
+      Self::SplatPage => "splat_page",
     }
   }
 
   pub fn from_str(value: &str) -> Result<Self, EnumError> {
     match value {
-      "canvas" => Ok(Self::Canvas),
-      "image_editor" => Ok(Self::ImageEditor),
-      "text_to_image" => Ok(Self::TextToImage),
-      "image_to_video" => Ok(Self::ImageToVideo),
-      "mini_app" => Ok(Self::MiniApp),
+      "image_page" => Ok(Self::ImagePage),
+      "video_page" => Ok(Self::VideoPage),
+      "audio_page" => Ok(Self::AudioPage),
+      "mesh_page" => Ok(Self::MeshPage),
+      "splat_page" => Ok(Self::SplatPage),
       _ => Err(EnumError::CouldNotConvertFromString(value.to_string())),
     }
   }
@@ -54,11 +54,11 @@ impl TauriCommandCaller {
     // NB: BTreeSet is sorted
     // NB: BTreeSet::from() isn't const, but not worth using LazyStatic, etc.
     BTreeSet::from([
-      Self::Canvas,
-      Self::ImageEditor,
-      Self::TextToImage,
-      Self::ImageToVideo,
-      Self::MiniApp,
+      Self::ImagePage,
+      Self::VideoPage,
+      Self::AudioPage,
+      Self::MeshPage,
+      Self::SplatPage,
     ])
   }
 }
@@ -74,29 +74,29 @@ mod tests {
 
     #[test]
     fn test_serialization() {
-      assert_serialization(TauriCommandCaller::Canvas, "canvas");
-      assert_serialization(TauriCommandCaller::ImageEditor, "image_editor");
-      assert_serialization(TauriCommandCaller::TextToImage, "text_to_image");
-      assert_serialization(TauriCommandCaller::ImageToVideo, "image_to_video");
-      assert_serialization(TauriCommandCaller::MiniApp, "mini_app");
+      assert_serialization(TauriCommandCaller::ImagePage, "image_page");
+      assert_serialization(TauriCommandCaller::VideoPage, "video_page");
+      assert_serialization(TauriCommandCaller::AudioPage, "audio_page");
+      assert_serialization(TauriCommandCaller::MeshPage, "mesh_page");
+      assert_serialization(TauriCommandCaller::SplatPage, "splat_page");
     }
 
     #[test]
     fn to_str() {
-      assert_eq!(TauriCommandCaller::Canvas.to_str(), "canvas");
-      assert_eq!(TauriCommandCaller::ImageEditor.to_str(), "image_editor");
-      assert_eq!(TauriCommandCaller::TextToImage.to_str(), "text_to_image");
-      assert_eq!(TauriCommandCaller::ImageToVideo.to_str(), "image_to_video");
-      assert_eq!(TauriCommandCaller::MiniApp.to_str(), "mini_app");
+      assert_eq!(TauriCommandCaller::ImagePage.to_str(), "image_page");
+      assert_eq!(TauriCommandCaller::VideoPage.to_str(), "video_page");
+      assert_eq!(TauriCommandCaller::AudioPage.to_str(), "audio_page");
+      assert_eq!(TauriCommandCaller::MeshPage.to_str(), "mesh_page");
+      assert_eq!(TauriCommandCaller::SplatPage.to_str(), "splat_page");
     }
 
     #[test]
     fn from_str() {
-      assert_eq!(TauriCommandCaller::from_str("canvas").unwrap(), TauriCommandCaller::Canvas);
-      assert_eq!(TauriCommandCaller::from_str("image_editor").unwrap(), TauriCommandCaller::ImageEditor);
-      assert_eq!(TauriCommandCaller::from_str("text_to_image").unwrap(), TauriCommandCaller::TextToImage);
-      assert_eq!(TauriCommandCaller::from_str("image_to_video").unwrap(), TauriCommandCaller::ImageToVideo);
-      assert_eq!(TauriCommandCaller::from_str("mini_app").unwrap(), TauriCommandCaller::MiniApp);
+      assert_eq!(TauriCommandCaller::from_str("image_page").unwrap(), TauriCommandCaller::ImagePage);
+      assert_eq!(TauriCommandCaller::from_str("video_page").unwrap(), TauriCommandCaller::VideoPage);
+      assert_eq!(TauriCommandCaller::from_str("audio_page").unwrap(), TauriCommandCaller::AudioPage);
+      assert_eq!(TauriCommandCaller::from_str("mesh_page").unwrap(), TauriCommandCaller::MeshPage);
+      assert_eq!(TauriCommandCaller::from_str("splat_page").unwrap(), TauriCommandCaller::SplatPage);
     }
 
     #[test]
@@ -114,11 +114,11 @@ mod tests {
     fn all_variants() {
       let mut variants = TauriCommandCaller::all_variants();
       assert_eq!(variants.len(), 5);
-      assert_eq!(variants.pop_first(), Some(TauriCommandCaller::Canvas));
-      assert_eq!(variants.pop_first(), Some(TauriCommandCaller::ImageEditor));
-      assert_eq!(variants.pop_first(), Some(TauriCommandCaller::TextToImage));
-      assert_eq!(variants.pop_first(), Some(TauriCommandCaller::ImageToVideo));
-      assert_eq!(variants.pop_first(), Some(TauriCommandCaller::MiniApp));
+      assert_eq!(variants.pop_first(), Some(TauriCommandCaller::ImagePage));
+      assert_eq!(variants.pop_first(), Some(TauriCommandCaller::VideoPage));
+      assert_eq!(variants.pop_first(), Some(TauriCommandCaller::AudioPage));
+      assert_eq!(variants.pop_first(), Some(TauriCommandCaller::MeshPage));
+      assert_eq!(variants.pop_first(), Some(TauriCommandCaller::SplatPage));
       assert_eq!(variants.pop_first(), None);
     }
   }

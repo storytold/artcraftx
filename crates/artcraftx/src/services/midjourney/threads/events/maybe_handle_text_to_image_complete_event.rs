@@ -25,7 +25,7 @@ pub async fn maybe_handle_text_to_image_complete_event(
   }
 
   match task.frontend_caller {
-    Some(TauriCommandCaller::TextToImage) => {} // NB: Fall-through
+    Some(TauriCommandCaller::ImagePage) => {} // NB: Fall-through
     _ => return Ok(()),
   }
 

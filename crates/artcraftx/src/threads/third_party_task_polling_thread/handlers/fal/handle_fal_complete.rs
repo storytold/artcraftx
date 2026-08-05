@@ -221,7 +221,7 @@ fn collect_media_urls(
   // 3D model (GLB)
   if let Some(glb) = &extracted.model_glb {
     if let Some(url) = &glb.url {
-      return Ok((vec![url.clone()], TaskMediaFileClass::Dimensional));
+      return Ok((vec![url.clone()], TaskMediaFileClass::Mesh));
     }
   }
 
@@ -309,7 +309,7 @@ async fn try_upload(
       }).await?;
       result.media_file_token
     }
-    TaskMediaFileClass::Dimensional => {
+    TaskMediaFileClass::Splat | TaskMediaFileClass::Mesh => {
       let result = legacy_upload_media_file_from_file(LegacyUploadMediaFileFromFileArgs {
         api_host: &ApiHost::Storyteller,
         maybe_creds: Some(creds),

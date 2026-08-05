@@ -112,7 +112,7 @@ fn get_media_file_class(job: &ListSessionJobsItem) -> Option<TaskMediaFileClass>
     InferenceCategory::BackgroundRemoval => return Some(TaskMediaFileClass::Image),
     InferenceCategory::ImageGeneration => return Some(TaskMediaFileClass::Image),
     InferenceCategory::VideoGeneration => return Some(TaskMediaFileClass::Video),
-    InferenceCategory::ObjectGeneration => return Some(TaskMediaFileClass::Dimensional),
+    InferenceCategory::ObjectGeneration => return Some(TaskMediaFileClass::Mesh),
     _ => {}, // Fall-through
   }
 
@@ -137,7 +137,11 @@ fn get_media_file_class(job: &ListSessionJobsItem) -> Option<TaskMediaFileClass>
   }
 
   if url.ends_with("glb") {
-    return Some(TaskMediaFileClass::Dimensional);
+    return Some(TaskMediaFileClass::Mesh);
+  }
+
+  if url.ends_with("ply") || url.ends_with("spz") {
+    return Some(TaskMediaFileClass::Splat);
   }
 
   if url.ends_with("wav")

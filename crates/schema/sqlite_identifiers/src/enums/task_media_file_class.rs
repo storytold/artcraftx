@@ -19,8 +19,11 @@ pub enum TaskMediaFileClass {
   /// Video files: mp4, etc.
   Video,
 
-  /// 3D engine data: glb, gltf, etc.
-  Dimensional,
+  /// Gaussian splats: ply, spz, etc.
+  Splat,
+
+  /// 3D meshes: glb, gltf, fbx, etc.
+  Mesh,
 }
 
 impl_enum_display_and_debug_using_to_str!(TaskMediaFileClass);
@@ -35,7 +38,8 @@ impl TaskMediaFileClass {
       Self::Audio => "audio",
       Self::Image => "image",
       Self::Video => "video",
-      Self::Dimensional => "dimensional",
+      Self::Splat => "splat",
+      Self::Mesh => "mesh",
     }
   }
 
@@ -44,7 +48,8 @@ impl TaskMediaFileClass {
       "audio" => Ok(Self::Audio),
       "image" => Ok(Self::Image),
       "video" => Ok(Self::Video),
-      "dimensional" => Ok(Self::Dimensional),
+      "splat" => Ok(Self::Splat),
+      "mesh" => Ok(Self::Mesh),
       _ => Err(EnumError::CouldNotConvertFromString(value.to_string())),
     }
   }
@@ -56,7 +61,8 @@ impl TaskMediaFileClass {
       Self::Audio,
       Self::Image,
       Self::Video,
-      Self::Dimensional,
+      Self::Splat,
+      Self::Mesh,
     ])
   }
 }
@@ -75,7 +81,8 @@ mod tests {
       assert_serialization(TaskMediaFileClass::Audio, "audio");
       assert_serialization(TaskMediaFileClass::Image, "image");
       assert_serialization(TaskMediaFileClass::Video, "video");
-      assert_serialization(TaskMediaFileClass::Dimensional, "dimensional");
+      assert_serialization(TaskMediaFileClass::Splat, "splat");
+      assert_serialization(TaskMediaFileClass::Mesh, "mesh");
     }
 
     #[test]
@@ -83,7 +90,8 @@ mod tests {
       assert_eq!(TaskMediaFileClass::Audio.to_str(), "audio");
       assert_eq!(TaskMediaFileClass::Image.to_str(), "image");
       assert_eq!(TaskMediaFileClass::Video.to_str(), "video");
-      assert_eq!(TaskMediaFileClass::Dimensional.to_str(), "dimensional");
+      assert_eq!(TaskMediaFileClass::Splat.to_str(), "splat");
+      assert_eq!(TaskMediaFileClass::Mesh.to_str(), "mesh");
     }
 
     #[test]
@@ -91,7 +99,8 @@ mod tests {
       assert_eq!(TaskMediaFileClass::from_str("audio").unwrap(), TaskMediaFileClass::Audio);
       assert_eq!(TaskMediaFileClass::from_str("image").unwrap(), TaskMediaFileClass::Image);
       assert_eq!(TaskMediaFileClass::from_str("video").unwrap(), TaskMediaFileClass::Video);
-      assert_eq!(TaskMediaFileClass::from_str("dimensional").unwrap(), TaskMediaFileClass::Dimensional);
+      assert_eq!(TaskMediaFileClass::from_str("splat").unwrap(), TaskMediaFileClass::Splat);
+      assert_eq!(TaskMediaFileClass::from_str("mesh").unwrap(), TaskMediaFileClass::Mesh);
     }
     
     #[test]
@@ -108,11 +117,12 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskMediaFileClass::all_variants();
-      assert_eq!(variants.len(), 4);
+      assert_eq!(variants.len(), 5);
       assert_eq!(variants.pop_first(), Some(TaskMediaFileClass::Audio));
       assert_eq!(variants.pop_first(), Some(TaskMediaFileClass::Image));
       assert_eq!(variants.pop_first(), Some(TaskMediaFileClass::Video));
-      assert_eq!(variants.pop_first(), Some(TaskMediaFileClass::Dimensional));
+      assert_eq!(variants.pop_first(), Some(TaskMediaFileClass::Splat));
+      assert_eq!(variants.pop_first(), Some(TaskMediaFileClass::Mesh));
       assert_eq!(variants.pop_first(), None);
     }
   }

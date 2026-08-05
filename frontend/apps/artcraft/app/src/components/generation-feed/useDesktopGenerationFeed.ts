@@ -254,12 +254,12 @@ function getTaskMediaType(t: TaskQueueItem): "image" | "video" | "other" {
   const taskTypeStr = t.task_type ? String(t.task_type).toLowerCase() : "";
   const modelTypeStr = t.model_type ? String(t.model_type).toLowerCase() : "";
   const isSplat =
-    taskTypeStr.includes("gaussian") ||
+    taskTypeStr.includes("splat") ||
     modelTypeStr.includes("marble") ||
     modelTypeStr.includes("worldlabs");
   const is3D =
     taskTypeStr.includes("3d") ||
-    taskTypeStr.includes("object") ||
+    taskTypeStr.includes("mesh") ||
     taskTypeStr.includes("dimensional") ||
     isSplat;
   if (is3D) return "other";

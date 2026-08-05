@@ -40,10 +40,6 @@ pub async fn maybe_handle_frontend_caller_notification(
         maybe_creds,
       ).await?;
     }
-    TaskType::ImageInpaintEdit => {
-      // Typed image-edit notification removed; generic completion events
-      // still fire.
-    }
     TaskType::VideoGeneration => {
       let _r = handle_video_generation(
         app,
@@ -51,23 +47,19 @@ pub async fn maybe_handle_frontend_caller_notification(
         job_result,
       ).await?;
     }
-    TaskType::ObjectGeneration => {
+    TaskType::MeshGeneration => {
       let _r = handle_object_generation(
         app,
         task,
         job_result,
       ).await?;
     }
-    TaskType::GaussianGeneration => {
+    TaskType::SplatGeneration => {
       let _r = handle_gaussian_generation(
         app,
         task,
         job_result,
       ).await?;
-    }
-    TaskType::BackgroundRemoval => {
-      // Typed canvas-bg-removal notification removed; generic completion
-      // events still fire.
     }
     TaskType::AudioGeneration => {
       // No typed audio notification yet; generic completion events still fire.

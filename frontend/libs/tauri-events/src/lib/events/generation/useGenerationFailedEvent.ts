@@ -49,8 +49,6 @@ const makeMessage = (event: GenerationFailedEvent) => {
       return "Image generation failed!";
     case GenerationAction.GenerateVideo:
       return "Video generation failed!";
-    case GenerationAction.RemoveBackground:
-      return "Background removal failed!";
     case GenerationAction.ImageTo3d:
       return "3D model generation failed!";
     case GenerationAction.GenerateGaussian:

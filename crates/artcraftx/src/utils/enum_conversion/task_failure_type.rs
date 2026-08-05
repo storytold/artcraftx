@@ -6,7 +6,7 @@ use sqlite_identifiers::enums::task_failure_type::TaskFailureType;
 /// If there isn't a matching variant, return `Unknown`.
 pub fn task_failure_type_from_frontend_failure_category(category: FrontendFailureCategory) -> TaskFailureType {
   match category {
-    FrontendFailureCategory::ModelRulesViolation => TaskFailureType::RuleBansUserContent, // NB: This is a legacy enum value.
+    FrontendFailureCategory::ModelRulesViolation => TaskFailureType::ModelRulesViolation,
     FrontendFailureCategory::RuleBansUserImage => TaskFailureType::RuleBansUserImage,
     FrontendFailureCategory::RuleBansUserImageWithFaces => TaskFailureType::RuleBansUserImageWithFaces,
     FrontendFailureCategory::RuleBansUserTextPrompt => TaskFailureType::RuleBansUserTextPrompt,
@@ -17,7 +17,13 @@ pub fn task_failure_type_from_frontend_failure_category(category: FrontendFailur
     FrontendFailureCategory::NoForegroundSubjectDetected => TaskFailureType::NoForegroundSubjectDetected,
     FrontendFailureCategory::FormatNotSupported => TaskFailureType::FormatNotSupported,
     FrontendFailureCategory::GenerationFailed => TaskFailureType::GenerationFailed,
-    _ => TaskFailureType::Unknown,
+    FrontendFailureCategory::FaceNotDetected => TaskFailureType::FaceNotDetected,
+    FrontendFailureCategory::KeepAliveElapsed => TaskFailureType::KeepAliveElapsed,
+    FrontendFailureCategory::NotYetImplemented => TaskFailureType::NotYetImplemented,
+    FrontendFailureCategory::RetryableWorkerError => TaskFailureType::RetryableWorkerError,
+    FrontendFailureCategory::FilesizeTooLarge => TaskFailureType::FilesizeTooLarge,
+    FrontendFailureCategory::ImageDimensionsTooSmall => TaskFailureType::ImageDimensionsTooSmall,
+    FrontendFailureCategory::ImageDimensionsTooLarge => TaskFailureType::ImageDimensionsTooLarge,
   }
 }
 
@@ -25,7 +31,7 @@ pub fn task_failure_type_from_frontend_failure_category(category: FrontendFailur
 /// `Unknown(String)` maps to `Unknown` with a debug log.
 pub fn task_failure_type_from_frontend_failure_category_for_api(category: &FrontendFailureCategoryForApiClients) -> TaskFailureType {
   match category {
-    FrontendFailureCategoryForApiClients::ModelRulesViolation => TaskFailureType::RuleBansUserContent,
+    FrontendFailureCategoryForApiClients::ModelRulesViolation => TaskFailureType::ModelRulesViolation,
     FrontendFailureCategoryForApiClients::RuleBansUserImage => TaskFailureType::RuleBansUserImage,
     FrontendFailureCategoryForApiClients::RuleBansUserImageWithFaces => TaskFailureType::RuleBansUserImageWithFaces,
     FrontendFailureCategoryForApiClients::RuleBansUserTextPrompt => TaskFailureType::RuleBansUserTextPrompt,
@@ -37,14 +43,13 @@ pub fn task_failure_type_from_frontend_failure_category_for_api(category: &Front
     FrontendFailureCategoryForApiClients::FormatNotSupported => TaskFailureType::FormatNotSupported,
     FrontendFailureCategoryForApiClients::GenerationFailed => TaskFailureType::GenerationFailed,
 
-    // Types ArtCraft doesn't care about
-    FrontendFailureCategoryForApiClients::FaceNotDetected => TaskFailureType::Unknown,
-    FrontendFailureCategoryForApiClients::KeepAliveElapsed => TaskFailureType::Unknown,
-    FrontendFailureCategoryForApiClients::NotYetImplemented => TaskFailureType::Unknown,
-    FrontendFailureCategoryForApiClients::RetryableWorkerError => TaskFailureType::Unknown,
-    FrontendFailureCategoryForApiClients::FilesizeTooLarge => TaskFailureType::Unknown,
-    FrontendFailureCategoryForApiClients::ImageDimensionsTooSmall => TaskFailureType::Unknown,
-    FrontendFailureCategoryForApiClients::ImageDimensionsTooLarge => TaskFailureType::Unknown,
+    FrontendFailureCategoryForApiClients::FaceNotDetected => TaskFailureType::FaceNotDetected,
+    FrontendFailureCategoryForApiClients::KeepAliveElapsed => TaskFailureType::KeepAliveElapsed,
+    FrontendFailureCategoryForApiClients::NotYetImplemented => TaskFailureType::NotYetImplemented,
+    FrontendFailureCategoryForApiClients::RetryableWorkerError => TaskFailureType::RetryableWorkerError,
+    FrontendFailureCategoryForApiClients::FilesizeTooLarge => TaskFailureType::FilesizeTooLarge,
+    FrontendFailureCategoryForApiClients::ImageDimensionsTooSmall => TaskFailureType::ImageDimensionsTooSmall,
+    FrontendFailureCategoryForApiClients::ImageDimensionsTooLarge => TaskFailureType::ImageDimensionsTooLarge,
 
     // Unknown (future-proof) variant
     FrontendFailureCategoryForApiClients::Unknown(ref value) => {

@@ -649,12 +649,12 @@ export const TaskQueue = () => {
         ? String(t.model_type).toLowerCase()
         : "";
       const isSplatModel =
-        taskTypeStr.includes("gaussian") ||
+        taskTypeStr.includes("splat") ||
         modelTypeStr.includes("marble") ||
         modelTypeStr.includes("worldlabs");
       const is3DModel =
         taskTypeStr.includes("3d") ||
-        taskTypeStr.includes("object") ||
+        taskTypeStr.includes("mesh") ||
         taskTypeStr.includes("dimensional") ||
         isSplatModel;
 

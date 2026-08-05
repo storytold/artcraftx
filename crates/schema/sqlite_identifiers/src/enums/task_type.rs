@@ -11,12 +11,10 @@ use strum::EnumIter;
 #[serde(rename_all = "snake_case")]
 pub enum TaskType {
   ImageGeneration,
-  ImageInpaintEdit,
   VideoGeneration,
   AudioGeneration,
-  ObjectGeneration,
-  GaussianGeneration,
-  BackgroundRemoval,
+  MeshGeneration,
+  SplatGeneration,
 }
 
 impl_enum_display_and_debug_using_to_str!(TaskType);
@@ -29,24 +27,20 @@ impl TaskType {
   pub fn to_str(&self) -> &'static str {
     match self {
       Self::ImageGeneration => "image_generation",
-      Self::ImageInpaintEdit => "image_inpaint_edit",
       Self::VideoGeneration => "video_generation",
       Self::AudioGeneration => "audio_generation",
-      Self::ObjectGeneration => "object_generation",
-      Self::GaussianGeneration => "gaussian_generation",
-      Self::BackgroundRemoval => "background_removal",
+      Self::MeshGeneration => "mesh_generation",
+      Self::SplatGeneration => "splat_generation",
     }
   }
 
   pub fn from_str(value: &str) -> Result<Self, EnumError> {
     match value {
       "image_generation" => Ok(Self::ImageGeneration),
-      "image_inpaint_edit" => Ok(Self::ImageInpaintEdit),
       "video_generation" => Ok(Self::VideoGeneration),
       "audio_generation" => Ok(Self::AudioGeneration),
-      "object_generation" => Ok(Self::ObjectGeneration),
-      "gaussian_generation" => Ok(Self::GaussianGeneration),
-      "background_removal" => Ok(Self::BackgroundRemoval),
+      "mesh_generation" => Ok(Self::MeshGeneration),
+      "splat_generation" => Ok(Self::SplatGeneration),
       _ => Err(EnumError::CouldNotConvertFromString(value.to_string())),
     }
   }
@@ -56,12 +50,10 @@ impl TaskType {
     // NB: BTreeSet::from() isn't const, but not worth using LazyStatic, etc.
     BTreeSet::from([
       Self::ImageGeneration,
-      Self::ImageInpaintEdit,
       Self::VideoGeneration,
       Self::AudioGeneration,
-      Self::ObjectGeneration,
-      Self::GaussianGeneration,
-      Self::BackgroundRemoval,
+      Self::MeshGeneration,
+      Self::SplatGeneration,
     ])
   }
 }
@@ -78,34 +70,28 @@ mod tests {
     #[test]
     fn test_serialization() {
       assert_serialization(TaskType::ImageGeneration, "image_generation");
-      assert_serialization(TaskType::ImageInpaintEdit, "image_inpaint_edit");
       assert_serialization(TaskType::VideoGeneration, "video_generation");
       assert_serialization(TaskType::AudioGeneration, "audio_generation");
-      assert_serialization(TaskType::ObjectGeneration, "object_generation");
-      assert_serialization(TaskType::GaussianGeneration, "gaussian_generation");
-      assert_serialization(TaskType::BackgroundRemoval, "background_removal");
+      assert_serialization(TaskType::MeshGeneration, "mesh_generation");
+      assert_serialization(TaskType::SplatGeneration, "splat_generation");
     }
 
     #[test]
     fn to_str() {
       assert_eq!(TaskType::ImageGeneration.to_str(), "image_generation");
-      assert_eq!(TaskType::ImageInpaintEdit.to_str(), "image_inpaint_edit");
       assert_eq!(TaskType::VideoGeneration.to_str(), "video_generation");
       assert_eq!(TaskType::AudioGeneration.to_str(), "audio_generation");
-      assert_eq!(TaskType::ObjectGeneration.to_str(), "object_generation");
-      assert_eq!(TaskType::GaussianGeneration.to_str(), "gaussian_generation");
-      assert_eq!(TaskType::BackgroundRemoval.to_str(), "background_removal");
+      assert_eq!(TaskType::MeshGeneration.to_str(), "mesh_generation");
+      assert_eq!(TaskType::SplatGeneration.to_str(), "splat_generation");
     }
 
     #[test]
     fn from_str() {
       assert_eq!(TaskType::from_str("image_generation").unwrap(), TaskType::ImageGeneration);
-      assert_eq!(TaskType::from_str("image_inpaint_edit").unwrap(), TaskType::ImageInpaintEdit);
       assert_eq!(TaskType::from_str("video_generation").unwrap(), TaskType::VideoGeneration);
       assert_eq!(TaskType::from_str("audio_generation").unwrap(), TaskType::AudioGeneration);
-      assert_eq!(TaskType::from_str("object_generation").unwrap(), TaskType::ObjectGeneration);
-      assert_eq!(TaskType::from_str("gaussian_generation").unwrap(), TaskType::GaussianGeneration);
-      assert_eq!(TaskType::from_str("background_removal").unwrap(), TaskType::BackgroundRemoval);
+      assert_eq!(TaskType::from_str("mesh_generation").unwrap(), TaskType::MeshGeneration);
+      assert_eq!(TaskType::from_str("splat_generation").unwrap(), TaskType::SplatGeneration);
     }
     
     #[test]
@@ -122,14 +108,12 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskType::all_variants();
-      assert_eq!(variants.len(), 7);
+      assert_eq!(variants.len(), 5);
       assert_eq!(variants.pop_first(), Some(TaskType::ImageGeneration));
-      assert_eq!(variants.pop_first(), Some(TaskType::ImageInpaintEdit));
       assert_eq!(variants.pop_first(), Some(TaskType::VideoGeneration));
       assert_eq!(variants.pop_first(), Some(TaskType::AudioGeneration));
-      assert_eq!(variants.pop_first(), Some(TaskType::ObjectGeneration));
-      assert_eq!(variants.pop_first(), Some(TaskType::GaussianGeneration));
-      assert_eq!(variants.pop_first(), Some(TaskType::BackgroundRemoval));
+      assert_eq!(variants.pop_first(), Some(TaskType::MeshGeneration));
+      assert_eq!(variants.pop_first(), Some(TaskType::SplatGeneration));
       assert_eq!(variants.pop_first(), None);
     }
   }

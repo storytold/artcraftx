@@ -129,7 +129,7 @@ async fn handle_artcraft_credential(
   );
 
   Ok(TaskEnqueueSuccess {
-    task_type: TaskType::ObjectGeneration,
+    task_type: TaskType::MeshGeneration,
     model: Some(generation_model),
     provider: GenerationProvider::Artcraft,
     provider_job_id: Some(payload.inference_job_token.to_string()),

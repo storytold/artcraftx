@@ -37,6 +37,30 @@ pub enum TaskFailureType {
 
   /// No reason given for generation failure, but this matches what we were told.
   GenerationFailed,
+
+  /// When a face is not detected in the image used for animation.
+  FaceNotDetected,
+
+  /// The user stepped away and a keep-alive-required workload timed out.
+  KeepAliveElapsed,
+
+  /// A feature isn't complete somewhere in the code.
+  NotYetImplemented,
+
+  /// A transient error happened; the workload will be retried.
+  RetryableWorkerError,
+
+  /// Model content rules were violated.
+  ModelRulesViolation,
+
+  /// The uploaded file exceeds the maximum allowed size for this model.
+  FilesizeTooLarge,
+
+  /// The uploaded image dimensions are below the minimum required by the model.
+  ImageDimensionsTooSmall,
+
+  /// The uploaded image dimensions exceed the maximum allowed by the model.
+  ImageDimensionsTooLarge,
 }
 
 impl_enum_display_and_debug_using_to_str!(TaskFailureType);
@@ -56,6 +80,14 @@ impl TaskFailureType {
       Self::NoForegroundSubjectDetected => "no_foreground_subject_detected",
       Self::FormatNotSupported => "format_not_supported",
       Self::GenerationFailed => "generation_failed",
+      Self::FaceNotDetected => "face_not_detected",
+      Self::KeepAliveElapsed => "keep_alive_elapsed",
+      Self::NotYetImplemented => "not_yet_implemented",
+      Self::RetryableWorkerError => "retryable_worker_error",
+      Self::ModelRulesViolation => "model_rules_violation",
+      Self::FilesizeTooLarge => "filesize_too_large",
+      Self::ImageDimensionsTooSmall => "image_dimensions_too_small",
+      Self::ImageDimensionsTooLarge => "image_dimensions_too_large",
     }
   }
 
@@ -72,6 +104,14 @@ impl TaskFailureType {
       "no_foreground_subject_detected" => Ok(Self::NoForegroundSubjectDetected),
       "format_not_supported" => Ok(Self::FormatNotSupported),
       "generation_failed" => Ok(Self::GenerationFailed),
+      "face_not_detected" => Ok(Self::FaceNotDetected),
+      "keep_alive_elapsed" => Ok(Self::KeepAliveElapsed),
+      "not_yet_implemented" => Ok(Self::NotYetImplemented),
+      "retryable_worker_error" => Ok(Self::RetryableWorkerError),
+      "model_rules_violation" => Ok(Self::ModelRulesViolation),
+      "filesize_too_large" => Ok(Self::FilesizeTooLarge),
+      "image_dimensions_too_small" => Ok(Self::ImageDimensionsTooSmall),
+      "image_dimensions_too_large" => Ok(Self::ImageDimensionsTooLarge),
       _ => Err(EnumError::CouldNotConvertFromString(value.to_string())),
     }
   }
@@ -89,6 +129,14 @@ impl TaskFailureType {
       Self::NoForegroundSubjectDetected,
       Self::FormatNotSupported,
       Self::GenerationFailed,
+      Self::FaceNotDetected,
+      Self::KeepAliveElapsed,
+      Self::NotYetImplemented,
+      Self::RetryableWorkerError,
+      Self::ModelRulesViolation,
+      Self::FilesizeTooLarge,
+      Self::ImageDimensionsTooSmall,
+      Self::ImageDimensionsTooLarge,
     ])
   }
 }
@@ -115,6 +163,14 @@ mod tests {
       assert_serialization(TaskFailureType::NoForegroundSubjectDetected, "no_foreground_subject_detected");
       assert_serialization(TaskFailureType::FormatNotSupported, "format_not_supported");
       assert_serialization(TaskFailureType::GenerationFailed, "generation_failed");
+      assert_serialization(TaskFailureType::FaceNotDetected, "face_not_detected");
+      assert_serialization(TaskFailureType::KeepAliveElapsed, "keep_alive_elapsed");
+      assert_serialization(TaskFailureType::NotYetImplemented, "not_yet_implemented");
+      assert_serialization(TaskFailureType::RetryableWorkerError, "retryable_worker_error");
+      assert_serialization(TaskFailureType::ModelRulesViolation, "model_rules_violation");
+      assert_serialization(TaskFailureType::FilesizeTooLarge, "filesize_too_large");
+      assert_serialization(TaskFailureType::ImageDimensionsTooSmall, "image_dimensions_too_small");
+      assert_serialization(TaskFailureType::ImageDimensionsTooLarge, "image_dimensions_too_large");
     }
 
     #[test]
@@ -130,6 +186,14 @@ mod tests {
       assert_eq!(TaskFailureType::NoForegroundSubjectDetected.to_str(), "no_foreground_subject_detected");
       assert_eq!(TaskFailureType::FormatNotSupported.to_str(), "format_not_supported");
       assert_eq!(TaskFailureType::GenerationFailed.to_str(), "generation_failed");
+      assert_eq!(TaskFailureType::FaceNotDetected.to_str(), "face_not_detected");
+      assert_eq!(TaskFailureType::KeepAliveElapsed.to_str(), "keep_alive_elapsed");
+      assert_eq!(TaskFailureType::NotYetImplemented.to_str(), "not_yet_implemented");
+      assert_eq!(TaskFailureType::RetryableWorkerError.to_str(), "retryable_worker_error");
+      assert_eq!(TaskFailureType::ModelRulesViolation.to_str(), "model_rules_violation");
+      assert_eq!(TaskFailureType::FilesizeTooLarge.to_str(), "filesize_too_large");
+      assert_eq!(TaskFailureType::ImageDimensionsTooSmall.to_str(), "image_dimensions_too_small");
+      assert_eq!(TaskFailureType::ImageDimensionsTooLarge.to_str(), "image_dimensions_too_large");
     }
 
     #[test]
@@ -145,6 +209,14 @@ mod tests {
       assert_eq!(TaskFailureType::from_str("no_foreground_subject_detected").unwrap(), TaskFailureType::NoForegroundSubjectDetected);
       assert_eq!(TaskFailureType::from_str("format_not_supported").unwrap(), TaskFailureType::FormatNotSupported);
       assert_eq!(TaskFailureType::from_str("generation_failed").unwrap(), TaskFailureType::GenerationFailed);
+      assert_eq!(TaskFailureType::from_str("face_not_detected").unwrap(), TaskFailureType::FaceNotDetected);
+      assert_eq!(TaskFailureType::from_str("keep_alive_elapsed").unwrap(), TaskFailureType::KeepAliveElapsed);
+      assert_eq!(TaskFailureType::from_str("not_yet_implemented").unwrap(), TaskFailureType::NotYetImplemented);
+      assert_eq!(TaskFailureType::from_str("retryable_worker_error").unwrap(), TaskFailureType::RetryableWorkerError);
+      assert_eq!(TaskFailureType::from_str("model_rules_violation").unwrap(), TaskFailureType::ModelRulesViolation);
+      assert_eq!(TaskFailureType::from_str("filesize_too_large").unwrap(), TaskFailureType::FilesizeTooLarge);
+      assert_eq!(TaskFailureType::from_str("image_dimensions_too_small").unwrap(), TaskFailureType::ImageDimensionsTooSmall);
+      assert_eq!(TaskFailureType::from_str("image_dimensions_too_large").unwrap(), TaskFailureType::ImageDimensionsTooLarge);
     }
 
     #[test]
@@ -161,7 +233,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskFailureType::all_variants();
-      assert_eq!(variants.len(), 11);
+      assert_eq!(variants.len(), 19);
       assert_eq!(variants.pop_first(), Some(TaskFailureType::Unknown));
       assert_eq!(variants.pop_first(), Some(TaskFailureType::RuleBansUserImage));
       assert_eq!(variants.pop_first(), Some(TaskFailureType::RuleBansUserImageWithFaces));
@@ -173,6 +245,14 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TaskFailureType::NoForegroundSubjectDetected));
       assert_eq!(variants.pop_first(), Some(TaskFailureType::FormatNotSupported));
       assert_eq!(variants.pop_first(), Some(TaskFailureType::GenerationFailed));
+      assert_eq!(variants.pop_first(), Some(TaskFailureType::FaceNotDetected));
+      assert_eq!(variants.pop_first(), Some(TaskFailureType::KeepAliveElapsed));
+      assert_eq!(variants.pop_first(), Some(TaskFailureType::NotYetImplemented));
+      assert_eq!(variants.pop_first(), Some(TaskFailureType::RetryableWorkerError));
+      assert_eq!(variants.pop_first(), Some(TaskFailureType::ModelRulesViolation));
+      assert_eq!(variants.pop_first(), Some(TaskFailureType::FilesizeTooLarge));
+      assert_eq!(variants.pop_first(), Some(TaskFailureType::ImageDimensionsTooSmall));
+      assert_eq!(variants.pop_first(), Some(TaskFailureType::ImageDimensionsTooLarge));
       assert_eq!(variants.pop_first(), None);
     }
   }

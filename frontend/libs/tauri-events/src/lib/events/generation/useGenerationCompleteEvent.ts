@@ -48,8 +48,6 @@ const makeMessage = (event: GenerationCompleteEvent) => {
       return "Image generation complete!";
     case GenerationAction.GenerateVideo:
       return "Video generation complete!";
-    case GenerationAction.RemoveBackground:
-      return "Background removal complete!";
     case GenerationAction.ImageTo3d:
       return "3D model generation complete!";
     case GenerationAction.GenerateGaussian:

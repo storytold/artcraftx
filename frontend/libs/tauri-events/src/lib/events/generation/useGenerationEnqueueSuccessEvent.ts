@@ -45,8 +45,6 @@ const makeMessage = (event: GenerationEnqueueSuccessEvent) => {
       return "Image generation enqueued!";
     case GenerationAction.GenerateVideo:
       return "Video generation enqueued!";
-    case GenerationAction.RemoveBackground:
-      return "Background removal enqueued!";
     case GenerationAction.ImageTo3d:
       return "3D model generation enqueued!";
     case GenerationAction.GenerateGaussian:

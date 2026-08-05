@@ -405,6 +405,7 @@ export const PromptBoxAudio = ({
 
       await GenerateAudio({
         credential_id: credentialId ?? undefined,
+        frontend_caller: "audio_page",
         model: String(body.model),
         prompt: body.prompt ?? undefined,
         style_prompt: body.style_prompt ?? undefined,

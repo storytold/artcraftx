@@ -24,12 +24,10 @@ impl TaskEnqueueSuccess{
   pub fn to_frontend_event_action(&self) -> GenerationAction {
     match self.task_type {
       TaskType::ImageGeneration => GenerationAction::GenerateImage,
-      TaskType::GaussianGeneration => GenerationAction::GenerateGaussian,
+      TaskType::SplatGeneration => GenerationAction::GenerateGaussian,
       TaskType::VideoGeneration => GenerationAction::GenerateVideo,
       TaskType::AudioGeneration => GenerationAction::GenerateAudio,
-      TaskType::BackgroundRemoval => GenerationAction::RemoveBackground,
-      TaskType::ObjectGeneration => GenerationAction::ImageTo3d,
-      TaskType::ImageInpaintEdit => GenerationAction::ImageInpaintEdit,
+      TaskType::MeshGeneration => GenerationAction::ImageTo3d,
     }
   }
   

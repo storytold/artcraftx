@@ -19,10 +19,10 @@ export interface CompletedFile {
 }
 
 const TASK_TYPES: Record<ComposerTaskModality, ReadonlySet<string>> = {
-  image: new Set(["image_generation", "image_inpaint_edit"]),
+  image: new Set(["image_generation"]),
   video: new Set(["video_generation"]),
-  splat: new Set(["gaussian_generation"]),
-  mesh: new Set(["object_generation"]),
+  splat: new Set(["splat_generation"]),
+  mesh: new Set(["mesh_generation"]),
 };
 
 export function useComposerTasks(modality: ComposerTaskModality) {

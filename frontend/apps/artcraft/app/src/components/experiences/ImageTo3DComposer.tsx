@@ -154,7 +154,7 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
               (SPLAT_MODELS[0] as any)?.tauriId,
             prompt: prompt.trim() || undefined,
             reference_image_media_tokens: readyTokens,
-            frontend_caller: "mini_app",
+            frontend_caller: "splat_page",
             frontend_subscriber_id: subscriberId,
           })
         : await GenerateMesh({
@@ -162,7 +162,7 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
             model: selectedObjectModelId,
             prompt: prompt.trim() || undefined,
             reference_image_media_tokens: readyTokens,
-            frontend_caller: "mini_app",
+            frontend_caller: "mesh_page",
             frontend_subscriber_id: subscriberId,
           });
 

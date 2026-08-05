@@ -66,11 +66,6 @@ pub async fn notify_frontend_of_completion(
     TaskType::ImageGeneration => {
       notify_image_generation(app, api_host, maybe_creds, task, completion).await
     }
-    TaskType::ImageInpaintEdit => {
-      // Typed image-edit notification removed; the generic
-      // GenerationCompleteEvent above already fired.
-      Ok(())
-    }
     TaskType::VideoGeneration => {
       notify_video_generation(app, task, completion)
     }
@@ -79,16 +74,11 @@ pub async fn notify_frontend_of_completion(
       // above already fired.
       Ok(())
     }
-    TaskType::ObjectGeneration => {
+    TaskType::MeshGeneration => {
       notify_object_generation(app, task, completion)
     }
-    TaskType::GaussianGeneration => {
+    TaskType::SplatGeneration => {
       notify_gaussian_generation(app, task, completion)
-    }
-    TaskType::BackgroundRemoval => {
-      // Typed canvas-bg-removal notification removed; the generic
-      // GenerationCompleteEvent above already fired.
-      Ok(())
     }
   };
 
@@ -223,10 +213,8 @@ fn task_type_to_generation_action(task_type: TaskType) -> GenerationAction {
     TaskType::ImageGeneration => GenerationAction::GenerateImage,
     TaskType::VideoGeneration => GenerationAction::GenerateVideo,
     TaskType::AudioGeneration => GenerationAction::GenerateAudio,
-    TaskType::BackgroundRemoval => GenerationAction::RemoveBackground,
-    TaskType::ObjectGeneration => GenerationAction::ImageTo3d,
-    TaskType::GaussianGeneration => GenerationAction::GenerateGaussian,
-    TaskType::ImageInpaintEdit => GenerationAction::ImageInpaintEdit,
+    TaskType::MeshGeneration => GenerationAction::ImageTo3d,
+    TaskType::SplatGeneration => GenerationAction::GenerateGaussian,
   }
 }
 

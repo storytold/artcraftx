@@ -386,7 +386,7 @@ export const PromptBoxImage = ({
         prompt: prompt,
         model: selectedModel,
         batch_size: generationCount,
-        frontend_caller: "text_to_image",
+        frontend_caller: "image_page",
         frontend_subscriber_id: subscriberId,
       };
 

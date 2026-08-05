@@ -6,5 +6,6 @@ export enum TaskMediaFileClass {
   Audio = "audio",
   Image = "image",
   Video = "video",
-  Dimensional = "dimensional",
+  Splat = "splat",
+  Mesh = "mesh",
 }

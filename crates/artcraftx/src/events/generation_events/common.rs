@@ -187,10 +187,7 @@ pub enum GenerationAction {
   GenerateImage,
   GenerateVideo,
   GenerateAudio,
-  RemoveBackground,
   #[serde(rename = "image_to_3d")]
   ImageTo3d,
   GenerateGaussian,
-  #[serde(rename = "image_inpaint_edit")]
-  ImageInpaintEdit,
 }

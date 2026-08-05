@@ -1081,7 +1081,7 @@ export const PromptBoxVideo = ({
         end_frame_image_media_token: isRefMode
           ? undefined
           : endFrameImage?.mediaToken,
-        frontend_caller: "image_to_video",
+        frontend_caller: "video_page",
         frontend_subscriber_id: subscriberId,
       };
 
