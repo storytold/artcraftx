@@ -1,5 +1,5 @@
 import { ApiManager, ApiResponse } from "./ApiManager";
-import type { UserBookmarkBatch } from "@storyteller/ui-pagescene";
+import type { UserBookmarkBatch } from "~/types/artcraft-web";
 
 export class UserBookmarksApi extends ApiManager {
   public CreateUserBookmark({

@@ -8,7 +8,6 @@ import * as gpu from "detect-gpu";
 import { useSignals } from "@preact/signals-react/runtime";
 
 import { TopBar } from "~/components";
-import { ErrorDialog } from "~/components";
 import { toast, Toaster } from "@storyteller/ui-toaster";
 import {
   PricingModal,
@@ -29,7 +28,6 @@ import {
   useGenerationFailedEvent,
   useTextToImageGenerationCompleteEvent,
 } from "@storyteller/tauri-events";
-import { useStoryboardPageEnabled } from "@storyteller/ui-settings-modal";
 
 import { useActiveJobs } from "~/hooks/useActiveJobs";
 import { useBackgroundLoadingMedia } from "~/hooks/useBackgroundLoadingMedia";
@@ -40,16 +38,8 @@ import { useTextToImageStore } from "./PageImage/TextToImageStore";
 import TextToImage from "./PageImage/TextToImage";
 import ImageToVideo from "./PageVideo/ImageToVideo";
 import CreateAudio from "./PageAudio/CreateAudio";
-import { VideoFrameExtractor } from "./PageVideoFrameExtractor";
-import { VideoWatermarkRemover } from "./PageVideoWatermarkRemover";
-import { ImageWatermarkRemover } from "./PageImageWatermarkRemover";
 import { ImageTo3DObject } from "./PageImageTo3DObject";
 import { ImageTo3DWorld } from "./PageImageTo3DWorld";
-import { Angles } from "./PageAngles";
-import { Storyboard } from "./PageStoryboard";
-import { PageBackgroundChange } from "./PageBackgroundChange";
-import { PageVideoEditor } from "./PageVideoEditor";
-import { PageMoodboard } from "./PageMoodboard";
 import { PageSettings } from "./PageSettings";
 import {
   topNavMediaId,
@@ -115,7 +105,6 @@ export const MainApp = () => {
 
       <TabBody />
 
-      <ErrorDialog />
       <CredentialErrorModal />
       <Toaster offsetTop={52} offsetRight={12} zIndex={9999} />
       {currentReminderModalProps && (
@@ -145,7 +134,6 @@ export const MainApp = () => {
 
 const TabBody = () => {
   const tabStore = useTabStore();
-  const storyboardPageEnabled = useStoryboardPageEnabled();
 
   // Every page is a fragment whose top-level children may use
   // position: fixed; the wrapping <div> scopes them so they don't
@@ -172,24 +160,6 @@ const TabBody = () => {
           <CreateAudio />
         </div>
       );
-    case "VIDEO_FRAME_EXTRACTOR":
-      return (
-        <div>
-          <VideoFrameExtractor />
-        </div>
-      );
-    case "VIDEO_WATERMARK_REMOVAL":
-      return (
-        <div>
-          <VideoWatermarkRemover />
-        </div>
-      );
-    case "IMAGE_WATERMARK_REMOVAL":
-      return (
-        <div>
-          <ImageWatermarkRemover />
-        </div>
-      );
     case "IMAGE_TO_3D_OBJECT":
       return (
         <div>
@@ -202,44 +172,10 @@ const TabBody = () => {
           <ImageTo3DWorld />
         </div>
       );
-    case "ANGLES":
-      return (
-        <div>
-          <Angles />
-        </div>
-      );
-    case "STORYBOARD":
-      return storyboardPageEnabled ? (
-        <div>
-          <Storyboard />
-        </div>
-      ) : null;
-    case "BACKGROUND_CHANGE":
-      return (
-        <div>
-          <PageBackgroundChange />
-        </div>
-      );
-    case "VIDEO_EDITOR":
-      return (
-        <div className="h-[calc(100vh-40px)] w-full">
-          <PageVideoEditor />
-        </div>
-      );
     case "SETTINGS":
       return (
         <div>
           <PageSettings />
-        </div>
-      );
-    case "MOODBOARD":
-      // The TopBar is fixed and 40px tall, so the board sits below it and fills
-      // the rest of the viewport. overflow-hidden keeps sub-pixel 100vh
-      // rounding from spawning page scrollbars (which w-screen ancestors would
-      // turn into a horizontal scrollbar via the Windows scrollbar gutter).
-      return (
-        <div className="h-[calc(100vh-40px)] w-full overflow-hidden">
-          <PageMoodboard />
         </div>
       );
     default:

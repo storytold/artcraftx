@@ -1,7 +1,7 @@
 import { signal } from "@preact/signals-core";
 import deepEqual from "deep-equal";
 
-import type { AudioMediaItem, MediaInfo } from "@storyteller/ui-pagescene";
+import type { AudioMediaItem, MediaInfo } from "~/types/artcraft-web";
 import { remapResponseToAudioMediaItems } from "./utilities";
 
 // Signals and signal functions for background loading User's Movies

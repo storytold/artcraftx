@@ -1,5 +1,5 @@
 import { ApiManager, ApiResponse } from "./ApiManager";
-import { GenerateTtsAudioErrorType } from "@storyteller/ui-pagescene";
+import { GenerateTtsAudioErrorType } from "~/types/artcraft-web";
 import { Visibility } from "~/enums";
 
 export interface GenerateTtsAudioRequest {

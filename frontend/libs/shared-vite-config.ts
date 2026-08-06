@@ -41,7 +41,6 @@ export function isExternal(id: string): boolean {
 
   // Other important libraries
   if (
-    id === 'konva' ||
     id === 'three' ||
     id === 'zustand' ||
     id === 'wavesurfer.js' ||

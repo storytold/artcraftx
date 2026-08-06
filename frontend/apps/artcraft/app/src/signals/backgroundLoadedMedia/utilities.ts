@@ -1,4 +1,4 @@
-import type { MediaInfo, AudioMediaItem } from "@storyteller/ui-pagescene";
+import type { MediaInfo, AudioMediaItem } from "~/types/artcraft-web";
 import { AssetType } from "~/enums";
 
 export const remapResponseToAudioMediaItems = (

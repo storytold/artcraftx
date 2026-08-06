@@ -3,7 +3,7 @@ import type {
   MediaInfo,
   Pagination,
   PaginationInfinite,
-} from "@storyteller/ui-pagescene";
+} from "~/types/artcraft-web";
 import { ApiManager, ApiResponse } from "./ApiManager";
 import { authentication } from "~/signals";
 import type { Property } from "csstype";

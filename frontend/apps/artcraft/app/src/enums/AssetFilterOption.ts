@@ -1,1 +1,1 @@
-export { AssetFilterOption } from "@storyteller/ui-pagescene";
+export { AssetFilterOption } from "~/types/artcraft-web";

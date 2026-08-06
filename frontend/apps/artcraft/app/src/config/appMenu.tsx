@@ -6,24 +6,14 @@ import {
   faImage,
   faMusic,
 } from "@fortawesome/pro-solid-svg-icons";
-import { useExperimentalStore } from "@storyteller/ui-settings-modal";
 import { useTabStore, TabId } from "~/pages/Stores/TabState";
 
 export type AppId =
   | "IMAGE"
   | "VIDEO"
   | "AUDIO"
-  | "EDIT"
-  | "VIDEO_FRAME_EXTRACTOR"
-  | "VIDEO_WATERMARK_REMOVAL"
-  | "IMAGE_WATERMARK_REMOVAL"
   | "IMAGE_TO_3D_OBJECT"
   | "IMAGE_TO_3D_WORLD"
-  | "ANGLES"
-  | "STORYBOARD"
-  | "BACKGROUND_CHANGE"
-  | "VIDEO_EDITOR"
-  | "MOODBOARD"
   | "SETTINGS";
 
 export interface AppDescriptor {
@@ -35,8 +25,7 @@ export interface AppDescriptor {
   large?: boolean;
 }
 
-// The five modalities. Everything else stays reachable in code (goToApp)
-// but is deliberately absent from the nav.
+// The five modalities.
 export const APP_DESCRIPTORS: AppDescriptor[] = [
   {
     id: "IMAGE",
@@ -72,24 +61,11 @@ export const goToApp = (action?: string) => {
       "IMAGE",
       "VIDEO",
       "AUDIO",
-      "VIDEO_FRAME_EXTRACTOR",
-      "VIDEO_WATERMARK_REMOVAL",
-      "IMAGE_WATERMARK_REMOVAL",
       "IMAGE_TO_3D_OBJECT",
       "IMAGE_TO_3D_WORLD",
-      "ANGLES",
-      "STORYBOARD",
-      "BACKGROUND_CHANGE",
-      "VIDEO_EDITOR",
-      "MOODBOARD",
       "SETTINGS",
     ].includes(action)
   ) {
-    if (action === "STORYBOARD") {
-      const { enabled, storyboardPageEnabled } =
-        useExperimentalStore.getState();
-      if (!enabled || !storyboardPageEnabled) return;
-    }
     useTabStore.getState().setActiveTab(action as TabId);
   }
 };

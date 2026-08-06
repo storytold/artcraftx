@@ -1,6 +1,5 @@
 import { SettingsContent } from "@storyteller/ui-settings-modal";
 import { goToApp } from "~/config/appMenu";
-import { useStoryboardStore } from "~/pages/PageStoryboard";
 import { setLogoutStates } from "~/signals/authentication/utilities";
 
 // Settings as a full page (opened from the titlebar gear) instead of a modal.
@@ -12,10 +11,6 @@ export const PageSettings = () => {
       <SettingsContent
         globalAccountLogoutCallback={() => {
           setLogoutStates();
-          goToApp("IMAGE");
-        }}
-        onStoryboardPageDisable={() => {
-          useStoryboardStore.getState().reset();
           goToApp("IMAGE");
         }}
       />

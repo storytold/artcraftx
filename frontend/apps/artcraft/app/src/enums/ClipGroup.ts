@@ -1,1 +1,1 @@
-export { ClipGroup } from "@storyteller/ui-pagescene";
+export { ClipGroup } from "~/types/artcraft-web";

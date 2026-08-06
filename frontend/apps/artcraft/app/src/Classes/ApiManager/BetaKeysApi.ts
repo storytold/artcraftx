@@ -1,6 +1,6 @@
 import { ApiManager, ApiResponse } from "./ApiManager";
 import { BetaKey } from "~/models";
-import type { Pagination } from "@storyteller/ui-pagescene";
+import type { Pagination } from "~/types/artcraft-web";
 
 export class BetaKeysApi extends ApiManager {
   public CreateBetaKey({

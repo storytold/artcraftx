@@ -1,5 +1,5 @@
 import { ApiManager, ApiResponse } from "./ApiManager";
-import type { Prompts } from "@storyteller/ui-pagescene";
+import type { Prompts } from "~/types/artcraft-web";
 
 export class PromptsApi extends ApiManager {
   public GetPromptsByToken({

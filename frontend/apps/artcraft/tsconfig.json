@@ -29,28 +29,7 @@
   },
   "references": [
     {
-      "path": "../../libs/components/video-editor"
-    },
-    {
-      "path": "../../libs/components/moodboard"
-    },
-    {
-      "path": "../../libs/components/vfx"
-    },
-    {
       "path": "../../libs/omni-gen"
-    },
-    {
-      "path": "../../libs/components/pagedraw"
-    },
-    {
-      "path": "../../libs/components/help-menu"
-    },
-    {
-      "path": "../../libs/components/slider-v2"
-    },
-    {
-      "path": "../../libs/components/loading-spinner"
     },
     {
       "path": "../../libs/soundboard"
@@ -141,9 +120,6 @@
     },
     {
       "path": "../../libs/tauri-api"
-    },
-    {
-      "path": "../../libs/components/pagescene"
     },
     {
       "path": "../../libs/tauri-utils"

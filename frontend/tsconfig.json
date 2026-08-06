@@ -79,18 +79,6 @@
       "path": "./libs/components/switch"
     },
     {
-      "path": "./libs/components/menu-icon-selector"
-    },
-    {
-      "path": "./libs/components/badge"
-    },
-    {
-      "path": "./libs/components/button-dropdown"
-    },
-    {
-      "path": "./libs/components/button-icon"
-    },
-    {
       "path": "./libs/components/button-icon-select"
     },
     {
@@ -136,37 +124,16 @@
       "path": "./libs/state/subscription"
     },
     {
-      "path": "./libs/components/help-menu"
-    },
-    {
       "path": "./libs/api-enums"
     },
     {
       "path": "./libs/components/viewer-3d"
     },
     {
-      "path": "./libs/markdown-content"
-    },
-    {
-      "path": "./libs/components/pagedraw"
-    },
-    {
       "path": "./libs/components/checkbox"
     },
     {
-      "path": "./libs/components/pagescene"
-    },
-    {
-      "path": "./libs/components/vfx"
-    },
-    {
-      "path": "./libs/components/video-editor"
-    },
-    {
       "path": "./libs/components/generation-list"
-    },
-    {
-      "path": "./libs/components/moodboard"
     },
     {
       "path": "./libs/omni-gen"

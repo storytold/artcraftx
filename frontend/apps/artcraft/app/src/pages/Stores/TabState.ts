@@ -1,20 +1,11 @@
 import { create } from "zustand";
 
 export type TabId =
-  | "VIDEO"
-  | "EDIT"
   | "IMAGE"
+  | "VIDEO"
   | "AUDIO"
-  | "VIDEO_FRAME_EXTRACTOR"
-  | "VIDEO_WATERMARK_REMOVAL"
-  | "IMAGE_WATERMARK_REMOVAL"
   | "IMAGE_TO_3D_OBJECT"
   | "IMAGE_TO_3D_WORLD"
-  | "ANGLES"
-  | "STORYBOARD"
-  | "BACKGROUND_CHANGE"
-  | "VIDEO_EDITOR"
-  | "MOODBOARD"
   | "SETTINGS";
 
 const DEFAULT_TAB: TabId = "IMAGE";
