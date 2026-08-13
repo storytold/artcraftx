@@ -5,18 +5,15 @@ import { Tooltip } from "@storyteller/ui-tooltip";
 import { Button, GenerateButton } from "@storyteller/ui-button";
 import { Modal } from "@storyteller/ui-modal";
 import {
-  faFrame,
-  faExpand,
-  faChevronDown,
-  faChevronUp,
-} from "@fortawesome/pro-solid-svg-icons";
-import {
-  faRectangleVertical,
-  faSquare,
-  faRectangle,
-} from "@fortawesome/pro-regular-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+  ChevronDown,
+  ChevronUp,
+  Expand,
+  Frame,
+  RectangleHorizontal,
+  RectangleVertical,
+  Square,
+  type LucideIcon,
+} from "lucide-react";
 
 import {
   Prompt2DStore,
@@ -119,17 +116,17 @@ export const PromptBox2D = ({
     {
       label: "Wide",
       selected: aspectRatio === "wide",
-      icon: <FontAwesomeIcon icon={faRectangle} className="h-4 w-4" />,
+      icon: <RectangleHorizontal className="h-4 w-4" />,
     },
     {
       label: "Tall",
       selected: aspectRatio === "tall",
-      icon: <FontAwesomeIcon icon={faRectangleVertical} className="h-4 w-4" />,
+      icon: <RectangleVertical className="h-4 w-4" />,
     },
     {
       label: "Square",
       selected: aspectRatio === "square",
-      icon: <FontAwesomeIcon icon={faSquare} className="h-4 w-4" />,
+      icon: <Square className="h-4 w-4" />,
     },
   ]);
 
@@ -137,17 +134,17 @@ export const PromptBox2D = ({
     {
       label: "1K",
       selected: resolution === "1k",
-      icon: <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />,
+      icon: <Expand className="h-4 w-4" />,
     },
     {
       label: "2K",
       selected: resolution === "2k",
-      icon: <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />,
+      icon: <Expand className="h-4 w-4" />,
     },
     {
       label: "4K",
       selected: resolution === "4k",
-      icon: <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />,
+      icon: <Expand className="h-4 w-4" />,
     },
   ]);
 
@@ -316,12 +313,14 @@ export const PromptBox2D = ({
     }
   };
 
-  const getCurrentAspectRatioIcon = () => {
+  const getCurrentAspectRatioIcon = (): LucideIcon => {
     const selected = aspectRatioList.find((item) => item.selected);
-    if (!selected || !selected.icon) return faRectangle;
-    const iconElement = selected.icon as React.ReactElement<{ icon: IconProp }>;
-    return iconElement.props.icon;
+    if (!selected || !selected.icon) return RectangleHorizontal;
+    const iconElement = selected.icon as React.ReactElement;
+    return iconElement.type as LucideIcon;
   };
+
+  const AspectRatioIcon = getCurrentAspectRatioIcon();
 
   // const getCurrentAspectRatio = (): EnqueueEditImageSize => {
   //   const selected = aspectRatioList.find((item) => item.selected);
@@ -476,12 +475,7 @@ export const PromptBox2D = ({
                     mode="toggle"
                     panelTitle="Aspect Ratio"
                     showIconsInList
-                    triggerIcon={
-                      <FontAwesomeIcon
-                        icon={getCurrentAspectRatioIcon()}
-                        className="h-4 w-4"
-                      />
-                    }
+                    triggerIcon={<AspectRatioIcon className="h-4 w-4" />}
                   />
                 </Tooltip>
               )}
@@ -498,9 +492,7 @@ export const PromptBox2D = ({
                     mode="toggle"
                     panelTitle="Resolution"
                     showIconsInList
-                    triggerIcon={
-                      <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />
-                    }
+                    triggerIcon={<Expand className="h-4 w-4" />}
                   />
                 </Tooltip>
               )}
@@ -523,7 +515,7 @@ export const PromptBox2D = ({
                     className="h-9 bg-ui-controls/60 px-3 text-base-fg hover:bg-ui-controls/90"
                     onClick={onFitPressed}
                   >
-                    <FontAwesomeIcon icon={faFrame} className="h-4 w-4" />
+                    <Frame className="h-4 w-4" />
                     Fit
                   </Button>
                 </Tooltip>
@@ -557,10 +549,11 @@ export const PromptBox2D = ({
                 onClick={toggleExpand}
                 className="text-base-fg/30 hover:text-base-fg/90 transition-colors px-3 py-0.5"
               >
-                <FontAwesomeIcon
-                  icon={isExpanded ? faChevronUp : faChevronDown}
-                  className="text-xs"
-                />
+                {isExpanded ? (
+                  <ChevronUp size="1em" className="text-xs" />
+                ) : (
+                  <ChevronDown size="1em" className="text-xs" />
+                )}
               </button>
             </Tooltip>
           </div>

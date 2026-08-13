@@ -8,8 +8,7 @@ import { ModelPage } from "./model-pages";
 import { Provider } from "@storyteller/tauri-api";
 import { getProviderDisplayName, getProviderIcon } from "./provider-icons";
 import { Model } from "@storyteller/model-list";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleCheck, faChevronUp } from "@fortawesome/pro-solid-svg-icons";
+import { CircleCheck, ChevronUp } from "lucide-react";
 import { GenerationProvider } from "@storyteller/api-enums";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { defaultModelForPage } from "./defaultModelForPage";
@@ -109,7 +108,7 @@ function ProviderTooltipContent({
             </span>
             {selectedProvider === p && (
               <span className="text-primary text-xl font-bold bg-white rounded-full p-0 h-4 w-4 flex items-center justify-center">
-                <FontAwesomeIcon icon={faCircleCheck} />
+                <CircleCheck size="1em" />
               </span>
             )}
           </button>
@@ -308,8 +307,8 @@ export function ClassyModelSelector({
                   </span>
                 </div>
               </div>
-              <FontAwesomeIcon
-                icon={faChevronUp}
+              <ChevronUp
+                size="1em"
                 className="text-base text-base-fg/70 self-center"
               />
             </div>

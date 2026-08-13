@@ -1,6 +1,5 @@
 import { memo, type ReactNode } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
+import { LoaderCircle } from "lucide-react";
 import { getCreatorIconPathForModelId } from "@storyteller/model-list";
 import { derivePendingStatus } from "./pending-status";
 import { batchNoun } from "./types";
@@ -46,8 +45,8 @@ export const PendingCard = memo(function PendingCard({
         </div>
       )}
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-        <FontAwesomeIcon
-          icon={faSpinnerThird}
+        <LoaderCircle
+          size="1em"
           className="animate-spin text-2xl text-white/20"
         />
         {progressPercent != null && (

@@ -1,12 +1,11 @@
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { type LucideIcon } from "lucide-react";
 import { Button } from "./button";
 import { twMerge } from "tailwind-merge";
 
 interface ToggleButtonProps {
   isActive: boolean;
-  icon?: IconDefinition;
-  activeIcon?: IconDefinition;
+  icon?: LucideIcon;
+  activeIcon?: LucideIcon;
   label?: string;
   onClick: () => void;
   className?: string;
@@ -20,7 +19,7 @@ export const ToggleButton = ({
   onClick,
   className,
 }: ToggleButtonProps) => {
-  const displayIcon = isActive && activeIcon ? activeIcon : icon;
+  const DisplayIcon = isActive && activeIcon ? activeIcon : icon;
   const hasLabel = Boolean(label);
 
   return (
@@ -40,9 +39,9 @@ export const ToggleButton = ({
       onClick={onClick}
     >
       <span className="flex items-center gap-2">
-        {displayIcon && (
-          <FontAwesomeIcon
-            icon={displayIcon}
+        {DisplayIcon && (
+          <DisplayIcon
+            size="1em"
             className={twMerge("text-base", hasLabel && "text-sm")}
           />
         )}

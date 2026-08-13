@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faArrowDownToLine,
-  faArrowRotateRight,
-  faCheck,
-  faLink,
-  faSpinnerThird,
-  faVideo,
-} from "@fortawesome/pro-solid-svg-icons";
+  ArrowDownToLine,
+  Check,
+  Link,
+  LoaderCircle,
+  RotateCw,
+  Video,
+} from "lucide-react";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { toast } from "@storyteller/ui-toaster";
 import {
@@ -174,6 +173,8 @@ function SelectionDownloadBar({
     }
   }, [isDownloading, selectedItems]);
 
+  const DownloadIcon = isDownloading ? LoaderCircle : ArrowDownToLine;
+
   return (
     // Sit above the fixed promptbox whatever its measured height is.
     <SelectionActionBar
@@ -186,8 +187,8 @@ function SelectionDownloadBar({
         disabled={isDownloading || selectedItems.length === 0}
         className="flex items-center gap-2 rounded-full bg-ui-controls/60 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-ui-controls/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-60"
       >
-        <FontAwesomeIcon
-          icon={isDownloading ? faSpinnerThird : faArrowDownToLine}
+        <DownloadIcon
+          size="1em"
           className={`text-xs ${isDownloading ? "animate-spin" : ""}`}
         />
         Download
@@ -283,6 +284,10 @@ function ItemActions({
     [item.fullImage, item.mediaClass, isDownloading],
   );
 
+  const RecreateIcon = isRecreating ? LoaderCircle : RotateCw;
+  const ShareIcon = shareCopied ? Check : Link;
+  const DownloadIcon = isDownloading ? LoaderCircle : ArrowDownToLine;
+
   return (
     <>
       {canRecreate && (
@@ -294,8 +299,8 @@ function ItemActions({
             aria-label="Recreate"
             className={buttonClass}
           >
-            <FontAwesomeIcon
-              icon={isRecreating ? faSpinnerThird : faArrowRotateRight}
+            <RecreateIcon
+              size="1em"
               className={`text-sm ${isRecreating ? "animate-spin" : ""}`}
             />
           </button>
@@ -309,7 +314,7 @@ function ItemActions({
             aria-label="Make Video"
             className={buttonClass}
           >
-            <FontAwesomeIcon icon={faVideo} className="text-sm" />
+            <Video size="1em" className="text-sm" />
           </button>
         </Tooltip>
       )}
@@ -320,10 +325,7 @@ function ItemActions({
           aria-label="Share"
           className={buttonClass}
         >
-          <FontAwesomeIcon
-            icon={shareCopied ? faCheck : faLink}
-            className="text-sm"
-          />
+          <ShareIcon size="1em" className="text-sm" />
         </button>
       </Tooltip>
       {item.fullImage && (
@@ -335,8 +337,8 @@ function ItemActions({
             aria-label="Download"
             className={buttonClass}
           >
-            <FontAwesomeIcon
-              icon={isDownloading ? faSpinnerThird : faArrowDownToLine}
+            <DownloadIcon
+              size="1em"
               className={`text-sm ${isDownloading ? "animate-spin" : ""}`}
             />
           </button>

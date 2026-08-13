@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFolder, faEllipsis, faStar } from "@fortawesome/pro-solid-svg-icons";
+import { Ellipsis, Folder, Star } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 import { GalleryFolder } from "./GalleryDraggableItem";
 
@@ -102,8 +101,8 @@ export const GalleryFolderChip: React.FC<GalleryFolderChipProps> = ({
         </div>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
-          <FontAwesomeIcon
-            icon={faFolder}
+          <Folder
+            size="1em"
             className={colorCode ? "text-4xl" : "text-4xl text-primary"}
             style={colorCode ? { color: colorCode } : undefined}
           />
@@ -117,8 +116,8 @@ export const GalleryFolderChip: React.FC<GalleryFolderChipProps> = ({
 
       {/* Star (favorite) */}
       {hasStar && (
-        <FontAwesomeIcon
-          icon={faStar}
+        <Star
+          size="1em"
           className="absolute left-2 top-2 text-sm text-amber-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
         />
       )}
@@ -129,8 +128,8 @@ export const GalleryFolderChip: React.FC<GalleryFolderChipProps> = ({
           {/* Folder marker (with the folder color) so a covered/collaged tile
               still reads as a folder. */}
           {hasArt && (
-            <FontAwesomeIcon
-              icon={faFolder}
+            <Folder
+              size="1em"
               className={twMerge(
                 "flex-shrink-0 text-sm drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]",
                 colorCode ? "" : "text-primary",
@@ -174,7 +173,7 @@ export const GalleryFolderChip: React.FC<GalleryFolderChipProps> = ({
           }}
           className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white opacity-0 transition-opacity hover:bg-black/60 group-hover/chip:opacity-100 [@media(pointer:coarse)]:opacity-100"
         >
-          <FontAwesomeIcon icon={faEllipsis} className="text-sm" />
+          <Ellipsis size="1em" className="text-sm" />
         </span>
       )}
     </button>

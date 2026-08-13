@@ -1,6 +1,5 @@
 import { Tooltip } from "@storyteller/ui-tooltip";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUpRightAndDownLeftFromCenter } from "@fortawesome/pro-solid-svg-icons";
+import { Maximize2 } from "lucide-react";
 
 // Circular "expand to focus mode" icon, anchored top-right of a prompt editor.
 // Shared so all promptbox variants render an identical control.
@@ -28,10 +27,7 @@ export const PromptFullscreenButton = ({
           onClick={onClick}
           className="flex h-6 w-6 items-center justify-center rounded-full bg-base-fg/5 text-base-fg/50 transition-colors hover:bg-base-fg/10 hover:text-base-fg/90 focus:outline-none"
         >
-          <FontAwesomeIcon
-            icon={faUpRightAndDownLeftFromCenter}
-            className="h-3 w-3"
-          />
+          <Maximize2 className="h-3 w-3" />
         </button>
       </Tooltip>
     </div>

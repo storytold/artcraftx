@@ -1,12 +1,5 @@
 import { memo, useCallback, useState, type ReactNode } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheck,
-  faCube,
-  faImage,
-  faMusic,
-  faVideo,
-} from "@fortawesome/pro-solid-svg-icons";
+import { Box, Check, Image, Music, Video } from "lucide-react";
 import {
   getCreatorIconPathForModelId,
   getModelDisplayName,
@@ -98,13 +91,7 @@ export const GalleryCard = memo(function GalleryCard({
   const isVideo = item.mediaClass === "video";
   const is3D = is3DMediaClass(item.mediaClass);
   const isAudio = item.mediaClass === "audio";
-  const mediaIcon = isVideo
-    ? faVideo
-    : is3D
-      ? faCube
-      : isAudio
-        ? faMusic
-        : faImage;
+  const MediaIcon = isVideo ? Video : is3D ? Box : isAudio ? Music : Image;
   const mediaLabel = isVideo
     ? "Video"
     : is3D
@@ -190,10 +177,7 @@ export const GalleryCard = memo(function GalleryCard({
             </p>
             <div className="flex min-h-0 flex-1 items-center justify-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/15">
-                <FontAwesomeIcon
-                  icon={faMusic}
-                  className="text-xl text-white/70"
-                />
+                <Music size="1em" className="text-xl text-white/70" />
               </div>
             </div>
             {item.fullImage && (
@@ -211,7 +195,7 @@ export const GalleryCard = memo(function GalleryCard({
             stillThumbnail={item.stillThumbnail}
             alt={item.label}
             isVideo={isVideo}
-            fallbackIcon={mediaIcon}
+            fallbackIcon={MediaIcon}
             onLoad={measureRatio}
           />
         )}
@@ -226,7 +210,7 @@ export const GalleryCard = memo(function GalleryCard({
               : "border-white/60 bg-black/40 text-transparent"
           }`}
         >
-          <FontAwesomeIcon icon={faCheck} className="text-[10px]" />
+          <Check size="1em" className="text-[10px]" />
         </div>
       )}
 
@@ -234,7 +218,7 @@ export const GalleryCard = memo(function GalleryCard({
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t rounded-b-lg from-black/70 to-transparent px-2 pb-2 pt-6 opacity-0 transition-opacity group-hover:opacity-100">
         <div className="pointer-events-auto flex min-w-0 flex-wrap items-center gap-1.5">
           <div className="flex items-center gap-1.5 rounded-lg bg-black/60 px-2.5 py-1 text-xs font-medium text-white/90">
-            <FontAwesomeIcon icon={mediaIcon} className="text-[10px]" />
+            <MediaIcon size="1em" className="text-[10px]" />
             {mediaLabel}
           </div>
           {modelDisplayName && modelIconPath && (

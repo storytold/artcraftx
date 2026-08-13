@@ -1,4 +1,4 @@
-import { ArrowUp, Coins, Loader2 } from "lucide-react";
+import { ArrowUp, Coins, LoaderCircle } from "lucide-react";
 import { ButtonHTMLAttributes } from "react";
 import { twMerge } from "tailwind-merge";
 import { Tooltip } from "@storyteller/ui-tooltip";
@@ -53,7 +53,7 @@ export const GenerateIconButton = ({
       >
         Create
         {loading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <LoaderCircle className="h-4 w-4 animate-spin" />
         ) : (
           <ArrowUp className="h-4 w-4" />
         )}

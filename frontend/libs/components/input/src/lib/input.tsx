@@ -1,14 +1,13 @@
 import React from "react";
 import { twMerge } from "tailwind-merge";
-import { IconDefinition } from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { type LucideIcon } from "lucide-react";
 import { Label } from "@storyteller/ui-label";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   inputClassName?: string;
   iconClassName?: string;
   label?: string;
-  icon?: IconDefinition;
+  icon?: LucideIcon;
   isError?: boolean;
   errorMessage?: string;
 }
@@ -17,7 +16,7 @@ export const Input = React.forwardRef(
   (
     {
       label,
-      icon,
+      icon: Icon,
       inputClassName,
       iconClassName,
       className,
@@ -35,9 +34,9 @@ export const Input = React.forwardRef(
         {label && <Label htmlFor={id ? id : label}>{label}</Label>}
 
         <div className="relative w-full">
-          {icon && (
-            <FontAwesomeIcon
-              icon={icon}
+          {Icon && (
+            <Icon
+              size="1em"
               className={twMerge("text-md absolute pl-3 pt-3", iconClassName)}
             />
           )}
@@ -49,7 +48,7 @@ export const Input = React.forwardRef(
               "bg-ui-panel text-base-fg placeholder-base-fg/50",
               "border border-ui-panel-border transition-all duration-150 ease-in-out hover:border-primary/60 focus:border-primary focus:!outline-none",
               "disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-ui-panel-border",
-              icon && "pl-10",
+              Icon && "pl-10",
               isError && "outline-red focus:outline-red",
               inputClassName
             )}

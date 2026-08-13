@@ -3,8 +3,7 @@ import { Modal } from "@storyteller/ui-modal";
 import { Button } from "@storyteller/ui-button";
 import { Input } from "@storyteller/ui-input";
 import { Select } from "@storyteller/ui-select";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGlobe, faKey } from "@fortawesome/pro-solid-svg-icons";
+import { Globe, Key } from "lucide-react";
 import {
   API_KEY_SERVICES,
   addApiCredential,
@@ -70,7 +69,7 @@ export const AddCredentialModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Add credential"
-      titleIcon={faKey}
+      titleIcon={Key}
       width="w-[440px]"
       showClose={true}
     >
@@ -136,7 +135,7 @@ export const AddCredentialModal = ({
         <Button
           variant="secondary"
           className="h-9"
-          icon={faGlobe}
+          icon={Globe}
           onClick={onChooseWebsiteLogin}
         >
           Log into a website instead

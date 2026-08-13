@@ -6,7 +6,6 @@ import {
   useState,
 } from "react";
 import { Tooltip } from "@storyteller/ui-tooltip";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Plus, Trash2 } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 import {

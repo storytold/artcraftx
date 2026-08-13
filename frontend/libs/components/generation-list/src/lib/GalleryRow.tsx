@@ -1,13 +1,5 @@
 import { memo, useCallback, type ReactNode } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheck,
-  faCube,
-  faImage,
-  faMusic,
-  faPlay,
-  faVideo,
-} from "@fortawesome/pro-solid-svg-icons";
+import { Box, Check, Image, Music, Play, Video } from "lucide-react";
 import {
   getCreatorIconPathForModelId,
   getModelDisplayName,
@@ -52,13 +44,7 @@ export const GalleryRow = memo(function GalleryRow({
   const isVideo = item.mediaClass === "video";
   const is3D = is3DMediaClass(item.mediaClass);
   const isAudio = item.mediaClass === "audio";
-  const mediaIcon = isVideo
-    ? faVideo
-    : is3D
-      ? faCube
-      : isAudio
-        ? faMusic
-        : faImage;
+  const mediaIcon = isVideo ? Video : is3D ? Box : isAudio ? Music : Image;
   const mediaLabel = isVideo ? "Video" : is3D ? "3D" : isAudio ? "Audio" : "Image";
 
   const effectiveModelId = modelId ?? item.modelId;
@@ -106,7 +92,7 @@ export const GalleryRow = memo(function GalleryRow({
               : "border-white/60 bg-black/40 text-transparent"
           } ${item.fullImage ? "" : "invisible"}`}
         >
-          <FontAwesomeIcon icon={faCheck} className="text-[10px]" />
+          <Check size="1em" className="text-[10px]" />
         </div>
       )}
 
@@ -124,8 +110,8 @@ export const GalleryRow = memo(function GalleryRow({
         {isVideo && item.thumbnail && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/55 backdrop-blur-sm">
-              <FontAwesomeIcon
-                icon={faPlay}
+              <Play
+                size="1em"
                 className="ml-0.5 text-[9px] text-white/90"
               />
             </span>

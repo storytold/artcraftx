@@ -1,11 +1,4 @@
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import {
-  faCube,
-  faFilm,
-  faGlobe,
-  faImage,
-  faMusic,
-} from "@fortawesome/pro-solid-svg-icons";
+import { Box, Film, Globe, Image, Music, type LucideIcon } from "lucide-react";
 import { useTabStore, TabId } from "~/pages/Stores/TabState";
 
 export type AppId =
@@ -19,7 +12,7 @@ export type AppId =
 export interface AppDescriptor {
   id: AppId;
   label: string;
-  icon: IconDefinition;
+  icon: LucideIcon;
   imageSrc?: string;
   description?: string;
   large?: boolean;
@@ -30,27 +23,27 @@ export const APP_DESCRIPTORS: AppDescriptor[] = [
   {
     id: "IMAGE",
     label: "Image",
-    icon: faImage,
+    icon: Image,
   },
   {
     id: "VIDEO",
     label: "Video",
-    icon: faFilm,
+    icon: Film,
   },
   {
     id: "AUDIO",
     label: "Audio",
-    icon: faMusic,
+    icon: Music,
   },
   {
     id: "IMAGE_TO_3D_OBJECT",
     label: "Meshes",
-    icon: faCube,
+    icon: Box,
   },
   {
     id: "IMAGE_TO_3D_WORLD",
     label: "Splats",
-    icon: faGlobe,
+    icon: Globe,
   },
 ];
 

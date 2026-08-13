@@ -1,6 +1,5 @@
 import { memo, type ReactNode } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
+import { LoaderCircle } from "lucide-react";
 import { getCreatorIconPathForModelId } from "@storyteller/model-list";
 import { CopyPromptButton } from "./CopyPromptButton";
 import { derivePendingStatus } from "./pending-status";
@@ -44,8 +43,8 @@ export const PendingRow = memo(function PendingRow({
       <div className="relative size-[100px] shrink-0 overflow-hidden rounded-md bg-white/[0.03] leading-none">
         <div className="animate-shimmer h-full w-full" />
         <div className="absolute inset-0 flex items-center justify-center">
-          <FontAwesomeIcon
-            icon={faSpinnerThird}
+          <LoaderCircle
+            size="1em"
             className="animate-spin text-2xl text-white/25"
           />
         </div>

@@ -1,25 +1,21 @@
 import { useState, useRef, useEffect, type ReactNode } from "react";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 import {
-  faCamera,
-  faSave,
-  faDownload,
-  faExpand,
-  faChevronDown,
-  faChevronUp,
-  faArrowPointer,
-  faWandMagicSparkles,
-  faClockRotateLeft,
-  faPlus,
-} from "@fortawesome/pro-solid-svg-icons";
-import {
-  faRectangleWide,
-  faRectangleVertical,
-  faSquare,
-  faRectangle,
-  faTableCellsLarge,
-} from "@fortawesome/pro-regular-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+  Camera as CameraIcon,
+  ChevronDown,
+  ChevronUp,
+  Download,
+  Expand,
+  History,
+  LayoutGrid,
+  MousePointer,
+  Plus,
+  RectangleHorizontal,
+  RectangleVertical,
+  Save,
+  Square,
+  WandSparkles,
+} from "lucide-react";
 import { PopoverItem, PopoverMenu } from "@storyteller/ui-popover";
 import { Button, ToggleButton, GenerateButton } from "@storyteller/ui-button";
 import { ButtonIconSelect } from "@storyteller/ui-button-icon-select";
@@ -186,34 +182,34 @@ export const PromptBox3D = ({
     {
       label: "Wide",
       selected: true,
-      icon: <FontAwesomeIcon icon={faRectangle} className="h-4 w-4" />,
+      icon: <RectangleHorizontal className="h-4 w-4" />,
     },
     {
       label: "Tall",
       selected: false,
-      icon: <FontAwesomeIcon icon={faRectangleVertical} className="h-4 w-4" />,
+      icon: <RectangleVertical className="h-4 w-4" />,
     },
     {
       label: "Square",
       selected: false,
-      icon: <FontAwesomeIcon icon={faSquare} className="h-4 w-4" />,
+      icon: <Square className="h-4 w-4" />,
     },
   ]);
   const [resolutionList, setResolutionList] = useState<PopoverItem[]>([
     {
       label: "1K",
       selected: resolution === "1k",
-      icon: <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />,
+      icon: <Expand className="h-4 w-4" />,
     },
     {
       label: "2K",
       selected: resolution === "2k",
-      icon: <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />,
+      icon: <Expand className="h-4 w-4" />,
     },
     {
       label: "4K",
       selected: resolution === "4k",
-      icon: <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />,
+      icon: <Expand className="h-4 w-4" />,
     },
   ]);
   const [isCameraSettingsOpen, setIsCameraSettingsOpen] = useState(false);
@@ -592,17 +588,19 @@ export const PromptBox3D = ({
   const getCurrentAspectRatioIcon = () => {
     switch (cameraAspectRatio) {
       case CameraAspectRatio.HORIZONTAL_3_2:
-        return faRectangle;
+        return RectangleHorizontal;
       case CameraAspectRatio.VERTICAL_2_3:
-        return faRectangleVertical;
+        return RectangleVertical;
       case CameraAspectRatio.VERTICAL_9_16:
-        return faRectangleVertical;
+        return RectangleVertical;
       case CameraAspectRatio.SQUARE_1_1:
-        return faSquare;
+        return Square;
       default:
-        return faRectangleWide;
+        return RectangleHorizontal;
     }
   };
+
+  const AspectRatioIcon = getCurrentAspectRatioIcon();
 
   const getCurrentAspectRatio = (): CommonAspectRatio => {
     switch (cameraAspectRatio) {
@@ -677,13 +675,13 @@ export const PromptBox3D = ({
                 options={[
                   {
                     value: "manual",
-                    icon: faArrowPointer,
+                    icon: MousePointer,
                     text: "Manual",
                     tooltip: "Manual — place and transform objects yourself",
                   },
                   {
                     value: "prompted",
-                    icon: faWandMagicSparkles,
+                    icon: WandSparkles,
                     text: "Prompted",
                     tooltip:
                       "Prompted — describe changes and let AI edit the scene",
@@ -820,12 +818,7 @@ export const PromptBox3D = ({
                       mode="toggle"
                       panelTitle="Aspect Ratio"
                       showIconsInList
-                      triggerIcon={
-                        <FontAwesomeIcon
-                          icon={getCurrentAspectRatioIcon()}
-                          className="h-4 w-4"
-                        />
-                      }
+                      triggerIcon={<AspectRatioIcon className="h-4 w-4" />}
                     />
                   </Tooltip>
                 )}
@@ -842,9 +835,7 @@ export const PromptBox3D = ({
                     mode="toggle"
                     panelTitle="Resolution"
                     showIconsInList
-                    triggerIcon={
-                      <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />
-                    }
+                    triggerIcon={<Expand className="h-4 w-4" />}
                   />
                 </Tooltip>
               )}
@@ -860,9 +851,7 @@ export const PromptBox3D = ({
                     id: cam.id,
                     label: cam.label,
                     selected: cam.id === selectedCameraId,
-                    icon: (
-                      <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />
-                    ),
+                    icon: <CameraIcon className="h-4 w-4" />,
                     focalLength: cam.focalLength,
                     position: cam.position,
                     rotation: cam.rotation,
@@ -870,9 +859,7 @@ export const PromptBox3D = ({
                   }))}
                   onSelect={handleCameraSelect}
                   onAdd={handleAddCamera}
-                  triggerIcon={
-                    <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />
-                  }
+                  triggerIcon={<CameraIcon className="h-4 w-4" />}
                   showAddButton
                   disableAddButton={cameras.length >= 6}
                   showIconsInList
@@ -891,8 +878,8 @@ export const PromptBox3D = ({
               >
                 <ToggleButton
                   isActive={gridVisibility}
-                  icon={faTableCellsLarge}
-                  activeIcon={faTableCellsLarge}
+                  icon={LayoutGrid}
+                  activeIcon={LayoutGrid}
                   onClick={() => setGridVisibility(!gridVisibility)}
                 />
               </Tooltip>
@@ -913,7 +900,7 @@ export const PromptBox3D = ({
                 <Button
                   className="flex h-9 items-center border border-ui-controls-border bg-ui-controls/60 px-3 text-sm text-base-fg backdrop-blur-lg hover:bg-ui-controls/90"
                   variant="secondary"
-                  icon={faDownload}
+                  icon={Download}
                   onClick={handleDownloadFrame}
                 />
               </Tooltip>
@@ -921,7 +908,7 @@ export const PromptBox3D = ({
               <Button
                 className="flex items-center border border-ui-controls-border bg-ui-controls/60 px-3 text-sm text-base-fg backdrop-blur-lg hover:bg-ui-controls/90"
                 variant="secondary"
-                icon={faSave}
+                icon={Save}
                 onClick={handleSaveFrame}
               >
                 Save frame
@@ -944,7 +931,7 @@ export const PromptBox3D = ({
               {showAddTimelineButton ? (
                 <Button
                   variant="secondary"
-                  icon={faPlus}
+                  icon={Plus}
                   className="flex h-9 items-center border border-ui-controls-border bg-ui-controls/60 px-3 text-sm text-base-fg backdrop-blur-lg hover:bg-ui-controls/90"
                   onClick={() => onAddTimeline?.()}
                 >
@@ -964,12 +951,7 @@ export const PromptBox3D = ({
                   <PopoverMenu
                     mode="toggle"
                     panelTitle="Recent prompts"
-                    triggerIcon={
-                      <FontAwesomeIcon
-                        icon={faClockRotateLeft}
-                        className="h-4 w-4"
-                      />
-                    }
+                    triggerIcon={<History className="h-4 w-4" />}
                     items={
                       promptHistory.length
                         ? promptHistory.map((p) => ({
@@ -1013,10 +995,11 @@ export const PromptBox3D = ({
                 onClick={toggleExpand}
                 className="text-base-fg/30 hover:text-base-fg/90 transition-colors px-3 py-0.5"
               >
-                <FontAwesomeIcon
-                  icon={isExpanded ? faChevronUp : faChevronDown}
-                  className="text-xs"
-                />
+                {isExpanded ? (
+                  <ChevronUp size="1em" className="text-xs" />
+                ) : (
+                  <ChevronDown size="1em" className="text-xs" />
+                )}
               </button>
             </Tooltip>
           </div>
@@ -1029,7 +1012,7 @@ export const PromptBox3D = ({
             id: cam.id,
             label: cam.label,
             selected: cam.id === selectedCameraId,
-            icon: <FontAwesomeIcon icon={faCamera} className="h-4 w-4" />,
+            icon: <CameraIcon className="h-4 w-4" />,
             focalLength: cam.focalLength,
             position: cam.position,
             rotation: cam.rotation,

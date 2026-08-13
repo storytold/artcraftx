@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faImages, faMusic, faVideo } from "@fortawesome/pro-solid-svg-icons";
+import { Images, Music, Video } from "lucide-react";
 import { toast } from "@storyteller/ui-toaster";
 import { IsDesktopApp } from "@storyteller/tauri-utils";
 
@@ -434,10 +433,10 @@ export function PromptBoxDropOverlay({
 
   const kinds = [
     ...(acceptsImages
-      ? [{ icon: faImages, label: keyframeMode ? "Frames" : "Images" }]
+      ? [{ icon: Images, label: keyframeMode ? "Frames" : "Images" }]
       : []),
-    ...(acceptsVideos ? [{ icon: faVideo, label: "Video" }] : []),
-    ...(acceptsAudio ? [{ icon: faMusic, label: "Audio" }] : []),
+    ...(acceptsVideos ? [{ icon: Video, label: "Video" }] : []),
+    ...(acceptsAudio ? [{ icon: Music, label: "Audio" }] : []),
   ];
   const rejected = dragState === "reject";
 
@@ -449,13 +448,13 @@ export function PromptBoxDropOverlay({
       )}
     >
       <div className="flex items-center gap-2">
-        {kinds.map((kind, i) => (
+        {kinds.map(({ icon: KindIcon, label }, i) => (
           <div
-            key={kind.label}
+            key={label}
             className="promptbox-drop-chip flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-base-fg/90"
             style={{ animationDelay: `${i * 50}ms` }}
           >
-            <FontAwesomeIcon icon={kind.icon} className="text-sm" />
+            <KindIcon size="1em" className="text-sm" />
           </div>
         ))}
       </div>

@@ -15,16 +15,12 @@ import "@fontsource/ibm-plex-mono/600.css";
 import "./styles/normalize.css";
 import "./styles/tailwind.css";
 import "./styles/base.css";
-import "@fortawesome/fontawesome-svg-core/styles.css";
-import { config } from "@fortawesome/fontawesome-svg-core";
 import EnvironmentVariables from "~/Classes/EnvironmentVariables";
 import { pageHeight, pageWidth, persistLogin } from "~/signals";
 import { SyncStorytellerApiConfig } from "./api/SyncStorytellerApiConfig";
 import { posthog } from "posthog-js";
 import { SoundManager } from "@storyteller/soundboard";
 import { useModelsStore } from "@storyteller/tauri-api";
-
-config.autoAddCss = false; /* eslint-disable import/first */
 
 // Outside the dev server, suppress the webview's right-click menu and the
 // devtools hotkeys (F12, Ctrl+Shift+I/J/C). Release Tauri builds don't

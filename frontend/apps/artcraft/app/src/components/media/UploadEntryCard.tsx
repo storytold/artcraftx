@@ -1,12 +1,10 @@
 import { useCallback, useRef, useState } from "react";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUpload } from "@fortawesome/pro-solid-svg-icons";
+import { Upload, type LucideIcon } from "lucide-react";
 import { Button } from "@storyteller/ui-button";
 import { twMerge } from "tailwind-merge";
 
 interface UploadEntryCardProps {
-  icon: IconDefinition;
+  icon: LucideIcon;
   title: string;
   description: string;
   accentBackgroundClass: string;
@@ -14,19 +12,19 @@ interface UploadEntryCardProps {
   accept?: string;
   multiple?: boolean;
   primaryLabel: string;
-  primaryIcon?: IconDefinition;
+  primaryIcon?: LucideIcon;
   onFilesSelected: (files: FileList) => void;
   secondaryLabel?: string;
-  secondaryIcon?: IconDefinition;
+  secondaryIcon?: LucideIcon;
   onSecondaryClick?: () => void;
   tertiaryLabel?: string;
-  tertiaryIcon?: IconDefinition;
+  tertiaryIcon?: LucideIcon;
   onTertiaryClick?: () => void;
   disabled?: boolean;
 }
 
 export const UploadEntryCard = ({
-  icon,
+  icon: Icon,
   title,
   description,
   accentBackgroundClass,
@@ -34,7 +32,7 @@ export const UploadEntryCard = ({
   accept,
   multiple,
   primaryLabel,
-  primaryIcon = faUpload,
+  primaryIcon = Upload,
   onFilesSelected,
   secondaryLabel,
   secondaryIcon,
@@ -133,10 +131,7 @@ export const UploadEntryCard = ({
               accentBorderClass,
             )}
           >
-            <FontAwesomeIcon
-              icon={icon}
-              className="text-5xl text-white drop-shadow-lg"
-            />
+            <Icon size="1em" className="text-5xl text-white drop-shadow-lg" />
           </div>
         </div>
         <div className="space-y-3">

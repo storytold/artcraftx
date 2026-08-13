@@ -1,13 +1,8 @@
 import { useEffect } from "react";
-import { faSquare, IconDefinition } from "@fortawesome/pro-regular-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Monitor, MonitorUp, Square, type LucideIcon } from "lucide-react";
 import { PopoverItem, PopoverMenu } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { CommonResolution, ImageModel } from "@storyteller/model-list";
-import {
-  faHighDefinition,
-  faStandardDefinition,
-} from "@fortawesome/pro-solid-svg-icons";
 
 interface ResolutionPickerProps {
   model: ImageModel;
@@ -59,9 +54,9 @@ export const ResolutionPicker = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model, currentResolution]);
 
-  const getCurrentResolutionIcon = (): IconDefinition => {
+  const getCurrentResolutionIcon = (): LucideIcon => {
     if (!useResolution) {
-      return faSquare;
+      return Square;
     }
     return getResolutionIcon(useResolution);
   };
@@ -74,18 +69,16 @@ export const ResolutionPicker = ({
   let resolutionList: PopoverItem[] = [];
 
   model.resolutions?.forEach((resolution: CommonResolution) => {
+    const ResolutionIcon = getResolutionIcon(resolution);
     resolutionList.push({
       label: getResolutionTextLabel(resolution),
       selected: useResolution === resolution,
       description: `foo ${resolution}`,
-      icon: (
-        <FontAwesomeIcon
-          icon={getResolutionIcon(resolution)}
-          className="h-4 w-4"
-        />
-      ),
+      icon: <ResolutionIcon className="h-4 w-4" />,
     });
   });
+
+  const CurrentResolutionIcon = getCurrentResolutionIcon();
 
   return (
     <>
@@ -101,33 +94,28 @@ export const ResolutionPicker = ({
           mode="toggle"
           panelTitle="Resolution"
           showIconsInList
-          triggerIcon={
-            <FontAwesomeIcon
-              icon={getCurrentResolutionIcon()}
-              className="h-4 w-4"
-            />
-          }
+          triggerIcon={<CurrentResolutionIcon className="h-4 w-4" />}
         />
       </Tooltip>
     </>
   );
 };
 
-const getResolutionIcon = (resolution: CommonResolution): IconDefinition => {
+const getResolutionIcon = (resolution: CommonResolution): LucideIcon => {
   switch (resolution) {
     case CommonResolution.HalfK:
     case CommonResolution.FourEightyP:
     case CommonResolution.SevenTwentyP:
     case CommonResolution.OneK:
     case CommonResolution.TenEightyP:
-      return faStandardDefinition;
+      return Monitor;
     case CommonResolution.TwoK:
     case CommonResolution.ThreeK:
     case CommonResolution.FourK:
-      return faHighDefinition;
+      return MonitorUp;
     default:
       console.error("Unknown resolution in icon mapping:", resolution);
-      return faStandardDefinition; // Fail open-ish
+      return Monitor; // Fail open-ish
   }
 };
 

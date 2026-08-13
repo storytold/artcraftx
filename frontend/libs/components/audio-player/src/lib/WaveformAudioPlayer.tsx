@@ -7,13 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faPause,
-  faPlay,
-  faVolume,
-  faVolumeSlash,
-} from "@fortawesome/pro-solid-svg-icons";
+import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 import WaveSurfer from "wavesurfer.js";
 import { addCorsParam } from "@storyteller/common";
 import { SliderV2 } from "@storyteller/ui-sliderv2";
@@ -253,6 +247,8 @@ export function WaveformAudioPlayer({
   const placeholderBars = useMemo(() => buildPlaceholderBars(src), [src]);
   const progressRatio = duration > 0 ? currentTime / duration : 0;
   const showWave = waveState !== "failed";
+  const PlayPauseIcon = isPlaying ? Pause : Play;
+  const VolumeIcon = volume === 0 ? VolumeX : Volume2;
 
   return (
     <div
@@ -266,8 +262,7 @@ export function WaveformAudioPlayer({
         onClick={togglePlay}
         className={`flex shrink-0 items-center justify-center rounded-full bg-white text-black transition-transform hover:scale-105 active:scale-95 ${compact ? "h-8 w-8" : "h-10 w-10"}`}
       >
-        <FontAwesomeIcon
-          icon={isPlaying ? faPause : faPlay}
+        <PlayPauseIcon
           className={`${compact ? "h-3 w-3" : "h-3.5 w-3.5"} ${isPlaying ? "" : "ml-0.5"}`}
         />
       </button>
@@ -314,10 +309,7 @@ export function WaveformAudioPlayer({
           onClick={() => setShowVolume((visible) => !visible)}
           className="flex h-7 w-7 items-center justify-center rounded-md text-white/70 transition-colors hover:bg-white/10 hover:text-white"
         >
-          <FontAwesomeIcon
-            icon={volume === 0 ? faVolumeSlash : faVolume}
-            className="h-3.5 w-3.5"
-          />
+          <VolumeIcon className="h-3.5 w-3.5" />
         </button>
         {showVolume && (
           <div className="absolute bottom-full right-0 z-20 mb-2 w-28 rounded-lg border border-white/10 bg-neutral-900/95 px-3 py-2.5 shadow-xl backdrop-blur">

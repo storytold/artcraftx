@@ -7,14 +7,7 @@ import {
 import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { GenerateIconButton, ToggleButton } from "@storyteller/ui-button";
-import {
-  faChevronDown,
-  faChevronUp,
-  faMicrophoneLines,
-  faMicrophoneSlash,
-  faRepeat,
-} from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ChevronDown, ChevronUp, Mic, MicOff, Repeat } from "lucide-react";
 import type { OmniGenAudioModelDetails, UploadMediaFn } from "@storyteller/api";
 import {
   buildAudioRequest,
@@ -469,8 +462,8 @@ export const PromptBoxAudio = ({
         >
           <ToggleButton
             isActive={isInstrumental}
-            icon={faMicrophoneSlash}
-            activeIcon={faMicrophoneSlash}
+            icon={MicOff}
+            activeIcon={MicOff}
             label="Instrumental"
             onClick={() => setIsInstrumental(!isInstrumental)}
           />
@@ -485,8 +478,8 @@ export const PromptBoxAudio = ({
         >
           <ToggleButton
             isActive={keepLyrics}
-            icon={faMicrophoneLines}
-            activeIcon={faMicrophoneLines}
+            icon={Mic}
+            activeIcon={Mic}
             label="Keep lyrics"
             onClick={() => setKeepLyrics(!keepLyrics)}
           />
@@ -501,8 +494,8 @@ export const PromptBoxAudio = ({
         >
           <ToggleButton
             isActive={isLoopable}
-            icon={faRepeat}
-            activeIcon={faRepeat}
+            icon={Repeat}
+            activeIcon={Repeat}
             label="Loop"
             onClick={() => setIsLoopable(!isLoopable)}
           />
@@ -719,10 +712,11 @@ export const PromptBoxAudio = ({
                 onClick={toggleExpand}
                 className="text-base-fg/30 hover:text-base-fg/90 transition-colors px-3 py-0.5"
               >
-                <FontAwesomeIcon
-                  icon={isExpanded ? faChevronUp : faChevronDown}
-                  className="text-xs"
-                />
+                {isExpanded ? (
+                  <ChevronUp size="1em" className="text-xs" />
+                ) : (
+                  <ChevronDown size="1em" className="text-xs" />
+                )}
               </button>
             </Tooltip>
           </div>

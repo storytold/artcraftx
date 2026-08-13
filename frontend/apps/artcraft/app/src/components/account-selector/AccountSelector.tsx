@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser } from "@fortawesome/pro-solid-svg-icons";
+import { User } from "lucide-react";
 import { PopoverMenu, type PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { useRefreshAccountStateEvent } from "@storyteller/tauri-events";
@@ -112,7 +111,7 @@ export const AccountSelector = () => {
                 className="h-4 w-4 object-contain icon-auto-contrast"
               />
             ) : (
-              <FontAwesomeIcon icon={faUser} className="text-xs" />
+              <User size="1em" className="text-xs" />
             )}
           </span>
         }
