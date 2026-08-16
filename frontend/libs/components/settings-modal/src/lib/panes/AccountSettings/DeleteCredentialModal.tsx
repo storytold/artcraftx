@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Modal } from "@storyteller/ui-modal";
 import { Button } from "@storyteller/ui-button";
-import { faTrash } from "@fortawesome/pro-solid-svg-icons";
+import { Trash2 } from "lucide-react";
 import {
   CredentialPayload,
   deleteCredential,
@@ -57,7 +57,7 @@ export const DeleteCredentialModal = ({
       isOpen={true}
       onClose={onClose}
       title="Delete credential"
-      titleIcon={faTrash}
+      titleIcon={Trash2}
       width="w-[420px]"
       showClose={true}
     >

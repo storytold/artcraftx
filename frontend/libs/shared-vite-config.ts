@@ -40,12 +40,7 @@ export function isExternal(id: string): boolean {
   }
 
   // Other important libraries
-  if (
-    id === 'three' ||
-    id === 'zustand' ||
-    id === 'wavesurfer.js' ||
-    id.startsWith('@fortawesome/')
-  ) {
+  if (id === 'three' || id === 'zustand' || id === 'wavesurfer.js') {
     return true;
   }
 

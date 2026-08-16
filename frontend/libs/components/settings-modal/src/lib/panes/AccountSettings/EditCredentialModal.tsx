@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Modal } from "@storyteller/ui-modal";
 import { Button } from "@storyteller/ui-button";
 import { Input } from "@storyteller/ui-input";
-import { faKey } from "@fortawesome/pro-solid-svg-icons";
+import { Key } from "lucide-react";
 import {
   CredentialPayload,
   editApiCredential,
@@ -69,7 +69,7 @@ export const EditCredentialModal = ({
       isOpen={true}
       onClose={onClose}
       title={`Edit ${meta.label} API key`}
-      titleIcon={faKey}
+      titleIcon={Key}
       width="w-[440px]"
       showClose={true}
     >
