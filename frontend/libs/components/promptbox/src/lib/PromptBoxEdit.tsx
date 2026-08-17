@@ -1,22 +1,20 @@
 import {
-  faRectangle,
-  faRectangleVertical,
-  faSquare,
-} from "@fortawesome/pro-regular-svg-icons";
-import {
-  faEdit,
-  faMousePointer,
-  faFrame,
-  faPen,
-  faEraser,
-  faUndo,
-  faRedo,
-  faExpand,
-  faArrowsUpDownLeftRight,
-  faChevronDown,
-  faChevronUp,
-} from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+  ChevronDown,
+  ChevronUp,
+  Eraser,
+  Expand,
+  Frame,
+  MousePointer,
+  Move,
+  Pen,
+  RectangleHorizontal,
+  RectangleVertical,
+  Redo2,
+  Square,
+  SquarePen,
+  Undo2,
+  type LucideIcon,
+} from "lucide-react";
 import { Button, GenerateButton } from "@storyteller/ui-button";
 import { ButtonIconSelect } from "@storyteller/ui-button-icon-select";
 import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
@@ -120,24 +118,22 @@ export const PromptBoxEdit = ({
     {
       label: "Auto",
       selected: aspectRatio === "auto",
-      icon: (
-        <FontAwesomeIcon icon={faArrowsUpDownLeftRight} className="h-4 w-4" />
-      ),
+      icon: <Move className="h-4 w-4" />,
     },
     {
       label: "Wide",
       selected: aspectRatio === "wide",
-      icon: <FontAwesomeIcon icon={faRectangle} className="h-4 w-4" />,
+      icon: <RectangleHorizontal className="h-4 w-4" />,
     },
     {
       label: "Tall",
       selected: aspectRatio === "tall",
-      icon: <FontAwesomeIcon icon={faRectangleVertical} className="h-4 w-4" />,
+      icon: <RectangleVertical className="h-4 w-4" />,
     },
     {
       label: "Square",
       selected: aspectRatio === "square",
-      icon: <FontAwesomeIcon icon={faSquare} className="h-4 w-4" />,
+      icon: <Square className="h-4 w-4" />,
     },
   ]);
 
@@ -145,17 +141,17 @@ export const PromptBoxEdit = ({
     {
       label: "1K",
       selected: resolution === "1k",
-      icon: <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />,
+      icon: <Expand className="h-4 w-4" />,
     },
     {
       label: "2K",
       selected: resolution === "2k",
-      icon: <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />,
+      icon: <Expand className="h-4 w-4" />,
     },
     {
       label: "4K",
       selected: resolution === "4k",
-      icon: <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />,
+      icon: <Expand className="h-4 w-4" />,
     },
   ]);
 
@@ -191,12 +187,14 @@ export const PromptBoxEdit = ({
     setResolution(selectedItem.label.toLowerCase() as any);
   };
 
-  const getCurrentAspectRatioIcon = () => {
+  const getCurrentAspectRatioIcon = (): LucideIcon => {
     const selected = aspectRatioList.find((item) => item.selected);
-    if (!selected || !selected.icon) return faRectangle;
-    const iconElement = selected.icon as React.ReactElement<{ icon: any }>;
-    return iconElement.props.icon;
+    if (!selected || !selected.icon) return RectangleHorizontal;
+    const iconElement = selected.icon as React.ReactElement;
+    return iconElement.type as LucideIcon;
   };
+
+  const AspectRatioIcon = getCurrentAspectRatioIcon();
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isImageRowVisible =
@@ -306,12 +304,12 @@ export const PromptBoxEdit = ({
     ? [
         {
           value: "marker",
-          icon: faPen,
+          icon: Pen,
           text: "Marker",
         },
         {
           value: "eraser",
-          icon: faEraser,
+          icon: Eraser,
           text: "Eraser",
         },
       ]
@@ -319,24 +317,24 @@ export const PromptBoxEdit = ({
       ? [
           {
             value: "edit",
-            icon: faEdit,
+            icon: SquarePen,
             text: "Edit Region",
           },
           {
             value: "eraser",
-            icon: faEraser,
+            icon: Eraser,
             text: "Eraser",
           },
         ]
       : [
           {
             value: "edit",
-            icon: faEdit,
+            icon: SquarePen,
             text: "Edit Region",
           },
           {
             value: "select",
-            icon: faMousePointer,
+            icon: MousePointer,
             text: "Select",
           },
         ];
@@ -366,7 +364,7 @@ export const PromptBoxEdit = ({
                   className="flex h-8 w-8 items-center justify-center rounded-lg text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                   disabled={!onUndo}
                 >
-                  <FontAwesomeIcon icon={faUndo} className="h-4 w-4" />
+                  <Undo2 className="h-4 w-4" />
                 </button>
               </Tooltip>
               <Tooltip content="Redo" position="top" delay={200}>
@@ -375,7 +373,7 @@ export const PromptBoxEdit = ({
                   className="flex h-8 w-8 items-center justify-center rounded-lg text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                   disabled={!onRedo}
                 >
-                  <FontAwesomeIcon icon={faRedo} className="h-4 w-4" />
+                  <Redo2 className="h-4 w-4" />
                 </button>
               </Tooltip>
             </div>
@@ -484,12 +482,7 @@ export const PromptBoxEdit = ({
                         mode="toggle"
                         panelTitle="Aspect Ratio"
                         showIconsInList
-                        triggerIcon={
-                          <FontAwesomeIcon
-                            icon={getCurrentAspectRatioIcon()}
-                            className="h-4 w-4"
-                          />
-                        }
+                        triggerIcon={<AspectRatioIcon className="h-4 w-4" />}
                       />
                     </Tooltip>
                   )}
@@ -506,9 +499,7 @@ export const PromptBoxEdit = ({
                       mode="toggle"
                       panelTitle="Resolution"
                       showIconsInList
-                      triggerIcon={
-                        <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />
-                      }
+                      triggerIcon={<Expand className="h-4 w-4" />}
                     />
                   </Tooltip>
                 )}
@@ -531,7 +522,7 @@ export const PromptBoxEdit = ({
                       className="h-9 bg-ui-controls/60 px-3 text-base-fg hover:bg-ui-controls/90"
                       onClick={onFitPressed}
                     >
-                      <FontAwesomeIcon icon={faFrame} className="h-4 w-4" />
+                      <Frame className="h-4 w-4" />
                       Fit
                     </Button>
                   </Tooltip>
@@ -567,10 +558,11 @@ export const PromptBoxEdit = ({
                 onClick={toggleExpand}
                 className="text-white/30 hover:text-white/90 transition-colors px-3 py-0.5"
               >
-                <FontAwesomeIcon
-                  icon={isExpanded ? faChevronUp : faChevronDown}
-                  className="text-xs"
-                />
+                {isExpanded ? (
+                  <ChevronUp size="1em" className="text-xs" />
+                ) : (
+                  <ChevronDown size="1em" className="text-xs" />
+                )}
               </button>
             </Tooltip>
           </div>

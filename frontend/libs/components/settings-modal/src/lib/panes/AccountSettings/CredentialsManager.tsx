@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRefreshAccountStateEvent } from "@storyteller/tauri-events";
 import { Button } from "@storyteller/ui-button";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faKey, faPen, faPlus, faTrash } from "@fortawesome/pro-solid-svg-icons";
+import { Key, Pen, Plus, Trash2 } from "lucide-react";
 import {
   CredentialPayload,
   ServiceMeta,
@@ -60,7 +59,7 @@ export const CredentialsManager = () => {
         <Button
           variant="primary"
           className="h-8"
-          icon={faPlus}
+          icon={Plus}
           onClick={() => setIsAddOpen(true)}
         >
           Add
@@ -69,7 +68,7 @@ export const CredentialsManager = () => {
 
       {isLoading ? null : credentials.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-ui-panel-border px-6 py-10 text-center">
-          <FontAwesomeIcon icon={faKey} className="text-xl text-base-fg/30" />
+          <Key size="1em" className="text-xl text-base-fg/30" />
           <p className="text-sm text-base-fg/60">No accounts yet.</p>
           <p className="text-xs text-base-fg/40">
             Add an API key or log into a website to get started.
@@ -168,7 +167,7 @@ const CredentialRow = ({
         <Button
           variant="secondary"
           className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
-          icon={faPen}
+          icon={Pen}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onEdit();
@@ -178,7 +177,7 @@ const CredentialRow = ({
       <Button
         variant="secondary"
         className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
-        icon={faTrash}
+        icon={Trash2}
         onClick={(e: React.MouseEvent) => {
           e.stopPropagation();
           onDelete();

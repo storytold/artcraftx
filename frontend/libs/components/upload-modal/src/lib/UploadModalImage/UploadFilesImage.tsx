@@ -2,16 +2,15 @@ import { useEffect, useState } from "react";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { Button } from "@storyteller/ui-button";
 import { FileUploader } from "@storyteller/ui-file-uploader";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faXmark,
-  faCheck,
-  faCircleExclamation,
-  faChevronLeft,
-  faChevronRight,
-  faRotateRight,
-  faSpinner,
-} from "@fortawesome/pro-solid-svg-icons";
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  CircleAlert,
+  LoaderCircle,
+  RotateCw,
+  X,
+} from "lucide-react";
 import { uploadImage } from "./utilities/uploadImage";
 import { uploadImagesBatch } from "./utilities/uploadImagesBatch";
 import {
@@ -235,25 +234,25 @@ export const UploadFilesImage = ({
                         }}
                         title="Remove"
                       >
-                        <FontAwesomeIcon icon={faXmark} />
+                        <X size="1em" />
                       </button>
                     )}
                     {entry.status === "uploading" && (
-                      <FontAwesomeIcon
-                        icon={faSpinner}
+                      <LoaderCircle
+                        size="1em"
                         className="animate-spin opacity-60"
                       />
                     )}
                     {entry.status === "success" && (
-                      <FontAwesomeIcon
-                        icon={faCheck}
+                      <Check
+                        size="1em"
                         className="text-green-400"
                       />
                     )}
                     {entry.status === "error" && (
                       <span className="flex items-center gap-1">
-                        <FontAwesomeIcon
-                          icon={faCircleExclamation}
+                        <CircleAlert
+                          size="1em"
                           className="text-red-400"
                         />
                         <button
@@ -264,7 +263,7 @@ export const UploadFilesImage = ({
                           }}
                           title="Retry"
                         >
-                          <FontAwesomeIcon icon={faRotateRight} />
+                          <RotateCw size="1em" />
                         </button>
                       </span>
                     )}
@@ -299,7 +298,7 @@ export const UploadFilesImage = ({
                   onClick={() => setPreviewIndex((p) => Math.max(0, p - 1))}
                   disabled={previewIndex === 0}
                 >
-                  <FontAwesomeIcon icon={faChevronLeft} />
+                  <ChevronLeft size="1em" />
                 </Button>
                 <span className="text-sm opacity-60">
                   {previewIndex + 1} / {fileEntries.length}
@@ -313,7 +312,7 @@ export const UploadFilesImage = ({
                   }
                   disabled={previewIndex === fileEntries.length - 1}
                 >
-                  <FontAwesomeIcon icon={faChevronRight} />
+                  <ChevronRight size="1em" />
                 </Button>
               </div>
             </div>

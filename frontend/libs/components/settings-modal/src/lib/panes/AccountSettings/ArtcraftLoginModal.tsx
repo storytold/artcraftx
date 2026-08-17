@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Modal } from "@storyteller/ui-modal";
 import { Button } from "@storyteller/ui-button";
 import { Input } from "@storyteller/ui-input";
-import { faUser } from "@fortawesome/pro-solid-svg-icons";
+import { User } from "lucide-react";
 import {
   ArtcraftLoginError,
   ServiceMeta,
@@ -75,7 +75,7 @@ export const ArtcraftLoginModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`Log into ${service?.label ?? "ArtCraft"}`}
-      titleIcon={faUser}
+      titleIcon={User}
       width="w-[440px]"
       showClose={true}
     >

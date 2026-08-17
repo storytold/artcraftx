@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faCopy } from "@fortawesome/pro-solid-svg-icons";
+import { Check, Copy } from "lucide-react";
 import { Tooltip } from "@storyteller/ui-tooltip";
 
 // Copies a prompt to the clipboard, with copy→check feedback. Sits at the
@@ -15,6 +14,7 @@ export function CopyPromptButton({
   onCopyResult?: (success: boolean) => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const Icon = copied ? Check : Copy;
 
   const handleCopy = useCallback(
     async (e: React.MouseEvent) => {
@@ -39,7 +39,7 @@ export function CopyPromptButton({
         aria-label="Copy prompt"
         className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-white/40 transition-colors hover:bg-white/10 hover:text-white"
       >
-        <FontAwesomeIcon icon={copied ? faCheck : faCopy} className="text-sm" />
+        <Icon size="1em" className="text-sm" />
       </button>
     </Tooltip>
   );

@@ -1,5 +1,5 @@
 import { Modal } from "@storyteller/ui-modal";
-import { faGlobe } from "@fortawesome/pro-solid-svg-icons";
+import { Globe } from "lucide-react";
 import {
   ServiceMeta,
   WEBSITE_LOGIN_SERVICES,
@@ -44,7 +44,7 @@ export const WebsiteLoginModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Log into a website"
-      titleIcon={faGlobe}
+      titleIcon={Globe}
       width="w-[440px]"
       showClose={true}
     >

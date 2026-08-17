@@ -1,8 +1,6 @@
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { LoaderCircle, type LucideIcon } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 import { ButtonHTMLAttributes, AnchorHTMLAttributes } from "react";
-import { faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
 
 type AnchorProps = Omit<
   AnchorHTMLAttributes<HTMLAnchorElement>,
@@ -10,7 +8,7 @@ type AnchorProps = Omit<
 >;
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  icon?: IconDefinition;
+  icon?: LucideIcon;
   iconClassName?: string;
   iconFlip?: boolean;
   htmlFor?: string;
@@ -22,7 +20,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const Button = ({
-  icon,
+  icon: Icon,
   iconClassName,
   children,
   className: propsClassName,
@@ -74,21 +72,21 @@ export const Button = ({
     return (
       <label className={className} htmlFor={htmlFor} style={rest.style}>
         {loading && !iconFlip ? (
-          <FontAwesomeIcon icon={faSpinnerThird} className="animate-spin" />
+          <LoaderCircle size="1em" className="animate-spin" />
         ) : (
           <>
-            {icon && !iconFlip ? (
-              <FontAwesomeIcon icon={icon} className={iconClassName} />
+            {Icon && !iconFlip ? (
+              <Icon size="1em" className={iconClassName} />
             ) : null}
           </>
         )}
         {children}
         {loading && iconFlip ? (
-          <FontAwesomeIcon icon={faSpinnerThird} className="animate-spin" />
+          <LoaderCircle size="1em" className="animate-spin" />
         ) : (
           <>
-            {icon && iconFlip ? (
-              <FontAwesomeIcon icon={icon} className={iconClassName} />
+            {Icon && iconFlip ? (
+              <Icon size="1em" className={iconClassName} />
             ) : null}
           </>
         )}
@@ -106,21 +104,21 @@ export const Button = ({
         target={target}
       >
         {loading && !iconFlip ? (
-          <FontAwesomeIcon icon={faSpinnerThird} className="animate-spin" />
+          <LoaderCircle size="1em" className="animate-spin" />
         ) : (
           <>
-            {icon && !iconFlip ? (
-              <FontAwesomeIcon icon={icon} className={iconClassName} />
+            {Icon && !iconFlip ? (
+              <Icon size="1em" className={iconClassName} />
             ) : null}
           </>
         )}
         {children}
         {loading && iconFlip ? (
-          <FontAwesomeIcon icon={faSpinnerThird} className="animate-spin" />
+          <LoaderCircle size="1em" className="animate-spin" />
         ) : (
           <>
-            {icon && iconFlip ? (
-              <FontAwesomeIcon icon={icon} className={iconClassName} />
+            {Icon && iconFlip ? (
+              <Icon size="1em" className={iconClassName} />
             ) : null}
           </>
         )}
@@ -135,21 +133,21 @@ export const Button = ({
       {...{ ...rest, htmlFor }}
     >
       {loading && !iconFlip ? (
-        <FontAwesomeIcon icon={faSpinnerThird} className="animate-spin" />
+        <LoaderCircle size="1em" className="animate-spin" />
       ) : (
         <>
-          {icon && !iconFlip ? (
-            <FontAwesomeIcon icon={icon} className={iconClassName} />
+          {Icon && !iconFlip ? (
+            <Icon size="1em" className={iconClassName} />
           ) : null}
         </>
       )}
       {children}
       {loading && iconFlip ? (
-        <FontAwesomeIcon icon={faSpinnerThird} className="animate-spin" />
+        <LoaderCircle size="1em" className="animate-spin" />
       ) : (
         <>
-          {icon && iconFlip ? (
-            <FontAwesomeIcon icon={icon} className={iconClassName} />
+          {Icon && iconFlip ? (
+            <Icon size="1em" className={iconClassName} />
           ) : null}
         </>
       )}

@@ -6,12 +6,7 @@ import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { GenerateIconButton } from "@storyteller/ui-button";
 import { GenerateImage, GenerateImageRequest } from "@storyteller/tauri-api";
-import {
-  faExpand,
-  faChevronDown,
-  faChevronUp,
-} from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ChevronDown, ChevronUp, Expand } from "lucide-react";
 import { ImageModel } from "@storyteller/model-list";
 import { arrayMove } from "@dnd-kit/sortable";
 import type { UploadMediaFn } from "@storyteller/api";
@@ -255,17 +250,17 @@ export const PromptBoxImage = ({
     {
       label: "1K",
       selected: resolution === "1k",
-      icon: <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />,
+      icon: <Expand className="h-4 w-4" />,
     },
     {
       label: "2K",
       selected: resolution === "2k",
-      icon: <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />,
+      icon: <Expand className="h-4 w-4" />,
     },
     {
       label: "4K",
       selected: resolution === "4k",
-      icon: <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />,
+      icon: <Expand className="h-4 w-4" />,
     },
   ]);
 
@@ -520,9 +515,7 @@ export const PromptBoxImage = ({
               mode="toggle"
               panelTitle="Resolution"
               showIconsInList
-              triggerIcon={
-                <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />
-              }
+              triggerIcon={<Expand className="h-4 w-4" />}
             />
           </Tooltip>
         )}
@@ -666,10 +659,11 @@ export const PromptBoxImage = ({
                 onClick={toggleExpand}
                 className="text-base-fg/30 hover:text-base-fg/90 transition-colors px-3 py-0.5"
               >
-                <FontAwesomeIcon
-                  icon={isExpanded ? faChevronUp : faChevronDown}
-                  className="text-xs"
-                />
+                {isExpanded ? (
+                  <ChevronUp size="1em" className="text-xs" />
+                ) : (
+                  <ChevronDown size="1em" className="text-xs" />
+                )}
               </button>
             </Tooltip>
           </div>

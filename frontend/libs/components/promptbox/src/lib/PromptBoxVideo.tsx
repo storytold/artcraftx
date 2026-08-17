@@ -7,14 +7,12 @@ import { Tooltip } from "@storyteller/ui-tooltip";
 import { ToggleButton, GenerateIconButton } from "@storyteller/ui-button";
 import { GenerateVideo, GenerateVideoRequest } from "@storyteller/tauri-api";
 import {
-  faWaveformLines,
-  faClock,
-  faChevronDown,
-  faChevronUp,
-} from "@fortawesome/pro-solid-svg-icons";
-import { faCircleInfo } from "@fortawesome/pro-regular-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Clock, Info } from "lucide-react";
+  AudioLines,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Info,
+} from "lucide-react";
 import { arrayMove } from "@dnd-kit/sortable";
 import {
   CommonResolution,
@@ -1414,8 +1412,8 @@ export const PromptBoxVideo = ({
         >
           <ToggleButton
             isActive={generateWithSound}
-            icon={faWaveformLines}
-            activeIcon={faWaveformLines}
+            icon={AudioLines}
+            activeIcon={AudioLines}
             onClick={() => setGenerateWithSound(!generateWithSound)}
           />
         </Tooltip>
@@ -1683,20 +1681,18 @@ export const PromptBoxVideo = ({
                 onClick={toggleExpand}
                 className="text-base-fg/30 hover:text-base-fg/90 transition-colors px-3 py-0.5"
               >
-                <FontAwesomeIcon
-                  icon={isExpanded ? faChevronUp : faChevronDown}
-                  className="text-xs"
-                />
+                {isExpanded ? (
+                  <ChevronUp size="1em" className="text-xs" />
+                ) : (
+                  <ChevronDown size="1em" className="text-xs" />
+                )}
               </button>
             </Tooltip>
           </div>
         </div>
         {/* {selectedModel?.id === "seedance_2p0" && (
           <div className="flex items-start gap-2.5 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-3.5 py-2.5 text-xs text-yellow-200">
-            <FontAwesomeIcon
-              icon={faTriangleExclamation}
-              className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-yellow-400"
-            />
+            <TriangleAlert className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-yellow-400" />
             <span>
               Seedance 2.0 is in Early Alpha. Generations may be slow, and may
               experience outages. Seedance may reject safe inputs unexpectedly.

@@ -60,28 +60,28 @@ import {
   galleryModalLightboxNavNext,
 } from "./galleryModalSignals";
 import galleryDnd, { FOLDER_DROP_EVENT } from "./galleryDnd";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faBorderAll,
-  faImage,
-  faMusic,
-  faVideo,
-  faCube,
-  faGlobe,
-  faUpload,
-  faExpand,
-  faCompress,
-  faArrowsRotate,
-  faTrashCan,
-  faXmark,
-  faFolder,
-  faPlus,
-  faFolderPlus,
-  faEllipsis,
-  faPencil,
-  faStar,
-  faTag,
-} from "@fortawesome/pro-solid-svg-icons";
+  Box,
+  Ellipsis,
+  Expand,
+  Folder,
+  FolderPlus,
+  Globe,
+  Grid2x2,
+  Image,
+  type LucideIcon,
+  Music,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Shrink,
+  Star,
+  Tag,
+  Trash2,
+  Upload,
+  Video,
+  X,
+} from "lucide-react";
 import {
   useMediaPromptTokens,
   usePrompts,
@@ -320,13 +320,13 @@ interface GalleryModalProps {
 const EMPTY_SELECTED_IDS: string[] = [];
 
 const SIDEBAR_FILTERS = [
-  { id: "all", label: "All Assets", icon: faBorderAll },
-  { id: "image", label: "Image", icon: faImage },
-  { id: "video", label: "Video", icon: faVideo },
-  { id: "audio", label: "Audio", icon: faMusic },
-  { id: "mesh", label: "Mesh", icon: faCube },
-  { id: "splat", label: "Splat", icon: faGlobe },
-  { id: "uploaded", label: "Uploaded", icon: faUpload },
+  { id: "all", label: "All Assets", icon: Grid2x2 },
+  { id: "image", label: "Image", icon: Image },
+  { id: "video", label: "Video", icon: Video },
+  { id: "audio", label: "Audio", icon: Music },
+  { id: "mesh", label: "Mesh", icon: Box },
+  { id: "splat", label: "Splat", icon: Globe },
+  { id: "uploaded", label: "Uploaded", icon: Upload },
 ];
 
 // Media classes for the user-list endpoint. The Mesh and Splat tabs don't use
@@ -462,10 +462,10 @@ const SHOW_UPLOADS_STORAGE_KEY = "gallery-modal-show-uploads";
 /** Small thumbnail used in the bulk-selection footer bar. */
 const BulkThumb = ({
   thumbnail,
-  placeholderIcon,
+  placeholderIcon: PlaceholderIcon,
 }: {
   thumbnail: string | null;
-  placeholderIcon: any;
+  placeholderIcon: LucideIcon;
 }) => {
   const [failed, setFailed] = useState(false);
   const showImage = !!thumbnail && !failed;
@@ -481,10 +481,7 @@ const BulkThumb = ({
         />
       ) : (
         <div className="h-full w-full flex items-center justify-center bg-black/50">
-          <FontAwesomeIcon
-            icon={placeholderIcon}
-            className="text-xs text-white/50"
-          />
+          <PlaceholderIcon size="1em" className="text-xs text-white/50" />
         </div>
       )}
     </div>
@@ -527,8 +524,8 @@ const FolderContextMenuItems = ({
       className="flex w-full items-center gap-2 px-2 py-2 rounded-md hover:bg-ui-controls/60 text-sm text-base-fg"
       onClick={() => onToggleStar(folderId, !hasStar)}
     >
-      <FontAwesomeIcon
-        icon={faStar}
+      <Star
+        size="1em"
         className={twMerge(
           "w-4",
           hasStar ? "text-amber-400" : "text-base-fg/40",
@@ -546,7 +543,7 @@ const FolderContextMenuItems = ({
       className="flex w-full items-center gap-2 px-2 py-2 rounded-md hover:bg-ui-controls/60 text-sm text-base-fg"
       onClick={() => onNewSubfolder(folderId)}
     >
-      <FontAwesomeIcon icon={faFolderPlus} className="w-4" />
+      <FolderPlus size="1em" className="w-4" />
       <span>New subfolder</span>
     </button>
     <button
@@ -554,7 +551,7 @@ const FolderContextMenuItems = ({
       className="flex w-full items-center gap-2 px-2 py-2 rounded-md hover:bg-ui-controls/60 text-sm text-base-fg"
       onClick={() => onRename(folderId)}
     >
-      <FontAwesomeIcon icon={faPencil} className="w-4" />
+      <Pencil size="1em" className="w-4" />
       <span>Rename</span>
     </button>
     <button
@@ -562,7 +559,7 @@ const FolderContextMenuItems = ({
       className="flex w-full items-center gap-2 px-2 py-2 rounded-md hover:bg-ui-controls/60 text-sm text-red"
       onClick={() => onDelete(folderId)}
     >
-      <FontAwesomeIcon icon={faTrashCan} className="w-4" />
+      <Trash2 size="1em" className="w-4" />
       <span>Delete folder</span>
     </button>
   </div>
@@ -2604,10 +2601,7 @@ export const GalleryModal = React.memo(
                         onClick={() => handleOpenNewFolderModal(null)}
                         className="flex items-center gap-2 rounded-lg bg-ui-controls/60 px-3 py-1.5 text-sm font-medium text-base-fg hover:bg-ui-controls/90 transition-colors relative z-[51]"
                       >
-                        <FontAwesomeIcon
-                          icon={faFolderPlus}
-                          className="text-xs"
-                        />
+                        <FolderPlus size="1em" className="text-xs" />
                         New folder
                       </button>
                     )}
@@ -2622,10 +2616,7 @@ export const GalleryModal = React.memo(
                         Tags
                       </button>
                       <span className="text-base-fg/30">/</span>
-                      <FontAwesomeIcon
-                        icon={faTag}
-                        className="text-sm text-violet-400"
-                      />
+                      <Tag size="1em" className="text-sm text-violet-400" />
                       <h2 className="text-lg font-semibold truncate max-w-[16rem]">
                         {activeTag.tag_value}
                       </h2>
@@ -2639,16 +2630,13 @@ export const GalleryModal = React.memo(
                         aria-label="Close tag view"
                         className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-ui-controls/60 text-base-fg/60 hover:text-base-fg transition-colors"
                       >
-                        <FontAwesomeIcon icon={faXmark} className="text-sm" />
+                        <X size="1em" className="text-sm" />
                       </button>
                     </div>
                   ) : tagBrowserOpen ? (
                     /* ── All-tags browser header ── */
                     <div className="flex items-center gap-2 relative z-[51]">
-                      <FontAwesomeIcon
-                        icon={faTag}
-                        className="text-sm text-violet-400"
-                      />
+                      <Tag size="1em" className="text-sm text-violet-400" />
                       <h2 className="text-lg font-semibold">Tags</h2>
                       <button
                         type="button"
@@ -2656,7 +2644,7 @@ export const GalleryModal = React.memo(
                         aria-label="Close tags"
                         className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-ui-controls/60 text-base-fg/60 hover:text-base-fg transition-colors"
                       >
-                        <FontAwesomeIcon icon={faXmark} className="text-sm" />
+                        <X size="1em" className="text-sm" />
                       </button>
                     </div>
                   ) : galleryTab === "folders" && activeFolder ? (
@@ -2720,10 +2708,7 @@ export const GalleryModal = React.memo(
                           onClick={() => setFolderMenuOpen((v) => !v)}
                           className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-ui-controls/60 text-base-fg/60 hover:text-base-fg transition-colors"
                         >
-                          <FontAwesomeIcon
-                            icon={faEllipsis}
-                            className="text-sm"
-                          />
+                          <Ellipsis size="1em" className="text-sm" />
                         </button>
                         {folderMenuOpen && (
                           <>
@@ -2822,8 +2807,8 @@ export const GalleryModal = React.memo(
                       disabled={loading}
                       aria-label="Refresh list"
                     >
-                      <FontAwesomeIcon
-                        icon={faArrowsRotate}
+                      <RefreshCw
+                        size="1em"
                         className={`text-lg text-base-fg ${loading ? "animate-spin" : ""}`}
                       />
                     </Button>
@@ -2843,10 +2828,11 @@ export const GalleryModal = React.memo(
                       }
                       className="relative z-[51] h-9 w-9"
                     >
-                      <FontAwesomeIcon
-                        icon={imageFit === "cover" ? faExpand : faCompress}
-                        className="text-lg text-base-fg"
-                      />
+                      {imageFit === "cover" ? (
+                        <Expand size="1em" className="text-lg text-base-fg" />
+                      ) : (
+                        <Shrink size="1em" className="text-lg text-base-fg" />
+                      )}
                     </Button>
                   </Tooltip>
 
@@ -2891,6 +2877,7 @@ export const GalleryModal = React.memo(
                   {/* Filter items — pinned; they never scroll out of view */}
                   <div className="flex flex-col px-1.5 pt-2 pb-1 flex-shrink-0">
                     {SIDEBAR_FILTERS.map((f) => {
+                      const FilterIcon = f.icon;
                       const isActive =
                         galleryTab === "unsorted" && activeFilter === f.id;
                       return (
@@ -2917,10 +2904,7 @@ export const GalleryModal = React.memo(
                           )}
                         >
                           <div className="flex items-center gap-2.5">
-                            <FontAwesomeIcon
-                              icon={f.icon}
-                              className="text-xs w-4"
-                            />
+                            <FilterIcon size="1em" className="text-xs w-4" />
                             <span>{f.label}</span>
                           </div>
                         </button>
@@ -2939,7 +2923,7 @@ export const GalleryModal = React.memo(
                         aria-label="New folder"
                         className="flex h-5 w-5 items-center justify-center rounded text-base-fg/50 hover:bg-ui-controls/60 hover:text-base-fg transition-colors"
                       >
-                        <FontAwesomeIcon icon={faPlus} className="text-[10px]" />
+                        <Plus size="1em" className="text-[10px]" />
                       </button>
                     )}
                   </div>
@@ -2976,8 +2960,8 @@ export const GalleryModal = React.memo(
                               : "text-base-fg/70 hover:bg-ui-controls/30 hover:text-base-fg",
                           )}
                         >
-                          <FontAwesomeIcon
-                            icon={faFolder}
+                          <Folder
+                            size="1em"
                             className={twMerge(
                               "text-xs w-4",
                               !folder.colorCode && "text-primary",
@@ -2990,8 +2974,8 @@ export const GalleryModal = React.memo(
                           />
                           <span className="truncate">{folder.name}</span>
                           {folder.hasStar && (
-                            <FontAwesomeIcon
-                              icon={faStar}
+                            <Star
+                              size="1em"
                               className="ml-auto text-[10px] text-amber-400"
                             />
                           )}
@@ -3023,8 +3007,8 @@ export const GalleryModal = React.memo(
                                 : "text-base-fg/70 hover:bg-ui-controls/30 hover:text-base-fg",
                             )}
                           >
-                            <FontAwesomeIcon
-                              icon={faTag}
+                            <Tag
+                              size="1em"
                               className="text-xs w-4 text-violet-400"
                             />
                             <span className="truncate">{tag.tag_value}</span>
@@ -3043,10 +3027,7 @@ export const GalleryModal = React.memo(
                               : "text-base-fg/50 hover:bg-ui-controls/30 hover:text-base-fg",
                           )}
                         >
-                          <FontAwesomeIcon
-                            icon={faEllipsis}
-                            className="text-xs w-4"
-                          />
+                          <Ellipsis size="1em" className="text-xs w-4" />
                           <span>All tags</span>
                           <span className="ml-auto text-[10px] text-base-fg/40">
                             {sortedTags.length}
@@ -3078,10 +3059,7 @@ export const GalleryModal = React.memo(
                   ) : activeTagItems.length === 0 ? (
                     <div className="flex h-full flex-col items-center justify-center gap-3">
                       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-400/10">
-                        <FontAwesomeIcon
-                          icon={faTag}
-                          className="text-violet-400 text-2xl"
-                        />
+                        <Tag size="1em" className="text-violet-400 text-2xl" />
                       </div>
                       <div className="text-base-fg font-semibold">
                         No files carry this tag
@@ -3168,10 +3146,7 @@ export const GalleryModal = React.memo(
                   userTags.length === 0 ? (
                     <div className="flex h-full flex-col items-center justify-center gap-3">
                       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-400/10">
-                        <FontAwesomeIcon
-                          icon={faTag}
-                          className="text-violet-400 text-2xl"
-                        />
+                        <Tag size="1em" className="text-violet-400 text-2xl" />
                       </div>
                       <div className="text-base-fg font-semibold">
                         No tags yet
@@ -3192,8 +3167,8 @@ export const GalleryModal = React.memo(
                   currentSubfolders.length === 0 ? (
                     <div className="flex h-full flex-col items-center justify-center gap-3">
                       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                        <FontAwesomeIcon
-                          icon={faFolder}
+                        <Folder
+                          size="1em"
                           className="text-primary text-2xl"
                         />
                       </div>
@@ -3206,7 +3181,7 @@ export const GalleryModal = React.memo(
                       {mode === "view" && (
                         <Button
                           variant="action"
-                          icon={faFolderPlus}
+                          icon={FolderPlus}
                           onClick={() => handleOpenNewFolderModal(null)}
                           className="mt-1 px-3 py-1.5 text-sm"
                         >
@@ -3227,8 +3202,8 @@ export const GalleryModal = React.memo(
                     currentSubfolders.length > 0 ? null : (
                       <div className="flex h-full flex-col items-center justify-center gap-3">
                         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                          <FontAwesomeIcon
-                            icon={faFolder}
+                          <Folder
+                            size="1em"
                             className="text-primary text-2xl"
                           />
                         </div>
@@ -3243,7 +3218,7 @@ export const GalleryModal = React.memo(
                         {mode === "view" && (
                           <Button
                             variant="action"
-                            icon={faFolderPlus}
+                            icon={FolderPlus}
                             onClick={() =>
                               handleOpenNewFolderModal(activeFolderId)
                             }
@@ -3530,14 +3505,14 @@ export const GalleryModal = React.memo(
                     {bulkSelectedItems.slice(0, 4).map((si) => {
                       const placeholderIcon =
                         si.mediaClass === "video"
-                          ? faVideo
+                          ? Video
                           : si.mediaClass === "audio"
-                            ? faMusic
+                            ? Music
                             : si.mediaClass === "dimensional" ||
                                 si.mediaClass === "mesh" ||
                                 si.mediaClass === "splat"
-                              ? faCube
-                              : faImage;
+                              ? Box
+                              : Image;
                       return (
                         <BulkThumb
                           key={si.id}
@@ -3565,7 +3540,7 @@ export const GalleryModal = React.memo(
                       variant="action"
                       onClick={() => setBulkFolderPopoverOpen((v) => !v)}
                       className="px-3 bg-ui-controls/60 hover:bg-ui-controls/90"
-                      icon={faFolderPlus}
+                      icon={FolderPlus}
                     >
                       Add to folder
                     </Button>
@@ -3599,8 +3574,8 @@ export const GalleryModal = React.memo(
                                   setBulkFolderPopoverOpen(false);
                                 }}
                               >
-                                <FontAwesomeIcon
-                                  icon={faFolder}
+                                <Folder
+                                  size="1em"
                                   className="text-primary text-xs"
                                 />
                                 <span className="truncate">{folder.name}</span>
@@ -3617,10 +3592,7 @@ export const GalleryModal = React.memo(
                               handleOpenNewFolderModal(undefined, ids);
                             }}
                           >
-                            <FontAwesomeIcon
-                              icon={faPlus}
-                              className="text-xs w-4"
-                            />
+                            <Plus size="1em" className="text-xs w-4" />
                             <span>Create new folder</span>
                           </button>
                         </div>
@@ -3632,7 +3604,7 @@ export const GalleryModal = React.memo(
                       variant="destructive"
                       onClick={handleBulkDelete}
                       className="px-3"
-                      icon={faTrashCan}
+                      icon={Trash2}
                     >
                       Delete
                     </Button>
@@ -3642,7 +3614,7 @@ export const GalleryModal = React.memo(
                     className="flex h-8 w-8 items-center justify-center rounded-md bg-ui-controls/60 hover:bg-ui-controls/90 text-base-fg transition-colors"
                     aria-label="Clear selection"
                   >
-                    <FontAwesomeIcon icon={faXmark} className="text-base" />
+                    <X size="1em" className="text-base" />
                   </button>
                 </div>
               </div>

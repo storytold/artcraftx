@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Modal } from "@storyteller/ui-modal";
 import { Button } from "@storyteller/ui-button";
-import { faUserSlash } from "@fortawesome/pro-solid-svg-icons";
+import { UserX } from "lucide-react";
 import { useShowCredentialErrorModalEvent } from "@storyteller/tauri-events";
 
 /**
@@ -22,7 +22,7 @@ export const CredentialErrorModal = () => {
       isOpen={message !== null}
       onClose={() => setMessage(null)}
       title="Account problem"
-      titleIcon={faUserSlash}
+      titleIcon={UserX}
       width={440}
       showClose={true}
     >

@@ -3,21 +3,25 @@ import { Tooltip } from "@storyteller/ui-tooltip";
 import { Button } from "@storyteller/ui-button";
 import dayjs from "dayjs";
 import {
-  faArrowRightFromBracket,
-  faChevronLeft,
-  faChevronRight,
-  faCube,
-  faDownToLine,
-  faGlobe,
-  faMagnifyingGlass,
-  faMusic,
-  faPause,
-  faPencil,
-  faPlay,
-  faVideo,
-  faWandMagicSparkles,
-  faArrowRotateRight,
-} from "@fortawesome/pro-solid-svg-icons";
+  ArrowDownToLine,
+  Box,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  Globe,
+  Link,
+  LogOut,
+  Music,
+  Pause,
+  Pencil,
+  Play,
+  RotateCw,
+  Search,
+  User,
+  Video,
+  WandSparkles,
+} from "lucide-react";
 import { LoadingSpinner } from "@storyteller/ui-loading-spinner";
 import { Viewer3D } from "@storyteller/ui-viewer-3d";
 import { WaveformAudioPlayer } from "@storyteller/ui-audio-player";
@@ -33,10 +37,7 @@ import { gtagEvent } from "@storyteller/google-analytics";
 import { MediaFilesApi, PromptsApi } from "@storyteller/api";
 import type { Prompts, UserInfo } from "@storyteller/api";
 import { Gravatar } from "@storyteller/ui-gravatar";
-import { faUser } from "@fortawesome/pro-solid-svg-icons";
 import { toast } from "@storyteller/ui-toaster";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCopy, faLink, faCheck } from "@fortawesome/pro-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
 import {
 } from "@storyteller/ui-action-reminder-modal";
@@ -586,10 +587,7 @@ export function LightboxModal({
               <div className="flex h-full w-full items-center justify-center px-4 sm:px-8">
                 <div className="w-full max-w-xl rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.04] to-white/[0.02] px-4 py-10 sm:px-6">
                   <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/15">
-                    <FontAwesomeIcon
-                      icon={faMusic}
-                      className="text-2xl text-white/70"
-                    />
+                    <Music size="1em" className="text-2xl text-white/70" />
                   </div>
                   <WaveformAudioPlayer
                     key={selectedImageUrl as string}
@@ -700,7 +698,7 @@ export function LightboxModal({
                 className="absolute left-3 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white/70 opacity-0 transition-opacity duration-200 hover:bg-black/70 hover:text-white group-hover/nav:opacity-100 focus:outline-none"
                 aria-label="Previous item"
               >
-                <FontAwesomeIcon icon={faChevronLeft} className="text-lg" />
+                <ChevronLeft size="1em" className="text-lg" />
               </button>
             )}
             {onNavigateNext && (
@@ -712,7 +710,7 @@ export function LightboxModal({
                 className="absolute right-3 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white/70 opacity-0 transition-opacity duration-200 hover:bg-black/70 hover:text-white group-hover/nav:opacity-100 focus:outline-none"
                 aria-label="Next item"
               >
-                <FontAwesomeIcon icon={faChevronRight} className="text-lg" />
+                <ChevronRight size="1em" className="text-lg" />
               </button>
             )}
           </div>
@@ -735,7 +733,7 @@ export function LightboxModal({
                     />
                   ) : (
                     <div className="h-9 w-9 shrink-0 flex items-center justify-center rounded-xl bg-white/10 text-white/50 border border-white/5">
-                      <FontAwesomeIcon icon={faUser} />
+                      <User size="1em" />
                     </div>
                   )}
                   <div className="flex flex-col gap-1 min-w-0">
@@ -789,10 +787,11 @@ export function LightboxModal({
                             );
                           }}
                         >
-                          <FontAwesomeIcon
-                            icon={promptCopied ? faCheck : faCopy}
-                            className="h-3 w-3"
-                          />
+                          {promptCopied ? (
+                            <Check className="h-3 w-3" />
+                          ) : (
+                            <Copy className="h-3 w-3" />
+                          )}
                           <span>{promptCopied ? "Copied!" : "Copy"}</span>
                         </button>
                       )}
@@ -926,8 +925,8 @@ export function LightboxModal({
                                             setRefPreviewUrl(fullSize);
                                           }}
                                         >
-                                          <FontAwesomeIcon
-                                            icon={faMagnifyingGlass}
+                                          <Search
+                                            size="1em"
                                             className="mr-1.5"
                                           />
                                           Preview image
@@ -943,8 +942,8 @@ export function LightboxModal({
                                             );
                                           }}
                                         >
-                                          <FontAwesomeIcon
-                                            icon={faArrowRightFromBracket}
+                                          <LogOut
+                                            size="1em"
                                             className="mr-1.5"
                                           />
                                           View as media
@@ -965,10 +964,17 @@ export function LightboxModal({
                                   >
                                     {isAudio ? (
                                       <div className="h-full w-full flex items-center justify-center bg-white/5">
-                                        <FontAwesomeIcon
-                                          icon={isPlayingThis ? faPause : faPlay}
-                                          className="text-base-fg/70 text-lg"
-                                        />
+                                        {isPlayingThis ? (
+                                          <Pause
+                                            size="1em"
+                                            className="text-base-fg/70 text-lg"
+                                          />
+                                        ) : (
+                                          <Play
+                                            size="1em"
+                                            className="text-base-fg/70 text-lg"
+                                          />
+                                        )}
                                       </div>
                                     ) : (
                                       <>
@@ -979,8 +985,8 @@ export function LightboxModal({
                                         />
                                         {isVideoRef && (
                                           <div className="absolute inset-0 flex items-center justify-center">
-                                            <FontAwesomeIcon
-                                              icon={faVideo}
+                                            <Video
+                                              size="1em"
                                               className="text-white/80 text-sm drop-shadow-lg"
                                             />
                                           </div>
@@ -1041,7 +1047,7 @@ export function LightboxModal({
                     <Button
                       className="w-full col-span-2 py-1.5 text-[13px]"
                       variant="primary"
-                      icon={faArrowRotateRight}
+                      icon={RotateCw}
                       onClick={(e) => {
                         e.stopPropagation();
                         gtagEvent("recreate_clicked");
@@ -1061,7 +1067,7 @@ export function LightboxModal({
                     <Button
                       className="w-full py-1.5 text-[13px]"
                       variant="primary"
-                      icon={faPencil}
+                      icon={Pencil}
                       onClick={async (e) => {
                         e.stopPropagation();
                         gtagEvent("edit_image_clicked");
@@ -1078,7 +1084,7 @@ export function LightboxModal({
                     <Button
                       className="w-full py-1.5 text-[13px]"
                       variant="primary"
-                      icon={faVideo}
+                      icon={Video}
                       onClick={async (e) => {
                         e.stopPropagation();
                         gtagEvent("turn_into_video_clicked");
@@ -1098,7 +1104,7 @@ export function LightboxModal({
                     <Button
                       className="w-full py-1.5 text-[13px]"
                       variant="secondary"
-                      icon={faWandMagicSparkles}
+                      icon={WandSparkles}
                       onClick={async (e) => {
                         e.stopPropagation();
                         gtagEvent("remove_background_clicked");
@@ -1120,7 +1126,7 @@ export function LightboxModal({
                     <Button
                       className="w-full py-1.5 text-[13px]"
                       variant="secondary"
-                      icon={faCube}
+                      icon={Box}
                       onClick={async (e) => {
                         e.stopPropagation();
                         gtagEvent("image_to_3d_clicked");
@@ -1142,7 +1148,7 @@ export function LightboxModal({
                     <Button
                       className="w-full py-1.5 text-[13px]"
                       variant="secondary"
-                      icon={faGlobe}
+                      icon={Globe}
                       onClick={async (e) => {
                         e.stopPropagation();
                         gtagEvent("image_to_3d_world_clicked");
@@ -1166,7 +1172,7 @@ export function LightboxModal({
                         : "w-full col-span-2 py-1.5 text-[13px]"
                     }
                     variant="secondary"
-                    icon={faDownToLine}
+                    icon={ArrowDownToLine}
                     onClick={async (e) => {
                       e.stopPropagation();
                       gtagEvent("download_clicked");
@@ -1197,7 +1203,7 @@ export function LightboxModal({
                   <Button
                     className="w-full py-1.5 text-[13px]"
                     variant="secondary"
-                    icon={shareCopied ? faCheck : faLink}
+                    icon={shareCopied ? Check : Link}
                     onClick={async (e) => {
                       e.stopPropagation();
                       gtagEvent("share_link_copied");

@@ -3,17 +3,16 @@ import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { ListDropdown } from "@storyteller/ui-list-dropdown";
 import { Button } from "@storyteller/ui-button";
 import { FileUploader } from "@storyteller/ui-file-uploader";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCube,
-  faXmark,
-  faCheck,
-  faCircleExclamation,
-  faChevronLeft,
-  faChevronRight,
-  faRotateRight,
-  faSpinner,
-} from "@fortawesome/pro-solid-svg-icons";
+  Box,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  CircleAlert,
+  LoaderCircle,
+  RotateCw,
+  X,
+} from "lucide-react";
 import { WebGLRenderer, PerspectiveCamera } from "three";
 import { loadPreviewOnCanvas, snapshotCanvasAsThumbnail } from "../UploadModal3D/utilities";
 import { upload3DObjects } from "../UploadModal3D/utilities/upload3DObjects";
@@ -331,7 +330,7 @@ export const UploadFilesSplat = ({
         files={fileEntries.map((e) => e.file)}
         handleChange={handleFilesChange}
         multiple={true}
-        fileIcon={faCube}
+        fileIcon={Box}
       />
 
       {selectionError && (
@@ -363,22 +362,22 @@ export const UploadFilesSplat = ({
                       }}
                       title="Remove"
                     >
-                      <FontAwesomeIcon icon={faXmark} />
+                      <X size="1em" />
                     </button>
                   )}
                   {entry.status === "uploading" && (
-                    <FontAwesomeIcon
-                      icon={faSpinner}
+                    <LoaderCircle
+                      size="1em"
                       className="animate-spin opacity-60"
                     />
                   )}
                   {entry.status === "success" && (
-                    <FontAwesomeIcon icon={faCheck} className="text-green-400" />
+                    <Check size="1em" className="text-green-400" />
                   )}
                   {entry.status === "error" && (
                     <span className="flex items-center gap-1">
-                      <FontAwesomeIcon
-                        icon={faCircleExclamation}
+                      <CircleAlert
+                        size="1em"
                         className="text-red-400"
                       />
                       <button
@@ -389,7 +388,7 @@ export const UploadFilesSplat = ({
                         }}
                         title="Retry"
                       >
-                        <FontAwesomeIcon icon={faRotateRight} />
+                        <RotateCw size="1em" />
                       </button>
                     </span>
                   )}
@@ -415,7 +414,7 @@ export const UploadFilesSplat = ({
               />
               {!currentFile && (
                 <h6 className="pointer-events-auto absolute left-0 top-1/2 -mt-5 flex w-full items-center justify-center gap-2.5 text-center opacity-50">
-                  <FontAwesomeIcon icon={faCube} />
+                  <Box size="1em" />
                   Your model preview will appear here
                 </h6>
               )}
@@ -433,7 +432,7 @@ export const UploadFilesSplat = ({
                 onClick={() => setPreviewIndex((p) => Math.max(0, p - 1))}
                 disabled={previewIndex === 0}
               >
-                <FontAwesomeIcon icon={faChevronLeft} />
+                <ChevronLeft size="1em" />
               </Button>
               <span className="text-sm opacity-60">
                 {previewIndex + 1} / {fileEntries.length}
@@ -447,7 +446,7 @@ export const UploadFilesSplat = ({
                 }
                 disabled={previewIndex === fileEntries.length - 1}
               >
-                <FontAwesomeIcon icon={faChevronRight} />
+                <ChevronRight size="1em" />
               </Button>
             </div>
           </div>
@@ -461,7 +460,7 @@ export const UploadFilesSplat = ({
           />
           {!currentFile && (
             <h6 className="pointer-events-auto absolute left-0 top-1/2 -mt-5 flex w-full items-center justify-center gap-2.5 text-center opacity-50">
-              <FontAwesomeIcon icon={faCube} />
+              <Box size="1em" />
               Your model preview will appear here
             </h6>
           )}

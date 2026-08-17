@@ -15,14 +15,13 @@ import {
 } from "@headlessui/react";
 import { twMerge } from "tailwind-merge";
 import { Button } from "@storyteller/ui-button";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCheck,
-  faChevronUp,
-  faChevronDown,
-  faCircleCheck,
-  faCircleInfo,
-} from "@fortawesome/pro-solid-svg-icons";
+  Check,
+  ChevronUp,
+  ChevronDown,
+  CircleCheck,
+  Info,
+} from "lucide-react";
 import { Model, ModelInfo } from "@storyteller/model-list";
 import { Tooltip } from "@storyteller/ui-tooltip";
 
@@ -230,7 +229,7 @@ function InfoHint({ content }: { content: ReactNode }) {
           if (!pinnedRef.current) setOpen(false);
         }}
       >
-        <FontAwesomeIcon icon={faCircleInfo} className="h-3.5 w-3.5" />
+        <Info className="h-3.5 w-3.5" />
       </button>
       {open &&
         createPortal(
@@ -651,10 +650,7 @@ export const PopoverMenu = ({
                         <span className="opacity-70">{triggerLabel}</span>
                         <div className="flex items-center gap-2">
                           <span className="truncate">{selectedItem.label}</span>
-                          <FontAwesomeIcon
-                            icon={faChevronUp}
-                            className="text-sm"
-                          />
+                          <ChevronUp size="1em" className="text-sm" />
                         </div>
                       </div>
                     ) : null}
@@ -733,8 +729,8 @@ export const PopoverMenu = ({
                             canScrollUp ? "opacity-100" : "opacity-0",
                           )}
                         >
-                          <FontAwesomeIcon
-                            icon={faChevronUp}
+                          <ChevronUp
+                            size="1em"
                             className="animate-bounce text-sm text-base-fg/60 drop-shadow [animation-duration:1.1s]"
                           />
                         </div>
@@ -835,8 +831,8 @@ export const PopoverMenu = ({
                                 {item.selected &&
                                   (item.selectedRight ?? (
                                     <span className="ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary">
-                                      <FontAwesomeIcon
-                                        icon={faCheck}
+                                      <Check
+                                        size="1em"
                                         className="text-[11px] font-bold text-white"
                                       />
                                     </span>
@@ -881,8 +877,8 @@ export const PopoverMenu = ({
                             canScrollDown ? "opacity-100" : "opacity-0",
                           )}
                         >
-                          <FontAwesomeIcon
-                            icon={faChevronDown}
+                          <ChevronDown
+                            size="1em"
                             className="animate-bounce text-sm text-base-fg/60 drop-shadow [animation-duration:1.1s]"
                           />
                         </div>
@@ -891,8 +887,8 @@ export const PopoverMenu = ({
                       <div className="relative flex flex-col text-sm text-base-fg overflow-visible">
                         {maxListHeight && canScrollUp && (
                           <div className="absolute top-0 left-0 right-0 z-20 flex justify-center bg-gradient-to-b from-ui-panel via-ui-panel/80 to-transparent py-1.5 pointer-events-none">
-                            <FontAwesomeIcon
-                              icon={faChevronUp}
+                            <ChevronUp
+                              size="1em"
                               className="text-base-fg/60 text-xs animate-bounce"
                             />
                           </div>
@@ -994,7 +990,7 @@ export const PopoverMenu = ({
                                   {item.selected &&
                                     (item.selectedRight ?? (
                                       <span className="text-primary text-xl font-bold bg-white rounded-full p-0 h-4 w-4 flex items-center justify-center mr-1">
-                                        <FontAwesomeIcon icon={faCircleCheck} />
+                                        <CircleCheck size="1em" />
                                       </span>
                                     ))}
                                 </div>
@@ -1053,8 +1049,8 @@ export const PopoverMenu = ({
                         </div>
                         {maxListHeight && canScrollDown && (
                           <div className="absolute bottom-0 left-0 right-0 z-20 flex justify-center bg-gradient-to-t from-ui-panel via-ui-panel/80 to-transparent py-1.5 pointer-events-none">
-                            <FontAwesomeIcon
-                              icon={faChevronDown}
+                            <ChevronDown
+                              size="1em"
                               className="text-base-fg/60 text-xs animate-bounce"
                             />
                           </div>
@@ -1164,8 +1160,8 @@ export const PopoverMenu = ({
                                       )}
                                     >
                                       {item.selected && (
-                                        <FontAwesomeIcon
-                                          icon={faCheck}
+                                        <Check
+                                          size="1em"
                                           className="text-base-fg text-xs font-bold"
                                         />
                                       )}
@@ -1228,8 +1224,8 @@ export const PopoverMenu = ({
                                     )}
                                   >
                                     {item.selected && (
-                                      <FontAwesomeIcon
-                                        icon={faCheck}
+                                      <Check
+                                        size="1em"
                                         className="text-base-fg text-xs font-bold"
                                       />
                                     )}

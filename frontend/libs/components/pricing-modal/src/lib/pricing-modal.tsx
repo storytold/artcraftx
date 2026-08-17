@@ -2,12 +2,7 @@ import { Modal } from "@storyteller/ui-modal";
 import { Button } from "@storyteller/ui-button";
 import { twMerge } from "tailwind-merge";
 import { useState } from "react";
-import {
-  faCheck,
-  faStar,
-  faGem,
-} from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Check, Star, Gem } from "lucide-react";
 import { usePricingModalStore } from "./pricing-modal-store";
 import { TabSelector } from "@storyteller/ui-tab-selector";
 import { invoke } from "@tauri-apps/api/core";
@@ -280,6 +275,7 @@ export function PricingContent({ title, subtitle }: PricingContentProps) {
           // Highlighted plans keep the same footprint; the solid label tab sits
           // ABOVE the card and tucks behind the card top so it reads as one
           // continuous frame.
+          const HighlightIcon = highlight === "popular" ? Star : Gem;
           return (
             <div key={plan.slug} className="relative">
               <div
@@ -288,10 +284,7 @@ export function PricingContent({ title, subtitle }: PricingContentProps) {
                   frame?.tab,
                 )}
               >
-                <FontAwesomeIcon
-                  icon={highlight === "popular" ? faStar : faGem}
-                  className="pb-0.5 text-xs"
-                />
+                <HighlightIcon size="1em" className="pb-0.5 text-xs" />
                 {highlight === "popular" ? "Most Popular" : "Best Value"}
               </div>
               {cardBody}
@@ -409,7 +402,7 @@ const Feature = ({
           : "border border-white/20 text-transparent",
       )}
     >
-      {included && <FontAwesomeIcon icon={faCheck} className="text-xs" />}
+      {included && <Check size="1em" className="text-xs" />}
     </div>
     <span
       className={twMerge(

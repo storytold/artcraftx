@@ -15,7 +15,6 @@ import {
   Video,
   X,
 } from "lucide-react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Modal } from "@storyteller/ui-modal";
 import { twMerge } from "tailwind-merge";
 import { DeckAddAction, DeckItem } from "./deckTypes";
@@ -222,18 +221,15 @@ export const DeckAddMenu = ({
               )}
             </div>
           )}
-          {group.actions.map((action) => (
+          {group.actions.map(({ icon: ActionIcon, ...action }) => (
             <button
               key={action.key}
               type="button"
               onClick={action.onSelect}
               className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-[13px] font-medium text-base-fg transition-colors hover:bg-white/10"
             >
-              {action.icon ? (
-                <FontAwesomeIcon
-                  icon={action.icon}
-                  className="h-3.5 w-3.5 opacity-60"
-                />
+              {ActionIcon ? (
+                <ActionIcon className="h-3.5 w-3.5 opacity-60" />
               ) : action.key.startsWith("upload") ? (
                 <Upload className="h-3.5 w-3.5 opacity-60" />
               ) : (

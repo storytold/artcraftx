@@ -1,16 +1,14 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPause, faPlay } from "@fortawesome/pro-solid-svg-icons";
-import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { Pause, Play, type LucideIcon } from "lucide-react";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { useGalleryViewStore } from "./gallery-view-store";
 
 const OPTIONS: {
   autoplay: boolean;
-  icon: IconDefinition;
+  icon: LucideIcon;
   label: string;
 }[] = [
-  { autoplay: true, icon: faPlay, label: "Play video previews" },
-  { autoplay: false, icon: faPause, label: "Still thumbnails" },
+  { autoplay: true, icon: Play, label: "Play video previews" },
+  { autoplay: false, icon: Pause, label: "Still thumbnails" },
 ];
 
 // Segmented playing/still switch for video preview thumbnails. Sits next to
@@ -26,7 +24,7 @@ export function GalleryAutoplayToggle() {
       aria-label="Video preview playback"
       className="flex items-center gap-0.5 rounded-lg border border-white/[0.08] bg-white/[0.04] p-0.5"
     >
-      {OPTIONS.map(({ autoplay, icon, label }) => {
+      {OPTIONS.map(({ autoplay, icon: Icon, label }) => {
         const active = autoplayVideos === autoplay;
         return (
           <Tooltip key={label} content={label} position="bottom" delay={300}>
@@ -41,7 +39,7 @@ export function GalleryAutoplayToggle() {
                   : "text-white/45 hover:text-white/80"
               }`}
             >
-              <FontAwesomeIcon icon={icon} />
+              <Icon size="1em" />
             </button>
           </Tooltip>
         );

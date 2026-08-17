@@ -5,16 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faFolderOpen,
-  faImage,
-  faMusic,
-  faPlay,
-  faPlus,
-  faStop,
-  faXmark,
-} from "@fortawesome/pro-solid-svg-icons";
+import { FolderOpen, Image, Music, Play, Plus, Square, X } from "lucide-react";
 import { toast } from "@storyteller/ui-toaster";
 import { UploaderStates } from "@storyteller/common";
 import type { UploadMediaFn } from "@storyteller/api";
@@ -221,7 +212,7 @@ export const AudioReferenceRow = forwardRef<
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-2 text-base-fg opacity-90">
-          <FontAwesomeIcon icon={faMusic} className="h-3.5 w-3.5" />
+          <Music className="h-3.5 w-3.5" />
           <span className="text-sm font-medium">
             Audio Track{" "}
             <span className="font-semibold text-base-fg/60">
@@ -252,7 +243,7 @@ export const AudioReferenceRow = forwardRef<
               disabled={isUploadingAudio}
               className="flex h-9 items-center gap-1.5 rounded-lg border border-dashed border-ui-controls-border bg-ui-controls/50 px-3 text-sm text-base-fg/70 transition-colors hover:bg-ui-controls hover:text-base-fg disabled:cursor-wait disabled:opacity-60"
             >
-              <FontAwesomeIcon icon={faPlus} className="h-3 w-3" />
+              <Plus className="h-3 w-3" />
               {isUploadingAudio ? "Uploading…" : "Add audio"}
             </button>
             {onPickAudioFromLibrary && (
@@ -262,7 +253,7 @@ export const AudioReferenceRow = forwardRef<
                 disabled={isUploadingAudio}
                 className="flex h-9 items-center gap-1.5 rounded-lg border border-dashed border-ui-controls-border bg-ui-controls/50 px-3 text-sm text-base-fg/70 transition-colors hover:bg-ui-controls hover:text-base-fg disabled:cursor-wait disabled:opacity-60"
               >
-                <FontAwesomeIcon icon={faFolderOpen} className="h-3 w-3" />
+                <FolderOpen className="h-3 w-3" />
                 From library
               </button>
             )}
@@ -272,7 +263,7 @@ export const AudioReferenceRow = forwardRef<
         {imageSupported && (
           <>
             <div className="ms-2 flex items-center gap-2 text-base-fg opacity-90">
-              <FontAwesomeIcon icon={faImage} className="h-3.5 w-3.5" />
+              <Image className="h-3.5 w-3.5" />
               <span className="text-sm font-medium">Image</span>
             </div>
             {referenceImages.map((image) => (
@@ -291,10 +282,7 @@ export const AudioReferenceRow = forwardRef<
                   onClick={() => onReferenceImagesChange?.([])}
                   className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100"
                 >
-                  <FontAwesomeIcon
-                    icon={faXmark}
-                    className="h-3 w-3 text-white"
-                  />
+                  <X className="h-3 w-3 text-white" />
                 </button>
               </div>
             ))}
@@ -305,7 +293,7 @@ export const AudioReferenceRow = forwardRef<
                 disabled={isUploadingImage}
                 className="flex h-9 items-center gap-1.5 rounded-lg border border-dashed border-ui-controls-border bg-ui-controls/50 px-3 text-sm text-base-fg/70 transition-colors hover:bg-ui-controls hover:text-base-fg disabled:cursor-wait disabled:opacity-60"
               >
-                <FontAwesomeIcon icon={faPlus} className="h-3 w-3" />
+                <Plus className="h-3 w-3" />
                 {isUploadingImage ? "Uploading…" : "Add image"}
               </button>
             )}
@@ -345,6 +333,8 @@ function AudioRefTile({
     setIsPlaying(true);
   }, [audio.url, isPlaying]);
 
+  const PlaybackIcon = isPlaying ? Square : Play;
+
   return (
     <div className="group flex h-9 items-center gap-2 rounded-lg border border-ui-controls-border bg-ui-controls px-2.5">
       <button
@@ -353,10 +343,7 @@ function AudioRefTile({
         onClick={togglePlay}
         className="flex h-5 w-5 items-center justify-center rounded-full bg-white/90 text-black transition-transform hover:scale-105"
       >
-        <FontAwesomeIcon
-          icon={isPlaying ? faStop : faPlay}
-          className={`h-2 w-2 ${isPlaying ? "" : "ml-px"}`}
-        />
+        <PlaybackIcon className={`h-2 w-2 ${isPlaying ? "" : "ml-px"}`} />
       </button>
       <span className="text-xs font-medium text-base-fg/80">
         Audio {index + 1} · {audio.duration}s
@@ -367,7 +354,7 @@ function AudioRefTile({
         onClick={() => onRemove(audio.id)}
         className="flex h-4 w-4 items-center justify-center rounded text-base-fg/40 transition-colors hover:text-base-fg"
       >
-        <FontAwesomeIcon icon={faXmark} className="h-2.5 w-2.5" />
+        <X className="h-2.5 w-2.5" />
       </button>
     </div>
   );

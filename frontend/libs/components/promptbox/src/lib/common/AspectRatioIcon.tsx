@@ -61,7 +61,7 @@ export const AspectRatioIcon = ({
   );
 };
 
-// "Auto" icon — magic wand sparkle, kept as SVG to avoid FontAwesome dependency
+// "Auto" icon — custom magic wand sparkle with no icon-library equivalent
 export const AutoIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     width={size}
