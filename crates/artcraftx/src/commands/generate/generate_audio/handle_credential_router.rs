@@ -16,7 +16,7 @@ use crate::commands::generate::generate_error::GenerateError;
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::common::generation_credential::{credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential};
 use crate::commands::generate::generate_audio::request::TauriGenerateAudioRequest;
-use crate::credentials::artcraft_api_host::maybe_artcraft_api_host_for_service;
+use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::credential::Credential;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 

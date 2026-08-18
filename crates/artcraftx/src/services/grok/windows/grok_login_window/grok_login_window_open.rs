@@ -1,5 +1,5 @@
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::utils::clear_all_webview_cookies::clear_all_webview_cookies;
+use crate::utils::window::clear_all_webview_cookies::clear_all_webview_cookies;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use once_cell::sync::Lazy;

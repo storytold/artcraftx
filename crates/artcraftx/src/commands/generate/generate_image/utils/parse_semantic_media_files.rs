@@ -6,8 +6,8 @@ use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::commands::generate::generate_error::{BadInputReason, GenerateError};
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;
-use crate::utils::upload_bytes_to_media_file::upload_image_bytes_as_media_file::upload_image_bytes_as_media_file;
-use crate::utils::upload_bytes_to_media_file::upload_mask_image_bytes_as_media_file::upload_mask_image_bytes_as_media_file;
+use crate::services::storyteller::utils::upload_bytes_to_media_file::upload_image_bytes_as_media_file::upload_image_bytes_as_media_file;
+use crate::services::storyteller::utils::upload_bytes_to_media_file::upload_mask_image_bytes_as_media_file::upload_mask_image_bytes_as_media_file;
 
 /// Resolved semantic media file tokens for canvas, scene, and inpainting mask.
 ///

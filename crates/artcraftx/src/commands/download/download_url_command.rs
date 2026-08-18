@@ -6,7 +6,7 @@ use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::warning_events::flash_file_download_error_event::{FlashFileDownloadErrorType, FlashFileDownloadErrorEvent};
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::utils::download_url_to_user_download_dir::download_url_to_user_download_dir;
+use crate::utils::download::download_url_to_user_download_dir::download_url_to_user_download_dir;
 use log::{error, info};
 use serde_derive::{Deserialize, Serialize};
 use tauri::{AppHandle, State};

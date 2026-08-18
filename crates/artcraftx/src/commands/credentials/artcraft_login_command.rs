@@ -7,7 +7,7 @@ use serde_derive::Serialize;
 use tauri::{AppHandle, State};
 
 use crate::commands::credentials::credential_payload::CredentialPayload;
-use crate::credentials::artcraft_api_host::maybe_artcraft_api_host_for_service;
+use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::cookie_credential::CookieCredential;
 use crate::credentials::credential::{Credential, CredentialSecret};
 use crate::credentials::credential_user_info::CredentialUserInfo;

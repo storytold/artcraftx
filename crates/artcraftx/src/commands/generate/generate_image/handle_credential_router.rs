@@ -20,7 +20,7 @@ use crate::commands::generate::generate_image::handle_fal_credential::handle_fal
 use crate::commands::generate::generate_image::utils::convert_enums_to_router::{convert_aspect_ratio, convert_quality, convert_resolution};
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;
 use crate::commands::generate::generate_image::utils::parse_semantic_media_files::{parse_semantic_media_files, SemanticMediaFiles};
-use crate::credentials::artcraft_api_host::maybe_artcraft_api_host_for_service;
+use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::credential::Credential;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 

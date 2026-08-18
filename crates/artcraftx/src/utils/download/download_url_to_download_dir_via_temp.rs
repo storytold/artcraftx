@@ -1,7 +1,7 @@
 use crate::error::artcraftx_error::ArtcraftXError;
 use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::utils::download_url_to_user_download_dir::{check_download_file_name, download_file_name_from_url};
+use crate::utils::download::download_url_to_user_download_dir::{check_download_file_name, download_file_name_from_url};
 use anyhow::anyhow;
 use log::info;
 use std::io::Write;

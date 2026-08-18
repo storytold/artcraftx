@@ -5,7 +5,7 @@ use crate::events::generation_events::common::{GenerationAction, GenerationServi
 use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
-use crate::utils::download_url_to_temp_dir::download_url_to_temp_dir;
+use crate::utils::download::download_url_to_temp_dir::download_url_to_temp_dir;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::state::grok_image_prompt_queue::{GrokImagePromptQueue, PromptItem};
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;

@@ -4,7 +4,7 @@ use crate::commands::utils::response::failure_response_wrapper::{CommandErrorRes
 use crate::commands::utils::response::shorthand::ResponseOrErrorType;
 use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use crate::utils::download_url_to_user_download_dir::download_url_to_user_download_dir;
+use crate::utils::download::download_url_to_user_download_dir::download_url_to_user_download_dir;
 use log::{error, info};
 use serde_derive::{Deserialize, Serialize};
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
