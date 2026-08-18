@@ -4,7 +4,6 @@ export * from "./BillingApi";
 export * from "./CommentsApi";
 export * from "./EngineApi";
 export * from "./FeaturedItemsApi";
-export * from "./JobsApi";
 export * from "./MediaFilesApi";
 export * from "./MediaUploadApi";
 export * from "./MiscApi";

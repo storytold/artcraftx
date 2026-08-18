@@ -29,7 +29,6 @@ import {
   useTextToImageGenerationCompleteEvent,
 } from "@storyteller/tauri-events";
 
-import { useActiveJobs } from "~/hooks/useActiveJobs";
 import { useBackgroundLoadingMedia } from "~/hooks/useBackgroundLoadingMedia";
 import { CredentialErrorModal } from "~/components/CredentialErrorModal/CredentialErrorModal";
 import { useTabStore } from "./Stores/TabState";
@@ -51,7 +50,6 @@ export const MainApp = () => {
 
   // Background plumbing — should keep running regardless of which tab
   // is active.
-  useActiveJobs();
   useBackgroundLoadingMedia();
 
   // Tauri event listeners. Must always be mounted so generation/upload

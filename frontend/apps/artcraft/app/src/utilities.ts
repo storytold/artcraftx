@@ -28,17 +28,6 @@ export const getCurrentLocationWithoutParams = (
   return result;
 };
 
-export const isJobStatusTerminal = (curr: JobStatus) => {
-  if (
-    curr === JobStatus.PENDING ||
-    curr === JobStatus.STARTED ||
-    curr === JobStatus.ATTEMPT_FAILED
-  ) {
-    return false;
-  }
-  return true;
-};
-
 export const isNumberString = (value: string) => {
   return !isNaN(Number(value));
 };
