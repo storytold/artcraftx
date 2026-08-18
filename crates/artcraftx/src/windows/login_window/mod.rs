@@ -11,9 +11,8 @@
 //! Each supported site implements [`login_window_trait::LoginWindowSite`]
 //! under [`logins`], describing its URLs and completion heuristics.
 
-pub mod extract_login_window_cookies;
-pub mod extract_user_info_from_cookies;
 pub mod login_window_thread;
 pub mod login_window_trait;
 pub mod logins;
 pub mod open_login_window;
+pub mod utils;
