@@ -1,7 +1,7 @@
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 
 use crate::commands::generate::generate_error::{CredentialProblemReason, GenerateError};
-use crate::credentials::credential::Credential;
+use crate::credentials::auth_credential::AuthCredential;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 
 /// Resolve the stored credential a generation request names via
@@ -10,7 +10,7 @@ use crate::state::data_dir::app_data_root::AppDataRoot;
 pub fn resolve_generation_credential(
   maybe_credential_id: Option<&str>,
   app_data_root: &AppDataRoot,
-) -> Result<Credential, GenerateError> {
+) -> Result<AuthCredential, GenerateError> {
   let credential_id = maybe_credential_id
       .filter(|id| !id.trim().is_empty())
       .ok_or(GenerateError::CredentialProblem(
@@ -31,7 +31,7 @@ pub fn resolve_generation_credential(
 
 /// Rebuild the web-session credential set from a stored cookie credential.
 pub fn storyteller_creds_from_credential(
-  credential: &Credential,
+  credential: &AuthCredential,
 ) -> Result<StorytellerCredentialSet, GenerateError> {
   let cookie = credential.cookies().ok_or_else(|| {
     credential_not_usable(credential, "the account has no session cookies")
@@ -50,7 +50,7 @@ pub fn storyteller_creds_from_credential(
       })
 }
 
-pub fn credential_not_usable(credential: &Credential, reason: &str) -> GenerateError {
+pub fn credential_not_usable(credential: &AuthCredential, reason: &str) -> GenerateError {
   GenerateError::CredentialProblem(CredentialProblemReason::CredentialNotUsable {
     credential_id: credential.id.to_string(),
     reason: reason.to_string(),

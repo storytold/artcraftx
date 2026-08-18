@@ -1,6 +1,6 @@
 use crate::commands::credentials::credential_payload::CredentialPayload;
 use crate::credentials::api_key_credential::ApiKeyCredential;
-use crate::credentials::credential::CredentialSecret;
+use crate::credentials::auth_credential::CredentialSecret;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use log::{error, info};
 use serde_derive::Serialize;
@@ -39,7 +39,7 @@ pub async fn edit_api_credential_command(
       })?;
 
   let CredentialSecret::ApiKey(existing_key) = &credential.secret else {
-    let message = format!("Credential {} is not an API key credential", credential_id);
+    let message = format!("AuthCredential {} is not an API key credential", credential_id);
     error!("{}", message);
     return Err(message);
   };
@@ -64,6 +64,6 @@ pub async fn edit_api_credential_command(
       })?;
 
   Ok(EditApiCredentialResponse {
-    credential: CredentialPayload::from_credential(&credential),
+    credential: CredentialPayload::from_auth_credential(&credential),
   })
 }

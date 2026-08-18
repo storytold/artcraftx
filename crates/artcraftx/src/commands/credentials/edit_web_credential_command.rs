@@ -1,6 +1,6 @@
 use crate::commands::credentials::credential_payload::CredentialPayload;
 use crate::credentials::cookie_credential::CookieCredential;
-use crate::credentials::credential::CredentialSecret;
+use crate::credentials::auth_credential::CredentialSecret;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use chrono::Utc;
 use log::{error, info};
@@ -42,7 +42,7 @@ pub async fn edit_web_credential_command(
       })?;
 
   let CredentialSecret::Cookies(existing_cookie) = &credential.secret else {
-    let message = format!("Credential {} is not a cookie credential", credential_id);
+    let message = format!("AuthCredential {} is not a cookie credential", credential_id);
     error!("{}", message);
     return Err(message);
   };
@@ -75,6 +75,6 @@ pub async fn edit_web_credential_command(
       })?;
 
   Ok(EditWebCredentialResponse {
-    credential: CredentialPayload::from_credential(&credential),
+    credential: CredentialPayload::from_auth_credential(&credential),
   })
 }

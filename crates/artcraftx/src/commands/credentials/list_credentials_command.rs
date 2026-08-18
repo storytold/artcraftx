@@ -26,7 +26,7 @@ pub async fn list_credentials_command(
   Ok(ListCredentialsResponse {
     credentials: credentials
         .iter()
-        .map(CredentialPayload::from_credential)
+        .map(CredentialPayload::from_auth_credential)
         .collect(),
   })
 }

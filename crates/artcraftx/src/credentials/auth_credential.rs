@@ -1,6 +1,6 @@
 use crate::credentials::api_key_credential::ApiKeyCredential;
 use crate::credentials::cookie_credential::CookieCredential;
-use crate::credentials::credential_file::CredentialFile;
+use crate::credentials::credential_toml::CredentialToml;
 use core_types::enums::generation_source::{CredentialKind, GenerationSource};
 use crate::credentials::credential_user_info::CredentialUserInfo;
 use crate::error::artcraftx_credential_error::ArtcraftXCredentialError;
@@ -9,12 +9,12 @@ use core_types::identifiers::credential_id::CredentialId;
 
 /// A validated, in-app credential.
 ///
-/// Unlike the on-disk [`CredentialFile`], a `Credential` always carries
+/// Unlike the on-disk [`CredentialToml`], an `AuthCredential` always carries
 /// exactly one secret and remembers which file it was loaded from, so the
 /// app can rewrite that file in place (refreshed cookies, success/failure
 /// timestamps, etc.)
 #[derive(Clone, Debug)]
-pub struct Credential {
+pub struct AuthCredential {
   /// The credential's stable identity (`credential_{entropy}`), stored in the
   /// TOML file. Hidden from users, but the effective primary identifier —
   /// file names can be freely renamed.
@@ -45,14 +45,14 @@ impl CredentialSecret {
   }
 }
 
-impl Credential {
+impl AuthCredential {
   /// Load a credential, minting (and persisting) an id if the file lacks
   /// one so the identity stays stable across loads.
   pub fn load_from_file<P: AsRef<Path>>(path: P) -> Result<Self, ArtcraftXCredentialError> {
     let path = path.as_ref();
-    let file = CredentialFile::load(path)?;
+    let file = CredentialToml::load(path)?;
     let needs_id_backfill = file.id.is_none();
-    let credential = file.into_credential(path.to_path_buf())?;
+    let credential = file.into_auth_credential(path.to_path_buf())?;
     if needs_id_backfill {
       if let Err(err) = credential.save() {
         log::warn!("Could not persist backfilled credential id for {:?}: {}", path, err);
@@ -63,7 +63,7 @@ impl Credential {
 
   /// Rewrite this credential's TOML file in place.
   pub fn save(&self) -> Result<(), ArtcraftXCredentialError> {
-    CredentialFile::from_credential(self).save(&self.source_path)
+    CredentialToml::from_auth_credential(self).save(&self.source_path)
   }
 
   pub fn kind(&self) -> CredentialKind {
@@ -72,7 +72,7 @@ impl Credential {
 
   /// The credential's file name within the credentials directory
   /// (e.g. `fal_api_2.toml`). Informational — the stable identifier is
-  /// [`Credential::id`]; users can rename files freely.
+  /// [`AuthCredential::id`]; users can rename files freely.
   pub fn file_name(&self) -> String {
     self.source_path
         .file_name()
@@ -104,7 +104,7 @@ mod tests {
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("fal_api_key.toml");
 
-    let credential = Credential {
+    let credential = AuthCredential {
       id: CredentialId::generate(),
       service: GenerationSource::FalApi,
       name: Some("work account".to_string()),
@@ -114,7 +114,7 @@ mod tests {
     };
     credential.save().unwrap();
 
-    let loaded = Credential::load_from_file(&path).unwrap();
+    let loaded = AuthCredential::load_from_file(&path).unwrap();
     assert_eq!(loaded.id, credential.id);
     assert_eq!(loaded.service, GenerationSource::FalApi);
     assert_eq!(loaded.name.as_deref(), Some("work account"));

@@ -8,7 +8,7 @@ use crate::commands::generate::common::generation_credential::{credential_not_us
 use crate::commands::generate::generate_video::artcraft::handle_artcraft_video_via_router::handle_artcraft_video_via_router;
 use crate::commands::generate::generate_video::request::TauriGenerateVideoRequest;
 use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_service;
-use crate::credentials::credential::Credential;
+use crate::credentials::auth_credential::AuthCredential;
 use core_types::enums::generation_source::GenerationSource;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 
@@ -48,7 +48,7 @@ pub async fn handle_credential_router(
 /// Artcraft accepts directly — no pre-upload step is needed.
 async fn handle_artcraft_credential(
   request: &TauriGenerateVideoRequest,
-  credential: &Credential,
+  credential: &AuthCredential,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let tauri_model = request.model.ok_or(GenerateError::no_model_specified())?;
 

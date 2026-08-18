@@ -1,6 +1,6 @@
 use crate::commands::credentials::credential_payload::CredentialPayload;
 use crate::credentials::api_key_credential::ApiKeyCredential;
-use crate::credentials::credential::{Credential, CredentialSecret};
+use crate::credentials::auth_credential::{AuthCredential, CredentialSecret};
 use core_types::enums::generation_source::{CredentialKind, GenerationSource};
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use log::{error, info};
@@ -39,7 +39,7 @@ pub async fn add_api_credential_command(
   let creds_dir = app_data_root.credentials_dir();
   let source_path = creds_dir.next_available_credential_path(service);
 
-  let credential = Credential {
+  let credential = AuthCredential {
     id: creds_dir.generate_unique_credential_id(),
     service,
     name: normalize_name(name),
@@ -56,7 +56,7 @@ pub async fn add_api_credential_command(
       })?;
 
   Ok(AddApiCredentialResponse {
-    credential: CredentialPayload::from_credential(&credential),
+    credential: CredentialPayload::from_auth_credential(&credential),
   })
 }
 

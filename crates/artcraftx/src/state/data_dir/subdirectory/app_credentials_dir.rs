@@ -1,4 +1,4 @@
-use crate::credentials::credential::Credential;
+use crate::credentials::auth_credential::AuthCredential;
 use core_types::enums::generation_source::GenerationSource;
 use crate::error::artcraftx_credential_error::ArtcraftXCredentialError;
 use crate::error::artcraftx_error::ArtcraftXError;
@@ -38,7 +38,7 @@ impl AppCredentialsDir {
   /// Files that fail to parse or validate are skipped with a warning so a
   /// single malformed (possibly hand-written) file can't take down every
   /// other credential. Only a directory listing failure is an error.
-  pub fn load_credentials(&self) -> Result<Vec<Credential>, ArtcraftXError> {
+  pub fn load_credentials(&self) -> Result<Vec<AuthCredential>, ArtcraftXError> {
     let entries = std::fs::read_dir(&self.path)
         .map_err(|source| ArtcraftXCredentialError::DirectoryReadError {
           path: self.path.clone(),
@@ -55,7 +55,7 @@ impl AppCredentialsDir {
     let mut credentials = Vec::new();
     let mut seen_ids: HashSet<CredentialId> = HashSet::new();
     for path in paths {
-      match Credential::load_from_file(&path) {
+      match AuthCredential::load_from_file(&path) {
         Ok(mut credential) => {
           // Ids must be unique; a duplicate (eg. a copied file) gets a
           // fresh id, persisted so it stays stable.
@@ -82,7 +82,7 @@ impl AppCredentialsDir {
 
   /// Rewrite a credential's TOML file in place (refreshed cookies,
   /// success/failure timestamps, etc.)
-  pub fn save_credential(&self, credential: &Credential) -> Result<(), ArtcraftXError> {
+  pub fn save_credential(&self, credential: &AuthCredential) -> Result<(), ArtcraftXError> {
     credential.save().map_err(ArtcraftXError::from)
   }
 
@@ -131,16 +131,16 @@ impl AppCredentialsDir {
   }
 
   /// Load a single credential by id (file name).
-  pub fn load_credential(&self, file_name: &str) -> Result<Credential, ArtcraftXError> {
+  pub fn load_credential(&self, file_name: &str) -> Result<AuthCredential, ArtcraftXError> {
     let path = self.resolve_credential_file(file_name)?;
-    Credential::load_from_file(path).map_err(ArtcraftXError::from)
+    AuthCredential::load_from_file(path).map_err(ArtcraftXError::from)
   }
 
   /// Find a credential by its id, the stable primary identifier.
   pub fn find_credential_by_id(
     &self,
     id: &str,
-  ) -> Result<Option<Credential>, ArtcraftXError> {
+  ) -> Result<Option<AuthCredential>, ArtcraftXError> {
     Ok(self.load_credentials()?
         .into_iter()
         .find(|credential| credential.id.as_str() == id))
@@ -182,7 +182,7 @@ fn has_toml_extension(path: &Path) -> bool {
 mod tests {
   use super::*;
   use crate::credentials::api_key_credential::ApiKeyCredential;
-  use crate::credentials::credential::CredentialSecret;
+  use crate::credentials::auth_credential::CredentialSecret;
 
   fn write_file(dir: &Path, name: &str, contents: &str) {
     std::fs::write(dir.join(name), contents).unwrap();
@@ -218,7 +218,7 @@ mod tests {
     let dir = tempfile::tempdir().unwrap();
     let creds_dir = AppCredentialsDir::new_from(dir.path());
 
-    let credential = Credential {
+    let credential = AuthCredential {
       id: CredentialId::generate(),
       service: GenerationSource::FalApi,
       name: None,

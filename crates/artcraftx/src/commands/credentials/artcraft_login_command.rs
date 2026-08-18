@@ -9,7 +9,7 @@ use tauri::{AppHandle, State};
 use crate::commands::credentials::credential_payload::CredentialPayload;
 use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::cookie_credential::CookieCredential;
-use crate::credentials::credential::{Credential, CredentialSecret};
+use crate::credentials::auth_credential::{AuthCredential, CredentialSecret};
 use crate::credentials::credential_user_info::CredentialUserInfo;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::refresh_account_state_event::RefreshAccountStateEvent;
@@ -114,7 +114,7 @@ pub async fn artcraft_login_command(
   }.send_infallible(&app);
 
   Ok(ArtcraftLoginResponse {
-    credential: CredentialPayload::from_credential(&credential),
+    credential: CredentialPayload::from_auth_credential(&credential),
   })
 }
 
@@ -125,7 +125,7 @@ fn save_session_credential(
   service: GenerationSource,
   signed_session: &str,
   username_or_email: String,
-) -> Result<Credential, ArtcraftLoginCommandError> {
+) -> Result<AuthCredential, ArtcraftLoginCommandError> {
   let now = Utc::now();
 
   let cookie = CookieCredential {
@@ -149,7 +149,7 @@ fn save_session_credential(
 
   let creds_dir = app_data_root.credentials_dir();
 
-  let credential = Credential {
+  let credential = AuthCredential {
     id: creds_dir.generate_unique_credential_id(),
     service,
     name: None,

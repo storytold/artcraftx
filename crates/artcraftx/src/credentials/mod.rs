@@ -8,15 +8,17 @@
 //!
 //! There are two layers:
 //!
-//! 1. [`credential_file::CredentialFile`] — the tolerant serialization
-//!    layer. Everything optional so hand-written files parse.
-//! 2. [`credential::Credential`] — the validated in-app layer. Exactly one
-//!    secret (cookie XOR api key), tied back to its source file path.
+//! 1. [`credential_toml::CredentialToml`] — the tolerant serialization
+//!    layer (the on-disk TOML schema). Everything optional so hand-written
+//!    files parse.
+//! 2. [`auth_credential::AuthCredential`] — the validated in-app layer the
+//!    app shuttles around to authenticate. Exactly one secret (cookie XOR
+//!    api key), tied back to its source file path.
 
 pub mod api_key_credential;
+pub mod auth_credential;
 pub mod cookie_credential;
-pub mod credential;
-pub mod credential_file;
-pub mod find_service_credentials;
+pub mod credential_toml;
 pub mod credential_user_info;
+pub mod find_service_credentials;
 pub mod login_website;

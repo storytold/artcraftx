@@ -1,4 +1,4 @@
-use crate::credentials::credential::Credential;
+use crate::credentials::auth_credential::AuthCredential;
 use core_types::enums::generation_source::{CredentialKind, GenerationSource};
 use chrono::{DateTime, Utc};
 use serde_derive::Serialize;
@@ -31,7 +31,7 @@ pub struct CredentialPayload {
 }
 
 impl CredentialPayload {
-  pub fn from_credential(credential: &Credential) -> Self {
+  pub fn from_auth_credential(credential: &AuthCredential) -> Self {
     let api_key = credential.api_key();
     let cookie = credential.cookies();
     Self {

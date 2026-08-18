@@ -1,6 +1,6 @@
 use crate::commands::credentials::credential_payload::CredentialPayload;
 use crate::credentials::cookie_credential::CookieCredential;
-use crate::credentials::credential::{Credential, CredentialSecret};
+use crate::credentials::auth_credential::{AuthCredential, CredentialSecret};
 use core_types::enums::generation_source::{CredentialKind, GenerationSource};
 use crate::credentials::credential_user_info::CredentialUserInfo;
 use crate::error::artcraftx_error::ArtcraftXError;
@@ -28,7 +28,7 @@ pub struct WebCredentialSave {
 pub fn save_web_credential(
   creds_dir: &AppCredentialsDir,
   save: WebCredentialSave,
-) -> Result<Credential, ArtcraftXError> {
+) -> Result<AuthCredential, ArtcraftXError> {
   let existing = creds_dir
       .load_credentials()?
       .into_iter()
@@ -44,7 +44,7 @@ pub fn save_web_credential(
   };
 
   let credential = match existing {
-    Some(existing) => Credential {
+    Some(existing) => AuthCredential {
       id: existing.id,
       service: existing.service,
       name: existing.name,
@@ -52,7 +52,7 @@ pub fn save_web_credential(
       user_info: merge_user_info(existing.user_info, save.maybe_user_info),
       source_path: existing.source_path,
     },
-    None => Credential {
+    None => AuthCredential {
       id: creds_dir.generate_unique_credential_id(),
       service: save.service,
       name: None,
@@ -126,16 +126,16 @@ pub async fn add_web_credential_command(
   let credential = apply_optional_name(app_data_root.credentials_dir(), credential, name)?;
 
   Ok(AddWebCredentialResponse {
-    credential: CredentialPayload::from_credential(&credential),
+    credential: CredentialPayload::from_auth_credential(&credential),
   })
 }
 
 /// Apply an optional user-supplied label to a just-saved credential.
 fn apply_optional_name(
   creds_dir: &AppCredentialsDir,
-  mut credential: Credential,
+  mut credential: AuthCredential,
   name: Option<String>,
-) -> Result<Credential, String> {
+) -> Result<AuthCredential, String> {
   let Some(name) = name else {
     return Ok(credential);
   };

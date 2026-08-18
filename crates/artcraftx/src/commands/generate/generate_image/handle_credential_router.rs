@@ -21,7 +21,7 @@ use crate::commands::generate::generate_image::utils::convert_enums_to_router::{
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;
 use crate::commands::generate::generate_image::utils::parse_semantic_media_files::{parse_semantic_media_files, SemanticMediaFiles};
 use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_service;
-use crate::credentials::credential::Credential;
+use crate::credentials::auth_credential::AuthCredential;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 
 /// Credential-driven image generation: resolve the stored credential named
@@ -70,7 +70,7 @@ pub async fn handle_credential_router(
 /// carries media tokens.
 async fn handle_artcraft_credential(
   request: &TauriGenerateImageRequest,
-  credential: &Credential,
+  credential: &AuthCredential,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let tauri_model = request.model.ok_or(GenerateError::no_model_specified())?;
 

@@ -1,6 +1,6 @@
 use log::warn;
 
-use crate::credentials::credential::Credential;
+use crate::credentials::auth_credential::AuthCredential;
 use core_types::enums::generation_source::GenerationSource;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 
@@ -12,7 +12,7 @@ use crate::state::data_dir::app_data_root::AppDataRoot;
 pub fn find_first_credential_for_service(
   app_data_root: &AppDataRoot,
   service: GenerationSource,
-) -> Option<Credential> {
+) -> Option<AuthCredential> {
   let credentials = match app_data_root.credentials_dir().load_credentials() {
     Ok(credentials) => credentials,
     Err(err) => {

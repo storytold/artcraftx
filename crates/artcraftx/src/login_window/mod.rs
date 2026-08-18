@@ -6,7 +6,7 @@
 //! ([`open_login_window`]), and watches it in the background
 //! ([`login_window_thread`]) until the user finishes. Captured cookies (plus
 //! any username/email decoded from a cookie JWT) are saved to the credentials
-//! directory as a cookie [`crate::credentials::credential::Credential`].
+//! directory as a cookie [`crate::credentials::auth_credential::AuthCredential`].
 //!
 //! Each supported site implements [`login_window_trait::LoginWindowSite`]
 //! under [`logins`], describing its URLs and completion heuristics.
