@@ -62,9 +62,8 @@ export const TopBar = () => {
       console.log("TopBar: Polled credits");
     }, CREDITS_POLL_INTERVAL);
 
-    // Imperative refresh requests, e.g. dispatched by the shared
-    // useGenerationJobs hook when it observes a newly-failed job (the server
-    // may have refunded the charge).
+    // Imperative refresh requests, e.g. dispatched by the composers right
+    // after an enqueue so the balance updates immediately.
     const handleCreditsChange = () => {
       void useCreditsState.getState().fetchFromServer();
     };

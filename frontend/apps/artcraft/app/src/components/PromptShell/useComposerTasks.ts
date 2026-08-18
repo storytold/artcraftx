@@ -10,7 +10,7 @@ import { MediaFilesApi } from "@storyteller/api";
 
 const POLL_INTERVAL_MS = 5000;
 
-export type ComposerTaskModality = "image" | "video" | "splat" | "mesh";
+export type ComposerTaskModality = "image" | "video" | "splat" | "mesh" | "audio";
 
 export interface CompletedFile {
   /** Unique per file (task id, or task id + batch index). */
@@ -27,6 +27,7 @@ const TASK_TYPES: Record<ComposerTaskModality, ReadonlySet<string>> = {
   video: new Set(["video_generation"]),
   splat: new Set(["splat_generation"]),
   mesh: new Set(["mesh_generation"]),
+  audio: new Set(["audio_generation"]),
 };
 
 export function useComposerTasks(modality: ComposerTaskModality) {

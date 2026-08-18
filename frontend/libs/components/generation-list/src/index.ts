@@ -12,7 +12,6 @@ export * from "./lib/SelectionActionBar";
 export * from "./lib/useGalleryData";
 export * from "./lib/useSessionMediaByClass";
 export * from "./lib/useGalleryEntries";
-export * from "./lib/useGenerationJobs";
 export * from "./lib/GalleryThumbnail";
 export * from "./lib/CopyPromptButton";
 export * from "./lib/PendingRow";

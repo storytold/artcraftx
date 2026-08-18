@@ -5,20 +5,13 @@ import {
   useOmniGenAudioModels,
   useAudioCostEstimate,
 } from "@storyteller/omni-gen";
-import { useGenerationJobs } from "@storyteller/ui-generation-list";
-import { useDesktopUsername } from "~/components/generation-feed/useDesktopUsername";
 import { AudioLines } from "lucide-react";
-import {
-  PromptShell,
-  type CompletedFile,
-} from "~/components/PromptShell";
+import { PromptShell, useComposerTasks } from "~/components/PromptShell";
 import { AccountSelector } from "~/components/account-selector/AccountSelector";
 import { useAccountSelectorStore } from "~/components/account-selector/accountSelectorStore";
 
 // The whole page is the composer: no feed, no gallery — results are written
 // straight to disk and the PromptShell shows the progress bar + receipt.
-// Audio enqueues over HTTP (no Tauri task queue), so activity comes from the
-// shared jobs poller instead of useComposerTasks.
 const CreateAudio = () => {
   const { models } = useOmniGenAudioModels();
 
@@ -44,21 +37,12 @@ const CreateAudio = () => {
       : undefined,
   });
 
-  const username = useDesktopUsername();
-  const feed = useGenerationJobs({ mediaType: "audio", enabled: !!username });
-
-  const completed = useMemo<CompletedFile[]>(
-    () =>
-      feed.newlyCompleted
-        .filter((item) => !!item.fullImage)
-        .map((item) => ({ id: item.id, url: item.fullImage as string })),
-    [feed.newlyCompleted],
-  );
+  const { busy, completed } = useComposerTasks("audio");
 
   return (
     <PromptShell
       icon={<AudioLines className="h-[17px] w-[17px]" />}
-      busy={feed.inProgress.length > 0}
+      busy={busy}
       completed={completed}
     >
       <PromptBoxAudio
@@ -70,8 +54,8 @@ const CreateAudio = () => {
         accountSelector={<AccountSelector />}
         credentialId={selectedAccountId}
         onEnqueuePressed={async () => {
-          // Nudge the shared jobs poller so the in-flight state appears
-          // immediately (one request can create several job tokens).
+          // Nudge the task-queue hooks so the in-flight state appears
+          // immediately.
           window.dispatchEvent(new Event("task-queue-update"));
           window.dispatchEvent(new Event("credits-change"));
         }}
