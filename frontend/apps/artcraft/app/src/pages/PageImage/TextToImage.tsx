@@ -1,4 +1,3 @@
-import { JobContextType } from "@storyteller/common";
 import { PromptBoxImage } from "@storyteller/ui-promptbox";
 import { UploadImageMedia } from "@storyteller/api";
 import {
@@ -43,13 +42,6 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
 
   const { busy, completed } = useComposerTasks("image");
 
-  const jobContext: JobContextType = {
-    jobTokens: [],
-    addJobToken: () => {},
-    removeJobToken: () => {},
-    clearJobTokens: () => {},
-  };
-
   return (
     <PromptShell
       icon={<ImageIcon className="h-[17px] w-[17px]" />}
@@ -58,9 +50,6 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
     >
       <PromptBoxImage
         fullBleed
-        useJobContext={() => {
-          return jobContext;
-        }}
         uploadImage={UploadImageMedia}
         selectedModel={selectedImageModel}
         selectedProvider={selectedProvider}

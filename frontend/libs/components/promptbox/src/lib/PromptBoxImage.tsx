@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo, ReactNode } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
-import { JobContextType, UploaderState } from "@storyteller/common";
+import { UploaderState } from "@storyteller/common";
 import { toast } from "@storyteller/ui-toaster";
 import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
@@ -40,7 +40,6 @@ import {
 import { DeckAddAction, DeckItem } from "./deck/deckTypes";
 
 interface PromptBoxImageProps {
-  useJobContext: () => JobContextType;
   uploadImage?: ({
     title,
     assetFile,
@@ -77,7 +76,6 @@ interface PromptBoxImageProps {
 }
 
 export const PromptBoxImage = ({
-  useJobContext,
   uploadImage,
   onEnqueuePressed,
   selectedModel,

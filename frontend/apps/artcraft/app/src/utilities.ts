@@ -1,5 +1,4 @@
 import { Params } from "react-router-dom";
-import { JobStatus } from "./enums";
 import deepEqual from "deep-equal";
 
 export const isObjectSerializable = (obj: object) => {
@@ -30,17 +29,6 @@ export const getCurrentLocationWithoutParams = (
 
 export const isNumberString = (value: string) => {
   return !isNaN(Number(value));
-};
-
-export const isJobStatusError = (curr: JobStatus) => {
-  if (
-    curr === JobStatus.ATTEMPT_FAILED ||
-    curr === JobStatus.COMPLETE_FAILURE ||
-    curr === JobStatus.DEAD
-  ) {
-    return true;
-  }
-  return false;
 };
 
 export const getFileName = (file: File) => {

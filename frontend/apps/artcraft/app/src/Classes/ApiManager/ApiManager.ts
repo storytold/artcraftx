@@ -1,6 +1,4 @@
-import { GetBuildEnvironment } from "~/BuildEnvironment";
 import environmentVariables from "../EnvironmentVariables";
-import { Configs } from "~/configs";
 import { FetchProxy as fetch } from "@storyteller/tauri-utils";
 import { StorytellerApiHostStore } from "@storyteller/api";
 
@@ -17,11 +15,8 @@ export class ApiManager {
   ApiTargets: Record<string, string> = {};
 
   constructor() {
-    const environmentType = GetBuildEnvironment().getBuildEnvironmentType();
-    const configs = new Configs(environmentType);
-
     // TODO(bt,2025-07-06): Not sure that any of this is used anymore.
-    // If so, try to use Configs, StorytellerApiHostStore, or another configuration source.
+    // If so, try to use StorytellerApiHostStore or another configuration source.
     
     // look at the .env file
     this.ApiTargets = {

@@ -82,12 +82,3 @@ export interface Status {
   requires_keepalive: boolean;
   status: string;
 }
-
-export interface ActiveJob {
-  created_at: string;
-  job_token: string;
-  maybe_result: MaybeResult;
-  request: Request;
-  status: Status;
-  updated_at: string;
-}

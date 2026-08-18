@@ -1,4 +1,3 @@
-import { JobContextType } from "@storyteller/common";
 import {
   PromptBoxVideo,
   PromptBoxErrorBoundary,
@@ -55,13 +54,6 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
 
   const { busy, completed } = useComposerTasks("video");
 
-  const jobContext: JobContextType = {
-    jobTokens: [],
-    addJobToken: () => {},
-    removeJobToken: () => {},
-    clearJobTokens: () => {},
-  };
-
   // Keep the local batch store in sync (other listeners may rely on it).
   useVideoGenerationCompleteEvent(
     async (event: VideoGenerationCompleteEvent) => {
@@ -86,7 +78,6 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
       <PromptBoxErrorBoundary>
         <PromptBoxVideo
           fullBleed
-          useJobContext={() => jobContext}
           selectedModel={selectedVideoModel}
           selectedProvider={selectedProvider}
           imageMediaId={imageMediaId}

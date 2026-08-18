@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
-import { JobContextType } from "@storyteller/common";
 import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { SliderV2 } from "@storyteller/ui-sliderv2";
 import { Tooltip } from "@storyteller/ui-tooltip";
@@ -113,7 +112,6 @@ const DEFAULT_RESOLUTIONS: SizeOption[] = [
 ];
 
 interface PromptBoxVideoProps {
-  useJobContext: () => JobContextType;
   onEnqueuePressed?: (
     prompt: string,
     subscriberIds: string[],
@@ -143,7 +141,6 @@ interface PromptBoxVideoProps {
 }
 
 export const PromptBoxVideo = ({
-  useJobContext,
   onEnqueuePressed,
   selectedModel,
   selectedProvider,
