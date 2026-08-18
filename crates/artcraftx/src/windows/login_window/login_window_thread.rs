@@ -2,11 +2,11 @@ use crate::commands::credentials::add_web_credential_command::{save_web_credenti
 use crate::credentials::login_website::LoginWebsite;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::refresh_account_state_event::RefreshAccountStateEvent;
-use crate::login_window::extract_login_window_cookies::extract_login_window_cookies;
-use crate::login_window::extract_user_info_from_cookies::extract_user_info_from_cookies;
-use crate::login_window::login_window_trait::LoginWindowSite;
-use crate::login_window::logins::login_site_for;
-use crate::login_window::open_login_window::login_window_name;
+use crate::windows::login_window::extract_login_window_cookies::extract_login_window_cookies;
+use crate::windows::login_window::extract_user_info_from_cookies::extract_user_info_from_cookies;
+use crate::windows::login_window::login_window_trait::LoginWindowSite;
+use crate::windows::login_window::logins::login_site_for;
+use crate::windows::login_window::open_login_window::login_window_name;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use errors::AnyhowResult;
 use log::{error, info};

@@ -1,9 +1,9 @@
 pub mod commands;
 pub mod credentials;
+pub mod database;
 pub mod error;
 pub mod events;
 pub mod lifecycle;
-pub mod login_window;
 pub mod services;
 pub mod state;
 pub mod threads;

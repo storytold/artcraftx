@@ -1,5 +1,5 @@
 use crate::credentials::login_website::LoginWebsite;
-use crate::login_window::login_window_trait::LoginWindowSite;
+use crate::windows::login_window::login_window_trait::LoginWindowSite;
 use once_cell::sync::Lazy;
 use reqwest::Url;
 

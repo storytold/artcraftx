@@ -1,7 +1,7 @@
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
 use crate::threads::third_party_task_polling_thread::handlers::fal::poll_fal_tasks::poll_fal_tasks;
-use crate::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
+use crate::database::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use core_types::enums::generation_source::GenerationSource;
 use log::{error, info, warn};

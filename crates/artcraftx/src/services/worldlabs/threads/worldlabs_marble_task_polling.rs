@@ -5,7 +5,7 @@ use crate::events::generation_events::generation_complete_event::GenerationCompl
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use crate::state::database::task_database::TaskDatabase;
-use crate::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
+use crate::database::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;

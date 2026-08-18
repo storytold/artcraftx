@@ -6,13 +6,13 @@ pub mod runway_login_window;
 pub mod xai_login_window;
 
 use crate::credentials::login_website::LoginWebsite;
-use crate::login_window::login_window_trait::LoginWindowSite;
-use crate::login_window::logins::artcraft_login_window::ArtCraftLoginWindow;
-use crate::login_window::logins::higgsfield_login_window::HiggsfieldLoginWindow;
-use crate::login_window::logins::magnific_login_window::MagnificLoginWindow;
-use crate::login_window::logins::openart_login_window::OpenArtLoginWindow;
-use crate::login_window::logins::runway_login_window::RunwayLoginWindow;
-use crate::login_window::logins::xai_login_window::XAiLoginWindow;
+use crate::windows::login_window::login_window_trait::LoginWindowSite;
+use crate::windows::login_window::logins::artcraft_login_window::ArtCraftLoginWindow;
+use crate::windows::login_window::logins::higgsfield_login_window::HiggsfieldLoginWindow;
+use crate::windows::login_window::logins::magnific_login_window::MagnificLoginWindow;
+use crate::windows::login_window::logins::openart_login_window::OpenArtLoginWindow;
+use crate::windows::login_window::logins::runway_login_window::RunwayLoginWindow;
+use crate::windows::login_window::logins::xai_login_window::XAiLoginWindow;
 
 /// Resolve the [`LoginWindowSite`] driver for a website.
 pub fn login_site_for(website: LoginWebsite) -> Box<dyn LoginWindowSite> {

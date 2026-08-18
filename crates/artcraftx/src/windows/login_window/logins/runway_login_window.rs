@@ -1,27 +1,27 @@
 use crate::credentials::login_website::LoginWebsite;
-use crate::login_window::login_window_trait::LoginWindowSite;
+use crate::windows::login_window::login_window_trait::LoginWindowSite;
 use once_cell::sync::Lazy;
 use reqwest::Url;
 
-const DESTINATION_HOSTNAMES: &[&str] = &["openart.ai", "www.openart.ai"];
+const DESTINATION_HOSTNAMES: &[&str] = &["app.runwayml.com"];
 
 static OPENING_URL: Lazy<Url> = Lazy::new(|| {
-  Url::parse("https://openart.ai/").expect("URL should parse")
+  Url::parse("https://runwayml.com/").expect("URL should parse")
 });
 
 static LOGIN_URL: Lazy<Url> = Lazy::new(|| {
-  Url::parse("https://openart.ai/login").expect("URL should parse")
+  Url::parse("https://app.runwayml.com/login").expect("URL should parse")
 });
 
-pub struct OpenArtLoginWindow;
+pub struct RunwayLoginWindow;
 
-impl LoginWindowSite for OpenArtLoginWindow {
+impl LoginWindowSite for RunwayLoginWindow {
   fn login_website(&self) -> LoginWebsite {
-    LoginWebsite::OpenArt
+    LoginWebsite::Runway
   }
 
   fn window_title(&self) -> String {
-    "Login to OpenArt".to_string()
+    "Login to Runway".to_string()
   }
 
   fn opening_url(&self) -> Url {

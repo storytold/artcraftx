@@ -53,7 +53,7 @@ pub trait LoginWindowSite: Send + Sync {
   /// Hosts that indicate the user has reached the logged-in destination.
   /// e.g. `["app.getartcraft.com"]`. Note the login page is often on one of
   /// these too, so this is combined with cookie heuristics — see
-  /// [`crate::login_window::login_window_thread`].
+  /// [`crate::windows::login_window::login_window_thread`].
   fn destination_hostnames(&self) -> &[&str];
 
   /// The credential service that a successful login is saved under.

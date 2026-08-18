@@ -5,7 +5,7 @@ use crate::events::generation_events::generation_complete_event::GenerationCompl
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use crate::state::database::task_database::TaskDatabase;
-use crate::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
+use crate::database::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::util::get_or_upgrade_grok_full_credentials::get_or_update_grok_full_credentials;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;

@@ -1,6 +1,6 @@
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
-use crate::utils::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
+use crate::database::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::sora::threads::sora_task_polling::helpers::poll_classic_sora_tasks::poll_classic_sora_tasks;

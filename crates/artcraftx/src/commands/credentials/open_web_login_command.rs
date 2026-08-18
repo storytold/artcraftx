@@ -1,5 +1,5 @@
 use crate::credentials::login_website::LoginWebsite;
-use crate::login_window::open_login_window::open_login_window;
+use crate::windows::login_window::open_login_window::open_login_window;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use log::{error, info};
 use tauri::{AppHandle, State};
