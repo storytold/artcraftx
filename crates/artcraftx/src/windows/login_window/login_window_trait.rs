@@ -1,13 +1,7 @@
 use core_types::enums::generation_source::GenerationSource;
 use crate::credentials::login_website::LoginWebsite;
-use once_cell::sync::Lazy;
+use crate::windows::login_window::login_journey::LoginJourney;
 use reqwest::Url;
-
-/// Referring website visited first, before the homepage. Defaults to Google so
-/// the login page sees a plausible referrer (some providers gate on this).
-static DEFAULT_REFERRING_URL: Lazy<Url> = Lazy::new(|| {
-  Url::parse("https://google.com").expect("URL should parse")
-});
 
 /// Third-party SSO / identity provider hosts. When the webview is on one of
 /// these we know the user is mid auth-flow (and has therefore left the login
@@ -29,13 +23,14 @@ const DEFAULT_AUTH_FLOW_HOSTNAMES: &[&str] = &[
 
 /// A website whose login flow the app can drive in an embedded webview.
 ///
-/// Implementors describe the URLs to visit and how to recognize a completed
-/// login. Sensible defaults are provided for the referrer, the SSO host list,
-/// and the completion heuristics; a site only overrides what differs.
+/// Implementors describe the navigation [`LoginJourney`] to the site's login
+/// screen and how to recognize a completed login. Sensible defaults are
+/// provided for the SSO host list, cookie origins, and the completion
+/// heuristics; a site only overrides what differs.
 ///
-/// The flow is: [`referring_url`] -> [`opening_url`] -> [`login_url`], and the
-/// monitor thread watches for [`destination_hostnames`] plus cookie signals to
-/// decide when the user has finished.
+/// The driver executes [`journey`]'s plan, then the monitor thread watches
+/// for [`destination_hostnames`] plus cookie signals to decide when the user
+/// has finished.
 pub trait LoginWindowSite: Send + Sync {
   /// Which website this drives (also selects the credential service).
   fn login_website(&self) -> LoginWebsite;
@@ -43,12 +38,8 @@ pub trait LoginWindowSite: Send + Sync {
   /// Human-facing window title (e.g. "Login to Artcraft").
   fn window_title(&self) -> String;
 
-  /// The homepage, opened after the referrer and before the login page.
-  /// e.g. `https://getartcraft.com`.
-  fn opening_url(&self) -> Url;
-
-  /// The login page itself. e.g. `https://app.getartcraft.com/login`.
-  fn login_url(&self) -> Url;
+  /// The navigation journey from a cold window to the site's login screen.
+  fn journey(&self) -> LoginJourney;
 
   /// Hosts that indicate the user has reached the logged-in destination.
   /// e.g. `["app.getartcraft.com"]`. Note the login page is often on one of
@@ -61,23 +52,28 @@ pub trait LoginWindowSite: Send + Sync {
     self.login_website().credential_service()
   }
 
-  /// Referring website visited first. Defaults to Google.
-  fn referring_url(&self) -> Url {
-    DEFAULT_REFERRING_URL.clone()
-  }
-
   /// SSO / identity-provider hosts that mean "still logging in".
   fn auth_flow_hostnames(&self) -> &[&str] {
     DEFAULT_AUTH_FLOW_HOSTNAMES
   }
 
   /// URLs whose cookies we read once the user appears logged in. Defaults to
-  /// the origins of the opening and login pages.
+  /// the origins of the journey's site URLs plus the destination hostnames
+  /// (which covers sites whose login page is discovered at runtime).
   fn cookie_urls(&self) -> Vec<Url> {
-    let mut urls = vec![origin_url(&self.login_url())];
-    let opening_origin = origin_url(&self.opening_url());
-    if !urls.contains(&opening_origin) {
-      urls.push(opening_origin);
+    let mut urls: Vec<Url> = Vec::new();
+    for url in self.journey().site_urls() {
+      let origin = origin_url(&url);
+      if !urls.contains(&origin) {
+        urls.push(origin);
+      }
+    }
+    for hostname in self.destination_hostnames() {
+      if let Ok(origin) = Url::parse(&format!("https://{hostname}/")) {
+        if !urls.contains(&origin) {
+          urls.push(origin);
+        }
+      }
     }
     urls
   }
