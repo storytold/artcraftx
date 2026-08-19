@@ -1,6 +1,7 @@
 pub mod artcraft_login_window;
 pub mod higgsfield_login_window;
 pub mod magnific_login_window;
+pub mod midjourney_login_window;
 pub mod openart_login_window;
 pub mod runway_login_window;
 pub mod xai_login_window;
@@ -10,6 +11,7 @@ use crate::windows::login_window::login_window_trait::LoginWindowSite;
 use crate::windows::login_window::logins::artcraft_login_window::ArtCraftLoginWindow;
 use crate::windows::login_window::logins::higgsfield_login_window::HiggsfieldLoginWindow;
 use crate::windows::login_window::logins::magnific_login_window::MagnificLoginWindow;
+use crate::windows::login_window::logins::midjourney_login_window::MidjourneyLoginWindow;
 use crate::windows::login_window::logins::openart_login_window::OpenArtLoginWindow;
 use crate::windows::login_window::logins::runway_login_window::RunwayLoginWindow;
 use crate::windows::login_window::logins::xai_login_window::XAiLoginWindow;
@@ -22,6 +24,7 @@ pub fn login_site_for(website: LoginWebsite) -> Box<dyn LoginWindowSite> {
     LoginWebsite::Higgsfield => Box::new(HiggsfieldLoginWindow),
     LoginWebsite::Runway => Box::new(RunwayLoginWindow),
     LoginWebsite::Magnific => Box::new(MagnificLoginWindow),
+    LoginWebsite::Midjourney => Box::new(MidjourneyLoginWindow),
     LoginWebsite::XAi => Box::new(XAiLoginWindow),
   }
 }
@@ -39,6 +42,7 @@ mod tests {
     LoginWebsite::Higgsfield,
     LoginWebsite::Runway,
     LoginWebsite::Magnific,
+    LoginWebsite::Midjourney,
     LoginWebsite::XAi,
   ];
 
@@ -84,6 +88,22 @@ mod tests {
     let plan = login_site_for(LoginWebsite::Higgsfield).journey().plan();
     assert_eq!(plan.len(), 2);
     assert_navigates_to(&plan[1], "higgsfield.ai", "/");
+  }
+
+  #[test]
+  fn midjourney_journey_has_no_login_page() {
+    let plan = login_site_for(LoginWebsite::Midjourney).journey().plan();
+    assert_eq!(plan.len(), 2);
+    assert_navigates_to(&plan[1], "www.midjourney.com", "/");
+  }
+
+  #[test]
+  fn midjourney_waits_for_the_auth_token_cookies() {
+    let site = login_site_for(LoginWebsite::Midjourney);
+    assert_eq!(site.session_cookie_names(), &[
+      "__Host-Midjourney.AuthUserTokenV3_i",
+      "__Host-Midjourney.AuthUserTokenV3_r",
+    ]);
   }
 
   #[test]

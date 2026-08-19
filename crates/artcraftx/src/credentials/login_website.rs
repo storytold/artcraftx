@@ -22,6 +22,8 @@ pub enum LoginWebsite {
   Runway,
   #[serde(rename = "magnific")]
   Magnific,
+  #[serde(rename = "midjourney")]
+  Midjourney,
   #[serde(rename = "xai")]
   XAi,
 }
@@ -36,6 +38,7 @@ impl LoginWebsite {
       Self::Higgsfield => GenerationSource::HiggsfieldCookies,
       Self::Runway => GenerationSource::RunwayCookies,
       Self::Magnific => GenerationSource::MagnificCookies,
+      Self::Midjourney => GenerationSource::MidjourneyCookies,
       Self::XAi => GenerationSource::XAiCookies,
     }
   }
@@ -46,6 +49,7 @@ impl LoginWebsite {
   pub fn generation_provider(&self) -> Option<GenerationSource> {
     match self {
       Self::ArtCraft => Some(GenerationSource::Artcraft),
+      Self::Midjourney => Some(GenerationSource::Midjourney),
       Self::XAi => Some(GenerationSource::Grok),
       Self::OpenArt | Self::Higgsfield | Self::Runway | Self::Magnific => None,
     }
@@ -58,6 +62,7 @@ impl LoginWebsite {
       Self::Higgsfield => "higgsfield",
       Self::Runway => "runway",
       Self::Magnific => "magnific",
+      Self::Midjourney => "midjourney",
       Self::XAi => "xai",
     }
   }
@@ -94,6 +99,10 @@ mod tests {
     assert_eq!(
       LoginWebsite::Higgsfield.credential_service(),
       GenerationSource::HiggsfieldCookies,
+    );
+    assert_eq!(
+      LoginWebsite::Midjourney.credential_service(),
+      GenerationSource::MidjourneyCookies,
     );
   }
 }
