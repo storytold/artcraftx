@@ -62,6 +62,7 @@ export const WEBSITE_LOGIN_SERVICES: ServiceMeta[] = [
   { value: "higgsfield_cookies", label: "Higgsfield", logo: "higgsfield.svg", loginWebsite: "higgsfield" },
   { value: "openart_cookies", label: "OpenArt", logo: "openart.svg", loginWebsite: "openart" },
   { value: "magnific_cookies", label: "Magnific", logo: "magnific.svg", loginWebsite: "magnific" },
+  { value: "midjourney_cookies", label: "Midjourney", logo: "midjourney.svg", loginWebsite: "midjourney" },
   { value: "xai_cookies", label: "xAI", logo: "grok.svg", loginWebsite: "xai" },
   { value: "artcraft_local", label: "ArtCraft Local Dev", logo: "artcraft.svg", passwordLogin: true },
 ];
@@ -73,8 +74,6 @@ const ALL_SERVICES: ServiceMeta[] = [
   ...WEBSITE_LOGIN_SERVICES,
   { value: "artcraft_cookies", label: "ArtCraft", logo: "artcraft.svg" },
   { value: "grok_cookies", label: "Grok", logo: "grok.svg" },
-  { value: "magnific_cookies", label: "Magnific", logo: "magnific.svg" },
-  { value: "midjourney_cookies", label: "Midjourney", logo: "midjourney.svg" },
   { value: "sora_cookies", label: "Sora", logo: "openai.svg" },
   { value: "worldlabs_cookies", label: "World Labs", logo: "worldlabs.svg" },
 ];
