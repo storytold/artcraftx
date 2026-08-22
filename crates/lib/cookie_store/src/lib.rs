@@ -19,6 +19,5 @@
 #![allow(non_snake_case)]
 
 pub mod cookie;
-pub mod cookie_set;
 pub mod cookie_store;
 pub mod serialized_cookie_store;
