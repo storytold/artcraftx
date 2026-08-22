@@ -1,4 +1,4 @@
-use cookie_store::cookie_store::CookieStore;
+use cookie_store::cookie_store::{CapturedCookie, CookieStore};
 use errors::AnyhowResult;
 use reqwest::Url;
 use tauri::WebviewWindow;
@@ -18,6 +18,10 @@ pub fn extract_login_window_cookies(
   webview: &WebviewWindow,
   cookie_urls: &[Url],
 ) -> AnyhowResult<CookieStore> {
+  let Some(fallback_url) = cookie_urls.first() else {
+    return Ok(CookieStore::empty());
+  };
+
   let hosts: Vec<String> = cookie_urls
       .iter()
       .filter_map(|url| url.host_str().map(|host| host.to_ascii_lowercase()))
@@ -26,9 +30,14 @@ pub fn extract_login_window_cookies(
   let mut cookie_store = CookieStore::empty();
   for cookie in webview.cookies()?.iter() {
     if cookie_domain_matches(cookie.domain(), &hosts) {
-      cookie_store.add_cookie_name_and_value(
-        cookie.name().to_string(),
-        cookie.value().to_string(),
+      cookie_store.insert_captured(
+        CapturedCookie {
+          name: cookie.name().to_string(),
+          value: cookie.value().to_string(),
+          maybe_domain: cookie.domain().map(str::to_string),
+          maybe_path: cookie.path().map(str::to_string),
+        },
+        fallback_url,
       );
     }
   }

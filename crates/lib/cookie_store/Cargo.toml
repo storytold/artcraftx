@@ -1,7 +1,7 @@
 [package]
 name = "cookie_store"
 edition = "2024"
-version = "0.0.1"
+version = "0.0.2"
 publish = false
 
 [package.metadata.cargo-udeps.ignore]
@@ -11,17 +11,27 @@ normal = ["workspace-build-acceleration"]
 name = "cookie_store"
 path = "src/lib.rs"
 
+[features]
+default = []
+# Implements the wreq `CookieStore` trait on `SharedCookieStore` so a wreq
+# client can read from and write Set-Cookie responses into a shared store.
+wreq = ["dep:wreq"]
+
 [dependencies]
 # Workspace hack (faster compile times)
 workspace-build-acceleration.workspace = true
 
-# Internal
-errors.workspace = true
-
 # External
+log.workspace = true
 serde.workspace = true
-serde_derive.workspace = true
 serde_json.workspace = true
+url.workspace = true
+wreq = { workspace = true, optional = true }
+
+# NB: The RFC 6265 cookie store implementation this crate wraps, renamed to
+# avoid clashing with this crate's own name. `serde_json` enables cookie
+# serialization; we skip `public_suffix` to keep dependencies minimal.
+rfc_cookie_store = { package = "cookie_store", version = "0.21.1", default-features = false, features = ["serde_json"] }
 
 [dev-dependencies]
 # None yet

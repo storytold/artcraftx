@@ -1,4 +1,4 @@
-use cookie_store::cookie_store::CookieStore;
+use cookie_store::cookie_store::{CapturedCookie, CookieStore};
 use errors::AnyhowResult;
 use once_cell::sync::Lazy;
 use reqwest::Url;
@@ -13,9 +13,14 @@ pub fn worldlabs_login_webview_extract_cookies(webview: &WebviewWindow) -> Anyho
   let mut cookie_store = CookieStore::empty();
   let cookies = get_all_worldlabs_cookies(webview)?;
   for cookie in cookies.iter() {
-    cookie_store.add_cookie_name_and_value(
-      cookie.name().to_string(),
-      cookie.value().to_string(),
+    cookie_store.insert_captured(
+      CapturedCookie {
+        name: cookie.name().to_string(),
+        value: cookie.value().to_string(),
+        maybe_domain: cookie.domain().map(str::to_string),
+        maybe_path: cookie.path().map(str::to_string),
+      },
+      &ROOT_COOKIE_URL,
     );
   }
   Ok(cookie_store)

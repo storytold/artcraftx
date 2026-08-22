@@ -17,8 +17,8 @@ const USERNAME_CLAIM_KEYS: &[&str] = &["username", "preferred_username", "name",
 /// username/email so the saved credential can be told apart from other
 /// accounts. Returns `None` when nothing identifiable is found.
 pub fn extract_user_info_from_cookies(cookie_store: &CookieStore) -> Option<CredentialUserInfo> {
-  for cookie in cookie_store.cookies.values() {
-    let Some(claims) = decode_jwt_payload(&cookie.value) else {
+  for (_name, value) in cookie_store.iter_name_values() {
+    let Some(claims) = decode_jwt_payload(value) else {
       continue;
     };
 
@@ -63,15 +63,17 @@ fn first_string_claim(claims: &Value, keys: &[&str]) -> Option<String> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use reqwest::Url;
 
   // Payload: {"email":"echelon@gmail.com","username":"echelon","exp":1,"iat":1}
   const JWT_WITH_EMAIL: &str = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImVjaGVsb25AZ21haWwuY29tIiwidXNlcm5hbWUiOiJlY2hlbG9uIiwiZXhwIjoxLCJpYXQiOjF9.abc";
 
   #[test]
   fn extracts_email_and_username_from_jwt_cookie() {
+    let url = site_url();
     let mut store = CookieStore::empty();
-    store.add_cookie_name_and_value("session".to_string(), JWT_WITH_EMAIL.to_string());
-    store.add_cookie_name_and_value("analytics".to_string(), "not-a-jwt".to_string());
+    store.insert_named("session", JWT_WITH_EMAIL, &url);
+    store.insert_named("analytics", "not-a-jwt", &url);
 
     let info = extract_user_info_from_cookies(&store).unwrap();
     assert_eq!(info.email.as_deref(), Some("echelon@gmail.com"));
@@ -81,7 +83,11 @@ mod tests {
   #[test]
   fn returns_none_without_identifiable_claims() {
     let mut store = CookieStore::empty();
-    store.add_cookie_name_and_value("plain".to_string(), "opaque-token".to_string());
+    store.insert_named("plain", "opaque-token", &site_url());
     assert!(extract_user_info_from_cookies(&store).is_none());
+  }
+
+  fn site_url() -> Url {
+    Url::parse("https://provider.example/").unwrap()
   }
 }

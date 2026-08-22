@@ -119,7 +119,7 @@ fn check_login_window(
     session_cookie_names.iter().any(|name| cookie_store.has_cookie(name))
   };
 
-  let cookie_names = cookie_store.cookies.keys().cloned().collect::<Vec<_>>().join(", ");
+  let cookie_names = cookie_store.cookie_names().join(", ");
   info!(
     "{} login check: host `{}`, path `{}`, cookies={} [{}], length={}, has_session={}",
     website, hostname, path, cookie_store.len(), cookie_names, cookie_length, has_captured_session,
