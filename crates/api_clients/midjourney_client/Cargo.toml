@@ -17,7 +17,7 @@ workspace-build-acceleration.workspace = true
 
 # Internal
 cloudflare_errors.workspace = true
-cookie_store = { workspace = true, features = ["wreq"] }
+cookie_store_wrapper = { workspace = true, features = ["wreq"] }
 errors.workspace = true
 
 # External

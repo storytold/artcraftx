@@ -2,7 +2,7 @@ use crate::services::grok::state::legacy_credential_paths::GrokLegacyCredentialP
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::grok::state::grok_credential_holder::GrokCredentialHolder;
 use crate::services::grok::state::grok_serializable_state::{GrokSerializableState, SERIALIZABLE_GROK_STATE_VERSION};
-use cookie_store::cookie_store::CookieStore;
+use cookie_store_wrapper::cookie_store::CookieStore;
 use grok_consumer_client::credentials::grok_client_secrets::GrokClientSecrets;
 use grok_consumer_client::credentials::grok_cookies::GrokCookies;
 use grok_consumer_client::credentials::grok_full_credentials::GrokFullCredentials;
@@ -40,8 +40,7 @@ impl GrokCredentialManager {
         credential_data = Arc::new(RwLock::new(GrokCredentialHolder::empty()));
       }
       Ok(Some(state)) => {
-        let maybe_cookies = state.user_cookies
-            .map(|cookies| cookies.to_cookie_store());
+        let maybe_cookies = state.user_cookies;
 
         let mut user_data = None;
         if let Some(user_id) = state.user_id {
@@ -184,9 +183,7 @@ impl GrokCredentialManager {
 
     let state = GrokSerializableState {
       version: SERIALIZABLE_GROK_STATE_VERSION,
-      user_cookies: creds.browser_cookies
-          .as_ref()
-          .map(|cookies| cookies.to_serializable()),
+      user_cookies: creds.browser_cookies.clone(),
       user_id: creds.grok_full_credentials
           .as_ref()
           .map(|creds| creds.client_secrets.user_id.to_string()),

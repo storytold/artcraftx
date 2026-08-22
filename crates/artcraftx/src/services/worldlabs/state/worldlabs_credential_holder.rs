@@ -1,4 +1,4 @@
-use cookie_store::cookie_store::CookieStore;
+use cookie_store_wrapper::cookie_store::CookieStore;
 use worldlabs_consumer_client::credentials::world_labs_bearer_token::WorldLabsBearerToken;
 use worldlabs_consumer_client::credentials::world_labs_cookies::WorldLabsCookies;
 use worldlabs_consumer_client::credentials::worldlabs_refresh_token::WorldLabsRefreshToken;

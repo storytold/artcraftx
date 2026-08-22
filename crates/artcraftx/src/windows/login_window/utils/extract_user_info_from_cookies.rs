@@ -1,7 +1,7 @@
 use crate::credentials::credential_user_info::CredentialUserInfo;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use base64::Engine;
-use cookie_store::cookie_store::CookieStore;
+use cookie_store_wrapper::cookie_store::CookieStore;
 use serde_json::Value;
 
 /// JSON claim keys that may carry an email address, most specific first.

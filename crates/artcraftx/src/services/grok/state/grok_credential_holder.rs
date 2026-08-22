@@ -1,4 +1,4 @@
-use cookie_store::cookie_store::CookieStore;
+use cookie_store_wrapper::cookie_store::CookieStore;
 use grok_consumer_client::credentials::grok_full_credentials::GrokFullCredentials;
 
 #[derive(Clone)]

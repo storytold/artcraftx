@@ -2,7 +2,7 @@ use crate::services::worldlabs::state::legacy_credential_paths::WorldlabsLegacyC
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::worldlabs::state::worldlabs_credential_holder::WorldlabsCredentialHolder;
 use crate::services::worldlabs::state::worldlabs_serializable_state::{WorldlabsSerializableState, SERIALIZABLE_WORLDLABS_STATE_VERSION};
-use cookie_store::cookie_store::CookieStore;
+use cookie_store_wrapper::cookie_store::CookieStore;
 use log::warn;
 use std::sync::{Arc, RwLock};
 use worldlabs_consumer_client::credentials::world_labs_bearer_token::WorldLabsBearerToken;
@@ -39,9 +39,7 @@ impl WorldlabsCredentialManager {
         credential_data = Arc::new(RwLock::new(WorldlabsCredentialHolder::empty()));
       }
       Ok(Some(state)) => {
-        let maybe_browser_cookies = state.user_cookies
-            .as_ref()
-            .map(|cookies| cookies.to_cookie_store());
+        let maybe_browser_cookies = state.user_cookies;
 
         let maybe_cookies = maybe_browser_cookies
             .as_ref()
@@ -186,9 +184,7 @@ impl WorldlabsCredentialManager {
 
     let state = WorldlabsSerializableState {
       version: SERIALIZABLE_WORLDLABS_STATE_VERSION,
-      user_cookies: creds.browser_cookies
-          .as_ref()
-          .map(|cookies| cookies.to_serializable()),
+      user_cookies: creds.browser_cookies.clone(),
       user_id: None, // TODO
       user_email: None, // TODO
       bearer_token: creds.world_labs_bearer_token

@@ -1,5 +1,5 @@
 use crate::services::midjourney::state::midjourney_user_info::MidjourneyUserInfo;
-use cookie_store::serialized_cookie_store::SerializableCookieStore;
+use cookie_store_wrapper::cookie_store::CookieStore;
 use midjourney_client::credentials::midjourney_user_id::MidjourneyUserId;
 use serde_derive::{Deserialize, Serialize};
 
@@ -10,7 +10,7 @@ pub (super) struct SerializableMidjourneyState {
   pub (super) version: u32,
   
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub (super) user_cookies: Option<SerializableCookieStore>,
+  pub (super) user_cookies: Option<CookieStore>,
   
   #[serde(skip_serializing_if = "Option::is_none")]
   pub (super) user_info: Option<SerializableMidjourneyUserInfo>,

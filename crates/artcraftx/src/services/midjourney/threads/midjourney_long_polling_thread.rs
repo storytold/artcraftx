@@ -11,7 +11,7 @@ use crate::services::midjourney::utils::download_midjourney_image::download_midj
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
 use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
-use cookie_store::cookie_store::CookieStore;
+use cookie_store_wrapper::cookie_store::CookieStore;
 use core_types::enums::generation_source::GenerationSource;
 use artcraft_client::enums::common::generation::common_model_type::CommonModelType;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;

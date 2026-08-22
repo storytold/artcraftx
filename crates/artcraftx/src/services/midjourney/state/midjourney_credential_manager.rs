@@ -2,7 +2,7 @@ use crate::services::midjourney::state::legacy_credential_paths::MidjourneyLegac
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::midjourney::state::midjourney_user_info::MidjourneyUserInfo;
 use crate::services::midjourney::state::serializable_midjourney_state::{SerializableMidjourneyState, SERIALIZABLE_MIDJOURNEY_STATE_VERSION};
-use cookie_store::cookie_store::CookieStore;
+use cookie_store_wrapper::cookie_store::CookieStore;
 use errors::AnyhowResult;
 use log::{info, warn};
 use std::fs::read_to_string;
@@ -41,8 +41,7 @@ impl MidjourneyCredentialManager {
         user_info = Arc::new(RwLock::new(None));
       }
       Ok(Some(state)) => {
-        let maybe_cookies = state.user_cookies
-            .map(|cookies| cookies.to_cookie_store());
+        let maybe_cookies = state.user_cookies;
         let maybe_user_info = state.user_info
             .map(|info| info.to_user_info());
         cookies = Arc::new(RwLock::new(maybe_cookies));
@@ -147,9 +146,6 @@ impl MidjourneyCredentialManager {
       Err(err) => return Err(anyhow::anyhow!("Failed to acquire read lock: {:?}", err)),
       Ok(info) => info.clone(),
     };
-    
-    let maybe_cookies= maybe_cookies
-        .map(|cookies| cookies.to_serializable());
     
     let maybe_user_info= maybe_user_info
         .map(|info| info.to_serializable());

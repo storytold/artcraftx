@@ -1,13 +1,13 @@
-//! cookie_store
+//! cookie_store_wrapper
 //!
 //! Cookie jar for scraping-style API clients.
 //!
-//! Wraps the RFC 6265 `cookie_store` crate (imported as `rfc_cookie_store`) so
-//! stored cookies follow real HTTP semantics: domain and path matching,
-//! replacement on repeat Set-Cookie, and server-driven expiry. On top of that
-//! this crate adds disk serialization, a bounded change log for debugging
-//! auth flows, and a cheaply clonable thread-safe handle
-//! ([`shared_cookie_store::SharedCookieStore`]).
+//! Wraps the RFC 6265 `cookie_store` crate so stored cookies follow real HTTP
+//! semantics: domain and path matching, replacement on repeat Set-Cookie, and
+//! server-driven expiry. On top of that this crate adds Serde support (embed a
+//! [`cookie_store::CookieStore`] directly in your own serializable structs), a
+//! bounded change log for debugging auth flows, and a cheaply clonable
+//! thread-safe handle ([`shared_cookie_store::SharedCookieStore`]).
 //!
 //! With the `wreq` feature enabled, `SharedCookieStore` implements wreq's
 //! `CookieStore` trait, so a wreq client built with it as the cookie provider
@@ -30,7 +30,7 @@
 
 pub mod change_log;
 pub mod cookie_store;
-pub mod serialized_cookie_store;
+pub mod serde_support;
 pub mod shared_cookie_store;
 
 #[cfg(feature = "wreq")]

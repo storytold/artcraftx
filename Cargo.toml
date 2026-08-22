@@ -29,7 +29,7 @@ members = [
   "crates/lib/caching/memory_store",
   "crates/lib/cloudflare_errors",
   "crates/lib/cloudflare_mitigation",
-  "crates/lib/cookie_store",
+  "crates/lib/cookie_store_wrapper",
   "crates/lib/data/primitives",
   "crates/lib/data/web_base64",
   "crates/lib/errors",
@@ -86,7 +86,7 @@ artcraft_client = { path = "crates/api_clients/artcraft_client" }
 build_metadata = { path = "crates/lib/build_metadata" }
 cloudflare_errors = { path = "crates/lib/cloudflare_errors" }
 cloudflare_mitigation = { path = "crates/lib/cloudflare_mitigation" }
-cookie_store = { path = "crates/lib/cookie_store" }
+cookie_store_wrapper = { path = "crates/lib/cookie_store_wrapper" }
 errors = { path = "crates/lib/errors" }
 fal_client = { path = "crates/api_clients/fal_client" }
 file_to_base64_url = { path = "crates/lib/files/file_to_base64_url" }

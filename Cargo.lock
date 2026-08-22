@@ -218,7 +218,7 @@ dependencies = [
  "build_metadata",
  "bytes",
  "chrono",
- "cookie_store 0.0.2",
+ "cookie_store_wrapper",
  "core_types",
  "directories",
  "dirs",
@@ -1112,19 +1112,6 @@ dependencies = [
 
 [[package]]
 name = "cookie_store"
-version = "0.0.2"
-dependencies = [
- "cookie_store 0.21.1",
- "log",
- "serde",
- "serde_json",
- "url",
- "workspace-build-acceleration",
- "wreq",
-]
-
-[[package]]
-name = "cookie_store"
 version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2eac901828f88a5241ee0600950ab981148a18f2f756900ffba1b125ca6a3ef9"
@@ -1139,6 +1126,21 @@ dependencies = [
  "serde_json",
  "time",
  "url",
+]
+
+[[package]]
+name = "cookie_store_wrapper"
+version = "0.0.2"
+dependencies = [
+ "cookie_store",
+ "log",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "toml 1.0.7+spec-1.1.0",
+ "url",
+ "workspace-build-acceleration",
+ "wreq",
 ]
 
 [[package]]
@@ -3792,7 +3794,7 @@ version = "0.0.1"
 dependencies = [
  "anyhow",
  "cloudflare_errors",
- "cookie_store 0.0.2",
+ "cookie_store_wrapper",
  "dom_query 0.20.2",
  "errors",
  "filesys",
@@ -5304,7 +5306,7 @@ dependencies = [
  "base64 0.22.1",
  "bytes",
  "cookie",
- "cookie_store 0.21.1",
+ "cookie_store",
  "encoding_rs",
  "futures-channel",
  "futures-core",
@@ -6980,7 +6982,7 @@ name = "tauri-plugin-http"
 version = "2.4.3"
 dependencies = [
  "bytes",
- "cookie_store 0.21.1",
+ "cookie_store",
  "data-url",
  "http",
  "regex",

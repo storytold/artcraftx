@@ -1,4 +1,4 @@
-use cookie_store::cookie_store::{CapturedCookie, CookieStore};
+use cookie_store_wrapper::cookie_store::{CapturedCookie, CookieStore};
 use errors::AnyhowResult;
 use reqwest::Url;
 use tauri::WebviewWindow;

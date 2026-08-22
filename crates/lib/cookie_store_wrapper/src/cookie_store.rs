@@ -1,7 +1,6 @@
 use crate::change_log::{CookieChangeAction, CookieChangeLog};
-use crate::serialized_cookie_store::SerializableCookieStore;
 use log::warn;
-use rfc_cookie_store::{CookieError, CookieStore as RfcCookieStore, RawCookie, StoreAction};
+use ::cookie_store::{CookieError, CookieStore as CookieStoreRfc, RawCookie, StoreAction};
 use url::Url;
 
 /// A cookie jar with RFC 6265 storage semantics.
@@ -16,7 +15,7 @@ use url::Url;
 /// threads.
 #[derive(Clone, Debug, Default)]
 pub struct CookieStore {
-  store: RfcCookieStore,
+  store: CookieStoreRfc,
   change_log: CookieChangeLog,
 }
 
@@ -39,7 +38,7 @@ impl CookieStore {
     Self::default()
   }
 
-  pub (crate) fn from_rfc_store(store: RfcCookieStore) -> Self {
+  pub (crate) fn from_rfc_store(store: CookieStoreRfc) -> Self {
     Self {
       store,
       change_log: CookieChangeLog::default(),
@@ -192,11 +191,7 @@ impl CookieStore {
     &self.change_log
   }
 
-  pub fn to_serializable(&self) -> SerializableCookieStore {
-    SerializableCookieStore::from_cookie_store(self)
-  }
-
-  pub (crate) fn rfc_store(&self) -> &RfcCookieStore {
+  pub (crate) fn rfc_store(&self) -> &CookieStoreRfc {
     &self.store
   }
 

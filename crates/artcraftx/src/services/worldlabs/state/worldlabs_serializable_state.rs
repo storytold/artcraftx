@@ -1,6 +1,6 @@
 use crate::services::worldlabs::state::legacy_credential_paths::WorldlabsLegacyCredentialPaths;
 use crate::state::data_dir::app_data_root::AppDataRoot;
-use cookie_store::serialized_cookie_store::SerializableCookieStore;
+use cookie_store_wrapper::cookie_store::CookieStore;
 use serde_derive::{Deserialize, Serialize};
 use std::fs::read_to_string;
 
@@ -16,7 +16,7 @@ pub (super) struct WorldlabsSerializableState {
   pub (super) version: u32,
   
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub (super) user_cookies: Option<SerializableCookieStore>,
+  pub (super) user_cookies: Option<CookieStore>,
 
   #[serde(skip_serializing_if = "Option::is_none")]
   pub (super) bearer_token: Option<String>,
