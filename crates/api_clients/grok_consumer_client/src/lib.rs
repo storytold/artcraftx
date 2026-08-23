@@ -11,5 +11,5 @@ pub mod credentials;
 pub mod datatypes;
 pub mod error;
 pub mod recipes;
-pub mod requests;
+pub mod endpoint_bindings;
 pub mod utils;

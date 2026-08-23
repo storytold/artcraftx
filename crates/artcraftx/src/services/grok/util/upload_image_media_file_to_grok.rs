@@ -7,7 +7,7 @@ use anyhow::anyhow;
 use errors::AnyhowResult;
 use grok_consumer_client::datatypes::api::file_id::FileId;
 use grok_consumer_client::datatypes::file_upload_spec::FileUploadSpec;
-use grok_consumer_client::requests::upload_file::grok_upload_file::GrokUploadFile;
+use grok_consumer_client::endpoint_bindings::upload_file::grok_upload_file::GrokUploadFile;
 use log::info;
 use std::time::Duration;
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;

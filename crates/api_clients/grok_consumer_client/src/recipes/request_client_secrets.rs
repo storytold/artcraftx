@@ -2,18 +2,18 @@ use crate::credentials::grok_client_secrets::GrokClientSecrets;
 use crate::credentials::grok_cookies::GrokCookies;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
-use crate::requests::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
-use crate::requests::index_page::get_xsid_script::{get_xsid_script, GetXsidScriptArgs};
-use crate::requests::index_page::parsers::index::parse_index_baggage::parse_index_baggage;
-use crate::requests::index_page::parsers::index::parse_index_sentry_trace::parse_index_sentry_trace;
-use crate::requests::index_page::parsers::index::parse_index_svg_paths::parse_svg_paths_from_index_html;
-use crate::requests::index_page::parsers::index::parse_index_user_email::parse_index_user_email;
-use crate::requests::index_page::parsers::index::parse_index_user_id::parse_index_user_id;
-use crate::requests::index_page::parsers::index::parse_index_verification_token::parse_index_verification_token;
-use crate::requests::index_page::parsers::script::parse_script_actions_and_xsid_script_path::parse_script_actions_and_xsid_script_path;
-use crate::requests::index_page::parsers::script::parse_xsid_script_numbers::parse_xsid_script_numbers;
-use crate::requests::index_page::utils::convert_verification_token_to_loading_anim::convert_verification_token_to_loading_anim;
-use crate::requests::index_page::utils::select_svg_path_by_loading_anim::select_svg_path_by_loading_anim;
+use crate::endpoint_bindings::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
+use crate::endpoint_bindings::index_page::get_xsid_script::{get_xsid_script, GetXsidScriptArgs};
+use crate::endpoint_bindings::index_page::parsers::index::parse_index_baggage::parse_index_baggage;
+use crate::endpoint_bindings::index_page::parsers::index::parse_index_sentry_trace::parse_index_sentry_trace;
+use crate::endpoint_bindings::index_page::parsers::index::parse_index_svg_paths::parse_svg_paths_from_index_html;
+use crate::endpoint_bindings::index_page::parsers::index::parse_index_user_email::parse_index_user_email;
+use crate::endpoint_bindings::index_page::parsers::index::parse_index_user_id::parse_index_user_id;
+use crate::endpoint_bindings::index_page::parsers::index::parse_index_verification_token::parse_index_verification_token;
+use crate::endpoint_bindings::index_page::parsers::script::parse_script_actions_and_xsid_script_path::parse_script_actions_and_xsid_script_path;
+use crate::endpoint_bindings::index_page::parsers::script::parse_xsid_script_numbers::parse_xsid_script_numbers;
+use crate::endpoint_bindings::index_page::utils::convert_verification_token_to_loading_anim::convert_verification_token_to_loading_anim;
+use crate::endpoint_bindings::index_page::utils::select_svg_path_by_loading_anim::select_svg_path_by_loading_anim;
 
 pub struct RequestClientSecretsArgs<'a> {
   pub cookies: &'a GrokCookies,
