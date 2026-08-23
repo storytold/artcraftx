@@ -106,7 +106,7 @@ pub async fn storage_list(args: StorageListArgs<'_>) -> Result<Vec<StorageItem>,
   }
 
   let response : Vec<RawStorageItem> = serde_json::from_str(response_body)
-      .map_err(|err| MidjourneyApiError::DeserializationError(err))?;
+      .map_err(|err| MidjourneyApiError::deserialization(err, response_body.as_str()))?;
 
   let items = response
       .into_iter()

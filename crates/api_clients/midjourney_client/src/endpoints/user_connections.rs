@@ -128,7 +128,7 @@ pub async fn user_connections(args: UserConnectionsArgs<'_>) -> Result<Vec<Provi
   }
 
   let response : Vec<RawProvider> = serde_json::from_str(response_body)
-      .map_err(|err| MidjourneyApiError::DeserializationError(err))?;
+      .map_err(|err| MidjourneyApiError::deserialization(err, response_body.as_str()))?;
 
   let providers = response
       .into_iter()

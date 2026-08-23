@@ -126,7 +126,7 @@ pub async fn get_user_info(args: GetUserInfoArgs<'_>) -> Result<GetUserInfoRespo
   }
 
   let response : RawBody = serde_json::from_str(&inner_json)
-      .map_err(|err| MidjourneyApiError::DeserializationError(err))?;
+      .map_err(|err| MidjourneyApiError::deserialization(err, inner_json.as_str()))?;
   
   let props = match response.initialAuthUser {
     Some(props) => props,

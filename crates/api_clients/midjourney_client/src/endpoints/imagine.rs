@@ -206,7 +206,7 @@ pub async fn imagine(args: ImagineArgs<'_>) -> Result<ImagineResponse, Midjourne
   }
 
   let response : RawImagineResponse = serde_json::from_str(&response_body)
-      .map_err(|err| MidjourneyApiError::DeserializationError(err))?;
+      .map_err(|err| MidjourneyApiError::deserialization(err, response_body.as_str()))?;
 
   Ok(ImagineResponse {
     cursor: response.cursor.clone(),

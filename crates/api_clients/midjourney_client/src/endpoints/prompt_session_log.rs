@@ -144,7 +144,7 @@ pub async fn prompt_session_log(
   }
 
   let response = serde_json::from_str::<RawResponse>(&response_body)
-      .map_err(MidjourneyApiError::DeserializationError)?;
+      .map_err(|err| MidjourneyApiError::deserialization(err, response_body.as_str()))?;
 
   Ok(PromptSessionLogResponse {
     status: response.status,

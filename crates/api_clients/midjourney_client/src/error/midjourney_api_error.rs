@@ -47,8 +47,12 @@ pub enum MidjourneyApiError {
   /// Cloudflare errors.
   CloudflareError(CloudflareError),
 
-  /// A deserialization error with the response.
-  DeserializationError(serde_json::Error),
+  /// A deserialization error with the response. Carries the raw response body
+  /// that failed to parse, so the exact shape is visible in logs.
+  DeserializationError {
+    source: serde_json::Error,
+    body: String,
+  },
 
   /// The request timed out.
   Timeout(String),
@@ -84,7 +88,13 @@ impl Display for MidjourneyApiError {
         write!(f, "Unknown HTTP failure; status code: {}; body: {}", status_code, body),
       // Deserialization errors
       // Server response handling errors
-      Self::DeserializationError(error) => write!(f, "Deserialization error: {}", error),
+      Self::DeserializationError { source, body } => write!(
+        f,
+        "Deserialization error: {} | raw response body ({} bytes): {}",
+        source,
+        body.len(),
+        body,
+      ),
       // Network errors
       Self::Timeout(msg) => write!(f, "Timeout: {}", msg),
       Self::NetworkError(msg) => write!(f, "Network error: {}", msg),
@@ -98,9 +108,21 @@ impl Display for MidjourneyApiError {
   }
 }
 
-impl From<serde_json::Error> for MidjourneyApiError {
-  fn from(error: serde_json::Error) -> Self {
-    Self::DeserializationError(error)
+impl MidjourneyApiError {
+  /// Build a [`MidjourneyApiError::DeserializationError`] that captures the raw
+  /// body that failed to parse, and log the whole payload immediately so it is
+  /// never lost even if the error is later swallowed.
+  pub fn deserialization(source: serde_json::Error, body: &str) -> Self {
+    log::warn!(
+      "Midjourney response failed to deserialize: {} | raw body ({} bytes): {}",
+      source,
+      body.len(),
+      body,
+    );
+    Self::DeserializationError {
+      source,
+      body: body.to_string(),
+    }
   }
 }
 

@@ -229,7 +229,7 @@ pub async fn submit_job(args: SubmitJobArgs<'_>) -> Result<SubmitJobResponse, Mi
   }
 
   let response = serde_json::from_str::<RawResponse>(response_body)
-      .map_err(|err| MidjourneyApiError::DeserializationError(err))?;
+      .map_err(|err| MidjourneyApiError::deserialization(err, response_body.as_str()))?;
 
   let maybe_job_id = response.success
       .get(0)
