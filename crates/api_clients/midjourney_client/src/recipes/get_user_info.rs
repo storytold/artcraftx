@@ -1,14 +1,20 @@
 use crate::client::midjourney_hostname::MidjourneyHostname;
 use crate::credentials::midjourney_user_id::MidjourneyUserId;
-use crate::endpoints::get_index_page_html::{get_index_page_html, GetIndexPageRequest};
+use crate::endpoints::get_index_page_html::{get_index_page_html, GetIndexPageArgs};
 use crate::error::midjourney_api_error::MidjourneyApiError;
 use crate::error::midjourney_error::MidjourneyError;
+use browser_emulation::browser_profile::BrowserProfile;
 use dom_query::Document;
 use serde::Deserialize;
 
-pub struct GetUserInfoRequest {
-  pub hostname: MidjourneyHostname,
-  pub cookie_header: String,
+/// Fetches the user's id, email, and websocket token from the index page. Has
+/// no semantic parameters — only transport concerns.
+pub struct GetUserInfoArgs<'a> {
+  pub cookie_header: &'a str,
+  /// Defaults to the standard hostname if absent.
+  pub hostname: Option<&'a MidjourneyHostname>,
+  /// Defaults to [`BrowserProfile::default`] if absent.
+  pub browser: Option<BrowserProfile>,
 }
 
 #[derive(Debug, Clone)]
@@ -18,10 +24,11 @@ pub struct GetUserInfoResponse {
   pub websocket_token: Option<String>,
 }
 
-pub async fn get_user_info(req: GetUserInfoRequest) -> Result<GetUserInfoResponse, MidjourneyError> {
-  let index_html = get_index_page_html(GetIndexPageRequest {
-    hostname: req.hostname,
-    cookie_header: req.cookie_header,
+pub async fn get_user_info(args: GetUserInfoArgs<'_>) -> Result<GetUserInfoResponse, MidjourneyError> {
+  let index_html = get_index_page_html(GetIndexPageArgs {
+    cookie_header: args.cookie_header,
+    hostname: args.hostname,
+    browser: args.browser,
   }).await?;
 
   /*
@@ -128,8 +135,7 @@ pub async fn get_user_info(req: GetUserInfoRequest) -> Result<GetUserInfoRespons
 
 #[cfg(test)]
 mod tests {
-  use crate::client::midjourney_hostname::MidjourneyHostname;
-  use crate::recipes::get_user_info::{get_user_info, GetUserInfoRequest};
+  use crate::recipes::get_user_info::{get_user_info, GetUserInfoArgs};
   use errors::AnyhowResult;
   use filesys::read_to_trimmed_string::read_to_trimmed_string;
 
@@ -138,9 +144,10 @@ mod tests {
   async fn test() -> AnyhowResult<()> {
     let cookie_header = read_to_trimmed_string("/Users/bt/secrets/midjourney/cookie.txt")?;
 
-    let result = get_user_info(GetUserInfoRequest {
-      cookie_header,
-      hostname: MidjourneyHostname::Standard,
+    let result = get_user_info(GetUserInfoArgs {
+      cookie_header: &cookie_header,
+      hostname: None,
+      browser: None,
     }).await?;
 
     println!("Response: {:?}\n\n", result);

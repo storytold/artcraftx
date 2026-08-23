@@ -25,6 +25,7 @@ members = [
   "crates/core_types",
 
   # Shared libraries
+  "crates/lib/browser_emulation",
   "crates/lib/build_metadata",
   "crates/lib/caching/memory_store",
   "crates/lib/cloudflare_errors",
@@ -86,6 +87,7 @@ artcraft_client = { path = "crates/api_clients/artcraft_client" }
 build_metadata = { path = "crates/lib/build_metadata" }
 cloudflare_errors = { path = "crates/lib/cloudflare_errors" }
 cloudflare_mitigation = { path = "crates/lib/cloudflare_mitigation" }
+browser_emulation = { path = "crates/lib/browser_emulation" }
 cookie_store_wrapper = { path = "crates/lib/cookie_store_wrapper" }
 errors = { path = "crates/lib/errors" }
 fal_client = { path = "crates/api_clients/fal_client" }

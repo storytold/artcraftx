@@ -16,6 +16,7 @@ path = "src/lib.rs"
 workspace-build-acceleration.workspace = true
 
 # Internal
+browser_emulation.workspace = true
 cloudflare_errors.workspace = true
 cookie_store_wrapper = { workspace = true, features = ["wreq"] }
 errors.workspace = true

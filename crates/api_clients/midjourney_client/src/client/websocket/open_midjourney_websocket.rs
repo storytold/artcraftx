@@ -4,11 +4,10 @@ use crate::client::websocket::midjourney_ws_event::MidjourneyWsEvent;
 use crate::credentials::midjourney_user_id::MidjourneyUserId;
 use crate::error::midjourney_client_error::MidjourneyClientError;
 use crate::error::midjourney_error::MidjourneyError;
+use browser_emulation::browser_profile::BrowserProfile;
 use std::time::Duration;
 use tokio::sync::broadcast;
 use tokio::time::timeout;
-use wreq::Client;
-use wreq_util::Emulation;
 
 /// Midjourney's websocket gateway. The host is fixed regardless of which
 /// `www`/custom hostname the HTTP API is reached through.
@@ -29,8 +28,12 @@ pub struct OpenMidjourneyWebSocketRequest<'a> {
   pub user_id: MidjourneyUserId,
 
   /// Used only for the `Origin` header; the socket host is always
-  /// `ws.midjourney.com`.
-  pub hostname: MidjourneyHostname,
+  /// `ws.midjourney.com`. Defaults to the standard hostname if absent.
+  pub hostname: Option<&'a MidjourneyHostname>,
+
+  /// Defaults to [`BrowserProfile::default`] if absent. Should match the
+  /// browser whose cookies obtained the `websocket_token`.
+  pub browser: Option<BrowserProfile>,
 }
 
 /// Open a Midjourney websocket, complete the `subscribe_to_user` handshake,
@@ -42,12 +45,13 @@ pub struct OpenMidjourneyWebSocketRequest<'a> {
 pub async fn open_midjourney_websocket(
   req: OpenMidjourneyWebSocketRequest<'_>,
 ) -> Result<MidjourneyWebSocket, MidjourneyError> {
-  let client = Client::builder()
-      .emulation(Emulation::Firefox139)
-      .build()
+  let client = req.browser.clone().unwrap_or_default()
+      .build_client()
       .map_err(MidjourneyClientError::WreqError)?;
 
-  let origin = format!("https://{}", req.hostname.as_str());
+  let default_hostname = MidjourneyHostname::Standard;
+  let hostname = req.hostname.unwrap_or(&default_hostname);
+  let origin = format!("https://{}", hostname.as_str());
   let url = format!(
     "{}?token={}&v={}",
     WEBSOCKET_URL_BASE,
@@ -100,19 +104,18 @@ async fn await_user_success(
 
 #[cfg(test)]
 mod tests {
-  use crate::client::midjourney_hostname::MidjourneyHostname;
   use crate::client::websocket::midjourney_ws_event::MidjourneyWsEvent;
   use crate::client::websocket::open_midjourney_websocket::{
     open_midjourney_websocket, OpenMidjourneyWebSocketRequest,
   };
-  use crate::endpoints::submit_job::{submit_job, SubmitJobRequest};
+  use crate::endpoints::submit_job::{submit_job, SubmitJobArgs, SubmitJobRequest};
   use crate::recipes::channel_id::ChannelId;
-  use crate::recipes::get_user_info::{get_user_info, GetUserInfoRequest};
+  use crate::recipes::get_user_info::{get_user_info, GetUserInfoArgs};
   use errors::AnyhowResult;
   use filesys::read_to_trimmed_string::read_to_trimmed_string;
 
   // Live end-to-end test. Requires a valid cookie header on disk. Run with:
-  //   cargo test -p midjourney_client --features (none) -- --ignored --exact \
+  //   cargo test -p midjourney_client -- --ignored --exact \
   //     client::websocket::open_midjourney_websocket::tests::live_stream_job
   #[ignore]
   #[tokio::test]
@@ -120,9 +123,10 @@ mod tests {
     let cookie_header = read_to_trimmed_string("/Users/bt/secrets/midjourney/cookie.txt")?;
 
     // 1. Read user id + websocket token from the index page.
-    let user_info = get_user_info(GetUserInfoRequest {
-      hostname: MidjourneyHostname::Standard,
-      cookie_header: cookie_header.clone(),
+    let user_info = get_user_info(GetUserInfoArgs {
+      cookie_header: &cookie_header,
+      hostname: None,
+      browser: None,
     }).await?;
 
     let user_id = user_info.user_id.expect("user id");
@@ -132,16 +136,20 @@ mod tests {
     let ws = open_midjourney_websocket(OpenMidjourneyWebSocketRequest {
       websocket_token: &websocket_token,
       user_id: user_id.clone(),
-      hostname: MidjourneyHostname::Standard,
+      hostname: None,
+      browser: None,
     }).await?;
 
     // 3. Submit a job over HTTP.
     let channel_id = ChannelId::UserId(user_id.clone()).to_string();
-    let submit = submit_job(SubmitJobRequest {
-      prompt: "pirate ship in the city --v 8.2",
-      channel_id: &channel_id,
-      hostname: MidjourneyHostname::Standard,
-      cookie_header,
+    let submit = submit_job(SubmitJobArgs {
+      request: SubmitJobRequest {
+        prompt: "pirate ship in the city --v 8.2",
+        channel_id: &channel_id,
+      },
+      cookie_header: &cookie_header,
+      hostname: None,
+      browser: None,
     }).await?;
     let job_id = submit.maybe_job_id.expect("job id");
 

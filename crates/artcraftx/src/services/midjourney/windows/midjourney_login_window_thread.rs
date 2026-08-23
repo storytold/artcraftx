@@ -10,9 +10,8 @@ use crate::services::midjourney::windows::open_midjourney_login_window::MIDJOURN
 use core_types::enums::generation_source::GenerationSource;
 use errors::AnyhowResult;
 use log::{error, info};
-use midjourney_client::client::midjourney_hostname::MidjourneyHostname;
 use midjourney_client::credentials::cookie_store_has_auth_cookies::cookie_store_has_auth_cookies;
-use midjourney_client::recipes::get_user_info::{get_user_info, GetUserInfoRequest};
+use midjourney_client::recipes::get_user_info::{get_user_info, GetUserInfoArgs};
 use tauri::{AppHandle, Manager, WebviewWindow};
 
 pub async fn midjourney_login_window_thread(
@@ -132,9 +131,11 @@ async fn check_login_window(
 
   info!("Current cookies (len {}): {:?}", cookie_store.len(), cookie_store.to_cookie_string());
 
-  let response = get_user_info(GetUserInfoRequest {
-    hostname: MidjourneyHostname::Standard,
-    cookie_header: cookie_store.to_cookie_string(),
+  let cookie_header = cookie_store.to_cookie_string();
+  let response = get_user_info(GetUserInfoArgs {
+    cookie_header: &cookie_header,
+    hostname: None,
+    browser: None,
   }).await;
   
   match response {

@@ -724,6 +724,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "browser_emulation"
+version = "0.0.1"
+dependencies = [
+ "workspace-build-acceleration",
+ "wreq",
+ "wreq-util",
+]
+
+[[package]]
 name = "bstr"
 version = "1.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3822,6 +3831,7 @@ name = "midjourney_client"
 version = "0.0.1"
 dependencies = [
  "anyhow",
+ "browser_emulation",
  "ciborium",
  "cloudflare_errors",
  "cookie_store_wrapper",

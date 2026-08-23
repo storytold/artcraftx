@@ -5,15 +5,23 @@ use log::{error, warn};
 use serde::{Deserialize, Serialize};
 
 use crate::client::midjourney_hostname::MidjourneyHostname;
+use browser_emulation::browser_profile::BrowserProfile;
 use cloudflare_errors::filter_cloudflare_errors::filter_cloudflare_errors;
-use wreq::Client;
-use wreq_util::Emulation;
 
+/// The semantic parameters of a submit-jobs request.
 pub struct SubmitJobRequest<'a> {
   pub prompt: &'a str,
   pub channel_id: &'a str,
-  pub hostname: MidjourneyHostname,
-  pub cookie_header: String,
+}
+
+/// A submit-jobs request plus its transport concerns.
+pub struct SubmitJobArgs<'a> {
+  pub request: SubmitJobRequest<'a>,
+  pub cookie_header: &'a str,
+  /// Defaults to the standard hostname if absent.
+  pub hostname: Option<&'a MidjourneyHostname>,
+  /// Defaults to [`BrowserProfile::default`] if absent.
+  pub browser: Option<BrowserProfile>,
 }
 
 #[derive(Debug, Clone)]
@@ -31,25 +39,30 @@ pub struct SubmitJobError {
   pub message: Option<String>,
 }
 
-pub async fn submit_job(req: SubmitJobRequest<'_>) -> Result<SubmitJobResponse, MidjourneyError> {
-  let client = Client::builder()
-      .emulation(Emulation::Firefox139)
-      .build()
-      .map_err(|err| MidjourneyClientError::WreqError(err))?;
+pub async fn submit_job(args: SubmitJobArgs<'_>) -> Result<SubmitJobResponse, MidjourneyError> {
+  let default_hostname = MidjourneyHostname::Standard;
+  let hostname = args.hostname.unwrap_or(&default_hostname);
 
-  let referer = format!("https://{}", req.hostname.as_str());
+  let client = args.browser.clone().unwrap_or_default()
+      .build_client()
+      .map_err(MidjourneyClientError::WreqError)?;
+
+  let referer = format!("https://{}", hostname.as_str());
 
   // NB: Other recent clients use /api/app/submit-jobs, but this appears invalid.
-  let url = format!("https://{}/api/submit-jobs", req.hostname.as_str());
+  let url = format!("https://{}/api/submit-jobs", hostname.as_str());
 
-  let cookie_header = req.cookie_header.trim();
+  let cookie_header = args.cookie_header.trim();
 
   if cookie_header.len() < 20 {
     error!("Cookie header is too short (len: {}): {}", cookie_header.len(), cookie_header);
     return Err(MidjourneyClientError::CookieTooShort.into());
   }
 
-  let mut http_request = client.post(url)
+  // NB: Browser-identity headers (user-agent, sec-ch-ua*, accept-encoding) are
+  // set coherently by the emulation on the client; here we set only the
+  // request-context headers.
+  let http_request = client.post(url)
       .header("cookie", cookie_header)
       .header("Referer", &referer)
       .header("Referrer-Policy", "origin-when-cross-origin")
@@ -57,7 +70,6 @@ pub async fn submit_job(req: SubmitJobRequest<'_>) -> Result<SubmitJobResponse, 
       .header("accept-language", "en-US,en;q=0.8")
       .header("content-type", "application/json")
       .header("priority", "u=1, i")
-      .header("sec-ch-ua-mobile", "?0")
       .header("sec-fetch-dest", "empty")
       .header("sec-fetch-mode", "cors")
       .header("sec-fetch-site", "same-origin")
@@ -96,7 +108,7 @@ pub async fn submit_job(req: SubmitJobRequest<'_>) -> Result<SubmitJobResponse, 
       mode: "fast".to_string(),
       private: false,
     },
-    channelId: req.channel_id.to_string(),
+    channelId: args.request.channel_id.to_string(),
     metadata: Metadata {
       isMobile: None,
       imagePrompts: 0,
@@ -106,7 +118,7 @@ pub async fn submit_job(req: SubmitJobRequest<'_>) -> Result<SubmitJobResponse, 
       lightboxOpen: None,
     },
     t: "imagine".to_string(),
-    prompt: req.prompt.to_string(),
+    prompt: args.request.prompt.to_string(),
   };
 
   let http_request  = http_request
@@ -203,8 +215,7 @@ pub async fn submit_job(req: SubmitJobRequest<'_>) -> Result<SubmitJobResponse, 
 
 #[cfg(test)]
 mod tests {
-  use crate::client::midjourney_hostname::MidjourneyHostname;
-  use crate::endpoints::submit_job::{submit_job, SubmitJobRequest};
+  use crate::endpoints::submit_job::{submit_job, SubmitJobArgs, SubmitJobRequest};
   use errors::AnyhowResult;
   use filesys::read_to_trimmed_string::read_to_trimmed_string;
 
@@ -216,11 +227,14 @@ mod tests {
     let cookie_header = read_to_trimmed_string("/Users/bt/secrets/midjourney/cookie.txt")?;
     let channel_id = read_to_trimmed_string("/Users/bt/secrets/midjourney/channel_id.txt")?;
 
-    let result = submit_job(SubmitJobRequest {
-      prompt: "a modern n64 console",
-      channel_id: &channel_id,
-      cookie_header,
-      hostname: MidjourneyHostname::Standard,
+    let result = submit_job(SubmitJobArgs {
+      request: SubmitJobRequest {
+        prompt: "a modern n64 console",
+        channel_id: &channel_id,
+      },
+      cookie_header: &cookie_header,
+      hostname: None,
+      browser: None,
     }).await?;
 
     println!("Response: {:?}", result);

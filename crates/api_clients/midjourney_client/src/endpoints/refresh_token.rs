@@ -1,9 +1,8 @@
 use crate::error::midjourney_api_error::MidjourneyApiError;
 use crate::error::midjourney_client_error::MidjourneyClientError;
 use crate::error::midjourney_error::MidjourneyError;
+use browser_emulation::browser_profile::BrowserProfile;
 use serde::Deserialize;
-use wreq::Client;
-use wreq_util::Emulation;
 
 /// Google Identity Toolkit endpoint that Midjourney's Firebase auth uses to
 /// exchange a refresh token for a fresh ID token.
@@ -26,6 +25,15 @@ pub struct RefreshTokenRequest<'a> {
   pub api_key: &'a str,
 }
 
+/// A refresh-token request plus its transport concerns. This endpoint hits
+/// Google's securetoken service (not Midjourney), so it has no cookie or
+/// hostname — only an optional browser profile.
+pub struct RefreshTokenArgs<'a> {
+  pub request: RefreshTokenRequest<'a>,
+  /// Defaults to [`BrowserProfile::default`] if absent.
+  pub browser: Option<BrowserProfile>,
+}
+
 #[derive(Debug, Clone)]
 pub struct RefreshTokenResponse {
   /// The new access token (same value as `id_token`).
@@ -46,18 +54,17 @@ pub struct RefreshTokenResponse {
 }
 
 pub async fn refresh_token(
-  req: RefreshTokenRequest<'_>,
+  args: RefreshTokenArgs<'_>,
 ) -> Result<RefreshTokenResponse, MidjourneyError> {
-  let client = Client::builder()
-      .emulation(Emulation::Firefox139)
-      .build()
+  let client = args.browser.clone().unwrap_or_default()
+      .build_client()
       .map_err(MidjourneyClientError::WreqError)?;
 
-  let url = format!("{}?key={}", SECURE_TOKEN_URL, req.api_key);
+  let url = format!("{}?key={}", SECURE_TOKEN_URL, args.request.api_key);
 
   let form = [
     ("grant_type", "refresh_token"),
-    ("refresh_token", req.refresh_token),
+    ("refresh_token", args.request.refresh_token),
   ];
 
   let http_request = client.post(url)

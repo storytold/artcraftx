@@ -18,9 +18,8 @@ use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
 use uuid_utils::uuid::generate_random_uuid;
 use log::{error, info};
-use midjourney_client::client::midjourney_hostname::MidjourneyHostname;
 use midjourney_client::credentials::midjourney_user_id::MidjourneyUserId;
-use midjourney_client::endpoints::imagine::{imagine, ImagineItem, ImagineRequest, MidjourneyJobType};
+use midjourney_client::endpoints::imagine::{imagine, ImagineArgs, ImagineItem, ImagineRequest, MidjourneyJobType};
 use midjourney_client::utils::image_downloader_client::ImageDownloaderClient;
 use sqlite_database::queries::read::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, TaskList};
 use sqlite_database::queries::task::Task;
@@ -155,11 +154,14 @@ async fn poll_midjourney_tasks(
 
   let cookie_header = mj_cookies.to_cookie_string();
 
-  let midjourney_result = imagine(ImagineRequest {
-    hostname: MidjourneyHostname::Standard,
-    cookie_header,
-    user_id: mj_user_id,
-    page_size: None,
+  let midjourney_result = imagine(ImagineArgs {
+    request: ImagineRequest {
+      user_id: mj_user_id,
+      page_size: None,
+    },
+    cookie_header: &cookie_header,
+    hostname: None,
+    browser: None,
   }).await?;
 
   let midjourney_items = midjourney_result.items;
@@ -177,7 +179,7 @@ async fn poll_midjourney_tasks(
   // TODO: If we introduce another job polling mechanism, we may need to handle concurrency.
   //  One idea might be to add a new job state that acts as an optimistic lock
 
-  let image_downloader = ImageDownloaderClient::create()?;
+  let image_downloader = ImageDownloaderClient::create(None)?;
 
   for (midjourney_job_id, local_task) in local_tasks_by_midjourney_job_id.iter() {
     // TODO: Copy prompt from this.
