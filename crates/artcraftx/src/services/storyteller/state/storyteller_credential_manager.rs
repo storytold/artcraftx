@@ -83,7 +83,7 @@ impl StorytellerCredentialManager {
 
     let cookie = credential.cookies()?;
 
-    StorytellerCredentialSet::parse_multi_cookie_header(&cookie.cookie_header)
+    StorytellerCredentialSet::parse_multi_cookie_header(&cookie.cookie_header())
         .ok()
         .flatten()
         .filter(|creds| !creds.is_empty())

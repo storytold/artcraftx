@@ -10,6 +10,8 @@ use crate::commands::credentials::credential_payload::CredentialPayload;
 use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::cookie_credential::CookieCredential;
 use crate::credentials::auth_credential::{AuthCredential, CredentialSecret};
+use crate::credentials::service_cookie_origin::cookie_origin_for_service;
+use cookie_store_wrapper::cookie_store::CookieStore;
 use crate::credentials::credential_user_info::CredentialUserInfo;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::refresh_account_state_event::RefreshAccountStateEvent;
@@ -128,11 +130,18 @@ fn save_session_credential(
 ) -> Result<AuthCredential, ArtcraftLoginCommandError> {
   let now = Utc::now();
 
+  let Some(cookie_origin) = cookie_origin_for_service(service) else {
+    return Err(ArtcraftLoginCommandError {
+      error_type: ArtcraftLoginErrorType::BadRequest,
+      message: format!("Service {} has no cookie origin", service),
+    });
+  };
   let cookie = CookieCredential {
-    cookie_header: format!("session={}", signed_session),
     updated_at: Some(now),
     failed_at: None,
     succeeded_at: Some(now),
+    cookies: CookieStore::from_cookie_header(
+        &format!("session={}", signed_session), &cookie_origin),
   };
 
   let user_info = if username_or_email.contains('@') {

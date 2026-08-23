@@ -3,7 +3,9 @@ use crate::credentials::cookie_credential::CookieCredential;
 use crate::credentials::auth_credential::{AuthCredential, CredentialSecret};
 use core_types::enums::generation_source::{CredentialKind, GenerationSource};
 use crate::credentials::credential_user_info::CredentialUserInfo;
+use crate::credentials::service_cookie_origin::cookie_origin_for_service;
 use crate::error::artcraftx_error::ArtcraftXError;
+use cookie_store_wrapper::cookie_store::CookieStore;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::subdirectory::app_credentials_dir::AppCredentialsDir;
 use chrono::Utc;
@@ -14,7 +16,7 @@ use tauri::State;
 /// The captured result of a web login, ready to persist.
 pub struct WebCredentialSave {
   pub service: GenerationSource,
-  pub cookie_header: String,
+  pub cookies: CookieStore,
   pub maybe_user_info: Option<CredentialUserInfo>,
 }
 
@@ -37,10 +39,10 @@ pub fn save_web_credential(
       });
 
   let cookie = CookieCredential {
-    cookie_header: save.cookie_header,
     updated_at: Some(Utc::now()),
     failed_at: None,
     succeeded_at: None,
+    cookies: save.cookies,
   };
 
   let credential = match existing {
@@ -111,11 +113,21 @@ pub async fn add_web_credential_command(
     return Err("Cookie header must not be empty".to_string());
   }
 
+  let Some(cookie_origin) = cookie_origin_for_service(service) else {
+    let message = format!("Service {} has no cookie origin", service);
+    error!("{}", message);
+    return Err(message);
+  };
+  let cookies = CookieStore::from_cookie_header(&cookie_header, &cookie_origin);
+  if cookies.is_empty() {
+    return Err("Cookie header contained no name=value cookies".to_string());
+  }
+
   let credential = save_web_credential(
     app_data_root.credentials_dir(),
     WebCredentialSave {
       service,
-      cookie_header,
+      cookies,
       maybe_user_info: None,
     },
   ).map_err(|err| {

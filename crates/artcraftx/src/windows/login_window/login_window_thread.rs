@@ -138,7 +138,7 @@ fn check_login_window(
     app_data_root.credentials_dir(),
     WebCredentialSave {
       service: site.credential_service(),
-      cookie_header: cookie_store.to_cookie_string(),
+      cookies: cookie_store,
       maybe_user_info,
     },
   )?;

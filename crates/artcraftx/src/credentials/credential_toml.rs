@@ -20,11 +20,18 @@ use core_types::identifiers::credential_id::CredentialId;
 /// id = "credential_01j9dq3v5x8k2m7n4p6r9t0wxy"
 /// service = "higgsfield_cookies"
 ///
-/// [cookie]
-/// cookie_header = "session=abc123; other=value"
-///
 /// [user_info]
 /// username = "creator123"
+///
+/// [[cookie.cookies]]
+/// name = "session"
+/// value = "abc123"
+/// domain = "higgsfield.ai"
+///
+/// [[cookie.cookies]]
+/// name = "other"
+/// value = "value"
+/// domain = "higgsfield.ai"
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct CredentialToml {
@@ -136,12 +143,14 @@ mod tests {
   const HAND_WRITTEN_COOKIE_FILE: &str = r#"
     service = "artcraft_cookies"
 
-    [cookie]
-    cookie_header = "session=abc123"
-
     [user_info]
     username = "creator123"
     email = "creator@example.com"
+
+    [[cookie.cookies]]
+    name = "session"
+    value = "abc123"
+    domain = "storyteller.ai"
   "#;
 
   const HAND_WRITTEN_API_KEY_FILE: &str = r#"
@@ -158,7 +167,7 @@ mod tests {
     fn parses_hand_written_cookie_file() {
       let file: CredentialToml = toml::from_str(HAND_WRITTEN_COOKIE_FILE).unwrap();
       assert_eq!(file.service, GenerationSource::ArtcraftCookies);
-      assert_eq!(file.cookie.unwrap().cookie_header, "session=abc123");
+      assert_eq!(file.cookie.unwrap().cookie_header(), "session=abc123");
       let user_info = file.user_info.unwrap();
       assert_eq!(user_info.username.as_deref(), Some("creator123"));
       assert_eq!(user_info.email.as_deref(), Some("creator@example.com"));
@@ -211,10 +220,12 @@ mod tests {
     fn both_secrets_is_an_error() {
       let toml_text = r#"
         service = "fal_api"
-        [cookie]
-        cookie_header = "a=b"
         [api_key]
         api_key = "x"
+        [[cookie.cookies]]
+        name = "a"
+        value = "b"
+        domain = "example.com"
       "#;
       let file: CredentialToml = toml::from_str(toml_text).unwrap();
       let result = file.into_auth_credential(PathBuf::from("test.toml"));
@@ -225,8 +236,10 @@ mod tests {
     fn secret_kind_must_match_service_kind() {
       let toml_text = r#"
         service = "fal_api"
-        [cookie]
-        cookie_header = "a=b"
+        [[cookie.cookies]]
+        name = "a"
+        value = "b"
+        domain = "example.com"
       "#;
       let file: CredentialToml = toml::from_str(toml_text).unwrap();
       let result = file.into_auth_credential(PathBuf::from("test.toml"));

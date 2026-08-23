@@ -37,7 +37,7 @@ pub fn storyteller_creds_from_credential(
     credential_not_usable(credential, "the account has no session cookies")
   })?;
 
-  StorytellerCredentialSet::parse_multi_cookie_header(&cookie.cookie_header)
+  StorytellerCredentialSet::parse_multi_cookie_header(&cookie.cookie_header())
       .map_err(|err| {
         credential_not_usable(
           credential,

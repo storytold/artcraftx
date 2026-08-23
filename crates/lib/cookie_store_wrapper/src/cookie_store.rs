@@ -38,6 +38,16 @@ impl CookieStore {
     Self::default()
   }
 
+  /// Parse a raw `Cookie:` request-header string (`"a=1; b=2"`) into a new
+  /// store of host-only cookies for `source_url`'s host. This is the entry
+  /// point for hand-entered cookie headers, where per-cookie attributes are
+  /// not known.
+  pub fn from_cookie_header(cookie_header: &str, source_url: &Url) -> Self {
+    let mut store = Self::empty();
+    store.insert_cookie_header(cookie_header, source_url);
+    store
+  }
+
   pub (crate) fn from_rfc_store(store: CookieStoreRfc) -> Self {
     Self {
       store,
@@ -81,6 +91,21 @@ impl CookieStore {
     raw.set_domain(domain);
     raw.set_path(captured.maybe_path.unwrap_or_else(|| "/".to_owned()));
     self.insert_raw(&raw, &source_url)
+  }
+
+  /// Insert every `name=value` pair of a raw `Cookie:` request-header string
+  /// as a host-only cookie for `source_url`'s host. Returns how many cookies
+  /// were stored.
+  pub fn insert_cookie_header(&mut self, cookie_header: &str, source_url: &Url) -> usize {
+    cookie_header
+        .split(';')
+        .filter_map(|pair| pair.trim().split_once('='))
+        .filter(|(name, _)| !name.trim().is_empty())
+        .map(|(name, value)| (name.trim().to_owned(), value.trim().to_owned()))
+        .collect::<Vec<(String, String)>>()
+        .into_iter()
+        .filter(|(name, value)| self.insert_named(name, value, source_url))
+        .count()
   }
 
   /// Apply one `Set-Cookie` header value received from `request_url`,
@@ -195,7 +220,7 @@ impl CookieStore {
     &self.store
   }
 
-  fn insert_raw(&mut self, raw: &RawCookie<'static>, source_url: &Url) -> bool {
+  pub (crate) fn insert_raw(&mut self, raw: &RawCookie<'static>, source_url: &Url) -> bool {
     let cookie_name = raw.name().to_owned();
     let result = self.store.insert_raw(raw, source_url);
     self.record_insert_result(result, &cookie_name, source_url)

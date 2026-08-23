@@ -1,7 +1,9 @@
 use crate::commands::credentials::credential_payload::CredentialPayload;
 use crate::credentials::cookie_credential::CookieCredential;
 use crate::credentials::auth_credential::CredentialSecret;
+use crate::credentials::service_cookie_origin::cookie_origin_for_service;
 use crate::state::data_dir::app_data_root::AppDataRoot;
+use cookie_store_wrapper::cookie_store::CookieStore;
 use chrono::Utc;
 use log::{error, info};
 use serde_derive::Serialize;
@@ -46,19 +48,27 @@ pub async fn edit_web_credential_command(
     error!("{}", message);
     return Err(message);
   };
-  let existing_cookie_header = existing_cookie.cookie_header.clone();
+  let existing_cookies = existing_cookie.cookies.clone();
   let existing_failed_at = existing_cookie.failed_at;
   let existing_succeeded_at = existing_cookie.succeeded_at;
 
   if let Some(new_cookie_header) = cookie_header {
     let new_cookie_header = new_cookie_header.trim().to_string();
-    if !new_cookie_header.is_empty() && new_cookie_header != existing_cookie_header {
-      credential.secret = CredentialSecret::Cookies(CookieCredential {
-        cookie_header: new_cookie_header,
-        updated_at: Some(Utc::now()),
-        failed_at: existing_failed_at,
-        succeeded_at: existing_succeeded_at,
-      });
+    if !new_cookie_header.is_empty() {
+      let Some(cookie_origin) = cookie_origin_for_service(credential.service) else {
+        let message = format!("Service {} has no cookie origin", credential.service);
+        error!("{}", message);
+        return Err(message);
+      };
+      let new_cookies = CookieStore::from_cookie_header(&new_cookie_header, &cookie_origin);
+      if new_cookies != existing_cookies {
+        credential.secret = CredentialSecret::Cookies(CookieCredential {
+          updated_at: Some(Utc::now()),
+          failed_at: existing_failed_at,
+          succeeded_at: existing_succeeded_at,
+          cookies: new_cookies,
+        });
+      }
     }
   }
 

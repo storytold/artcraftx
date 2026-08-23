@@ -22,10 +22,15 @@ wreq = ["dep:wreq"]
 workspace-build-acceleration.workspace = true
 
 # External
+chrono.workspace = true
 log.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 url.workspace = true
+
+# NB: For converting cookie expiry timestamps; the `cookie` crate (via
+# `cookie_store`) already depends on `time`, so this adds no new weight.
+time = "0.3"
 wreq = { workspace = true, optional = true }
 
 # NB: The RFC 6265 cookie store implementation this crate wraps. `serde_json`
