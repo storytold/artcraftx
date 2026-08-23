@@ -150,10 +150,10 @@ fn parse_response(body: &str) -> Result<SessionInfoResponse, GrokError> {
 mod tests {
   use super::*;
 
-  // Real response from 09_session_info.txt, scrubbed: account/session ids
-  // replaced with synthetic UUIDs, email/name/profile image replaced with
-  // placeholders. Structure and remaining values are as captured.
-  const SCRUBBED_RESPONSE: &str = r#"{"status":"authenticated","session":{"userId":"00000000-0000-4000-8000-000000000000","email":"user@example.com","emailDomain":"example.com","givenName":"Test","familyName":"User","profileImage":"users/00000000-0000-4000-8000-000000000000/scrubbed-profile-picture.webp","xUserId":"","organizationId":"","organizationRole":0,"organizationType":0,"organizationKind":0,"isOrgAdmin":false,"hasPassword":false,"emailConfirmed":true,"googleEmail":"user@example.com","xSubscriptionType":"","createTime":1787514616739,"sessionId":"88888888-8888-4888-8888-888888888888","signInMethod":2,"isIntegrationSession":false}}"#;
+  // Cargo runs tests with the crate root as the working directory.
+  fn load_response(file_name: &str) -> String {
+    std::fs::read_to_string(format!("test_data/endpoint_responses/{file_name}")).unwrap()
+  }
 
   mod wire_format_tests {
     use super::*;
@@ -177,8 +177,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parses_the_scrubbed_captured_response() {
-      let response = parse_response(SCRUBBED_RESPONSE).unwrap();
+    fn parses_real_session_response() {
+      let response = parse_response(&load_response("session_info.json")).unwrap();
 
       assert_eq!(response.status, "authenticated");
       assert!(response.is_authenticated());
@@ -194,6 +194,16 @@ mod tests {
         Some("88888888-8888-4888-8888-888888888888"),
       );
       assert_eq!(session.create_time, Some(1787514616739));
+    }
+
+    #[test]
+    fn missing_required_status_is_an_error() {
+      // `status` is required, so an object without it fails to parse.
+      let result = parse_response("{}");
+      assert!(matches!(
+        result,
+        Err(GrokError::ApiGeneric(GrokGenericApiError::SerdeResponseParseErrorWithBody(_, _))),
+      ));
     }
   }
 

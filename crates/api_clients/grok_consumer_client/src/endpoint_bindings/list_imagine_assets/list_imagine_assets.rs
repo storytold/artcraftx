@@ -154,10 +154,10 @@ fn parse_response(body: &str) -> Result<ListImagineAssetsResponse, GrokError> {
 mod tests {
   use super::*;
 
-  // Real response from 10_list_imagine_conversations.txt, truncated to two
-  // conversations and scrubbed: user/conversation/asset/response ids replaced
-  // with synthetic UUIDs. Structure and remaining values are as captured.
-  const SCRUBBED_RESPONSE: &str = r#"{"conversations":[{"conversationId":"55555555-5555-4555-8555-555555555555","title":"Video Generation with AI","starred":false,"createTime":"2026-08-23T20:00:41.151254Z","modifyTime":"2026-08-23T20:01:10.569116Z","systemPromptName":"","temporary":false,"mediaTypes":[],"workspaces":[],"taskResult":{},"latestAssetMetadata":{"assetId":"11111111-1111-4111-8111-111111111111","mimeType":"video/mp4","name":"generated_video.mp4","sizeBytes":5800655,"createTime":"2026-08-23T20:01:10.223Z","lastUseTime":"2026-08-23T20:01:10.235Z","summary":"","previewImageKey":"","key":"users/00000000-0000-4000-8000-000000000000/generated/11111111-1111-4111-8111-111111111111/generated_video.mp4","auxKeys":{"image_edit_is_root_user_uploaded":"false","image_references":"[\"https://assets.grok.com/users/00000000-0000-4000-8000-000000000000/generated/33333333-3333-4333-8333-333333333333/image.jpg\"]","is_ext":"false","is_root_celebrity":"false","moderated":"false","preview-image":"users/00000000-0000-4000-8000-000000000000/generated/11111111-1111-4111-8111-111111111111/preview_image.jpg","thumbhash":"DvgJBIAHZ4iOhImJhnn2cY0Ldw=="},"responseId":"44444444-4444-4444-8444-444444444444","isDeleted":false,"fileSource":"IMAGINE_GENERATED_FILE_SOURCE","currentConversationId":"55555555-5555-4555-8555-555555555555","sourceConversationId":"55555555-5555-4555-8555-555555555555","isModelGenerated":true,"updateTime":"2026-08-23T20:01:10.235Z","isLatest":true,"inlineStatus":"DEFAULT_ARTIFACT_INLINE_STATUS","isRootAssetCreatedByModel":true,"rootAssetSourceConversationId":"55555555-5555-4555-8555-555555555555","sharedWithTeam":false,"sharedWithUserIds":[],"width":736,"height":400,"rRated":false,"thumbhash":"DvgJBIAHZ4iOhImJhnn2cY0Ldw==","mediaGenInput":{"imageToVideo":{"inputAssets":["33333333-3333-4333-8333-333333333333"],"aspectRatio":"16:9","duration":6,"resolutionName":"480p","modelName":"imagine-video-gen","mode":"normal","skipAudio":false}},"ownerUserId":"00000000-0000-4000-8000-000000000000"},"kind":"CONVERSATION_KIND_IMAGINE"},{"conversationId":"77777777-7777-4777-8777-777777777777","title":"","starred":false,"createTime":"2026-08-23T19:56:02.282356Z","modifyTime":"2026-08-23T19:56:02.284Z","systemPromptName":"","temporary":false,"mediaTypes":[],"workspaces":[],"taskResult":{},"latestAssetMetadata":{"assetId":"22222222-2222-4222-8222-222222222222","mimeType":"image/jpeg","name":"image.jpg","sizeBytes":517902,"createTime":"2026-08-23T19:56:19.599Z","lastUseTime":"2026-08-23T19:56:19.599Z","summary":"","previewImageKey":"","key":"users/00000000-0000-4000-8000-000000000000/generated/22222222-2222-4222-8222-222222222222/image.jpg","auxKeys":{"image_edit_is_root_user_uploaded":"false","is_root_celebrity":"false","moderated":"false","original-image":"users/00000000-0000-4000-8000-000000000000/generated/22222222-2222-4222-8222-222222222222/original_image.jpg","thumbhash":"DvgJBIAYV3iPdIeIdnjSV28HVQ=="},"responseId":"66666666-6666-4666-8666-666666666666","isDeleted":false,"fileSource":"IMAGINE_GENERATED_FILE_SOURCE","currentConversationId":"77777777-7777-4777-8777-777777777777","sourceConversationId":"77777777-7777-4777-8777-777777777777","isModelGenerated":true,"updateTime":"2026-08-23T19:56:19.599Z","isLatest":true,"inlineStatus":"DEFAULT_ARTIFACT_INLINE_STATUS","isRootAssetCreatedByModel":true,"rootAssetSourceConversationId":"77777777-7777-4777-8777-777777777777","sharedWithTeam":false,"sharedWithUserIds":[],"width":1280,"height":720,"rRated":false,"thumbhash":"DvgJBIAYV3iPdIeIdnjSV28HVQ==","mediaGenInput":{"textToImage":{"prompt":"A pirate ship in the middle of the forest","numOfImages":2,"aspectRatio":"16:9","modelName":"imagine-image-gen","mode":"quality"}},"ownerUserId":"00000000-0000-4000-8000-000000000000"},"kind":"CONVERSATION_KIND_IMAGINE"}],"textSearchMatches":[]}"#;
+  // Cargo runs tests with the crate root as the working directory.
+  fn load_response(file_name: &str) -> String {
+    std::fs::read_to_string(format!("test_data/endpoint_responses/{file_name}")).unwrap()
+  }
 
   mod wire_format_tests {
     use super::*;
@@ -186,14 +186,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parses_the_scrubbed_captured_response() {
-      let response = parse_response(SCRUBBED_RESPONSE).unwrap();
+    fn parses_real_conversations_response() {
+      let response = parse_response(&load_response("list_imagine_assets.json")).unwrap();
       assert_eq!(response.conversations.len(), 2);
 
       let video_conversation = &response.conversations[0];
       assert_eq!(
         video_conversation.conversation_id,
-        "55555555-5555-4555-8555-555555555555",
+        "9db05fac-a4df-4a42-aa81-4dee6d37f4a8",
       );
       assert_eq!(
         video_conversation.title.as_deref(),
@@ -206,18 +206,28 @@ mod tests {
       );
 
       let video_asset = video_conversation.latest_asset_metadata.as_ref().unwrap();
-      assert_eq!(video_asset.asset_id, "11111111-1111-4111-8111-111111111111");
+      assert_eq!(video_asset.asset_id, "98db6014-be3a-4c92-9aec-91c80123ccac");
       assert_eq!(video_asset.mime_type.as_deref(), Some("video/mp4"));
 
       let image_conversation = &response.conversations[1];
       assert_eq!(image_conversation.title.as_deref(), Some(""));
       let image_asset = image_conversation.latest_asset_metadata.as_ref().unwrap();
-      assert_eq!(image_asset.asset_id, "22222222-2222-4222-8222-222222222222");
+      assert_eq!(image_asset.asset_id, "8d0b3727-f040-4b33-abf0-16e7d4364e6c");
       let image_input = image_asset.media_gen_input.as_ref().unwrap();
       assert_eq!(
         image_input["textToImage"]["prompt"],
         "A pirate ship in the middle of the forest",
       );
+    }
+
+    #[test]
+    fn missing_required_conversations_is_an_error() {
+      // `conversations` is required, so an object without it fails to parse.
+      let result = parse_response("{}");
+      assert!(matches!(
+        result,
+        Err(GrokError::ApiGeneric(GrokGenericApiError::SerdeResponseParseErrorWithBody(_, _))),
+      ));
     }
   }
 

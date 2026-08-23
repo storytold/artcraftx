@@ -277,10 +277,72 @@ async fn open_socket(cookies: &str) -> Result<WebSocket, GrokError> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::error::grok_generic_api_error::GrokGenericApiError;
   use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
   use log::{info, LevelFilter};
+
+  // Cargo runs tests with the crate root as the working directory.
+  fn ws_frame(file_name: &str) -> String {
+    std::fs::read_to_string(format!("test_data/websocket_messages/{file_name}")).unwrap()
+  }
+
+  fn parse_frame(file_name: &str) -> WebsocketServerMessage {
+    WebsocketServerMessage::from_json_str(&ws_frame(file_name)).unwrap()
+  }
+
+  // These exercise the handling that turns parsed frames into the `Ok`/`Err`
+  // results `collect_images` yields, using real captured frames.
+
+  #[test]
+  fn completed_image_from_real_frame() {
+    let image = completed_image(&parse_frame("real_image_complete.json"))
+        .expect("a finished (100%) image with a url");
+
+    assert_eq!(image.request_id.to_string(), "ab3fa8e9-92ed-4f1b-a350-7a897e264d54");
+    assert!(image.url.starts_with("https://imagine-public.x.ai/"));
+    assert_eq!(image.user_prompt, "A dead tree stump in the middle of a forest meadow");
+    assert_eq!(image.enriched_prompt, "A dead tree stump in the middle of a forest meadow");
+  }
+
+  #[test]
+  fn completed_image_ignores_progress_and_session_frames() {
+    assert!(completed_image(&parse_frame("real_json_progress.json")).is_none());
+    assert!(completed_image(&parse_frame("real_session_notice.json")).is_none());
+  }
+
+  #[test]
+  fn rate_limit_error_frame_maps_to_quota_error() {
+    let raw = ws_frame("real_rate_limit_error.json");
+    let WebsocketServerMessage::Error(error) = parse_frame("real_rate_limit_error.json") else {
+      panic!("expected an error frame");
+    };
+
+    match error_frame_to_grok_error(&error, &raw) {
+      GrokError::ApiSpecific(GrokSpecificApiError::ImageRateLimitExceeded { body }) => {
+        // The distinct error carries the full raw frame.
+        assert!(body.contains("rate_limit_exceeded"));
+        assert!(body.contains("Image rate limit exceeded"));
+      }
+      other => panic!("expected ImageRateLimitExceeded, got {:?}", other),
+    }
+  }
+
+  #[test]
+  fn unknown_error_code_maps_to_generic_error() {
+    let raw = r#"{"type":"error","err_code":"some_new_code","err_msg":"nope"}"#;
+    let WebsocketServerMessage::Error(error) = WebsocketServerMessage::from_json_str(raw).unwrap() else {
+      panic!("expected an error frame");
+    };
+
+    match error_frame_to_grok_error(&error, raw) {
+      GrokError::ApiGeneric(GrokGenericApiError::UnexpectedWebsocketErrorFrame { body }) => {
+        assert_eq!(body, raw);
+      }
+      other => panic!("expected UnexpectedWebsocketErrorFrame, got {:?}", other),
+    }
+  }
 
   #[tokio::test]
   #[ignore] // Opens a real websocket and spends image-generation quota.

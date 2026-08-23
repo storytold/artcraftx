@@ -116,15 +116,25 @@ mod tests {
     format!("test_data/websocket_messages/{}", file_name)
   }
 
-  // Real rate-limit frame captured over the socket when the account is out of
-  // image quota.
-  const RATE_LIMIT_FRAME: &str = r#"{"type":"error","err_code":"rate_limit_exceeded","err_msg":"Image rate limit exceeded","request_id":"5c8fdd50-11ab-4e7c-9f64-301902eb6678"}"#;
+  #[test]
+  fn parses_real_image_complete_frame() -> anyhow::Result<()> {
+    let data = std::fs::read_to_string(json_path("real_image_complete.json"))?;
+    match WebsocketServerMessage::from_json_str(&data)? {
+      WebsocketServerMessage::Image(image) => {
+        assert_eq!(image.percentage_complete, Some(100.0));
+        assert_eq!(image.request_id.as_deref(), Some("ab3fa8e9-92ed-4f1b-a350-7a897e264d54"));
+        assert!(image.url.as_deref().unwrap().starts_with("https://imagine-public.x.ai/"));
+        assert_eq!(image.prompt.as_deref(), Some("A dead tree stump in the middle of a forest meadow"));
+      }
+      other => panic!("Expected Image message, got {:?}", other),
+    }
+    Ok(())
+  }
 
   #[test]
-  fn test_error_rate_limit() -> anyhow::Result<()> {
-    let message = WebsocketServerMessage::from_json_str(RATE_LIMIT_FRAME)?;
-
-    match message {
+  fn parses_real_rate_limit_error_frame() -> anyhow::Result<()> {
+    let data = std::fs::read_to_string(json_path("real_rate_limit_error.json"))?;
+    match WebsocketServerMessage::from_json_str(&data)? {
       WebsocketServerMessage::Error(error) => {
         assert_eq!(error.err_code.as_deref(), Some(ERR_CODE_RATE_LIMIT_EXCEEDED));
         assert_eq!(error.err_msg.as_deref(), Some("Image rate limit exceeded"));
@@ -132,7 +142,21 @@ mod tests {
       }
       other => panic!("Expected Error message, got {:?}", other),
     }
+    Ok(())
+  }
 
+  #[test]
+  fn real_session_notice_frame_is_unknown() -> anyhow::Result<()> {
+    // The `type: "session"` frame isn't a modeled variant, so it lands in
+    // `Unknown` (and the listeners skip it).
+    let data = std::fs::read_to_string(json_path("real_session_notice.json"))?;
+    match WebsocketServerMessage::from_json_str(&data)? {
+      WebsocketServerMessage::Unknown(value) => {
+        assert_eq!(value["type"], "session");
+        assert!(value["conversation_id"].is_string());
+      }
+      other => panic!("Expected Unknown message, got {:?}", other),
+    }
     Ok(())
   }
 

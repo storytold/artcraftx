@@ -149,8 +149,10 @@ fn parse_response(body: &str) -> Result<QuotaInfoResponse, GrokError> {
 mod tests {
   use super::*;
 
-  // Real response from 12_quota_info.txt (nothing identifying in this one).
-  const CAPTURED_RESPONSE: &str = r#"{"image":null,"imagePro":{"available":true,"remainingQueries":4,"windowSizeSeconds":86400},"imageEdit":null,"video":null,"video720p":{"available":true,"remainingQueries":0,"windowSizeSeconds":86400,"nextAvailableAt":"2026-08-24T21:00:41.230702760Z"}}"#;
+  // Cargo runs tests with the crate root as the working directory.
+  fn load_response(file_name: &str) -> String {
+    std::fs::read_to_string(format!("test_data/endpoint_responses/{file_name}")).unwrap()
+  }
 
   mod wire_format_tests {
     use super::*;
@@ -183,8 +185,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parses_the_captured_response() {
-      let response = parse_response(CAPTURED_RESPONSE).unwrap();
+    fn parses_real_quota_response() {
+      let response = parse_response(&load_response("quota_info.json")).unwrap();
 
       assert!(response.image.is_none());
       assert!(response.image_edit.is_none());
@@ -203,6 +205,15 @@ mod tests {
         video_720p.next_available_at.as_deref(),
         Some("2026-08-24T21:00:41.230702760Z"),
       );
+    }
+
+    #[test]
+    fn malformed_json_is_an_error() {
+      let result = parse_response("{ this is not json");
+      assert!(matches!(
+        result,
+        Err(GrokError::ApiGeneric(GrokGenericApiError::SerdeResponseParseErrorWithBody(_, _))),
+      ));
     }
   }
 

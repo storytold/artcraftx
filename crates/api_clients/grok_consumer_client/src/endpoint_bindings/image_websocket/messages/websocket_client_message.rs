@@ -154,6 +154,35 @@ mod tests {
   }
 
   #[test]
+  fn serialization_matches_the_real_captured_send_frame() {
+    // The real send frame the web app emitted (2026-08-23 capture). We compare
+    // structurally, ignoring `requestId`/`timestamp`, which we generate.
+    let captured: serde_json::Value = serde_json::from_str(
+      &std::fs::read_to_string("test_data/websocket_messages/real_image_prompt_request.json").unwrap(),
+    ).unwrap();
+
+    let ours = serde_json::to_value(WebsocketClientMessage::new_image_prompt(
+      "A dead tree stump in the middle of a forest meadow",
+      ClientMessageAspectRatio::TallTwoByThree,
+    )).unwrap();
+
+    assert_eq!(ours["type"], captured["type"]);
+    assert_eq!(ours["item"]["type"], captured["item"]["type"]);
+
+    let ours_content = &ours["item"]["content"][0];
+    let captured_content = &captured["item"]["content"][0];
+    assert_eq!(ours_content["type"], captured_content["type"]);
+    assert_eq!(ours_content["text"], captured_content["text"]);
+
+    // Every property the web app sends must be present with the same value.
+    let captured_props = captured_content["properties"].as_object().unwrap();
+    let ours_props = &ours_content["properties"];
+    for (key, value) in captured_props {
+      assert_eq!(&ours_props[key], value, "property `{key}` differs from the real frame");
+    }
+  }
+
+  #[test]
   fn aspect_ratios_serialize_to_grok_strings() {
     let ratio = |r| serde_json::to_value(r).unwrap();
     assert_eq!(ratio(ClientMessageAspectRatio::TallTwoByThree), "2:3");
