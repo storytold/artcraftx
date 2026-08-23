@@ -1,8 +1,8 @@
 use crate::datatypes::api::request_id::RequestId;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
-use crate::endpoint_bindings::old_bindings::image_websocket::grok_websocket::GrokWebsocket;
-use crate::endpoint_bindings::old_bindings::image_websocket::messages::message_request_id::MessageRequestId;
+use crate::endpoint_bindings::image_websocket::grok_websocket::GrokWebsocket;
+use crate::endpoint_bindings::image_websocket::messages::message_request_id::MessageRequestId;
 use std::time::{Duration, Instant};
 use wreq::ws::message::Message;
 
@@ -70,12 +70,12 @@ pub async fn listen_for_websocket_request_id(args: ListenForWebsocketRequestIdAr
 
 #[cfg(test)]
 mod tests {
-  use crate::endpoint_bindings::old_bindings::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
-  use crate::endpoint_bindings::old_bindings::image_websocket::grok_websocket::GrokWebsocket;
-  use crate::endpoint_bindings::old_bindings::image_websocket::listen_for_websocket_request_id::{listen_for_websocket_request_id, ListenForWebsocketRequestIdArgs};
-  use crate::endpoint_bindings::old_bindings::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
-  use crate::endpoint_bindings::old_bindings::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
-  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use crate::endpoint_bindings::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
+  use crate::endpoint_bindings::image_websocket::grok_websocket::GrokWebsocket;
+  use crate::endpoint_bindings::image_websocket::listen_for_websocket_request_id::{listen_for_websocket_request_id, ListenForWebsocketRequestIdArgs};
+  use crate::endpoint_bindings::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
+  use crate::endpoint_bindings::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
   use log::LevelFilter;
@@ -89,10 +89,10 @@ mod tests {
 
     let prompt = "A tiny tornado on a desk";
 
-    let cookies = get_test_cookies()?;
+    let secrets = load_grok_test_secrets()?;
 
     let mut websocket = create_listen_websocket(CreateListenWebsocketArgs {
-      cookies: &cookies,
+      cookies: secrets.cookies.as_str(),
     }).await?;
 
     //let websocket = GrokWrappedWebsocket::new(websocket);

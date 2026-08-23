@@ -1,9 +1,9 @@
 use crate::credentials::grok_cookies::GrokCookies;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
-use crate::endpoint_bindings::old_bindings::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
-use crate::endpoint_bindings::old_bindings::image_websocket::grok_websocket::GrokWebsocket;
-use crate::endpoint_bindings::old_bindings::image_websocket::messages::websocket_client_message::{ClientMessageAspectRatio, WebsocketClientMessage};
+use crate::endpoint_bindings::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
+use crate::endpoint_bindings::image_websocket::grok_websocket::GrokWebsocket;
+use crate::endpoint_bindings::image_websocket::messages::websocket_client_message::{ClientMessageAspectRatio, WebsocketClientMessage};
 use log::{error, info};
 
 pub struct PromptWebsocketImageWithRetryArgs<'a> {
@@ -67,12 +67,12 @@ pub async fn prompt_websocket_image_with_retry(args: PromptWebsocketImageWithRet
 #[cfg(test)]
 mod tests {
   use crate::recipes::prompt_websocket_image_with_retry::{prompt_websocket_image_with_retry, PromptWebsocketImageWithRetryArgs};
-  use crate::endpoint_bindings::old_bindings::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
-  use crate::endpoint_bindings::old_bindings::image_websocket::grok_websocket::GrokWebsocket;
-  use crate::endpoint_bindings::old_bindings::image_websocket::grok_wrapped_websocket::GrokWrappedWebsocket;
-  use crate::endpoint_bindings::old_bindings::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
-  use crate::endpoint_bindings::old_bindings::image_websocket::messages::websocket_server_message::WebsocketServerMessage;
-  use crate::endpoint_bindings::old_bindings::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
+  use crate::endpoint_bindings::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
+  use crate::endpoint_bindings::image_websocket::grok_websocket::GrokWebsocket;
+  use crate::endpoint_bindings::image_websocket::grok_wrapped_websocket::GrokWrappedWebsocket;
+  use crate::endpoint_bindings::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
+  use crate::endpoint_bindings::image_websocket::messages::websocket_server_message::WebsocketServerMessage;
+  use crate::endpoint_bindings::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
   use crate::test_utils::get_test_cookies::{get_test_cookies, get_typed_test_cookies};
   use errors::AnyhowResult;
   use futures::SinkExt;

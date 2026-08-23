@@ -1,6 +1,6 @@
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
-use crate::endpoint_bindings::old_bindings::image_websocket::messages::websocket_server_message::WebsocketServerMessage;
+use crate::endpoint_bindings::image_websocket::messages::websocket_server_message::WebsocketServerMessage;
 use futures::stream::FusedStream;
 use futures::{Stream, TryStreamExt};
 use log::{info, warn};

@@ -84,7 +84,7 @@ impl WebsocketServerMessage {
 
 #[cfg(test)]
 mod tests {
-  use crate::endpoint_bindings::old_bindings::image_websocket::messages::websocket_server_message::WebsocketServerMessage;
+  use crate::endpoint_bindings::image_websocket::messages::websocket_server_message::WebsocketServerMessage;
 
   fn json_path(file_name: &str) -> String {
     // NB: Cargo runs tests with the crate root as the working directory.

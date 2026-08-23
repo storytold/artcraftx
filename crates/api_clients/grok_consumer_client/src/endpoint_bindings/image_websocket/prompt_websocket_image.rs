@@ -1,6 +1,6 @@
 use crate::error::grok_error::GrokError;
-use crate::endpoint_bindings::old_bindings::image_websocket::grok_websocket::GrokWebsocket;
-use crate::endpoint_bindings::old_bindings::image_websocket::messages::websocket_client_message::{ClientMessageAspectRatio, WebsocketClientMessage};
+use crate::endpoint_bindings::image_websocket::grok_websocket::GrokWebsocket;
+use crate::endpoint_bindings::image_websocket::messages::websocket_client_message::{ClientMessageAspectRatio, WebsocketClientMessage};
 
 pub struct PromptWebsocketImageArgs<'a> {
   pub websocket: &'a mut GrokWebsocket,
@@ -19,13 +19,13 @@ pub async fn prompt_websocket_image(args: PromptWebsocketImageArgs<'_>) -> Resul
 
 #[cfg(test)]
 mod tests {
-  use crate::endpoint_bindings::old_bindings::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
-  use crate::endpoint_bindings::old_bindings::image_websocket::grok_websocket::GrokWebsocket;
-  use crate::endpoint_bindings::old_bindings::image_websocket::grok_wrapped_websocket::GrokWrappedWebsocket;
-  use crate::endpoint_bindings::old_bindings::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
-  use crate::endpoint_bindings::old_bindings::image_websocket::messages::websocket_server_message::WebsocketServerMessage;
-  use crate::endpoint_bindings::old_bindings::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
-  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use crate::endpoint_bindings::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
+  use crate::endpoint_bindings::image_websocket::grok_websocket::GrokWebsocket;
+  use crate::endpoint_bindings::image_websocket::grok_wrapped_websocket::GrokWrappedWebsocket;
+  use crate::endpoint_bindings::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
+  use crate::endpoint_bindings::image_websocket::messages::websocket_server_message::WebsocketServerMessage;
+  use crate::endpoint_bindings::image_websocket::prompt_websocket_image::{prompt_websocket_image, PromptWebsocketImageArgs};
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use errors::AnyhowResult;
   use log::warn;
   use std::io::Write;
@@ -37,10 +37,10 @@ mod tests {
   async fn prompt() -> AnyhowResult<()> {
     //setup_test_logging(LevelFilter::Trace);
 
-    let cookies = get_test_cookies()?;
+    let secrets = load_grok_test_secrets()?;
 
     let websocket = create_listen_websocket(CreateListenWebsocketArgs {
-      cookies: &cookies,
+      cookies: secrets.cookies.as_str(),
     }).await?;
 
     //let websocket = GrokWrappedWebsocket::new(websocket);

@@ -17,9 +17,9 @@ use artcraft_client::enums::common::generation::common_model_type::CommonModelTy
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
 use grok_consumer_client::recipes::prompt_websocket_image_with_retry::{prompt_websocket_image_with_retry, PromptWebsocketImageWithRetryArgs};
-use grok_consumer_client::endpoint_bindings::old_bindings::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
-use grok_consumer_client::endpoint_bindings::old_bindings::image_websocket::grok_websocket::GrokWebsocket;
-use grok_consumer_client::endpoint_bindings::old_bindings::image_websocket::listen_for_websocket_images::{listen_for_websocket_images, ImageResults, ListenForWebsocketImagesArgs};
+use grok_consumer_client::endpoint_bindings::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
+use grok_consumer_client::endpoint_bindings::image_websocket::grok_websocket::GrokWebsocket;
+use grok_consumer_client::endpoint_bindings::image_websocket::listen_for_websocket_images::{listen_for_websocket_images, ImageResults, ListenForWebsocketImagesArgs};
 use uuid_utils::uuid::generate_random_uuid;
 use log::{error, info, warn};
 use sqlite_database::queries::read::get_task_by_provider_and_provider_job_id::{get_task_by_provider_and_provider_job_id, GetTaskByProviderAndProviderJobIdArgs};

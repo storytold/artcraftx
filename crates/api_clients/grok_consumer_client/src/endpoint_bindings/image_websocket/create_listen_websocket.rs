@@ -81,7 +81,7 @@ pub async fn create_listen_websocket(args: CreateListenWebsocketArgs<'_>) -> Res
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
   use log::LevelFilter;
@@ -91,9 +91,9 @@ mod tests {
   async fn create() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Trace);
     //let cookies = SESSION_COOKIES_WITHOUT_CF_CLEARANCE;
-    let cookies = get_test_cookies()?;
+    let secrets = load_grok_test_secrets()?;
     let args = CreateListenWebsocketArgs {
-      cookies: &cookies,
+      cookies: secrets.cookies.as_str(),
     };
     let result = create_listen_websocket(args).await;
     if let Err(err) = result {
