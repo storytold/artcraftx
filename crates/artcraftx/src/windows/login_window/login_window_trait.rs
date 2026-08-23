@@ -52,6 +52,15 @@ pub trait LoginWindowSite: Send + Sync {
     self.login_website().credential_service()
   }
 
+  /// An optional User-Agent override for the login webview. Return `Some` when
+  /// the site's sign-in misbehaves under the default WKWebView UA (e.g. Google
+  /// forcing a passkey step-up), or when the captured cookies must later be
+  /// replayed by an HTTP client under a specific UA (Cloudflare `cf_clearance`
+  /// is UA-bound, so the two must match). Defaults to the platform default.
+  fn user_agent(&self) -> Option<&'static str> {
+    None
+  }
+
   /// SSO / identity-provider hosts that mean "still logging in".
   fn auth_flow_hostnames(&self) -> &[&str] {
     DEFAULT_AUTH_FLOW_HOSTNAMES

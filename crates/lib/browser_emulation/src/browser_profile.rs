@@ -34,6 +34,19 @@ pub struct CustomBrowserProfile {
 }
 
 impl BrowserProfile {
+  /// A macOS Safari profile with an explicit User-Agent override.
+  ///
+  /// Use this when the UA must EXACTLY match another client's — e.g. an
+  /// embedded webview that captured the cookies, since Cloudflare's
+  /// `cf_clearance` is bound to the exact User-Agent string.
+  pub fn safari_macos_with_user_agent(user_agent: impl Into<String>) -> Self {
+    Self::Custom(CustomBrowserProfile {
+      emulation: Emulation::Safari18,
+      os: EmulationOS::MacOS,
+      maybe_user_agent: Some(user_agent.into()),
+    })
+  }
+
   /// Build a ready-to-use client carrying this profile's full fingerprint and
   /// identity headers. This is the usual entry point.
   pub fn build_client(&self) -> Result<Client, wreq::Error> {

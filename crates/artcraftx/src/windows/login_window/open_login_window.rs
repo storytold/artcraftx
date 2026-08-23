@@ -56,7 +56,7 @@ pub async fn open_login_window(
   };
 
   let start_url = WebviewUrl::External(first_url);
-  let window = WebviewWindowBuilder::new(app, &window_name, start_url)
+  let mut builder = WebviewWindowBuilder::new(app, &window_name, start_url)
       .title(site.window_title())
       .center()
       .resizable(true)
@@ -64,8 +64,17 @@ pub async fn open_login_window(
       .closable(true)
       .min_inner_size(200.0, 800.0)
       .focused(true)
-      .devtools(true)
-      .build()?;
+      .devtools(true);
+
+  // Some sites (e.g. Midjourney, whose Google sign-in otherwise forces a
+  // passkey step-up that the default WKWebView can't satisfy) need a
+  // mainstream desktop User-Agent. It must match the UA the site's HTTP client
+  // later uses, since Cloudflare's cf_clearance is UA-bound.
+  if let Some(user_agent) = site.user_agent() {
+    builder = builder.user_agent(user_agent);
+  }
+
+  let window = builder.build()?;
 
   let webview = window.get_webview(&window_name)
       .ok_or_else(|| anyhow!("no webview found"))?;

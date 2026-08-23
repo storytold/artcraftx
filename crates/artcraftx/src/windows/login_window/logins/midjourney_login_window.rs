@@ -1,4 +1,5 @@
 use crate::credentials::login_website::LoginWebsite;
+use crate::services::midjourney::utils::midjourney_browser_profile::MIDJOURNEY_USER_AGENT;
 use crate::windows::login_window::login_journey::LoginJourney;
 use crate::windows::login_window::login_window_trait::LoginWindowSite;
 use once_cell::sync::Lazy;
@@ -29,6 +30,14 @@ impl LoginWindowSite for MidjourneyLoginWindow {
 
   fn destination_hostnames(&self) -> &[&str] {
     DESTINATION_HOSTNAMES
+  }
+
+  // Google's sign-in forces a passkey step-up under the default WKWebView UA
+  // (which the embedded browser can't satisfy). Present a mainstream desktop
+  // Safari UA — the SAME one the Midjourney HTTP/websocket calls use — so the
+  // captured cf_clearance cookie validates when those calls replay it.
+  fn user_agent(&self) -> Option<&'static str> {
+    Some(MIDJOURNEY_USER_AGENT)
   }
 
   // Midjourney's session rides in the AuthUserTokenV3 cookie pair (the same
