@@ -17,9 +17,11 @@ workspace-build-acceleration.workspace = true
 
 # Internal
 artcraft_client.workspace = true
+browser_emulation.workspace = true
 fal_client.workspace = true
 gmicloud_client.workspace = true
 grok_api_client.workspace = true
+midjourney_client.workspace = true
 seedance2pro_client.workspace = true
 sqlite_identifiers.workspace = true
 url_utils.workspace = true

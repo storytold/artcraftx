@@ -47,6 +47,7 @@ use crate::generate::generate_image::providers::kinovi::midjourney_7::build::bui
 use crate::generate::generate_image::providers::kinovi::midjourney_7_niji::build::build_kinovi_midjourney_7_niji;
 use crate::generate::generate_image::providers::kinovi::midjourney_8::build::build_kinovi_midjourney_8;
 use crate::generate::generate_image::providers::kinovi::seedream_5p0_pro::build::build_kinovi_seedream_5p0_pro;
+use crate::generate::generate_image::providers::midjourney::midjourney_8::build::build_midjourney_midjourney_8;
 
 #[derive(Clone, Debug)]
 pub struct GenerateImageRequestBuilder {
@@ -152,6 +153,9 @@ impl GenerateImageRequestBuilder {
       (RouterProvider::Seedance2Pro, RouterImageModel::Midjourney8) => build_kinovi_midjourney_8(self),
       (RouterProvider::Seedance2Pro, RouterImageModel::Seedream5p0Pro) => build_kinovi_seedream_5p0_pro(self),
       (RouterProvider::Seedance2Pro, RouterImageModel::Seedream5p0ProUltra) => build_kinovi_seedream_5p0_pro(self),
+
+      // First-party (cookie-session) Midjourney.
+      (RouterProvider::Midjourney, RouterImageModel::Midjourney8) => build_midjourney_midjourney_8(self),
 
       _ => self.unsupported_provider_and_model(),
     }

@@ -13,8 +13,9 @@ use crate::services::grok::state::grok_credential_manager::GrokCredentialManager
 use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;
 use crate::services::grok::threads::grok_image_websocket_thread::grok_image_websocket_thread::grok_image_websocket_thread;
 use crate::services::grok::threads::grok_video_task_polling::grok_video_task_polling_thread::grok_video_task_polling_thread;
-use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
+use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveSession;
 use crate::services::midjourney::threads::midjourney_long_polling_thread::midjourney_long_polling_thread;
+use crate::services::midjourney::threads::midjourney_websocket_thread::midjourney_websocket_thread;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
@@ -34,7 +35,7 @@ pub async fn handle_tauri_startup(
   storyteller_creds_manager: StorytellerCredentialManager,
   sora_credential_manager: SoraCredentialManager,
   sora_task_queue: SoraTaskQueue,
-  mj_creds_manager: MidjourneyCredentialManager,
+  midjourney_live_session: MidjourneyLiveSession,
   grok_creds_manager: GrokCredentialManager,
   grok_image_prompt_queue: GrokImagePromptQueue,
   _worldlabs_bearer_bridge: WorldlabsBearerBridge,
@@ -90,11 +91,19 @@ pub async fn handle_tauri_startup(
     storyteller_creds_manager.clone(),
   ));
 
+  tauri::async_runtime::spawn(midjourney_websocket_thread(
+    app.clone(),
+    root.clone(),
+    task_database.clone(),
+    midjourney_live_session.clone(),
+    storyteller_creds_manager.clone(),
+  ));
+
   tauri::async_runtime::spawn(midjourney_long_polling_thread(
     app.clone(),
     root.clone(),
     task_database.clone(),
-    mj_creds_manager.clone(),
+    midjourney_live_session.clone(),
     storyteller_creds_manager.clone(),
   ));
 

@@ -9,6 +9,7 @@ pub enum ClientType {
   Fal,
   GmiCloud,
   GrokApi,
+  Midjourney,
   Seedance2Pro,
   WorldLabs,
 }
@@ -20,6 +21,7 @@ impl Display for ClientType {
       Self::Fal => write!(f, "Fal"),
       Self::GmiCloud => write!(f, "GmiCloud"),
       Self::GrokApi => write!(f, "GrokApi"),
+      Self::Midjourney => write!(f, "Midjourney"),
       Self::Seedance2Pro => write!(f, "Seedance2Pro"),
       Self::WorldLabs => write!(f, "WorldLabs"),
     }

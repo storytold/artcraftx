@@ -52,6 +52,7 @@ use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
 use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
+use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveSession;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
 use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
@@ -98,7 +99,12 @@ pub fn run() {
   let sora_task_queue_2 = sora_task_queue.clone();
 
   let midjourney_creds_manager = MidjourneyCredentialManager::initialize_from_disk_infallible(&app_data_root);
-  let midjourney_creds_manager_2 = midjourney_creds_manager.clone();
+
+  // In-memory, process-lifetime Midjourney session (user_id, websocket token,
+  // live websocket handle). Shared between the enqueue command and the
+  // completion threads.
+  let midjourney_live_session = MidjourneyLiveSession::new();
+  let midjourney_live_session_2 = midjourney_live_session.clone();
 
   let grok_creds_manager = GrokCredentialManager::initialize_from_disk_infallible(&app_data_root);
   let grok_creds_manager_2 = grok_creds_manager.clone();
@@ -152,7 +158,7 @@ pub fn run() {
           storyteller_creds,
           sora_creds,
           sora_tasks,
-          midjourney_creds_manager_2,
+          midjourney_live_session_2,
           grok_creds_manager_2,
           grok_prompt_queue_2,
           worldlabs_bearer_bridge_2,
@@ -174,6 +180,7 @@ pub fn run() {
     .manage(grok_creds_manager)
     .manage(grok_prompt_queue)
     .manage(midjourney_creds_manager)
+    .manage(midjourney_live_session)
     .manage(sora_creds_manager)
     .manage(sora_task_queue)
     .manage(storyteller_creds_manager_3)

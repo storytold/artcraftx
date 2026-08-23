@@ -35,6 +35,7 @@ fal_client.workspace = true
 filesys.workspace = true
 grok_consumer_client.workspace = true
 uuid_utils.workspace = true
+browser_emulation.workspace = true
 images.workspace = true
 memory_store.workspace = true
 midjourney_client.workspace = true

@@ -79,6 +79,8 @@ use crate::generate::generate_image::providers::kinovi::midjourney_7_niji::cost:
 use crate::generate::generate_image::providers::kinovi::midjourney_7_niji::request::KinoviMidjourney7NijiRequestState;
 use crate::generate::generate_image::providers::kinovi::midjourney_8::cost::KinoviMidjourney8CostState;
 use crate::generate::generate_image::providers::kinovi::midjourney_8::request::KinoviMidjourney8RequestState;
+use crate::generate::generate_image::providers::midjourney::midjourney_8::cost::MidjourneyMidjourney8CostState;
+use crate::generate::generate_image::providers::midjourney::midjourney_8::request::MidjourneyMidjourney8RequestState;
 use crate::generate::generate_image::providers::kinovi::seedream_5p0_pro::cost::KinoviSeedream5p0ProCostState;
 use crate::generate::generate_image::providers::kinovi::seedream_5p0_pro::request::KinoviSeedream5p0ProRequestState;
 
@@ -128,6 +130,9 @@ pub enum ImageGenerationRequest {
   KinoviMidjourney7Niji(KinoviMidjourney7NijiRequestState),
   KinoviMidjourney8(KinoviMidjourney8RequestState),
   KinoviSeedream5p0Pro(KinoviSeedream5p0ProRequestState),
+
+  // ── First-party (cookie-session) Midjourney provider ──
+  MidjourneyMidjourney8(MidjourneyMidjourney8RequestState),
 }
 
 impl ImageGenerationRequest {
@@ -174,6 +179,8 @@ impl ImageGenerationRequest {
       Self::KinoviMidjourney7Niji(_) => RouterProvider::Seedance2Pro,
       Self::KinoviMidjourney8(_) => RouterProvider::Seedance2Pro,
       Self::KinoviSeedream5p0Pro(_) => RouterProvider::Seedance2Pro,
+
+      Self::MidjourneyMidjourney8(_) => RouterProvider::Midjourney,
     }
   }
 
@@ -262,6 +269,8 @@ impl ImageGenerationRequest {
       Self::KinoviMidjourney7Niji(request) => Ok(KinoviMidjourney7NijiCostState::from_request(request).estimate_cost()),
       Self::KinoviMidjourney8(request) => Ok(KinoviMidjourney8CostState::from_request(request).estimate_cost()),
       Self::KinoviSeedream5p0Pro(request) => Ok(KinoviSeedream5p0ProCostState::from_request(request).estimate_cost()),
+
+      Self::MidjourneyMidjourney8(request) => Ok(MidjourneyMidjourney8CostState::from_request(request).estimate_cost()),
     }
   }
 
@@ -436,6 +445,13 @@ impl ImageGenerationRequest {
         let seedance_client = client.get_seedance2pro_client_ref()
           .map_err(ArtcraftRouterError::Client)?;
         request.send(seedance_client).await
+      }
+
+      // ── First-party (cookie-session) Midjourney ──
+      Self::MidjourneyMidjourney8(request) => {
+        let midjourney_client = client.get_midjourney_client_ref()
+          .map_err(ArtcraftRouterError::Client)?;
+        request.send(midjourney_client).await
       }
     }
   }

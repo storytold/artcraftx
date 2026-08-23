@@ -8,6 +8,8 @@ pub enum RouterProvider {
   Fal,
   GmiCloud,
   GrokApi,
+  /// First-party (cookie-session) Midjourney.
+  Midjourney,
   Seedance2Pro,
   WorldLabs,
 }

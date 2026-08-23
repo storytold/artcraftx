@@ -1,10 +1,11 @@
 use crate::commands::generate::common::notify_frontend_of_errors::notify_frontend_of_errors;
 use crate::commands::generate::generate_error::{GenerateError, MissingCredentialsReason};
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
-use crate::commands::generate::generate_image::handle_credential_router::handle_credential_router;
+use crate::commands::generate::generate_image::enqueue_image_generation::enqueue_image_generation;
 use crate::commands::generate::generate_image::tauri_generate_image_request::{
   TauriGenerateImageErrorType, TauriGenerateImageRequest, TauriGenerateImageResponse,
 };
+use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveSession;
 use crate::commands::utils::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::commands::utils::response::shorthand::Response;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
@@ -21,15 +22,17 @@ pub async fn generate_image_command(
   app: AppHandle,
   app_data_root: State<'_, AppDataRoot>,
   task_database: State<'_, TaskDatabase>,
+  midjourney_live_session: State<'_, MidjourneyLiveSession>,
 ) -> Response<TauriGenerateImageResponse, TauriGenerateImageErrorType, ()> {
 
   info!("generate_image_command called, request: {:?}", request);
 
   // Generation is credential-driven: the request names a stored credential,
-  // and the router dispatches to that credential's service.
-  let result = handle_credential_router(
+  // and we invoke the router for that credential's service.
+  let result = enqueue_image_generation(
     &request,
     &app_data_root,
+    &midjourney_live_session,
   ).await;
 
   match result {

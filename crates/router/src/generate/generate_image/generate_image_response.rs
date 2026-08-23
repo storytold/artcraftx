@@ -36,10 +36,19 @@ pub struct Seedance2proImageResponsePayload {
   pub maybe_task_ids: Option<Vec<String>>,
 }
 
+/// Response from the first-party (cookie-session) Midjourney provider. The
+/// `job_id` is Midjourney's own job id, used as the task `provider_job_id` and
+/// as the websocket `subscribe_to_job` key.
+#[derive(Clone, Debug)]
+pub struct MidjourneyImageResponsePayload {
+  pub job_id: String,
+}
+
 #[derive(Clone, Debug)]
 pub enum GenerateImageResponse {
   Artcraft(ArtcraftImageResponsePayload),
   Fal(FalImageResponsePayload),
+  Midjourney(MidjourneyImageResponsePayload),
   Seedance2Pro(Seedance2proImageResponsePayload),
 }
 
@@ -54,6 +63,13 @@ impl GenerateImageResponse {
   pub fn get_fal_payload(&self) -> Option<FalImageResponsePayload> {
     match self {
       Self::Fal(p) => Some(p.clone()),
+      _ => None,
+    }
+  }
+
+  pub fn get_midjourney_payload(&self) -> Option<MidjourneyImageResponsePayload> {
+    match self {
+      Self::Midjourney(p) => Some(p.clone()),
       _ => None,
     }
   }

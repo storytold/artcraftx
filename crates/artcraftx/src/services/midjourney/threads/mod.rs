@@ -1,2 +1,3 @@
 pub mod midjourney_long_polling_thread;
-mod events;
+pub mod midjourney_websocket_thread;
+pub mod events;

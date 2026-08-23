@@ -4,6 +4,7 @@ use artcraft_client::error::storyteller_error::StorytellerError;
 use fal_client::error::fal_error_plus::FalErrorPlus;
 use gmicloud_client::error::gmicloud_error::GmiCloudError;
 use grok_api_client::error::grok_error::GrokError;
+use midjourney_client::error::midjourney_error::MidjourneyError;
 use seedance2pro_client::error::seedance2pro_error::Seedance2ProError;
 use worldlabs_api_client::error::world_labs_error::WorldLabsError;
 
@@ -13,6 +14,10 @@ pub enum ProviderError {
   Fal(FalErrorPlus),
   GmiCloud(GmiCloudError),
   Grok(GrokError),
+  Midjourney(MidjourneyError),
+  /// First-party Midjourney submit returned no job id (e.g. softban, filtered
+  /// prompt, or a `failure` payload). The string carries the raw detail.
+  MidjourneySubmitRejected(String),
   Seedance2Pro(Seedance2ProError),
   WorldLabs(WorldLabsError),
 }
@@ -26,6 +31,8 @@ impl Display for ProviderError {
       Self::Fal(e) => write!(f, "Fal provider error: {}", e),
       Self::GmiCloud(e) => write!(f, "GmiCloud provider error: {}", e),
       Self::Grok(e) => write!(f, "Grok provider error: {}", e),
+      Self::Midjourney(e) => write!(f, "Midjourney provider error: {}", e),
+      Self::MidjourneySubmitRejected(detail) => write!(f, "Midjourney submit rejected: {}", detail),
       Self::Seedance2Pro(e) => write!(f, "Seedance2Pro provider error: {}", e),
       Self::WorldLabs(e) => write!(f, "WorldLabs provider error: {}", e),
     }
@@ -53,6 +60,12 @@ impl From<GmiCloudError> for ProviderError {
 impl From<GrokError> for ProviderError {
   fn from(error: GrokError) -> Self {
     Self::Grok(error)
+  }
+}
+
+impl From<MidjourneyError> for ProviderError {
+  fn from(error: MidjourneyError) -> Self {
+    Self::Midjourney(error)
   }
 }
 
