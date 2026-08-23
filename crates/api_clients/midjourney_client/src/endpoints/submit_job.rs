@@ -72,11 +72,13 @@ pub async fn submit_job(req: SubmitJobRequest<'_>) -> Result<SubmitJobResponse, 
   #[derive(Serialize)]
   #[allow(non_snake_case)]
   struct Metadata {
+    // NB: Field order and null-vs-empty match the browser request exactly.
+    isMobile: Option<bool>,
     imagePrompts: u8,
     imageReferences: u8,
     characterReferences: u8,
     depthReferences: u8,
-    lightboxOpen: String,
+    lightboxOpen: Option<bool>,
   }
 
   #[derive(Serialize)]
@@ -96,11 +98,12 @@ pub async fn submit_job(req: SubmitJobRequest<'_>) -> Result<SubmitJobResponse, 
     },
     channelId: req.channel_id.to_string(),
     metadata: Metadata {
+      isMobile: None,
       imagePrompts: 0,
       imageReferences: 0,
       characterReferences: 0,
       depthReferences: 0,
-      lightboxOpen: "".to_string(),
+      lightboxOpen: None,
     },
     t: "imagine".to_string(),
     prompt: req.prompt.to_string(),
