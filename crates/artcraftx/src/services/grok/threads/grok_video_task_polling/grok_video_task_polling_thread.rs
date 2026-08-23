@@ -16,8 +16,8 @@ use artcraft_client::enums::common::generation::common_model_type::CommonModelTy
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
 use grok_consumer_client::credentials::grok_full_credentials::GrokFullCredentials;
-use grok_consumer_client::endpoint_bindings::download_video_file::grok_download_video::GrokDownloadVideo;
-use grok_consumer_client::endpoint_bindings::media_posts::list_media_posts::grok_list_media_posts::{GrokMediaPostListRequest, VideoData};
+use grok_consumer_client::endpoint_bindings::old_bindings::download_video_file::grok_download_video::GrokDownloadVideo;
+use grok_consumer_client::endpoint_bindings::old_bindings::media_posts::list_media_posts::grok_list_media_posts::{GrokMediaPostListRequest, VideoData};
 use uuid_utils::uuid::generate_random_uuid;
 use log::{error, info};
 use sqlite_database::queries::read::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, TaskList};

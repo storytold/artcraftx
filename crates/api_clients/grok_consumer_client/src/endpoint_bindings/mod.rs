@@ -1,10 +1,5 @@
-pub mod download_video_file;
-pub mod image_websocket;
-pub mod index_page;
 pub mod list_assets;
 pub mod list_imagine_assets;
-pub mod media_posts;
+pub mod old_bindings;
 pub mod quota_info;
 pub mod session_info;
-pub mod upload_file;
-pub mod video_chat;
