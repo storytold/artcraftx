@@ -16,10 +16,7 @@ use core_types::enums::generation_source::GenerationSource;
 use artcraft_client::enums::common::generation::common_model_type::CommonModelType;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
-use grok_consumer_client::recipes::prompt_websocket_image_with_retry::{prompt_websocket_image_with_retry, PromptWebsocketImageWithRetryArgs};
-use grok_consumer_client::endpoint_bindings::image_websocket::create_listen_websocket::{create_listen_websocket, CreateListenWebsocketArgs};
-use grok_consumer_client::endpoint_bindings::image_websocket::grok_websocket::GrokWebsocket;
-use grok_consumer_client::endpoint_bindings::image_websocket::listen_for_websocket_images::{listen_for_websocket_images, ImageResults, ListenForWebsocketImagesArgs};
+use grok_consumer_client::endpoint_bindings::image_websocket::grok_image_websocket::{CompletedImage, GrokImageWebsocket};
 use uuid_utils::uuid::generate_random_uuid;
 use log::{error, info, warn};
 use sqlite_database::queries::read::get_task_by_provider_and_provider_job_id::{get_task_by_provider_and_provider_job_id, GetTaskByProviderAndProviderJobIdArgs};
@@ -96,11 +93,7 @@ async fn inner_loop(
     //  }
     //};
 
-    let websocket = create_listen_websocket(CreateListenWebsocketArgs {
-      cookies: cookies.as_str(),
-    }).await?;
-
-    let mut websocket = GrokWebsocket::new(websocket);
+    let websocket = GrokImageWebsocket::connect(cookies.as_str()).await?;
 
     loop {
       let maybe_prompt = prompt_queue.dequeue()?;
@@ -115,22 +108,12 @@ async fn inner_loop(
 
       info!("Prompt received over in-memory queue. Prompting Grok websocket: {}", prompt_item.prompt);
 
-      let result = prompt_websocket_image_with_retry(PromptWebsocketImageWithRetryArgs {
-        websocket: &mut websocket,
-        prompt: &prompt_item.prompt,
-        aspect_ratio: prompt_item.aspect_ratio,
-        cookies: &cookies,
-      }).await?;
+      websocket.send_image_prompt_with_retry(
+        &prompt_item.prompt,
+        prompt_item.aspect_ratio,
+      ).await?;
 
-      if let Some(new_websocket) = result.maybe_new_websocket {
-        info!("Replacing websocket with new one...");
-        websocket = new_websocket;
-      }
-
-      let images = listen_for_websocket_images(ListenForWebsocketImagesArgs {
-        websocket: &mut websocket,
-        timeout: Duration::from_millis(30_000),
-      }).await?;
+      let images = websocket.collect_images(Duration::from_millis(30_000)).await?;
 
       upload_images_to_storyteller(
         &app_handle,
@@ -151,7 +134,7 @@ async fn upload_images_to_storyteller(
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
   prompt_item: &PromptItem,
-  images: &ImageResults,
+  images: &[CompletedImage],
 ) -> AnyhowResult<()> {
 
   loop {
@@ -193,12 +176,12 @@ async fn upload_images_to_storyteller(
 
     let mut maybe_primary_media_file_token = None;
 
-    for (i, image) in images.images.iter().enumerate() {
+    for (i, image) in images.iter().enumerate() {
       loop {
         let url = image.url.to_string();
         let file = download_url_to_temp_dir(&url, app_data_root).await?;
 
-        info!("Uploading image {} of {} ...", i, images.images.len());
+        info!("Uploading image {} of {} ...", i, images.len());
 
         let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
           api_host: &ApiHost::Storyteller,
