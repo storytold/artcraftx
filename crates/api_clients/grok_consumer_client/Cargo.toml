@@ -41,6 +41,7 @@ wreq-util.workspace = true
 wreq.workspace = true
 
 [dev-dependencies]
+toml.workspace = true
 filesys.workspace = true
 test_data.workspace = true
 test_utils.workspace = true

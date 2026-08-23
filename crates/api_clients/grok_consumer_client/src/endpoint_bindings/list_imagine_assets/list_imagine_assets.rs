@@ -6,6 +6,7 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use crate::client::grok_domain::GrokDomain;
 use crate::credentials::grok_cookies::GrokCookies;
+use crate::credentials::grok_request_headers::GrokRequestHeaders;
 use crate::endpoint_bindings::list_assets::list_assets::GrokAsset;
 use crate::error::categorize_grok_http_error::categorize_grok_http_error;
 use crate::error::grok_error::GrokError;
@@ -34,6 +35,8 @@ pub struct ListImagineAssetsArgs<'a> {
   pub request: ListImagineAssetsRequest,
   pub credentials: &'a GrokCookies,
   pub domain_override: Option<&'a GrokDomain>,
+  /// Optional captured statsig/tracing headers (see [`GrokRequestHeaders`]).
+  pub request_headers: Option<&'a GrokRequestHeaders>,
   pub request_timeout: Option<Duration>,
 }
 
@@ -72,6 +75,10 @@ impl ListImagineAssetsArgs<'_> {
         .header("sec-fetch-dest", "empty")
         .header("sec-fetch-mode", "cors")
         .header("sec-fetch-site", "same-origin");
+
+    if let Some(headers) = self.request_headers {
+      request_builder = headers.apply(request_builder);
+    }
 
     if let Some(timeout) = self.request_timeout {
       request_builder = request_builder.timeout(timeout);
@@ -197,21 +204,24 @@ mod tests {
 
   mod real_wire_tests {
     use super::*;
-    use crate::test_utils::get_test_cookies::get_typed_test_cookies;
+    use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
     use crate::test_utils::setup_test_logging::setup_test_logging;
     use errors::AnyhowResult;
     use log::LevelFilter;
 
+    // Reaching `Ok` here means `send` saw a 2xx (it returns `Err` otherwise),
+    // so a successful parse is the 200 assertion.
     #[tokio::test]
-    #[ignore] // Hits the real website; requires local test cookies.
+    #[ignore] // Hits the real website; requires external/credentials/grok.
     async fn fetch_imagine_conversations() -> AnyhowResult<()> {
       setup_test_logging(LevelFilter::Info);
-      let cookies = get_typed_test_cookies()?;
+      let secrets = load_grok_test_secrets()?;
 
       let args = ListImagineAssetsArgs {
         request: ListImagineAssetsRequest { page_size: Some(5) },
-        credentials: &cookies,
+        credentials: &secrets.cookies,
         domain_override: None,
+        request_headers: Some(&secrets.headers),
         request_timeout: None,
       };
 
@@ -222,6 +232,17 @@ mod tests {
           conversation.conversation_id,
           conversation.latest_asset_metadata.as_ref().map(|a| &a.asset_id),
         );
+      }
+
+      // The account under test has imagine conversations; expect a non-empty
+      // page of the imagine kind. (No PII asserted.)
+      assert!(!response.conversations.is_empty(), "expected a conversation");
+      assert!(response.conversations.len() <= 5, "page size should be honored");
+      for conversation in &response.conversations {
+        assert!(!conversation.conversation_id.is_empty());
+        if let Some(kind) = &conversation.kind {
+          assert_eq!(kind, "CONVERSATION_KIND_IMAGINE");
+        }
       }
       Ok(())
     }

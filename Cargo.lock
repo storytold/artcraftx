@@ -2614,6 +2614,7 @@ dependencies = [
  "test_data",
  "test_utils",
  "tokio",
+ "toml 1.0.7+spec-1.1.0",
  "url",
  "uuid 1.22.0",
  "workspace-build-acceleration",

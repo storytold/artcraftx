@@ -19,7 +19,9 @@ pub fn setup_test_logging(level: LevelFilter) {
 
   println!("Log level: {:?}", env::var(RUST_LOG));
 
-  Builder::new()
+  // `try_init` (not `init`) so repeated calls are a no-op instead of a panic
+  // — several tests in one process (e.g. `--test-threads=1`) each call this.
+  let _ = Builder::new()
       .is_test(true)
       .format(|buf, record| {
         writeln!(buf,
@@ -31,7 +33,7 @@ pub fn setup_test_logging(level: LevelFilter) {
       })
       .filter(None, level)
       .filter_level(level)
-      .init();
+      .try_init();
 
   trace!("Test trace log");
   debug!("Test debug log");

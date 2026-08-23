@@ -5,6 +5,7 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use crate::client::grok_domain::GrokDomain;
 use crate::credentials::grok_cookies::GrokCookies;
+use crate::credentials::grok_request_headers::GrokRequestHeaders;
 use crate::error::categorize_grok_http_error::categorize_grok_http_error;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
@@ -25,6 +26,8 @@ pub struct QuotaInfoArgs<'a> {
   pub request: QuotaInfoRequest,
   pub credentials: &'a GrokCookies,
   pub domain_override: Option<&'a GrokDomain>,
+  /// Optional captured statsig/tracing headers (see [`GrokRequestHeaders`]).
+  pub request_headers: Option<&'a GrokRequestHeaders>,
   pub request_timeout: Option<Duration>,
 }
 
@@ -71,6 +74,10 @@ impl QuotaInfoArgs<'_> {
         .header("sec-fetch-dest", "empty")
         .header("sec-fetch-mode", "cors")
         .header("sec-fetch-site", "same-origin");
+
+    if let Some(headers) = self.request_headers {
+      request_builder = headers.apply(request_builder);
+    }
 
     if let Some(timeout) = self.request_timeout {
       request_builder = request_builder.timeout(timeout);
@@ -182,26 +189,46 @@ mod tests {
 
   mod real_wire_tests {
     use super::*;
-    use crate::test_utils::get_test_cookies::get_typed_test_cookies;
+    use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
     use crate::test_utils::setup_test_logging::setup_test_logging;
     use errors::AnyhowResult;
     use log::LevelFilter;
 
+    // Reaching `Ok` here means `send` saw a 2xx (it returns `Err` otherwise),
+    // so a successful parse is the 200 assertion.
     #[tokio::test]
-    #[ignore] // Hits the real website; requires local test cookies.
+    #[ignore] // Hits the real website; requires external/credentials/grok.
     async fn fetch_quota_info() -> AnyhowResult<()> {
       setup_test_logging(LevelFilter::Info);
-      let cookies = get_typed_test_cookies()?;
+      let secrets = load_grok_test_secrets()?;
 
       let args = QuotaInfoArgs {
         request: QuotaInfoRequest::default(),
-        credentials: &cookies,
+        credentials: &secrets.cookies,
         domain_override: None,
+        request_headers: Some(&secrets.headers),
         request_timeout: None,
       };
 
       let response = args.send().await?;
       println!("[test] quota_info: {:?}", response);
+
+      // At least one media kind should report a quota bucket, and every
+      // present bucket has a positive rolling window. (No PII / account id.)
+      let buckets = [
+        &response.image,
+        &response.image_pro,
+        &response.image_edit,
+        &response.video,
+        &response.video_720p,
+      ];
+      assert!(
+        buckets.iter().any(|bucket| bucket.is_some()),
+        "expected at least one quota bucket",
+      );
+      for bucket in buckets.into_iter().flatten() {
+        assert!(bucket.window_size_seconds > 0);
+      }
       Ok(())
     }
   }
