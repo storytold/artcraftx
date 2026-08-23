@@ -38,7 +38,7 @@ fn split_sentry_trace(trace: &str) -> String {
 mod tests {
   use crate::endpoint_bindings::old_bindings::index_page::get_index_page::{get_index, GetIndexPageArgs};
   use crate::endpoint_bindings::old_bindings::index_page::parsers::index::parse_index_sentry_trace::parse_index_sentry_trace;
-  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use errors::AnyhowResult;
 
   mod test_request {
@@ -47,7 +47,7 @@ mod tests {
     #[tokio::test]
     #[ignore] // Manual test invocation
     async fn test() -> AnyhowResult<()> {
-      let cookie = get_test_cookies()?;
+      let cookie = load_grok_test_secrets()?.cookies.to_string();
       let index = get_index(GetIndexPageArgs {
         cookie: &cookie,
       }).await?;

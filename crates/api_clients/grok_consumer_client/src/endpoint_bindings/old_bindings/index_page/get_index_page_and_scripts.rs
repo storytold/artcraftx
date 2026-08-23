@@ -58,14 +58,14 @@ pub async fn get_index_page_and_scripts(args: GetIndexPageAndScriptsArgs<'_>) ->
 #[cfg(test)]
 mod tests {
   use crate::endpoint_bindings::old_bindings::index_page::get_index_page_and_scripts::{get_index_page_and_scripts, GetIndexPageAndScriptsArgs};
-  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use errors::AnyhowResult;
 
   #[tokio::test]
   #[ignore] // manually test
   async fn test() -> AnyhowResult<()> {
     //setup_test_logging(LevelFilter::Trace);
-    let cookie = get_test_cookies()?;
+    let cookie = load_grok_test_secrets()?.cookies.to_string();
     let result = get_index_page_and_scripts(GetIndexPageAndScriptsArgs {
       cookie: &cookie,
     }).await?;

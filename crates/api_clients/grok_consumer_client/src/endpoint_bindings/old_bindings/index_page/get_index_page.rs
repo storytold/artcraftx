@@ -80,7 +80,7 @@ pub async fn get_index(args: GetIndexPageArgs<'_>) -> Result<IndexPage, GrokErro
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
   use log::LevelFilter;
@@ -89,7 +89,7 @@ mod tests {
   #[ignore] // manually test
   async fn test() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Trace);
-    let cookie = get_test_cookies()?;
+    let cookie = load_grok_test_secrets()?.cookies.to_string();
     let args = GetIndexPageArgs {
       cookie: &cookie,
     };

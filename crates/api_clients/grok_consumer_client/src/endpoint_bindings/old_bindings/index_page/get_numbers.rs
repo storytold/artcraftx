@@ -43,13 +43,13 @@ mod tests {
   use crate::endpoint_bindings::old_bindings::index_page::parsers::index::parse_index_verification_token::parse_index_verification_token;
   use crate::endpoint_bindings::old_bindings::index_page::parsers::script::parse_script_actions_and_xsid_script_path::parse_script_actions_and_xsid_script_path;
   use crate::endpoint_bindings::old_bindings::index_page::utils::convert_verification_token_to_loading_anim::convert_verification_token_to_loading_anim;
-  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use errors::AnyhowResult;
 
   #[tokio::test]
   #[ignore] // Manual test invocation
   async fn test() -> AnyhowResult<()> {
-    let cookie = get_test_cookies()?;
+    let cookie = load_grok_test_secrets()?.cookies.to_string();
 
     let page_and_scripts = get_index_page_and_scripts(GetIndexPageAndScriptsArgs {
       cookie: &cookie,

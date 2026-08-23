@@ -63,7 +63,7 @@ pub async fn get_index_page_with_client(args: GetIndexPageWithClientArgs<'_>) ->
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use crate::utils::create_firefox_client::create_firefox_client;
   use errors::AnyhowResult;
@@ -73,7 +73,7 @@ mod tests {
   #[ignore] // manually test
   async fn test() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Trace);
-    let cookie = get_test_cookies()?;
+    let cookie = load_grok_test_secrets()?.cookies.to_string();
     let client = create_firefox_client()?;
     let result = get_index_page_with_client(GetIndexPageWithClientArgs {
       client: &client,

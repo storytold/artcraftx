@@ -280,7 +280,7 @@ mod tests {
   use crate::datatypes::file_upload_spec::FileUploadSpec;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
   use crate::recipes::upload_image_and_generate_video_with_retry::{upload_image_and_generate_video_with_retry, UploadImageAndGenerateVideoWithRetry};
-  use crate::test_utils::get_test_cookies::get_typed_test_cookies;
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
   use log::LevelFilter;
@@ -300,7 +300,7 @@ mod tests {
     let image_path = "/Users/bt/Pictures/Midjourney/hipster_girl.png";
     let maybe_prompt = Some("an anime girl turns and high fives a giant t-rex");
 
-    let cookies = get_typed_test_cookies()?;
+    let cookies = load_grok_test_secrets()?.cookies;
 
     let mut bad_secrets = request_client_secrets(RequestClientSecretsArgs {
       cookies: &cookies,

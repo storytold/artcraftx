@@ -192,7 +192,7 @@ pub fn empty_to_none(opt: Option<String>) -> Option<String> {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use errors::AnyhowResult;
   use log::LevelFilter;
@@ -202,7 +202,7 @@ mod tests {
   async fn create_media_post() -> AnyhowResult<()> {
     setup_test_logging(LevelFilter::Info);
 
-    let cookies = get_test_cookies()?;
+    let cookies = load_grok_test_secrets()?.cookies.to_string();
 
     let request = GrokMediaPostListRequest {
       cookie: &cookies,

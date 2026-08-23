@@ -42,7 +42,7 @@ mod tests {
   use crate::endpoint_bindings::old_bindings::index_page::parsers::index::parse_index_script_list::parse_index_svg_paths;
   use crate::endpoint_bindings::old_bindings::index_page::requests::get_index_page_scripts_with_client::{get_index_page_scripts_with_client, GetIndexPageScriptsArgs};
   use crate::endpoint_bindings::old_bindings::index_page::requests::get_index_page_with_client::{get_index_page_with_client, GetIndexPageWithClientArgs};
-  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use crate::utils::create_firefox_client::create_firefox_client;
   use errors::AnyhowResult;
 
@@ -52,7 +52,7 @@ mod tests {
     //setup_test_logging(LevelFilter::Trace);
 
     let client = create_firefox_client()?;
-    let cookie = get_test_cookies()?;
+    let cookie = load_grok_test_secrets()?.cookies.to_string();
 
     let index = get_index_page_with_client(GetIndexPageWithClientArgs {
       client: &client,

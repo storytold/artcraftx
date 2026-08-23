@@ -134,14 +134,14 @@ impl <'a> GrokCreateMediaPost<'a> {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::test_utils::get_test_cookies::get_test_cookies;
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use errors::AnyhowResult;
 
   #[tokio::test]
   #[ignore] // Client side tests only
   async fn create_media_post() -> AnyhowResult<()> {
     //setup_test_logging(LevelFilter::Trace);
-    let cookies = get_test_cookies()?;
+    let cookies = load_grok_test_secrets()?.cookies.to_string();
 
     let user_id = UserId("85980643-ffab-4984-a3de-59a608c47d7f".to_string()); // User
     let file_id = FileId("990ddf90-8f34-42b1-81a5-39c509d62ff7".to_string()); // Mochi

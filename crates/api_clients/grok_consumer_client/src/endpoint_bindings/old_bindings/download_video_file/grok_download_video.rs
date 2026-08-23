@@ -133,7 +133,7 @@ mod tests {
   use crate::datatypes::api::file_id::FileId;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
   use crate::endpoint_bindings::old_bindings::download_video_file::download_video_file::{download_video_file, DownloadVideoFileArgs};
-  use crate::test_utils::get_test_cookies::get_typed_test_cookies;
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use errors::AnyhowResult;
 
   #[tokio::test]
@@ -141,7 +141,7 @@ mod tests {
   async fn test_download() -> AnyhowResult<()> {
     //setup_test_logging(LevelFilter::Trace);
 
-    let cookies = get_typed_test_cookies()?;
+    let cookies = load_grok_test_secrets()?.cookies;
 
     let file_id = FileId("d9b300c6-9562-4e24-a87a-3ede2a53f0bc".to_string()); // Ernest
 

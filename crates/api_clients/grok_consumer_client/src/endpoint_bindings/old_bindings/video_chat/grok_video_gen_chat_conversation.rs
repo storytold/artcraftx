@@ -322,7 +322,7 @@ mod tests {
   use super::*;
   use crate::datatypes::file_upload_spec::FileUploadSpec;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
-  use crate::test_utils::get_test_cookies::get_typed_test_cookies;
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use crate::test_utils::setup_test_logging::setup_test_logging;
   use crate::utils::user_and_file_id_to_video_url::user_and_file_id_to_video_url;
   use errors::AnyhowResult;
@@ -338,7 +338,7 @@ mod tests {
     let image_path = "/Users/bt/Pictures/Zelda 64 Art/7j8baxv9m8u61.jpg";
     let maybe_prompt = Some("The hero shoots an arrow and it hits a skeleton monster");
 
-    let cookies = get_typed_test_cookies()?;
+    let cookies = load_grok_test_secrets()?.cookies;
 
     let secrets = request_client_secrets(RequestClientSecretsArgs {
       cookies: &cookies,
@@ -402,7 +402,7 @@ mod tests {
     let image_path = "/Users/bt/Pictures/Zelda 64 Art/7j8baxv9m8u61.jpg";
     let maybe_prompt = Some("The hero puts down his bow");
 
-    let cookies = get_typed_test_cookies()?;
+    let cookies = load_grok_test_secrets()?.cookies;
 
     let secrets = request_client_secrets(RequestClientSecretsArgs {
       cookies: &cookies,

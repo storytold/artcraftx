@@ -98,13 +98,13 @@ pub async fn request_client_secrets(args: RequestClientSecretsArgs<'_>) -> Resul
 #[cfg(test)]
 mod tests {
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
-  use crate::test_utils::get_test_cookies::get_typed_test_cookies;
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use errors::AnyhowResult;
 
   #[tokio::test]
   #[ignore] // Manual test invocation
   async fn test() -> AnyhowResult<()> {
-    let cookies = get_typed_test_cookies()?;
+    let cookies = load_grok_test_secrets()?.cookies;
 
     let secrets = request_client_secrets(RequestClientSecretsArgs {
       cookies: &cookies,

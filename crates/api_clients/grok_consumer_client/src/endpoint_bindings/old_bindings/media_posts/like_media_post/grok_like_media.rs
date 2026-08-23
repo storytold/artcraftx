@@ -147,14 +147,14 @@ impl <'a> GrokLikeMediaPost<'a> {
 mod tests {
   use super::*;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
-  use crate::test_utils::get_test_cookies::get_typed_test_cookies;
+  use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use errors::AnyhowResult;
 
   #[tokio::test]
   #[ignore] // Client side tests only
   async fn like_media_post() -> AnyhowResult<()> {
     //setup_test_logging(LevelFilter::Trace);
-    let cookies = get_typed_test_cookies()?;
+    let cookies = load_grok_test_secrets()?.cookies;
 
     let file_id = FileId("990ddf90-8f34-42b1-81a5-39c509d62ff7".to_string()); // Mochi
 
