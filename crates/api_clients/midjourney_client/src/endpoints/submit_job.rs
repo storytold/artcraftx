@@ -141,6 +141,13 @@ pub async fn submit_job(args: SubmitJobArgs<'_>) -> Result<SubmitJobResponse, Mi
   let response_body = &response.text().await
       .map_err(|e| MidjourneyApiError::NetworkError(e.to_string()))?;
 
+  log::info!(
+    "Midjourney submit-jobs response: status={}, body_len={}, looks_like_challenge={}",
+    status.as_u16(),
+    response_body.len(),
+    response_body.contains("challenge-platform") || response_body.contains("Just a moment"),
+  );
+
   if !status.is_success() {
     if let Err(err) = filter_cloudflare_errors(status.as_u16(), &response_body) {
       return Err(MidjourneyApiError::CloudflareError(err).into());

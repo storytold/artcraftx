@@ -1,5 +1,4 @@
 use artcraft_client::utils::api_host::ApiHost;
-use browser_emulation::browser_profile::BrowserProfile;
 use core_types::enums::generation_source::GenerationSource;
 use log::{info, warn};
 use midjourney_client::recipes::get_user_info::{get_user_info, GetUserInfoArgs};
@@ -36,6 +35,8 @@ use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_ge
 use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_router_model::tauri_image_model_to_router_model;
 use crate::credentials::auth_credential::AuthCredential;
 use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveSession;
+use crate::services::midjourney::utils::extract_midjourney_user_id_from_cookies::extract_midjourney_user_id_from_cookie_header;
+use crate::services::midjourney::utils::midjourney_browser_profile::midjourney_browser_profile;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_service;
 
@@ -292,35 +293,51 @@ async fn enqueue_via_midjourney(
   })?;
   let cookie_header = cookie.cookie_header();
 
-  // TODO(browser-profile): should match the browser that captured the cookies
-  // (cf_clearance is UA-bound). Default for now.
-  let browser = BrowserProfile::default();
+  let browser = midjourney_browser_profile();
 
-  // Resolve the Midjourney user id (needed for `singleplayer_{user_id}`),
-  // caching it in the live session so we only scrape the index page once.
+  info!(
+    "Midjourney enqueue: cookie_header_len={}, has_auth_i={}, has_auth_r={}, has_cf_clearance={}, browser={}",
+    cookie_header.len(),
+    cookie_header.contains("__Host-Midjourney.AuthUserTokenV3_i"),
+    cookie_header.contains("__Host-Midjourney.AuthUserTokenV3_r"),
+    cookie_header.contains("cf_clearance"),
+    browser.label(),
+  );
+
+  // Resolve the Midjourney user id (needed for `singleplayer_{user_id}`).
+  // Prefer the live session, then the auth cookie's JWT (no network), and only
+  // fall back to the Cloudflare-gated index page as a last resort.
   let user_id = match mj_session.user_id() {
     Some(user_id) => user_id,
-    None => {
-      let info = get_user_info(GetUserInfoArgs {
-        cookie_header: &cookie_header,
-        hostname: None,
-        browser: Some(browser.clone()),
-      })
-      .await
-      .map_err(|err| {
-        warn!("Could not read Midjourney user info: {:?}", err);
-        credential_not_usable(
-          credential,
-          "could not read your Midjourney account info; the session may have expired",
-        )
-      })?;
+    None => match extract_midjourney_user_id_from_cookie_header(&cookie_header) {
+      Some(user_id) => {
+        info!("Resolved Midjourney user id from auth cookie JWT: {}", user_id.as_str());
+        mj_session.set_identity(user_id.clone(), None);
+        user_id
+      }
+      None => {
+        warn!("Could not read Midjourney user id from the auth cookie; falling back to the index page.");
+        let info = get_user_info(GetUserInfoArgs {
+          cookie_header: &cookie_header,
+          hostname: None,
+          browser: Some(browser.clone()),
+        })
+        .await
+        .map_err(|err| {
+          warn!("Could not read Midjourney user info from index page: {:?}", err);
+          credential_not_usable(
+            credential,
+            "could not read your Midjourney account info; the session may have expired",
+          )
+        })?;
 
-      let user_id = info.user_id.ok_or_else(|| {
-        credential_not_usable(credential, "Midjourney did not return a user id")
-      })?;
-      mj_session.set_identity(user_id.clone(), info.websocket_token);
-      user_id
-    }
+        let user_id = info.user_id.ok_or_else(|| {
+          credential_not_usable(credential, "Midjourney did not return a user id")
+        })?;
+        mj_session.set_identity(user_id.clone(), info.websocket_token);
+        user_id
+      }
+    },
   };
 
   let router_request = GenerateImageRequestBuilder {

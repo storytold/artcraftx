@@ -31,6 +31,18 @@ pub async fn get_user_info(args: GetUserInfoArgs<'_>) -> Result<GetUserInfoRespo
     browser: args.browser,
   }).await?;
 
+  // Diagnostics: distinguish a Cloudflare challenge from a genuinely
+  // logged-out page when the parse below fails.
+  log::info!(
+    "Midjourney index page: {} bytes; initialProps={}, initialAuthUser={}, websocketToken={}, turnstile={}, challenge-platform={}",
+    index_html.len(),
+    index_html.contains("initialProps"),
+    index_html.contains("initialAuthUser"),
+    index_html.contains("websocketToken"),
+    index_html.contains("turnstile"),
+    index_html.contains("challenge-platform"),
+  );
+
   /*
     <script id="initialProps" type="application/json">
       {

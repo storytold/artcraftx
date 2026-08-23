@@ -3,6 +3,8 @@ use crate::services::midjourney::completion::finalize_midjourney_job::{
   finalize_midjourney_job, FinalizeMidjourneyJobArgs,
 };
 use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveSession;
+use crate::services::midjourney::utils::extract_midjourney_user_id_from_cookies::extract_midjourney_user_id_from_cookie_header;
+use crate::services::midjourney::utils::midjourney_browser_profile::midjourney_browser_profile;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
@@ -135,7 +137,7 @@ async fn poll_midjourney_tasks(
     request: ImagineRequest { user_id: mj_user_id, page_size: None },
     cookie_header,
     hostname: None,
-    browser: None,
+    browser: Some(midjourney_browser_profile()),
   }).await?;
 
   let midjourney_items_by_id = midjourney_result
@@ -144,7 +146,7 @@ async fn poll_midjourney_tasks(
       .filter_map(|item| item.id.clone().map(|id| (id, item.clone())))
       .collect::<HashMap<String, ImagineItem>>();
 
-  let image_downloader = ImageDownloaderClient::create(None)?;
+  let image_downloader = ImageDownloaderClient::create(Some(midjourney_browser_profile()))?;
 
   for (job_id, local_task) in local_tasks_by_job_id.iter() {
     let Some(item) = midjourney_items_by_id.get(job_id) else {
@@ -199,10 +201,17 @@ pub(crate) async fn resolve_user_id(
     return Some(user_id);
   }
 
+  // Prefer the auth-cookie JWT (no network, not Cloudflare-gated).
+  if let Some(user_id) = extract_midjourney_user_id_from_cookie_header(cookie_header) {
+    mj_session.set_identity(user_id.clone(), None);
+    return Some(user_id);
+  }
+
+  // Fall back to the index page (needed for the websocket token anyway).
   let info = get_user_info(GetUserInfoArgs {
     cookie_header,
     hostname: None,
-    browser: None,
+    browser: Some(midjourney_browser_profile()),
   }).await;
 
   match info {

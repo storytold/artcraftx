@@ -5,6 +5,7 @@ use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveS
 use crate::services::midjourney::threads::midjourney_long_polling_thread::{
   midjourney_cookie_header, resolve_user_id,
 };
+use crate::services::midjourney::utils::midjourney_browser_profile::midjourney_browser_profile;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
@@ -103,7 +104,7 @@ async fn run_once(
         websocket_token: &websocket_token,
         user_id,
         hostname: None,
-        browser: None,
+        browser: Some(midjourney_browser_profile()),
       }).await?;
       mj_session.set_websocket(ws.clone());
       info!("Midjourney websocket opened for fast completion.");
@@ -124,7 +125,7 @@ async fn drive_websocket(
   storyteller_creds: &StorytellerCredentialSet,
   websocket: MidjourneyWebSocket,
 ) -> AnyhowResult<()> {
-  let image_downloader = ImageDownloaderClient::create(None)?;
+  let image_downloader = ImageDownloaderClient::create(Some(midjourney_browser_profile()))?;
   let mut events = websocket.events();
   let mut subscribed: HashSet<String> = HashSet::new();
   let mut pending_tasks_by_job_id: HashMap<String, Task> = HashMap::new();
