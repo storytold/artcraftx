@@ -149,6 +149,7 @@ async fn handle_error_behavior(
   // debug rendering for error kinds without one.
   let error_message = match &err {
     GenerateError::NotYetImplemented(message) => message.clone(),
+    GenerateError::ProviderRejected(message) => message.clone(),
     other => format!("{:?}", other),
   };
 

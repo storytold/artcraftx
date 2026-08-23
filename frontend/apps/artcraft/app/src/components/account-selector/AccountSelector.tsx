@@ -120,12 +120,31 @@ export const AccountSelector = () => {
   );
 };
 
+/**
+ * Auto-assigned usernames (notably Midjourney's, e.g. "u3869671173") are just
+ * "u" followed by digits. They carry no human meaning, so we prefer the email
+ * for these; a username that looks human-set is still preferred.
+ */
+const AUTO_ASSIGNED_USERNAME_PATTERN = /^u\d+$/;
+
 /** Row title: the most personal identity we have for the account. */
-const accountLabel = (credential: CredentialPayload): string =>
-  credential.name ||
-  credential.username ||
-  credential.email ||
-  getServiceMeta(credential.service).label;
+const accountLabel = (credential: CredentialPayload): string => {
+  const name = credential.name?.trim();
+  if (name) {
+    return name;
+  }
+
+  const username = credential.username?.trim();
+  const email = credential.email?.trim();
+  const serviceLabel = getServiceMeta(credential.service).label;
+
+  if (username && !AUTO_ASSIGNED_USERNAME_PATTERN.test(username)) {
+    return username;
+  }
+
+  // Auto-assigned (or missing) username: prefer the email, then fall back.
+  return email || username || serviceLabel;
+};
 
 /** Row subtitle: the service, plus a key preview for API-key accounts. */
 const accountDescription = (credential: CredentialPayload): string => {

@@ -50,6 +50,10 @@ pub enum GenerateError {
   /// The feature is not yet implemented.
   NotYetImplemented(String),
 
+  /// The provider accepted the request but rejected it with a user-facing
+  /// message (e.g. Midjourney "subscription_required", a banned prompt).
+  ProviderRejected(String),
+
   // Misc error buckets
   AnyhowError(AnyhowError),
   DecodeError(DecodeError),
@@ -263,7 +267,7 @@ impl From<ArtcraftRouterError> for GenerateError {
       ArtcraftRouterError::Provider(ProviderError::Grok(_)) => Self::ArtcraftRouterNotYetSupportedProvider("grok_api"),
       ArtcraftRouterError::Provider(ProviderError::Seedance2Pro(_)) => Self::ArtcraftRouterNotYetSupportedProvider("seedance2pro"),
       ArtcraftRouterError::Provider(ProviderError::Midjourney(e)) => Self::ProviderFailure(ProviderFailureReason::MidjourneyError(e)),
-      ArtcraftRouterError::Provider(ProviderError::MidjourneySubmitRejected(_)) => Self::ProviderFailure(ProviderFailureReason::MidjourneyJobEnqueueFailed),
+      ArtcraftRouterError::Provider(ProviderError::MidjourneySubmitRejected(message)) => Self::ProviderRejected(message),
       // NB: the desktop app reaches World Labs through the Artcraft backend; the router's
       // direct World Labs provider isn't used here.
       ArtcraftRouterError::Provider(ProviderError::WorldLabs(_)) => Self::ArtcraftRouterNotYetSupportedProvider("world_labs"),

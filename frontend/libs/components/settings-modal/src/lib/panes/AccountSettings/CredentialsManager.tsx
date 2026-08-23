@@ -120,6 +120,36 @@ export const CredentialsManager = () => {
   );
 };
 
+/**
+ * Auto-assigned usernames (notably Midjourney's, e.g. "u3869671173") are just
+ * "u" followed by digits and carry no human meaning.
+ */
+const AUTO_ASSIGNED_USERNAME_PATTERN = /^u\d+$/;
+
+/**
+ * Identity line for a cookie (website-login) account. Prefer a human-looking
+ * username; when the username is auto-assigned, fall back to the email so we
+ * don't surface a meaningless "u{random}" handle.
+ */
+const cookieIdentityLine = (credential: CredentialPayload): string => {
+  const username = credential.username?.trim();
+  const email = credential.email?.trim();
+
+  const parts: string[] = [];
+  if (username && !AUTO_ASSIGNED_USERNAME_PATTERN.test(username)) {
+    parts.push(username);
+  }
+  if (email) {
+    parts.push(email);
+  }
+  // No human username and no email: fall back to the raw username, if any.
+  if (parts.length === 0 && username) {
+    parts.push(username);
+  }
+
+  return parts.join(" · ") || "Website login";
+};
+
 const CredentialRow = ({
   credential,
   onEdit,
@@ -140,8 +170,7 @@ const CredentialRow = ({
     : credential.name || meta.label;
   const secondaryLine = isApiKey
     ? `${credential.api_key_preview ?? ""}${"*".repeat(12)}`
-    : [credential.username, credential.email].filter(Boolean).join(" · ") ||
-      "Website login";
+    : cookieIdentityLine(credential);
 
   return (
     <div

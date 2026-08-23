@@ -35,10 +35,19 @@ impl MidjourneyMidjourney8RequestState {
     .map_err(|err| ArtcraftRouterError::Provider(ProviderError::Midjourney(err)))?;
 
     let job_id = response.maybe_job_id.ok_or_else(|| {
+      // Surface Midjourney's own human-readable message(s) (e.g.
+      // "subscription_required", banned prompt), not a debug dump.
       let detail = response
           .maybe_errors
-          .map(|errors| format!("{:?}", errors))
-          .unwrap_or_else(|| "no job id and no error detail returned".to_string());
+          .map(|errors| {
+            errors
+                .into_iter()
+                .filter_map(|error| error.message)
+                .collect::<Vec<String>>()
+                .join("; ")
+          })
+          .filter(|message| !message.is_empty())
+          .unwrap_or_else(|| "Midjourney rejected the request with no detail".to_string());
       ArtcraftRouterError::Provider(ProviderError::MidjourneySubmitRejected(detail))
     })?;
 
