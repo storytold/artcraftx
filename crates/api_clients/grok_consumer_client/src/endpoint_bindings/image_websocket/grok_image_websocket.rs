@@ -1,6 +1,6 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use crate::datatypes::api::request_id::RequestId;
-use crate::endpoint_bindings::image_websocket::messages::websocket_client_message::{ClientMessageAspectRatio, WebsocketClientMessage};
+use crate::endpoint_bindings::image_websocket::messages::websocket_client_message::{FastAspectRatio, QualityAspectRatio, WebsocketClientMessage};
 use crate::endpoint_bindings::image_websocket::messages::websocket_server_message::{ErrorMessage, ERR_CODE_RATE_LIMIT_EXCEEDED, WebsocketServerMessage};
 use crate::error::grok_specific_api_error::GrokSpecificApiError;
 use crate::error::grok_client_error::GrokClientError;
@@ -52,13 +52,14 @@ pub struct CompletedImage {
 ///
 /// Cheap to clone and safe to share across tasks — the socket lives behind an
 /// `Arc<Mutex<..>>`, so every method takes `&self`. Open one with [`connect`],
-/// push prompts with [`send_image_prompt`] (or [`send_image_prompt_with_retry`],
-/// which reconnects on failure), read typed frames with [`next_message`], or
-/// wait for finished images with [`collect_images`].
+/// push prompts with [`send_fast_image_prompt`] / [`send_quality_image_prompt`]
+/// (or the `_with_retry` variants, which reconnect on failure), read typed
+/// frames with [`next_message`], or wait for finished images with
+/// [`collect_images`].
 ///
 /// [`connect`]: Self::connect
-/// [`send_image_prompt`]: Self::send_image_prompt
-/// [`send_image_prompt_with_retry`]: Self::send_image_prompt_with_retry
+/// [`send_fast_image_prompt`]: Self::send_fast_image_prompt
+/// [`send_quality_image_prompt`]: Self::send_quality_image_prompt
 /// [`next_message`]: Self::next_message
 /// [`collect_images`]: Self::collect_images
 #[derive(Clone)]
@@ -86,27 +87,56 @@ impl GrokImageWebsocket {
     Ok(())
   }
 
-  /// Send an image-generation prompt.
-  pub async fn send_image_prompt(
+  /// Send a **fast** ("speed") image prompt. Fast mode supports the
+  /// [`FastAspectRatio`] set.
+  pub async fn send_fast_image_prompt(
     &self,
     prompt: &str,
-    aspect_ratio: ClientMessageAspectRatio,
+    aspect_ratio: FastAspectRatio,
   ) -> Result<(), GrokError> {
-    let message = WebsocketClientMessage::new_image_prompt(prompt, aspect_ratio);
-    self.send_json(&message).await
+    self.send_json(&WebsocketClientMessage::new_fast_image_prompt(prompt, aspect_ratio)).await
   }
 
-  /// Send an image prompt, reconnecting and retrying if the send fails (e.g.
-  /// the socket dropped between prompts).
-  pub async fn send_image_prompt_with_retry(
+  /// [`send_fast_image_prompt`], reconnecting and retrying if the send fails
+  /// (e.g. the socket dropped between prompts).
+  ///
+  /// [`send_fast_image_prompt`]: Self::send_fast_image_prompt
+  pub async fn send_fast_image_prompt_with_retry(
     &self,
     prompt: &str,
-    aspect_ratio: ClientMessageAspectRatio,
+    aspect_ratio: FastAspectRatio,
   ) -> Result<(), GrokError> {
+    self.send_with_retry(WebsocketClientMessage::new_fast_image_prompt(prompt, aspect_ratio)).await
+  }
+
+  /// Send a **quality** ("pro") image prompt — slower, higher quality. Quality
+  /// mode supports the larger [`QualityAspectRatio`] set.
+  pub async fn send_quality_image_prompt(
+    &self,
+    prompt: &str,
+    aspect_ratio: QualityAspectRatio,
+  ) -> Result<(), GrokError> {
+    self.send_json(&WebsocketClientMessage::new_quality_image_prompt(prompt, aspect_ratio)).await
+  }
+
+  /// [`send_quality_image_prompt`], reconnecting and retrying if the send
+  /// fails.
+  ///
+  /// [`send_quality_image_prompt`]: Self::send_quality_image_prompt
+  pub async fn send_quality_image_prompt_with_retry(
+    &self,
+    prompt: &str,
+    aspect_ratio: QualityAspectRatio,
+  ) -> Result<(), GrokError> {
+    self.send_with_retry(WebsocketClientMessage::new_quality_image_prompt(prompt, aspect_ratio)).await
+  }
+
+  /// Send a prepared message, reconnecting and retrying on failure.
+  async fn send_with_retry(&self, message: WebsocketClientMessage) -> Result<(), GrokError> {
     let mut last_error = None;
 
     for attempt in 1..=SEND_ATTEMPTS {
-      match self.send_image_prompt(prompt, aspect_ratio).await {
+      match self.send_json(&message).await {
         Ok(()) => return Ok(()),
         Err(err) => {
           warn!("Grok image prompt send failed (attempt {attempt}/{SEND_ATTEMPTS}): {err}");
@@ -352,9 +382,9 @@ mod tests {
 
     let websocket = GrokImageWebsocket::connect(secrets.cookies.as_str()).await?;
 
-    websocket.send_image_prompt_with_retry(
+    websocket.send_fast_image_prompt_with_retry(
       "A dinosaur on stilts walking on the beach",
-      ClientMessageAspectRatio::WideThreeByTwo,
+      FastAspectRatio::WideThreeByTwo,
     ).await?;
 
     match websocket.collect_images(Duration::from_secs(30)).await {

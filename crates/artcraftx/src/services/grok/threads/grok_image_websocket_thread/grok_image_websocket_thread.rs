@@ -108,7 +108,7 @@ async fn inner_loop(
 
       info!("Prompt received over in-memory queue. Prompting Grok websocket: {}", prompt_item.prompt);
 
-      websocket.send_image_prompt_with_retry(
+      websocket.send_fast_image_prompt_with_retry(
         &prompt_item.prompt,
         prompt_item.aspect_ratio,
       ).await?;

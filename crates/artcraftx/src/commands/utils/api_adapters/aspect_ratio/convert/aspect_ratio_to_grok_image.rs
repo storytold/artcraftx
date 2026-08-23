@@ -1,33 +1,33 @@
 use crate::commands::utils::api_adapters::aspect_ratio::common_aspect_ratio::CommonAspectRatio;
-use grok_consumer_client::endpoint_bindings::image_websocket::messages::websocket_client_message::ClientMessageAspectRatio;
+use grok_consumer_client::endpoint_bindings::image_websocket::messages::websocket_client_message::FastAspectRatio;
 
-pub fn aspect_ratio_to_grok_image(aspect_ratio: CommonAspectRatio) -> ClientMessageAspectRatio {
+pub fn aspect_ratio_to_grok_image(aspect_ratio: CommonAspectRatio) -> FastAspectRatio {
   match aspect_ratio {
     // Exact
-    CommonAspectRatio::Square => ClientMessageAspectRatio::Square,
-    CommonAspectRatio::WideThreeByTwo => ClientMessageAspectRatio::WideThreeByTwo,
-    CommonAspectRatio::TallTwoByThree => ClientMessageAspectRatio::TallTwoByThree,
+    CommonAspectRatio::Square => FastAspectRatio::Square,
+    CommonAspectRatio::WideThreeByTwo => FastAspectRatio::WideThreeByTwo,
+    CommonAspectRatio::TallTwoByThree => FastAspectRatio::TallTwoByThree,
     
     // Close enough
-    CommonAspectRatio::SquareHd => ClientMessageAspectRatio::Square,
+    CommonAspectRatio::SquareHd => FastAspectRatio::Square,
 
     // Non-matching
     CommonAspectRatio::Auto
     | CommonAspectRatio::Auto2k
-    | CommonAspectRatio::Auto4k => ClientMessageAspectRatio::Square,
+    | CommonAspectRatio::Auto4k => FastAspectRatio::Square,
     
     // Mismatch - wide
     CommonAspectRatio::Wide 
     | CommonAspectRatio::WideFiveByFour 
     | CommonAspectRatio::WideFourByThree 
     | CommonAspectRatio::WideSixteenByNine 
-    | CommonAspectRatio::WideTwentyOneByNine => ClientMessageAspectRatio::WideThreeByTwo,
+    | CommonAspectRatio::WideTwentyOneByNine => FastAspectRatio::WideThreeByTwo,
 
     // Mismatch - tall
     CommonAspectRatio::Tall 
     | CommonAspectRatio::TallFourByFive 
     | CommonAspectRatio::TallThreeByFour 
     | CommonAspectRatio::TallNineBySixteen 
-    | CommonAspectRatio::TallNineByTwentyOne => ClientMessageAspectRatio::TallTwoByThree,
+    | CommonAspectRatio::TallNineByTwentyOne => FastAspectRatio::TallTwoByThree,
   }
 }
