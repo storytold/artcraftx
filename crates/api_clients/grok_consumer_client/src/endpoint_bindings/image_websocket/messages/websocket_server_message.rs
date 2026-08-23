@@ -12,11 +12,36 @@ pub enum WebsocketServerMessage {
   #[serde(rename = "json")]
   Json(JsonDataMessage),
 
+  /// An error frame, root `type = "error"`. e.g. when the image rate limit /
+  /// quota is exhausted.
+  #[serde(rename = "error")]
+  Error(ErrorMessage),
+
   /// Captures any other JSON messages.
   #[serde(untagged)]
   Unknown(serde_json::Value),
   //Unknown(String),
 }
+
+/// An error the server sends over the socket instead of generating.
+///
+/// e.g. rate limiting:
+/// `{"type":"error","err_code":"rate_limit_exceeded","err_msg":"Image rate limit exceeded","request_id":"..."}`
+#[derive(Deserialize, Clone, Debug)]
+pub struct ErrorMessage {
+  /// Machine-readable code, e.g. "rate_limit_exceeded".
+  pub err_code: Option<String>,
+
+  /// Human-readable message, e.g. "Image rate limit exceeded".
+  pub err_msg: Option<String>,
+
+  /// UUID of the request this error is a response to.
+  pub request_id: Option<String>,
+}
+
+/// The `err_code` on an [`ErrorMessage`] when the account's image quota / rate
+/// limit is exhausted.
+pub const ERR_CODE_RATE_LIMIT_EXCEEDED: &str = "rate_limit_exceeded";
 
 /// Images with a binary blob and URLs.
 /// We may receive several of these for a single prompt.
@@ -84,11 +109,31 @@ impl WebsocketServerMessage {
 
 #[cfg(test)]
 mod tests {
-  use crate::endpoint_bindings::image_websocket::messages::websocket_server_message::WebsocketServerMessage;
+  use crate::endpoint_bindings::image_websocket::messages::websocket_server_message::{ERR_CODE_RATE_LIMIT_EXCEEDED, WebsocketServerMessage};
 
   fn json_path(file_name: &str) -> String {
     // NB: Cargo runs tests with the crate root as the working directory.
     format!("test_data/websocket_messages/{}", file_name)
+  }
+
+  // Real rate-limit frame captured over the socket when the account is out of
+  // image quota.
+  const RATE_LIMIT_FRAME: &str = r#"{"type":"error","err_code":"rate_limit_exceeded","err_msg":"Image rate limit exceeded","request_id":"5c8fdd50-11ab-4e7c-9f64-301902eb6678"}"#;
+
+  #[test]
+  fn test_error_rate_limit() -> anyhow::Result<()> {
+    let message = WebsocketServerMessage::from_json_str(RATE_LIMIT_FRAME)?;
+
+    match message {
+      WebsocketServerMessage::Error(error) => {
+        assert_eq!(error.err_code.as_deref(), Some(ERR_CODE_RATE_LIMIT_EXCEEDED));
+        assert_eq!(error.err_msg.as_deref(), Some("Image rate limit exceeded"));
+        assert!(error.request_id.is_some());
+      }
+      other => panic!("Expected Error message, got {:?}", other),
+    }
+
+    Ok(())
   }
 
   #[test]

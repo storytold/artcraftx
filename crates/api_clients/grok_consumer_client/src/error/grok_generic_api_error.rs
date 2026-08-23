@@ -52,6 +52,12 @@ pub enum GrokGenericApiError {
   /// Our previous upload failed
   UploadFailed,
 
+  /// The image websocket returned an error frame we don't specifically handle.
+  /// Carries the full raw error frame.
+  UnexpectedWebsocketErrorFrame {
+    body: String,
+  },
+
   /// An error upgrading the connection to a websocket.
   WreqWebsocketUpgradeError(wreq::Error),
 
@@ -75,6 +81,7 @@ impl Display for GrokGenericApiError {
       Self::UncategorizedBadResponseWithStatus(status) => write!(f, "Uncategorized with status code: {}", status),
       Self::UncategorizedBadResponseWithStatusAndBody { status_code, body } => write!(f, "Uncategorized bad response: status code {}, body: {}", status_code, body),
       Self::UploadFailed => write!(f, "Upload failed"),
+      Self::UnexpectedWebsocketErrorFrame { body } => write!(f, "Unexpected websocket error frame: {}", body),
       Self::WreqWebsocketUpgradeError(err) => write!(f, "Websocket upgrade error: {}", err),
       Self::WreqError(err) => write!(f, "Wreq client error: {}", err),
     }

@@ -1,7 +1,8 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use crate::datatypes::api::request_id::RequestId;
 use crate::endpoint_bindings::image_websocket::messages::websocket_client_message::{ClientMessageAspectRatio, WebsocketClientMessage};
-use crate::endpoint_bindings::image_websocket::messages::websocket_server_message::WebsocketServerMessage;
+use crate::endpoint_bindings::image_websocket::messages::websocket_server_message::{ErrorMessage, ERR_CODE_RATE_LIMIT_EXCEEDED, WebsocketServerMessage};
+use crate::error::grok_specific_api_error::GrokSpecificApiError;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
@@ -167,6 +168,12 @@ impl GrokImageWebsocket {
         continue;
       };
 
+      // An error frame (e.g. out-of-quota) means no images are coming; fail
+      // fast with a typed error carrying the raw frame.
+      if let WebsocketServerMessage::Error(error) = &message {
+        return Err(error_frame_to_grok_error(error, &text));
+      }
+
       if let Some(image) = completed_image(&message) {
         images.push(image);
       }
@@ -188,6 +195,20 @@ impl GrokImageWebsocket {
         }
         None => Ok(None),
       },
+    }
+  }
+}
+
+/// Map a server error frame (plus its raw body) to a typed error. Quota /
+/// rate-limit exhaustion gets its own [`GrokSpecificApiError`] variant; any
+/// other code is surfaced generically. Both carry the full raw frame.
+fn error_frame_to_grok_error(error: &ErrorMessage, raw_frame: &str) -> GrokError {
+  match error.err_code.as_deref() {
+    Some(ERR_CODE_RATE_LIMIT_EXCEEDED) => {
+      GrokSpecificApiError::ImageRateLimitExceeded { body: raw_frame.to_string() }.into()
+    }
+    _ => {
+      GrokGenericApiError::UnexpectedWebsocketErrorFrame { body: raw_frame.to_string() }.into()
     }
   }
 }
@@ -274,13 +295,22 @@ mod tests {
       ClientMessageAspectRatio::WideThreeByTwo,
     ).await?;
 
-    let images = websocket.collect_images(Duration::from_secs(30)).await?;
-    info!("Collected {} image(s).", images.len());
-    for image in &images {
-      info!("Image: {} ({})", image.url, image.request_id.to_string());
+    match websocket.collect_images(Duration::from_secs(30)).await {
+      Ok(images) => {
+        info!("Collected {} image(s).", images.len());
+        for image in &images {
+          info!("Image: {} ({})", image.url, image.request_id.to_string());
+        }
+        assert!(!images.is_empty(), "expected at least one completed image");
+      }
+      // Out of quota is a valid "the plumbing works" outcome; surface it
+      // clearly rather than failing.
+      Err(GrokError::ApiSpecific(GrokSpecificApiError::ImageRateLimitExceeded { body })) => {
+        info!("Image rate limit / quota exhausted (expected when out of quota): {body}");
+      }
+      Err(err) => return Err(err.into()),
     }
 
-    assert!(!images.is_empty(), "expected at least one completed image");
     Ok(())
   }
 }
