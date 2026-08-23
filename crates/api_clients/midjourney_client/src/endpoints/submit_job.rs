@@ -28,15 +28,52 @@ pub struct SubmitJobArgs<'a> {
 pub struct SubmitJobResponse {
   /// On success, the job ID is returned.
   pub maybe_job_id: Option<String>,
-  
+
   /// On error, we have a list of error messages.
   pub maybe_errors: Option<Vec<SubmitJobError>>,
 }
 
+impl SubmitJobResponse {
+  /// The classified errors returned by the submit, if any.
+  pub fn errors(&self) -> &[SubmitJobError] {
+    self.maybe_errors.as_deref().unwrap_or(&[])
+  }
+
+  /// Whether the submit was rejected because the account has no active paid
+  /// Midjourney subscription (free trials disabled). First-class so callers
+  /// can branch on it (e.g. prompt the user to subscribe).
+  pub fn is_subscription_required(&self) -> bool {
+    self.errors()
+        .iter()
+        .any(|error| error.error_type == MidjourneySubmitErrorType::SubscriptionRequired)
+  }
+}
+
 #[derive(Debug, Clone)]
 pub struct SubmitJobError {
-  pub error_type: Option<String>,
+  pub error_type: MidjourneySubmitErrorType,
   pub message: Option<String>,
+}
+
+/// A classified Midjourney submit-jobs failure `type`. Unknown values are
+/// preserved via [`MidjourneySubmitErrorType::Other`] so matching stays
+/// exhaustive-safe.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MidjourneySubmitErrorType {
+  /// `subscription_required`: the account needs an active paid Midjourney plan.
+  SubscriptionRequired,
+
+  /// Any other failure type Midjourney returned (carries the raw string).
+  Other(String),
+}
+
+impl MidjourneySubmitErrorType {
+  pub fn from_api_str(value: &str) -> Self {
+    match value {
+      "subscription_required" => Self::SubscriptionRequired,
+      other => Self::Other(other.to_string()),
+    }
+  }
 }
 
 pub async fn submit_job(args: SubmitJobArgs<'_>) -> Result<SubmitJobResponse, MidjourneyError> {
@@ -207,9 +244,9 @@ pub async fn submit_job(args: SubmitJobArgs<'_>) -> Result<SubmitJobResponse, Mi
   if let Some(failures) = response.failure.as_ref() {
     if !failures.is_empty() {
       maybe_errors = Some(failures.iter()
-          .map(|f| SubmitJobError { 
-            error_type: Some(f.r#type.clone()), 
-            message: Some(f.message.clone()), 
+          .map(|f| SubmitJobError {
+            error_type: MidjourneySubmitErrorType::from_api_str(&f.r#type),
+            message: Some(f.message.clone()),
           }).collect());
     }
   }
@@ -222,9 +259,39 @@ pub async fn submit_job(args: SubmitJobArgs<'_>) -> Result<SubmitJobResponse, Mi
 
 #[cfg(test)]
 mod tests {
-  use crate::endpoints::submit_job::{submit_job, SubmitJobArgs, SubmitJobRequest};
+  use crate::endpoints::submit_job::{
+    submit_job, MidjourneySubmitErrorType, SubmitJobArgs, SubmitJobError, SubmitJobRequest,
+    SubmitJobResponse,
+  };
   use errors::AnyhowResult;
   use filesys::read_to_trimmed_string::read_to_trimmed_string;
+
+  #[test]
+  fn classifies_subscription_required() {
+    assert_eq!(
+      MidjourneySubmitErrorType::from_api_str("subscription_required"),
+      MidjourneySubmitErrorType::SubscriptionRequired,
+    );
+    assert_eq!(
+      MidjourneySubmitErrorType::from_api_str("softban"),
+      MidjourneySubmitErrorType::Other("softban".to_string()),
+    );
+  }
+
+  #[test]
+  fn response_flags_subscription_required() {
+    let response = SubmitJobResponse {
+      maybe_job_id: None,
+      maybe_errors: Some(vec![SubmitJobError {
+        error_type: MidjourneySubmitErrorType::SubscriptionRequired,
+        message: Some("Please subscribe".to_string()),
+      }]),
+    };
+    assert!(response.is_subscription_required());
+
+    let ok = SubmitJobResponse { maybe_job_id: Some("job".to_string()), maybe_errors: None };
+    assert!(!ok.is_subscription_required());
+  }
 
   // Get channel id via:
   // https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=[TOKEN]

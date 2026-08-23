@@ -1,5 +1,7 @@
 use midjourney_client::recipes::channel_id::ChannelId;
-use midjourney_client::recipes::text_to_image::{text_to_image, TextToImageArgs, TextToImageRequest};
+use midjourney_client::recipes::text_to_image::{
+  text_to_image, TextToImageArgs, TextToImageRequest, TextToImageResponse,
+};
 
 use crate::client::router_midjourney_client::RouterMidjourneyClient;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
@@ -34,23 +36,32 @@ impl MidjourneyMidjourney8RequestState {
     .await
     .map_err(|err| ArtcraftRouterError::Provider(ProviderError::Midjourney(err)))?;
 
-    let job_id = response.maybe_job_id.ok_or_else(|| {
-      // Surface Midjourney's own human-readable message(s) (e.g.
-      // "subscription_required", banned prompt), not a debug dump.
-      let detail = response
-          .maybe_errors
-          .map(|errors| {
-            errors
-                .into_iter()
-                .filter_map(|error| error.message)
-                .collect::<Vec<String>>()
-                .join("; ")
-          })
-          .filter(|message| !message.is_empty())
-          .unwrap_or_else(|| "Midjourney rejected the request with no detail".to_string());
-      ArtcraftRouterError::Provider(ProviderError::MidjourneySubmitRejected(detail))
-    })?;
+    if let Some(job_id) = response.maybe_job_id.clone() {
+      return Ok(GenerateImageResponse::Midjourney(MidjourneyImageResponsePayload { job_id }));
+    }
 
-    Ok(GenerateImageResponse::Midjourney(MidjourneyImageResponsePayload { job_id }))
+    // No job id — classify the rejection. Surface Midjourney's own
+    // human-readable message(s), not a debug dump.
+    let detail = midjourney_error_detail(&response);
+    if response.is_subscription_required() {
+      return Err(ArtcraftRouterError::Provider(ProviderError::MidjourneySubscriptionRequired(detail)));
+    }
+    Err(ArtcraftRouterError::Provider(ProviderError::MidjourneySubmitRejected(detail)))
+  }
+}
+
+/// Join Midjourney's failure messages into a single human-readable string.
+fn midjourney_error_detail(response: &TextToImageResponse) -> String {
+  let detail = response
+      .errors()
+      .iter()
+      .filter_map(|error| error.message.clone())
+      .collect::<Vec<String>>()
+      .join("; ");
+
+  if detail.is_empty() {
+    "Midjourney rejected the request with no detail".to_string()
+  } else {
+    detail
   }
 }

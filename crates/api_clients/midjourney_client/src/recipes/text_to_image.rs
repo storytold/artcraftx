@@ -1,5 +1,5 @@
 use crate::client::midjourney_hostname::MidjourneyHostname;
-use crate::endpoints::submit_job::{submit_job, SubmitJobArgs, SubmitJobRequest};
+use crate::endpoints::submit_job::{submit_job, MidjourneySubmitErrorType, SubmitJobArgs, SubmitJobRequest};
 use crate::error::midjourney_error::MidjourneyError;
 use crate::recipes::channel_id::ChannelId;
 use browser_emulation::browser_profile::BrowserProfile;
@@ -29,9 +29,23 @@ pub struct TextToImageResponse {
   pub maybe_errors: Option<Vec<TextToImageError>>,
 }
 
+impl TextToImageResponse {
+  pub fn errors(&self) -> &[TextToImageError] {
+    self.maybe_errors.as_deref().unwrap_or(&[])
+  }
+
+  /// Whether the request was rejected for lack of an active paid Midjourney
+  /// subscription. See [`MidjourneySubmitErrorType::SubscriptionRequired`].
+  pub fn is_subscription_required(&self) -> bool {
+    self.errors()
+        .iter()
+        .any(|error| error.error_type == MidjourneySubmitErrorType::SubscriptionRequired)
+  }
+}
+
 #[derive(Debug, Clone)]
 pub struct TextToImageError {
-  pub error_type: Option<String>,
+  pub error_type: MidjourneySubmitErrorType,
   pub message: Option<String>,
 }
 

@@ -253,7 +253,9 @@ impl From<ArtcraftRouterError> for GenerateError {
         let provider = match err {
           ProviderError::Fal(_) => BillingProvider::Fal,
           ProviderError::Seedance2Pro(_) => BillingProvider::Kinovi,
-          ProviderError::Midjourney(_) | ProviderError::MidjourneySubmitRejected(_) => BillingProvider::Midjourney,
+          ProviderError::Midjourney(_)
+          | ProviderError::MidjourneySubscriptionRequired(_)
+          | ProviderError::MidjourneySubmitRejected(_) => BillingProvider::Midjourney,
           ProviderError::Storyteller(_) => BillingProvider::Artcraft,
           ProviderError::GmiCloud(_) => BillingProvider::Artcraft,
           ProviderError::Grok(_) => BillingProvider::Artcraft,
@@ -267,6 +269,7 @@ impl From<ArtcraftRouterError> for GenerateError {
       ArtcraftRouterError::Provider(ProviderError::Grok(_)) => Self::ArtcraftRouterNotYetSupportedProvider("grok_api"),
       ArtcraftRouterError::Provider(ProviderError::Seedance2Pro(_)) => Self::ArtcraftRouterNotYetSupportedProvider("seedance2pro"),
       ArtcraftRouterError::Provider(ProviderError::Midjourney(e)) => Self::ProviderFailure(ProviderFailureReason::MidjourneyError(e)),
+      ArtcraftRouterError::Provider(ProviderError::MidjourneySubscriptionRequired(message)) => Self::ProviderRejected(message),
       ArtcraftRouterError::Provider(ProviderError::MidjourneySubmitRejected(message)) => Self::ProviderRejected(message),
       // NB: the desktop app reaches World Labs through the Artcraft backend; the router's
       // direct World Labs provider isn't used here.

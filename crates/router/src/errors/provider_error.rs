@@ -15,8 +15,11 @@ pub enum ProviderError {
   GmiCloud(GmiCloudError),
   Grok(GrokError),
   Midjourney(MidjourneyError),
-  /// First-party Midjourney submit returned no job id (e.g. softban, filtered
-  /// prompt, or a `failure` payload). The string carries the raw detail.
+  /// First-party Midjourney rejected the submit because the account has no
+  /// active paid subscription. First-class so callers can prompt to subscribe.
+  MidjourneySubscriptionRequired(String),
+  /// First-party Midjourney submit returned no job id for some other reason
+  /// (e.g. softban, filtered prompt). The string carries the raw detail.
   MidjourneySubmitRejected(String),
   Seedance2Pro(Seedance2ProError),
   WorldLabs(WorldLabsError),
@@ -32,6 +35,7 @@ impl Display for ProviderError {
       Self::GmiCloud(e) => write!(f, "GmiCloud provider error: {}", e),
       Self::Grok(e) => write!(f, "Grok provider error: {}", e),
       Self::Midjourney(e) => write!(f, "Midjourney provider error: {}", e),
+      Self::MidjourneySubscriptionRequired(detail) => write!(f, "Midjourney subscription required: {}", detail),
       Self::MidjourneySubmitRejected(detail) => write!(f, "Midjourney submit rejected: {}", detail),
       Self::Seedance2Pro(e) => write!(f, "Seedance2Pro provider error: {}", e),
       Self::WorldLabs(e) => write!(f, "WorldLabs provider error: {}", e),
