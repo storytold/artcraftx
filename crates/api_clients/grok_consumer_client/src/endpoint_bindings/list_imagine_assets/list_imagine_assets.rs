@@ -15,7 +15,8 @@ use crate::utils::create_firefox_client::create_firefox_client;
 use log::error;
 use serde::Deserialize;
 use std::time::Duration;
-use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, COOKIE, REFERER, USER_AGENT};
+use wreq::StatusCode;
+use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, COOKIE, HeaderMap, REFERER, USER_AGENT};
 
 const LIST_IMAGINE_ASSETS_PATH: &str = "/rest/app-chat/conversations";
 
@@ -61,8 +62,30 @@ pub struct ImagineConversation {
   pub latest_asset_metadata: Option<GrokAsset>,
 }
 
+/// The raw HTTP response, before status interpretation or JSON parsing.
+/// Exposed by [`ListImagineAssetsArgs::fetch_raw`] so callers (e.g. diagnostic
+/// tests) can inspect the status, headers, and body when a request goes wrong.
+pub struct RawListImagineAssetsResponse {
+  pub status: StatusCode,
+  pub headers: HeaderMap,
+  pub body: String,
+}
+
 impl ListImagineAssetsArgs<'_> {
   pub async fn send(&self) -> Result<ListImagineAssetsResponse, GrokError> {
+    let raw = self.fetch_raw().await?;
+
+    if !raw.status.is_success() {
+      error!("list_imagine_assets returned an error (code {}): {:?}", raw.status.as_u16(), raw.body);
+      return Err(categorize_grok_http_error(raw.status, Some(&raw.body)));
+    }
+
+    parse_response(&raw.body)
+  }
+
+  /// Send the request and return the raw response parts without interpreting
+  /// the status or parsing the body.
+  pub async fn fetch_raw(&self) -> Result<RawListImagineAssetsResponse, GrokError> {
     let domain = self.domain_override.unwrap_or(&GrokDomain::DefaultDomain);
     let client = create_firefox_client()?;
 
@@ -99,20 +122,16 @@ impl ListImagineAssetsArgs<'_> {
         })?;
 
     let status = response.status();
+    let headers = response.headers().clone();
 
-    let response_body = response.text()
+    let body = response.text()
         .await
         .map_err(|err| {
           error!("Error reading list_imagine_assets response body: {:?}", err);
           GrokGenericApiError::WreqError(err)
         })?;
 
-    if !status.is_success() {
-      error!("list_imagine_assets returned an error (code {}): {:?}", status.as_u16(), response_body);
-      return Err(categorize_grok_http_error(status, Some(&response_body)));
-    }
-
-    parse_response(&response_body)
+    Ok(RawListImagineAssetsResponse { status, headers, body })
   }
 }
 
@@ -226,6 +245,61 @@ mod tests {
       };
 
       let response = args.send().await?;
+      print_conversations(&response);
+
+      assert_list_imagine_assets(&response, 5);
+      Ok(())
+    }
+
+    // Same request and assertions as above, but WITHOUT the captured
+    // statsig/tracing headers — just the cookies. Tells us whether those
+    // headers are actually required. On any failure (non-2xx, parse error, or
+    // a failed assertion) it dumps the response status, headers, and body.
+    #[tokio::test]
+    #[ignore] // Hits the real website; requires external/credentials/grok.
+    async fn fetch_imagine_conversations_cookies_only() -> AnyhowResult<()> {
+      setup_test_logging(LevelFilter::Info);
+      let secrets = load_grok_test_secrets()?;
+
+      let page_size = 5;
+      let args = ListImagineAssetsArgs {
+        request: ListImagineAssetsRequest { page_size: Some(page_size) },
+        credentials: &secrets.cookies,
+        domain_override: None,
+        request_headers: None, // cookies only — no statsig / tracing headers
+        request_timeout: None,
+      };
+
+      let raw = args.fetch_raw().await?;
+
+      let dump = || {
+        println!("[test] status: {}", raw.status);
+        println!("[test] response headers: {:#?}", raw.headers);
+        println!("[test] response body: {}", raw.body);
+      };
+
+      if !raw.status.is_success() {
+        dump();
+        panic!("list_imagine_assets (cookies only) expected 2xx, got {}", raw.status);
+      }
+
+      let response: ListImagineAssetsResponse = match serde_json::from_str(&raw.body) {
+        Ok(response) => response,
+        Err(err) => {
+          dump();
+          panic!("list_imagine_assets (cookies only) failed to parse body: {err}");
+        }
+      };
+      print_conversations(&response);
+
+      if !list_imagine_assets_assertions_pass(&response, page_size) {
+        dump();
+        panic!("list_imagine_assets (cookies only) assertions failed");
+      }
+      Ok(())
+    }
+
+    fn print_conversations(response: &ListImagineAssetsResponse) {
       for conversation in &response.conversations {
         println!(
           "[test] conversation: {} (latest asset: {:?})",
@@ -233,18 +307,28 @@ mod tests {
           conversation.latest_asset_metadata.as_ref().map(|a| &a.asset_id),
         );
       }
+    }
 
-      // The account under test has imagine conversations; expect a non-empty
-      // page of the imagine kind. (No PII asserted.)
+    // The account under test has imagine conversations; expect a non-empty
+    // page of the imagine kind. (No PII asserted.)
+    fn list_imagine_assets_assertions_pass(
+      response: &ListImagineAssetsResponse,
+      page_size: u32,
+    ) -> bool {
+      !response.conversations.is_empty()
+          && response.conversations.len() <= page_size as usize
+          && response.conversations.iter().all(|conversation| {
+            !conversation.conversation_id.is_empty()
+                && conversation.kind.as_deref().is_none_or(|kind| kind == "CONVERSATION_KIND_IMAGINE")
+          })
+    }
+
+    fn assert_list_imagine_assets(response: &ListImagineAssetsResponse, page_size: u32) {
       assert!(!response.conversations.is_empty(), "expected a conversation");
-      assert!(response.conversations.len() <= 5, "page size should be honored");
-      for conversation in &response.conversations {
-        assert!(!conversation.conversation_id.is_empty());
-        if let Some(kind) = &conversation.kind {
-          assert_eq!(kind, "CONVERSATION_KIND_IMAGINE");
-        }
-      }
-      Ok(())
+      assert!(
+        list_imagine_assets_assertions_pass(response, page_size),
+        "conversation assertions failed",
+      );
     }
   }
 }

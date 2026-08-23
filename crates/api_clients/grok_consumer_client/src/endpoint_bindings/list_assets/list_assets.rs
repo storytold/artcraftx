@@ -14,7 +14,8 @@ use log::error;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::time::Duration;
-use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, COOKIE, REFERER, USER_AGENT};
+use wreq::StatusCode;
+use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, COOKIE, HeaderMap, REFERER, USER_AGENT};
 
 const LIST_ASSETS_PATH: &str = "/rest/assets";
 
@@ -76,8 +77,30 @@ pub struct GrokAsset {
   pub media_gen_input: Option<serde_json::Value>,
 }
 
+/// The raw HTTP response, before status interpretation or JSON parsing.
+/// Exposed by [`ListAssetsArgs::fetch_raw`] so callers (e.g. diagnostic tests)
+/// can inspect the status, headers, and body when a request goes wrong.
+pub struct RawListAssetsResponse {
+  pub status: StatusCode,
+  pub headers: HeaderMap,
+  pub body: String,
+}
+
 impl ListAssetsArgs<'_> {
   pub async fn send(&self) -> Result<ListAssetsResponse, GrokError> {
+    let raw = self.fetch_raw().await?;
+
+    if !raw.status.is_success() {
+      error!("list_assets returned an error (code {}): {:?}", raw.status.as_u16(), raw.body);
+      return Err(categorize_grok_http_error(raw.status, Some(&raw.body)));
+    }
+
+    parse_response(&raw.body)
+  }
+
+  /// Send the request and return the raw response parts without interpreting
+  /// the status or parsing the body.
+  pub async fn fetch_raw(&self) -> Result<RawListAssetsResponse, GrokError> {
     let domain = self.domain_override.unwrap_or(&GrokDomain::DefaultDomain);
     let client = create_firefox_client()?;
 
@@ -114,20 +137,16 @@ impl ListAssetsArgs<'_> {
         })?;
 
     let status = response.status();
+    let headers = response.headers().clone();
 
-    let response_body = response.text()
+    let body = response.text()
         .await
         .map_err(|err| {
           error!("Error reading list_assets response body: {:?}", err);
           GrokGenericApiError::WreqError(err)
         })?;
 
-    if !status.is_success() {
-      error!("list_assets returned an error (code {}): {:?}", status.as_u16(), response_body);
-      return Err(categorize_grok_http_error(status, Some(&response_body)));
-    }
-
-    parse_response(&response_body)
+    Ok(RawListAssetsResponse { status, headers, body })
   }
 }
 
@@ -244,15 +263,73 @@ mod tests {
         println!("[test] asset: {} ({:?})", asset.asset_id, asset.mime_type);
       }
 
-      // The account under test has generated media, so expect a non-empty
-      // page whose entries carry the structural fields. (No PII asserted.)
-      assert!(!response.assets.is_empty(), "expected at least one asset");
-      assert!(response.assets.len() <= 5, "page size should be honored");
+      assert_list_assets(&response, 5);
+      Ok(())
+    }
+
+    // Same request and assertions as above, but WITHOUT the captured
+    // statsig/tracing headers — just the cookies. Tells us whether those
+    // headers are actually required. On any failure (non-2xx, parse error, or
+    // a failed assertion) it dumps the response status, headers, and body.
+    #[tokio::test]
+    #[ignore] // Hits the real website; requires external/credentials/grok.
+    async fn fetch_assets_cookies_only() -> AnyhowResult<()> {
+      setup_test_logging(LevelFilter::Info);
+      let secrets = load_grok_test_secrets()?;
+
+      let page_size = 5;
+      let args = ListAssetsArgs {
+        request: ListAssetsRequest { page_size: Some(page_size) },
+        credentials: &secrets.cookies,
+        domain_override: None,
+        request_headers: None, // cookies only — no statsig / tracing headers
+        request_timeout: None,
+      };
+
+      let raw = args.fetch_raw().await?;
+
+      let dump = || {
+        println!("[test] status: {}", raw.status);
+        println!("[test] response headers: {:#?}", raw.headers);
+        println!("[test] response body: {}", raw.body);
+      };
+
+      if !raw.status.is_success() {
+        dump();
+        panic!("list_assets (cookies only) expected 2xx, got {}", raw.status);
+      }
+
+      let response: ListAssetsResponse = match serde_json::from_str(&raw.body) {
+        Ok(response) => response,
+        Err(err) => {
+          dump();
+          panic!("list_assets (cookies only) failed to parse body: {err}");
+        }
+      };
       for asset in &response.assets {
-        assert!(!asset.asset_id.is_empty());
-        assert!(asset.mime_type.is_some());
+        println!("[test] asset: {} ({:?})", asset.asset_id, asset.mime_type);
+      }
+
+      if !list_assets_assertions_pass(&response, page_size) {
+        dump();
+        panic!("list_assets (cookies only) assertions failed");
       }
       Ok(())
+    }
+
+    // The account under test has generated media, so expect a non-empty page
+    // whose entries carry the structural fields. (No PII asserted.)
+    fn list_assets_assertions_pass(response: &ListAssetsResponse, page_size: u32) -> bool {
+      !response.assets.is_empty()
+          && response.assets.len() <= page_size as usize
+          && response.assets.iter().all(|asset| {
+            !asset.asset_id.is_empty() && asset.mime_type.is_some()
+          })
+    }
+
+    fn assert_list_assets(response: &ListAssetsResponse, page_size: u32) {
+      assert!(!response.assets.is_empty(), "expected at least one asset");
+      assert!(list_assets_assertions_pass(response, page_size), "asset assertions failed");
     }
   }
 }

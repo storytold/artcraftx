@@ -13,7 +13,8 @@ use crate::utils::create_firefox_client::create_firefox_client;
 use log::error;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
-use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, CONTENT_TYPE, COOKIE, ORIGIN, REFERER, USER_AGENT};
+use wreq::StatusCode;
+use wreq::header::{ACCEPT, ACCEPT_LANGUAGE, CONTENT_TYPE, COOKIE, HeaderMap, ORIGIN, REFERER, USER_AGENT};
 
 const QUOTA_INFO_PATH: &str = "/rest/media/imagine/quota_info";
 
@@ -58,8 +59,30 @@ pub struct QuotaInfoBucket {
 #[derive(Serialize)]
 struct QuotaInfoRawRequest {}
 
+/// The raw HTTP response, before status interpretation or JSON parsing.
+/// Exposed by [`QuotaInfoArgs::fetch_raw`] so callers (e.g. diagnostic tests)
+/// can inspect the status, headers, and body when a request goes wrong.
+pub struct RawQuotaInfoResponse {
+  pub status: StatusCode,
+  pub headers: HeaderMap,
+  pub body: String,
+}
+
 impl QuotaInfoArgs<'_> {
   pub async fn send(&self) -> Result<QuotaInfoResponse, GrokError> {
+    let raw = self.fetch_raw().await?;
+
+    if !raw.status.is_success() {
+      error!("quota_info returned an error (code {}): {:?}", raw.status.as_u16(), raw.body);
+      return Err(categorize_grok_http_error(raw.status, Some(&raw.body)));
+    }
+
+    parse_response(&raw.body)
+  }
+
+  /// Send the request and return the raw response parts without interpreting
+  /// the status or parsing the body.
+  pub async fn fetch_raw(&self) -> Result<RawQuotaInfoResponse, GrokError> {
     let domain = self.domain_override.unwrap_or(&GrokDomain::DefaultDomain);
     let client = create_firefox_client()?;
 
@@ -98,20 +121,16 @@ impl QuotaInfoArgs<'_> {
         })?;
 
     let status = response.status();
+    let headers = response.headers().clone();
 
-    let response_body = response.text()
+    let body = response.text()
         .await
         .map_err(|err| {
           error!("Error reading quota_info response body: {:?}", err);
           GrokGenericApiError::WreqError(err)
         })?;
 
-    if !status.is_success() {
-      error!("quota_info returned an error (code {}): {:?}", status.as_u16(), response_body);
-      return Err(categorize_grok_http_error(status, Some(&response_body)));
-    }
-
-    parse_response(&response_body)
+    Ok(RawQuotaInfoResponse { status, headers, body })
   }
 }
 
@@ -213,23 +232,80 @@ mod tests {
       let response = args.send().await?;
       println!("[test] quota_info: {:?}", response);
 
-      // At least one media kind should report a quota bucket, and every
-      // present bucket has a positive rolling window. (No PII / account id.)
-      let buckets = [
+      assert_quota_info(&response);
+      Ok(())
+    }
+
+    // Same request and assertions as above, but WITHOUT the captured
+    // statsig/tracing headers — just the cookies. Tells us whether those
+    // headers are actually required. On any failure (non-2xx, parse error, or
+    // a failed assertion) it dumps the response status, headers, and body.
+    #[tokio::test]
+    #[ignore] // Hits the real website; requires external/credentials/grok.
+    async fn fetch_quota_info_cookies_only() -> AnyhowResult<()> {
+      setup_test_logging(LevelFilter::Info);
+      let secrets = load_grok_test_secrets()?;
+
+      let args = QuotaInfoArgs {
+        request: QuotaInfoRequest::default(),
+        credentials: &secrets.cookies,
+        domain_override: None,
+        request_headers: None, // cookies only — no statsig / tracing headers
+        request_timeout: None,
+      };
+
+      let raw = args.fetch_raw().await?;
+
+      let dump = || {
+        println!("[test] status: {}", raw.status);
+        println!("[test] response headers: {:#?}", raw.headers);
+        println!("[test] response body: {}", raw.body);
+      };
+
+      if !raw.status.is_success() {
+        dump();
+        panic!("quota_info (cookies only) expected 2xx, got {}", raw.status);
+      }
+
+      let response: QuotaInfoResponse = match serde_json::from_str(&raw.body) {
+        Ok(response) => response,
+        Err(err) => {
+          dump();
+          panic!("quota_info (cookies only) failed to parse body: {err}");
+        }
+      };
+      println!("[test] quota_info (cookies only): {:?}", response);
+
+      if !quota_info_assertions_pass(&response) {
+        dump();
+        panic!("quota_info (cookies only) assertions failed");
+      }
+      Ok(())
+    }
+
+    // At least one media kind should report a quota bucket, and every present
+    // bucket has a positive rolling window. (No PII / account id.)
+    fn quota_info_assertions_pass(response: &QuotaInfoResponse) -> bool {
+      let buckets = quota_buckets(response);
+      buckets.iter().any(|bucket| bucket.is_some())
+          && buckets.into_iter().flatten().all(|bucket| bucket.window_size_seconds > 0)
+    }
+
+    fn assert_quota_info(response: &QuotaInfoResponse) {
+      assert!(
+        quota_info_assertions_pass(response),
+        "expected at least one quota bucket with a positive window",
+      );
+    }
+
+    fn quota_buckets(response: &QuotaInfoResponse) -> [&Option<QuotaInfoBucket>; 5] {
+      [
         &response.image,
         &response.image_pro,
         &response.image_edit,
         &response.video,
         &response.video_720p,
-      ];
-      assert!(
-        buckets.iter().any(|bucket| bucket.is_some()),
-        "expected at least one quota bucket",
-      );
-      for bucket in buckets.into_iter().flatten() {
-        assert!(bucket.window_size_seconds > 0);
-      }
-      Ok(())
+      ]
     }
   }
 }
