@@ -4,7 +4,7 @@
 pub (crate) mod test_utils;
 
 // Library utils
-pub (crate) mod client;
+pub mod client;
 
 // User lib
 pub mod credentials;
