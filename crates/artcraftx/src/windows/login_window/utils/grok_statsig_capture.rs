@@ -27,17 +27,21 @@ pub const STATSIG_CAPTURE_COOKIE: &str = "__artcraft_statsig_capture";
 /// `method|path|statsigId|capturedAt` string (base64 statsig ids never contain
 /// `|`), which [`read_captured_statsig`] reads back.
 pub fn grok_statsig_init_script() -> String {
+  // Guard to grok.com only: the harness must never run on the accounts.x.ai
+  // sign-in page, where wrapping fetch/XHR could interfere with the login flow.
   format!(
-    r#"(function () {{
-  window.__grokStatsigReport = function (json) {{
-    try {{
-      var o = JSON.parse(json);
-      var packed = [o.method, o.path, o.statsigId, o.capturedAt].join("|");
-      document.cookie = "{cookie}=" + packed + "; path=/; max-age=3600";
-    }} catch (e) {{ /* never break the page */ }}
-  }};
-}})();
-{harness}"#,
+    r#"if (location.hostname.indexOf("grok.com") !== -1) {{
+  (function () {{
+    window.__grokStatsigReport = function (json) {{
+      try {{
+        var o = JSON.parse(json);
+        var packed = [o.method, o.path, o.statsigId, o.capturedAt].join("|");
+        document.cookie = "{cookie}=" + packed + "; path=/; max-age=3600";
+      }} catch (e) {{ /* never break the page */ }}
+    }};
+  }})();
+  {harness}
+}}"#,
     cookie = STATSIG_CAPTURE_COOKIE,
     harness = MINT_HARNESS_SCRIPT,
   )
@@ -84,6 +88,8 @@ mod tests {
   #[test]
   fn init_script_installs_sink_and_harness() {
     let script = grok_statsig_init_script();
+    // Guarded to grok.com so it never touches the accounts.x.ai sign-in page.
+    assert!(script.contains("grok.com"));
     assert!(script.contains("__grokStatsigReport"));
     assert!(script.contains(STATSIG_CAPTURE_COOKIE));
     // The library harness is embedded.

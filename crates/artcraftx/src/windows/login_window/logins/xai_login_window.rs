@@ -41,11 +41,11 @@ impl LoginWindowSite for GrokLoginWindow {
     DESTINATION_HOSTNAMES
   }
 
-  // Grok's session rides in the xAI SSO cookies; either appearing in a
-  // cookie-cleared window is the definitive login signal (like Midjourney's).
-  fn session_cookie_names(&self) -> &[&str] {
-    &["sso", "sso-rw"]
-  }
+  // NB: Grok's session rides in the xAI SSO cookies (`sso`/`sso-rw`), but rather
+  // than gate the save on exact names we don't fully control, we use the
+  // default size/count heuristic — a logged-in grok.com page carries far more
+  // cookie data than the login redirect, so a real login is unmistakable, and
+  // we never fail to save just because a cookie name changed.
 
   // Install the passive statsig-capture harness from first page load.
   fn initialization_script(&self) -> Option<String> {

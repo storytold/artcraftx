@@ -130,18 +130,24 @@ fn check_login_window(
     return Ok(false);
   }
 
+  // The cookies are the credential — everything below is best-effort and must
+  // never prevent the save. Both are plain `Option`s (no blocking, no `?`), so
+  // a missing identity or statsig just means those fields stay empty.
+
+  // 1) Try to grab the account's extra information.
   let maybe_user_info = extract_user_info_from_cookies(&cookie_store);
   if let Some(user_info) = &maybe_user_info {
     info!("Detected {} login identity: {:?}", website, user_info);
   }
 
-  // Preemptively grab the statsig material the capture harness stashed (Grok
+  // 2) Try to grab the statsig prerequisites the capture harness stashed (Grok
   // only; other sites don't install it, so this is `None`).
   let maybe_statsig = read_captured_statsig(webview_window);
   if maybe_statsig.is_some() {
     info!("Captured {} statsig material (seed)", website);
   }
 
+  // 3) Save the credential file to the credentials directory.
   let credential = save_web_credential(
     app_data_root.credentials_dir(),
     WebCredentialSave {
