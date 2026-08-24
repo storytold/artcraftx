@@ -99,19 +99,19 @@ impl AuthCredential {
 mod tests {
   use super::*;
 
-  // A cookie credential carrying captured statsig pieces must round-trip: the
-  // statsig table has to serialize before the `cookies` array-of-tables, or the
-  // TOML is invalid.
+  // A cookie credential carrying Grok statsig data must round-trip: the
+  // `grok_data` table has to serialize before the `cookies` array-of-tables, or
+  // the TOML is invalid.
   #[test]
-  fn cookie_credential_with_statsig_round_trips() {
+  fn cookie_credential_with_grok_data_round_trips() {
     use crate::credentials::cookie_credential::CookieCredential;
-    use chrono::{Duration, Utc};
+    use crate::credentials::cookie_credential_grok_extra_pieces::CookieCredentialGrokExtraPieces;
+    use chrono::Utc;
     use cookie_store_wrapper::cookie_store::CookieStore;
-    use grok_consumer_statsig::statsig_cache_file::decode_statsig;
+    use grok_consumer_statsig::StatsigMaterial;
     use reqwest::Url;
 
-    let capture = "XbHvyYh7hmNc+8sVAGnrpcuHN/MK+mgN63cmnBljOJaoCKu6zTPVw6C7HVv1wculKCNmYVum+L1h0IjFmtyZD/C53M+ZXg";
-    let statsig = decode_statsig(capture, "POST", "/rest/app-chat/conversations/new", 1_787_535_100).unwrap();
+    let material = StatsigMaterial::from_seed_b64("7LKU1SbbPgGmlkhdNLb4ltpqrlenNVC2KnvBRD5ly/VV9ueQboie/eZABqiclvh1");
 
     let mut cookies = CookieStore::empty();
     cookies.insert_named("sso", "token-value", &Url::parse("https://grok.com/").unwrap());
@@ -119,9 +119,7 @@ mod tests {
     let now = Utc::now();
     let mut cookie = CookieCredential::new(cookies);
     cookie.updated_at = Some(now);
-    cookie.statsig_fetched_at = Some(now);
-    cookie.statsig_refresh_at = Some(now + Duration::minutes(30));
-    cookie.statsig = Some(statsig.clone());
+    cookie.grok_data = Some(CookieCredentialGrokExtraPieces::fresh(material.clone(), now, 30));
 
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("xai_cookies.toml");
@@ -136,11 +134,11 @@ mod tests {
     credential.save().unwrap();
 
     let loaded = AuthCredential::load_from_file(&path).unwrap();
-    let loaded_cookie = loaded.cookies().unwrap();
-    assert_eq!(loaded_cookie.statsig.as_ref(), Some(&statsig));
-    assert!(loaded_cookie.statsig_fetched_at.is_some());
-    assert!(loaded_cookie.statsig_refresh_at.is_some());
-    assert!(loaded_cookie.cookies.has_cookie("sso"));
+    let loaded_grok = loaded.cookies().unwrap().grok_data.as_ref().unwrap();
+    assert_eq!(loaded_grok.statsig_material.as_ref(), Some(&material));
+    assert!(loaded_grok.statsig_fetched_at.is_some());
+    assert!(loaded_grok.statsig_refresh_at.is_some());
+    assert!(loaded.cookies().unwrap().cookies.has_cookie("sso"));
   }
 
   #[test]

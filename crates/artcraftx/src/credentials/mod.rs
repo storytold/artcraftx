@@ -18,6 +18,7 @@
 pub mod api_key_credential;
 pub mod auth_credential;
 pub mod cookie_credential;
+pub mod cookie_credential_grok_extra_pieces;
 pub mod credential_toml;
 pub mod credential_user_info;
 pub mod find_service_credentials;

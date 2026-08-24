@@ -10,8 +10,8 @@
 //! makes on its own (no generation is triggered), so the stored statsig is a
 //! session sample, not necessarily the video endpoint's.
 
-use grok_consumer_statsig::statsig_cache_file::{decode_statsig, CapturedStatsig};
-use grok_consumer_statsig::MINT_HARNESS_SCRIPT;
+use grok_consumer_statsig::statsig_cache_file::decode_statsig;
+use grok_consumer_statsig::{StatsigMaterial, MINT_HARNESS_SCRIPT};
 use tauri::WebviewWindow;
 
 /// Cookie the capture harness stashes the latest statsig report into. Skipped
@@ -43,8 +43,13 @@ pub fn grok_statsig_init_script() -> String {
   )
 }
 
-/// Read and decode the freshest statsig the harness captured, if any.
-pub fn read_captured_statsig(webview: &WebviewWindow) -> Option<CapturedStatsig> {
+/// Read the freshest statsig the harness captured and reduce it to reusable
+/// [`StatsigMaterial`] (the seed), if any.
+///
+/// The captured signature yields the seed (decodable) but not the genuine-hex
+/// fingerprint (SHA-locked), so the material is the seed alone — see
+/// [`StatsigMaterial::generate_statsig`].
+pub fn read_captured_statsig(webview: &WebviewWindow) -> Option<StatsigMaterial> {
   let packed = webview
       .cookies()
       .ok()?
@@ -55,15 +60,17 @@ pub fn read_captured_statsig(webview: &WebviewWindow) -> Option<CapturedStatsig>
   parse_packed_statsig(&packed)
 }
 
-/// Parse the `method|path|statsigId|capturedAtMs` cookie payload and decode it.
-fn parse_packed_statsig(packed: &str) -> Option<CapturedStatsig> {
+/// Parse the `method|path|statsigId|capturedAtMs` cookie payload and reduce it
+/// to the reusable seed material.
+fn parse_packed_statsig(packed: &str) -> Option<StatsigMaterial> {
   let mut parts = packed.splitn(4, '|');
   let method = parts.next()?;
   let path = parts.next()?;
   let statsig_id = parts.next()?;
   let captured_at_ms: i64 = parts.next()?.parse().ok()?;
 
-  decode_statsig(statsig_id, method, path, captured_at_ms / 1000).ok()
+  let captured = decode_statsig(statsig_id, method, path, captured_at_ms / 1000).ok()?;
+  Some(StatsigMaterial::from_seed_b64(captured.seed_b64))
 }
 
 #[cfg(test)]
@@ -84,15 +91,11 @@ mod tests {
   }
 
   #[test]
-  fn parses_a_packed_capture_into_pieces() {
+  fn parses_a_packed_capture_into_seed_material() {
     let packed = format!("POST|/rest/app-chat/conversations/new|{CAPTURE}|1787535100000");
-    let decoded = parse_packed_statsig(&packed).expect("should decode");
-    assert_eq!(decoded.method, "POST");
-    assert_eq!(decoded.path, "/rest/app-chat/conversations/new");
-    assert_eq!(decoded.statsig_id, CAPTURE);
-    assert_eq!(decoded.captured_at_unix, 1_787_535_100);
-    assert_eq!(decoded.key, 93);
-    assert!(!decoded.seed_b64.is_empty());
+    let material = parse_packed_statsig(&packed).expect("should decode");
+    // The reusable piece is the decoded seed (48 bytes -> 64 base64 chars).
+    assert_eq!(material.seed_b64.len(), 64);
   }
 
   #[test]

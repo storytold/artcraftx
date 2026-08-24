@@ -135,11 +135,11 @@ fn check_login_window(
     info!("Detected {} login identity: {:?}", website, user_info);
   }
 
-  // Preemptively grab the statsig pieces the capture harness stashed (Grok
+  // Preemptively grab the statsig material the capture harness stashed (Grok
   // only; other sites don't install it, so this is `None`).
   let maybe_statsig = read_captured_statsig(webview_window);
-  if let Some(statsig) = &maybe_statsig {
-    info!("Captured {} statsig for {} {}", website, statsig.method, statsig.path);
+  if maybe_statsig.is_some() {
+    info!("Captured {} statsig material (seed)", website);
   }
 
   let credential = save_web_credential(

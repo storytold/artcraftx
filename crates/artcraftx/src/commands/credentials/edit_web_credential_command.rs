@@ -51,9 +51,7 @@ pub async fn edit_web_credential_command(
   let existing_cookies = existing_cookie.cookies.clone();
   let existing_failed_at = existing_cookie.failed_at;
   let existing_succeeded_at = existing_cookie.succeeded_at;
-  let existing_statsig = existing_cookie.statsig.clone();
-  let existing_statsig_fetched_at = existing_cookie.statsig_fetched_at;
-  let existing_statsig_refresh_at = existing_cookie.statsig_refresh_at;
+  let existing_grok_data = existing_cookie.grok_data.clone();
 
   if let Some(new_cookie_header) = cookie_header {
     let new_cookie_header = new_cookie_header.trim().to_string();
@@ -69,9 +67,7 @@ pub async fn edit_web_credential_command(
           updated_at: Some(Utc::now()),
           failed_at: existing_failed_at,
           succeeded_at: existing_succeeded_at,
-          statsig_fetched_at: existing_statsig_fetched_at,
-          statsig_refresh_at: existing_statsig_refresh_at,
-          statsig: existing_statsig,
+          grok_data: existing_grok_data,
           cookies: new_cookies,
         });
       }

@@ -6,10 +6,11 @@ use crate::credentials::credential_user_info::CredentialUserInfo;
 use crate::credentials::service_cookie_origin::cookie_origin_for_service;
 use crate::error::artcraftx_error::ArtcraftXError;
 use cookie_store_wrapper::cookie_store::CookieStore;
+use crate::credentials::cookie_credential_grok_extra_pieces::CookieCredentialGrokExtraPieces;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::subdirectory::app_credentials_dir::AppCredentialsDir;
-use chrono::{Duration, Utc};
-use grok_consumer_statsig::statsig_cache_file::CapturedStatsig;
+use chrono::Utc;
+use grok_consumer_statsig::StatsigMaterial;
 use log::{error, info};
 use serde_derive::Serialize;
 use tauri::State;
@@ -23,8 +24,8 @@ pub struct WebCredentialSave {
   pub service: GenerationSource,
   pub cookies: CookieStore,
   pub maybe_user_info: Option<CredentialUserInfo>,
-  /// Preemptively captured statsig pieces (Grok only; `None` for other sites).
-  pub maybe_statsig: Option<CapturedStatsig>,
+  /// Preemptively captured statsig material (Grok only; `None` for other sites).
+  pub maybe_statsig: Option<StatsigMaterial>,
 }
 
 /// Save a web-login (cookie) credential to the credentials directory.
@@ -47,28 +48,21 @@ pub fn save_web_credential(
 
   let now = Utc::now();
 
-  // A fresh capture stamps fetched/refresh times; without one, preserve
-  // whatever the existing credential already had.
-  let (statsig, statsig_fetched_at, statsig_refresh_at) = match save.maybe_statsig {
-    Some(captured) => (
-      Some(captured),
-      Some(now),
-      Some(now + Duration::minutes(STATSIG_REFRESH_MINUTES)),
-    ),
+  // Fresh material stamps fetched/refresh times; without one, preserve whatever
+  // the existing credential already had.
+  let grok_data = match save.maybe_statsig {
+    Some(material) => Some(CookieCredentialGrokExtraPieces::fresh(material, now, STATSIG_REFRESH_MINUTES)),
     None => existing
         .as_ref()
         .and_then(|credential| credential.cookies())
-        .map(|cookie| (cookie.statsig.clone(), cookie.statsig_fetched_at, cookie.statsig_refresh_at))
-        .unwrap_or((None, None, None)),
+        .and_then(|cookie| cookie.grok_data.clone()),
   };
 
   let cookie = CookieCredential {
     updated_at: Some(now),
     failed_at: None,
     succeeded_at: None,
-    statsig_fetched_at,
-    statsig_refresh_at,
-    statsig,
+    grok_data,
     cookies: save.cookies,
   };
 

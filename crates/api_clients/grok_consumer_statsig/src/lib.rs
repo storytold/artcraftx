@@ -56,6 +56,8 @@
 mod browser_context;
 mod mint_harness;
 mod minted_statsig;
+mod statsig;
+mod statsig_material;
 mod statsig_minter;
 mod statsig_oracle;
 mod statsig_request;
@@ -68,6 +70,8 @@ pub mod harvest_via_webview;
 pub use browser_context::{BrowserContext, DEFAULT_USER_AGENT};
 pub use mint_harness::MINT_HARNESS_SCRIPT;
 pub use minted_statsig::MintedStatsig;
+pub use statsig::Statsig;
+pub use statsig_material::StatsigMaterial;
 pub use statsig_minter::{MinterConfig, StatsigMinter};
 pub use statsig_oracle::{StatsigError, StatsigOracle};
 pub use statsig_request::StatsigRequest;
