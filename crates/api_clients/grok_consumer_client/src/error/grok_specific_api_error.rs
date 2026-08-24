@@ -18,7 +18,7 @@ pub enum GrokSpecificApiError {
 
   /// The `x-statsig-id` request signature was missing, stale, or invalid.
   /// Grok gates its chat/generation POST endpoints on a signature that can
-  /// only be produced inside a real browser DOM (see [`crate::client::statsig`]),
+  /// only be produced inside a real browser DOM (see the `grok_consumer_statsig` crate),
   /// so this fires when we send a bad one — e.g. the 403 "This page is out of
   /// date. Reload to continue." Carries the HTTP status and full response body
   /// so new/changed notices can be inspected.

@@ -525,7 +525,6 @@ mod tests {
 
   mod real_wire_tests {
     use super::*;
-    use crate::client::statsig::generate_statsig_id;
     use crate::endpoint_bindings::list_assets::list_assets::{ListAssetsArgs, ListAssetsRequest};
     use crate::endpoint_bindings::upload_file::grok_upload_file::{grok_upload_file, GrokUploadFileArgs, GrokUploadFileRequest, PathOrFile};
     use crate::error::grok_specific_api_error::GrokSpecificApiError;
@@ -538,9 +537,20 @@ mod tests {
     const TEST_IMAGE_PATH: &str = "test_data/images/test_upload.png";
     const VIDEO_TIMEOUT: Duration = Duration::from_secs(180);
 
-    /// A freshly-minted local statsig for this endpoint.
-    fn fresh_statsig_headers() -> GrokRequestHeaders {
-      generate_statsig_id("POST", NEW_CONVERSATION_PATH).into_request_headers()
+    /// Headers carrying a real, browser-minted statsig for this endpoint.
+    ///
+    /// Grok rejects headlessly-computed signatures, so these tests need one
+    /// harvested from a real browser (see the `harvest_statsig` binary /
+    /// `grok_consumer_statsig`). Pass it via `GROK_STATSIG=<x-statsig-id>`; it is
+    /// time-bound, so harvest it right before running. The fallback is a stale
+    /// placeholder that will 403 with a clear message.
+    fn captured_statsig_headers() -> GrokRequestHeaders {
+      let statsig = std::env::var("GROK_STATSIG").unwrap_or_else(|_|
+        "PASTE_A_FRESH_x-statsig-id_OR_SET_GROK_STATSIG".to_string());
+      GrokRequestHeaders {
+        statsig_id: Some(statsig),
+        ..Default::default()
+      }
     }
 
     /// Generate a video from `source` with the given headers and assert a
@@ -576,34 +586,16 @@ mod tests {
       }
     }
 
-    // Isolation test: use a *known-good* statsig captured from a real browser
-    // request (18_generate_video.txt) to verify the rest of the video request
-    // is correct. The statsig is time-bound, so recapture it right before
-    // running (paste the fresh `x-statsig-id` below).
+    // Way 1: text-to-video (from a text prompt alone). Uses a browser-harvested
+    // statsig (set `GROK_STATSIG`); this is the isolation test that a fresh
+    // signature drives the whole video request end-to-end.
     #[tokio::test]
-    #[ignore] // Hits the real website; spends video quota; needs a fresh captured statsig.
-    async fn text_to_video_with_captured_statsig() -> AnyhowResult<()> {
-      setup_test_logging(LevelFilter::Info);
-      let captured_statsig = std::env::var("GROK_STATSIG").unwrap_or_else(|_|
-        "XbHvyYh7hmNc+8sVAGnrpcuHN/MK+mgN63cmnBljOJaoCKu6zTPVw6C7HVv1wculKCNmYVum+L1h0IjFmtyZD/C53M+ZXg".to_string());
-      let headers = GrokRequestHeaders {
-        statsig_id: Some(captured_statsig),
-        ..Default::default()
-      };
-      generate_and_assert(
-        VideoSource::Text { prompt: "An asteroid hits the city." },
-        &headers,
-      ).await
-    }
-
-    // Way 1: text-to-video (from a text prompt alone) — locally-minted statsig.
-    #[tokio::test]
-    #[ignore] // Hits the real website; spends video quota.
+    #[ignore] // Hits the real website; spends video quota; needs a fresh GROK_STATSIG.
     async fn generate_video_from_text_prompt() -> AnyhowResult<()> {
       setup_test_logging(LevelFilter::Info);
       generate_and_assert(
         VideoSource::Text { prompt: "a lone lighthouse on a cliff at dusk, the light beam sweeps across the water" },
-        &fresh_statsig_headers(),
+        &captured_statsig_headers(),
       ).await
     }
 
@@ -628,7 +620,7 @@ mod tests {
 
       generate_and_assert(
         VideoSource::Image { input_asset_id: &image.asset_id, prompt: None },
-        &fresh_statsig_headers(),
+        &captured_statsig_headers(),
       ).await
     }
 
@@ -649,7 +641,7 @@ mod tests {
 
       generate_and_assert(
         VideoSource::Image { input_asset_id: &asset_id, prompt: Some("slow cinematic zoom") },
-        &fresh_statsig_headers(),
+        &captured_statsig_headers(),
       ).await
     }
   }

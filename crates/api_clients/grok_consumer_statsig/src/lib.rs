@@ -13,10 +13,9 @@
 //! signer derives by sampling an actually-rendered, CSS-animated SVG via
 //! `getComputedStyle` + `requestAnimationFrame`. That is a real-DOM
 //! measurement: a headless re-implementation only works against a frozen
-//! snapshot of Grok's (rotating) path constants and drifts out of date. Running
-//! Grok's real JS in a WebView sidesteps the whole rotation problem — see
-//! [`grok_consumer_client::client::statsig`] for the headless port and the
-//! evidence that it no longer matches live Grok.
+//! snapshot of Grok's (rotating) path constants and drifts out of date. That
+//! dated headless port was removed from `grok_consumer_client`; running Grok's
+//! real JS in a WebView sidesteps the whole rotation problem.
 //!
 //! ## What the signature needs (and does not)
 //!
@@ -53,7 +52,6 @@
 //! ```
 //!
 //! [`grok_consumer_client`]: https://docs.rs/grok_consumer_client
-//! [`grok_consumer_client::client::statsig`]: https://docs.rs/grok_consumer_client
 
 mod browser_context;
 mod mint_harness;

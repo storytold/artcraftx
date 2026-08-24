@@ -10,14 +10,30 @@
 //! fingerprint — it lives inside the SHA-256 and Grok re-derives it from the
 //! seed server-side. Minting a brand-new signature (fresh timestamp) therefore
 //! still needs the signer's `seed -> hex` function, which only the live browser
-//! has. We cache what we can observe; see [`crate::client::statsig`].
+//! has. We cache what we can observe; the browser minting lives in the
+//! `grok_consumer_statsig` crate.
 
-use crate::client::statsig::{SEED_LEN, STATSIG_EPOCH, STATSIG_MARK, STATSIG_SALT};
 use base64::prelude::BASE64_STANDARD_NO_PAD;
 use base64::Engine;
 use errors::{bail, AnyhowResult};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+
+// Payload-layout constants. The signature is minted by a real browser (see
+// `grok_consumer_statsig`); we only *decode* a captured one here, so these
+// describe the byte layout rather than any (dated, removed) signing algorithm.
+
+/// Seed length in bytes.
+const SEED_LEN: usize = 48;
+
+/// Unix-time reference the embedded `number` counts from (2023-05-01).
+const STATSIG_EPOCH: i64 = 1_682_924_400;
+
+/// Salt the signer folds into the message (best-known; absent from live bundles).
+const STATSIG_SALT: &str = "obfiowerehiring";
+
+/// Trailing marker byte of the assembled payload.
+const STATSIG_MARK: u8 = 0x03;
 
 /// Assembled payload length: `key(1) + seed(48) + number(4) + digest(16) + mark(1)`.
 const PAYLOAD_LEN: usize = 1 + SEED_LEN + 4 + 16 + 1;
