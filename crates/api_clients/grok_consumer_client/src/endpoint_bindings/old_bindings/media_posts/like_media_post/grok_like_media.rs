@@ -10,7 +10,6 @@ use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::endpoint_bindings::old_bindings::index_page::signature::generate_xsid::{generate_xsid, GenerateXsidArgs};
 use crate::endpoint_bindings::old_bindings::media_posts::like_media_post::request::LikeMediaWireRequest;
-use crate::endpoint_bindings::old_bindings::upload_file::grok_upload_file::{GrokUploadFile, GrokUploadFileResponse};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 use log::{error, info, warn};
 use std::time::Duration;

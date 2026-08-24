@@ -6,8 +6,7 @@ use crate::services::grok::state::grok_credential_manager::GrokCredentialManager
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use grok_consumer_client::datatypes::api::file_id::FileId;
-use grok_consumer_client::datatypes::file_upload_spec::FileUploadSpec;
-use grok_consumer_client::endpoint_bindings::old_bindings::upload_file::grok_upload_file::GrokUploadFile;
+use grok_consumer_client::endpoint_bindings::old_bindings::upload_file::grok_upload_file::{grok_upload_file, GrokUploadFileArgs, GrokUploadFileRequest, PathOrFile};
 use log::info;
 use std::time::Duration;
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
@@ -56,13 +55,14 @@ pub async fn upload_image_media_file_to_grok(
 
   info!("Uploading image to Grok...");
 
-  let upload = GrokUploadFile {
-    file: FileUploadSpec::Path(filename),
-    cookie: cookies,
+  let response = grok_upload_file(GrokUploadFileArgs {
+    request: GrokUploadFileRequest {
+      file: PathOrFile::Path(filename.as_path()),
+    },
+    cookie: &cookies,
+    domain_override: None,
     request_timeout: Some(GROK_IMAGE_UPLOAD_TIMEOUT),
-  };
-
-  let response = upload.upload().await?;
+  }).await?;
 
   let file_id = response.file_id
       .ok_or_else(|| anyhow!("Media upload did not produce a file_id!"))?;

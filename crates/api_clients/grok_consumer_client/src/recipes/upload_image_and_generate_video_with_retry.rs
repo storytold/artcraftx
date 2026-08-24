@@ -2,7 +2,6 @@ use crate::credentials::grok_client_secrets::GrokClientSecrets;
 use crate::credentials::grok_full_credentials::GrokFullCredentials;
 use crate::datatypes::api::aspect_ratio::AspectRatio;
 use crate::datatypes::api::video_generation_mode::VideoGenerationMode;
-use crate::datatypes::file_upload_spec::FileUploadSpec;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
@@ -11,19 +10,18 @@ use crate::recipes::request_client_secrets::{request_client_secrets, RequestClie
 use crate::recipes::upload_image_and_generate_video::{ImageUploadAndGenerateVideoResult, UploadImageAndGenerateVideo};
 use crate::endpoint_bindings::old_bindings::media_posts::create_media_post::grok_create_media_post::{GrokCreateMediaPost, MediaPostType};
 use crate::endpoint_bindings::old_bindings::media_posts::like_media_post::grok_like_media::GrokLikeMediaPost;
-use crate::endpoint_bindings::old_bindings::upload_file::grok_upload_file::GrokUploadFile;
+use crate::endpoint_bindings::old_bindings::upload_file::grok_upload_file::{grok_upload_file, GrokUploadFileArgs, GrokUploadFileRequest, PathOrFile};
 use crate::endpoint_bindings::old_bindings::video_chat::grok_video_gen_chat_conversation::{GrokVideoGenChatConversationBuilder, VideoMediaPostType};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 use crate::utils::user_and_file_id_to_video_url::user_and_file_id_to_video_url;
 use log::{error, info};
-use std::path::Path;
 use std::time::Duration;
 
-pub struct UploadImageAndGenerateVideoWithRetry<'a, P: AsRef<Path>> {
+pub struct UploadImageAndGenerateVideoWithRetry<'a> {
   pub credentials: &'a GrokFullCredentials,
 
   // NB: Must be owned.
-  pub file: FileUploadSpec<P>,
+  pub file: PathOrFile<'a>,
 
   /// Video generation prompt
   pub prompt: Option<&'a str>,
@@ -54,8 +52,8 @@ pub struct ImageUploadAndGenerateVideoWithRetryResult {
   pub upload_result: ImageUploadAndGenerateVideoResult,
 }
 
-pub async fn upload_image_and_generate_video_with_retry<P: AsRef<Path>>(
-  args: UploadImageAndGenerateVideoWithRetry<'_, P>
+pub async fn upload_image_and_generate_video_with_retry(
+  args: UploadImageAndGenerateVideoWithRetry<'_>
 ) -> Result<ImageUploadAndGenerateVideoWithRetryResult, GrokError> {
 
   let mut current_full_credentials_ref = args.credentials;
@@ -63,13 +61,12 @@ pub async fn upload_image_and_generate_video_with_retry<P: AsRef<Path>>(
 
   info!("Uploading file to Grok...");
 
-  let request = GrokUploadFile {
-    file: args.file,
-    cookie: current_full_credentials_ref.cookies.to_string(),
+  let upload_result = grok_upload_file(GrokUploadFileArgs {
+    request: GrokUploadFileRequest { file: args.file },
+    cookie: current_full_credentials_ref.cookies.as_str(),
+    domain_override: None,
     request_timeout: args.individual_request_timeout,
-  };
-
-  let upload_result = request.upload().await?;
+  }).await?;
 
   info!("File URI: {:?}", upload_result.file_uri);
   info!("File Metadata ID: {:?}", upload_result.file_id);
@@ -274,10 +271,11 @@ pub async fn upload_image_and_generate_video_with_retry<P: AsRef<Path>>(
 
 #[cfg(test)]
 mod tests {
+  use crate::endpoint_bindings::old_bindings::upload_file::grok_upload_file::PathOrFile;
+  use std::path::Path;
   use crate::credentials::grok_full_credentials::GrokFullCredentials;
   use crate::datatypes::api::aspect_ratio::AspectRatio;
   use crate::datatypes::api::video_generation_mode::VideoGenerationMode;
-  use crate::datatypes::file_upload_spec::FileUploadSpec;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
   use crate::recipes::upload_image_and_generate_video_with_retry::{upload_image_and_generate_video_with_retry, UploadImageAndGenerateVideoWithRetry};
   use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
@@ -314,7 +312,7 @@ mod tests {
 
     let result = upload_image_and_generate_video_with_retry(UploadImageAndGenerateVideoWithRetry {
       credentials: &credentials,
-      file: FileUploadSpec::Path(image_path),
+      file: PathOrFile::Path(Path::new(image_path)),
       prompt: maybe_prompt,
       mode: Some(VideoGenerationMode::Custom),
       aspect_ratio: Some(AspectRatio::TallTwoByThree),

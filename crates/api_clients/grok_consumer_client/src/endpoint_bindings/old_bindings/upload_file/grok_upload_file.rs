@@ -1,6 +1,6 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
+use crate::client::grok_domain::GrokDomain;
 use crate::datatypes::api::file_id::FileId;
-use crate::datatypes::file_upload_spec::FileUploadSpec;
 use crate::endpoint_bindings::old_bindings::upload_file::response::GrokApiUploadFileResponse;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
@@ -15,9 +15,10 @@ use wreq::multipart::{Form, Part};
 use wreq::Client;
 use wreq_util::Emulation;
 
-/// `POST` here to upload a file. As of 2026-08-23 this is a `multipart/form-data`
-/// upload of the raw bytes (previously a JSON body with base64 `content`).
-const UPLOAD_FILE_URL: &str = "https://grok.com/http/upload-file-v2/direct";
+/// The upload path (appended to the [`GrokDomain`]). As of 2026-08-23 this is a
+/// `multipart/form-data` upload of the raw bytes (previously a JSON body with
+/// base64 `content`).
+const UPLOAD_FILE_PATH: &str = "/http/upload-file-v2/direct";
 
 /// The multipart field name the web app uses for the file part.
 const FILE_FIELD_NAME: &str = "file";
@@ -25,100 +26,120 @@ const FILE_FIELD_NAME: &str = "file";
 /// Try to prevent buffer reallocations.
 const INITIAL_BUFFER_SIZE: usize = 1024 * 1024;
 
-/// Request builder.
-pub struct GrokUploadFile<P: AsRef<Path>> {
-  pub file: FileUploadSpec<P>,
-  pub cookie: String,
+/// The file to upload: a path to read from disk, or in-memory bytes.
+pub enum PathOrFile<'a> {
+  /// A path to a file on disk. Its name and MIME type are derived from the path.
+  Path(&'a Path),
+  /// In-memory bytes with an explicit name and MIME type.
+  File {
+    bytes: Vec<u8>,
+    file_name: String,
+    mime_type: String,
+  },
+}
+
+pub struct GrokUploadFileRequest<'a> {
+  pub file: PathOrFile<'a>,
+}
+
+pub struct GrokUploadFileArgs<'a> {
+  pub request: GrokUploadFileRequest<'a>,
+  pub cookie: &'a str,
+  pub domain_override: Option<&'a GrokDomain>,
   pub request_timeout: Option<Duration>,
 }
 
-/// Response type.
 #[derive(Clone, Debug)]
 pub struct GrokUploadFileResponse {
   pub file_id: Option<FileId>,
   pub file_uri: Option<String>,
 }
 
-impl<P> GrokUploadFile<P> where P: AsRef<Path> {
-  pub async fn upload(&self) -> Result<GrokUploadFileResponse, GrokError> {
-    let (bytes, file_name, mime_type) = match &self.file {
-      FileUploadSpec::Path(path) => read_file_for_upload(path.as_ref()).await?,
-      FileUploadSpec::Bytes { bytes, filename, mimetype } => {
-        (bytes.clone(), filename.clone(), mimetype.clone())
-      }
-    };
+/// Upload a file to Grok.
+pub async fn grok_upload_file(args: GrokUploadFileArgs<'_>) -> Result<GrokUploadFileResponse, GrokError> {
+  let (bytes, file_name, mime_type) = match args.request.file {
+    PathOrFile::Path(path) => read_file_for_upload(path).await?,
+    PathOrFile::File { bytes, file_name, mime_type } => (bytes, file_name, mime_type),
+  };
 
-    self.do_upload(bytes, file_name, mime_type).await
+  let domain = args.domain_override.unwrap_or(&GrokDomain::DefaultDomain);
+
+  do_upload(domain, args.cookie, args.request_timeout, bytes, file_name, mime_type).await
+}
+
+async fn do_upload(
+  domain: &GrokDomain,
+  cookie: &str,
+  request_timeout: Option<Duration>,
+  bytes: Vec<u8>,
+  file_name: String,
+  mime_type: String,
+) -> Result<GrokUploadFileResponse, GrokError> {
+  let client = Client::builder()
+      .emulation(Emulation::Firefox143)
+      .build()
+      .map_err(GrokClientError::WreqClientError)?;
+
+  info!("Uploading {} ({} bytes) to Grok...", file_name, bytes.len());
+
+  // Raw bytes in a single `file` part. `.multipart()` sets the
+  // `content-type: multipart/form-data; boundary=...` header itself.
+  let part = Part::bytes(bytes)
+      .file_name(file_name)
+      .mime_str(&mime_type)
+      .map_err(GrokClientError::WreqClientError)?;
+  let form = Form::new().part(FILE_FIELD_NAME, part);
+
+  let mut request_builder = client.post(request_url(domain))
+      .header(ACCEPT, "*/*")
+      .header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
+      .header(COOKIE, cookie)
+      .header(ORIGIN, "https://grok.com")
+      .header(REFERER, "https://grok.com/imagine")
+      .header("priority", "u=1, i")
+      .header("sec-fetch-dest", "empty")
+      .header("sec-fetch-mode", "cors")
+      .header("sec-fetch-site", "same-origin")
+      .header(USER_AGENT, FIREFOX_143_MAC_USER_AGENT)
+      .multipart(form);
+
+  if let Some(timeout) = request_timeout {
+    request_builder = request_builder.timeout(timeout);
   }
 
-  async fn do_upload(
-    &self,
-    bytes: Vec<u8>,
-    file_name: String,
-    mime_type: String,
-  ) -> Result<GrokUploadFileResponse, GrokError> {
-    let client = Client::builder()
-        .emulation(Emulation::Firefox143)
-        .build()
-        .map_err(GrokClientError::WreqClientError)?;
+  let http_request = request_builder
+      .build()
+      .map_err(|err| {
+        error!("Error building image upload request: {:?}", err);
+        GrokClientError::WreqClientError(err)
+      })?;
 
-    info!("Uploading {} ({} bytes) to Grok...", file_name, bytes.len());
+  let response = client.execute(http_request)
+      .await
+      .map_err(|err| {
+        error!("Error during image upload: {:?}", err);
+        GrokGenericApiError::WreqError(err)
+      })?;
 
-    // Raw bytes in a single `file` part. `.multipart()` sets the
-    // `content-type: multipart/form-data; boundary=...` header itself.
-    let part = Part::bytes(bytes)
-        .file_name(file_name)
-        .mime_str(&mime_type)
-        .map_err(GrokClientError::WreqClientError)?;
-    let form = Form::new().part(FILE_FIELD_NAME, part);
+  let status = response.status();
 
-    let mut request_builder = client.post(UPLOAD_FILE_URL)
-        .header(ACCEPT, "*/*")
-        .header(ACCEPT_LANGUAGE, "en-US,en;q=0.5")
-        .header(COOKIE, self.cookie.to_string())
-        .header(ORIGIN, "https://grok.com")
-        .header(REFERER, "https://grok.com/imagine")
-        .header("priority", "u=1, i")
-        .header("sec-fetch-dest", "empty")
-        .header("sec-fetch-mode", "cors")
-        .header("sec-fetch-site", "same-origin")
-        .header(USER_AGENT, FIREFOX_143_MAC_USER_AGENT)
-        .multipart(form);
+  let response_body = response.text()
+      .await
+      .map_err(|err| {
+        error!("Error reading Grok image upload response body: {:?}", err);
+        GrokGenericApiError::WreqError(err)
+      })?;
 
-    if let Some(timeout) = self.request_timeout {
-      request_builder = request_builder.timeout(timeout);
-    }
-
-    let http_request = request_builder
-        .build()
-        .map_err(|err| {
-          error!("Error building image upload request: {:?}", err);
-          GrokClientError::WreqClientError(err)
-        })?;
-
-    let response = client.execute(http_request)
-        .await
-        .map_err(|err| {
-          error!("Error during image upload: {:?}", err);
-          GrokGenericApiError::WreqError(err)
-        })?;
-
-    let status = response.status();
-
-    let response_body = response.text()
-        .await
-        .map_err(|err| {
-          error!("Error reading Grok image upload response body: {:?}", err);
-          GrokGenericApiError::WreqError(err)
-        })?;
-
-    if !status.is_success() {
-      error!("Upload file request returned an error (code {}): {:?}", status.as_u16(), response_body);
-      // TODO: Categorize Cloudflare / auth / rate-limit errors.
-    }
-
-    parse_upload_response(&response_body)
+  if !status.is_success() {
+    error!("Upload file request returned an error (code {}): {:?}", status.as_u16(), response_body);
+    // TODO: Categorize Cloudflare / auth / rate-limit errors.
   }
+
+  parse_upload_response(&response_body)
+}
+
+fn request_url(domain: &GrokDomain) -> String {
+  format!("{}{}", domain.get_domain(), UPLOAD_FILE_PATH)
 }
 
 /// Read a file into memory and derive its upload name and MIME type.
@@ -186,8 +207,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn upload_url_is_the_v2_direct_endpoint() {
-      assert_eq!(UPLOAD_FILE_URL, "https://grok.com/http/upload-file-v2/direct");
+    fn url_uses_the_default_domain() {
+      assert_eq!(
+        request_url(&GrokDomain::DefaultDomain),
+        "https://grok.com/http/upload-file-v2/direct",
+      );
+    }
+
+    #[test]
+    fn url_respects_a_domain_override() {
+      let domain = GrokDomain::Custom("http://localhost:8080".to_string());
+      assert_eq!(request_url(&domain), "http://localhost:8080/http/upload-file-v2/direct");
     }
 
     #[test]
@@ -244,13 +274,15 @@ mod tests {
       setup_test_logging(LevelFilter::Info);
       let secrets = load_grok_test_secrets()?;
 
-      let request = GrokUploadFile {
-        file: FileUploadSpec::Path(TEST_IMAGE_PATH),
-        cookie: secrets.cookies.to_string(),
+      let result = grok_upload_file(GrokUploadFileArgs {
+        request: GrokUploadFileRequest {
+          file: PathOrFile::Path(Path::new(TEST_IMAGE_PATH)),
+        },
+        cookie: secrets.cookies.as_str(),
+        domain_override: None,
         request_timeout: Some(Duration::from_secs(30)),
-      };
+      }).await?;
 
-      let result = request.upload().await?;
       println!("Upload result: {:?}", result);
 
       assert!(result.file_id.is_some(), "expected a file id from the upload");

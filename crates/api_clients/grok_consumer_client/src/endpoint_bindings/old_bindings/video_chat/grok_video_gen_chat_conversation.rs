@@ -13,7 +13,7 @@ use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::endpoint_bindings::old_bindings::index_page::signature::generate_xsid::{generate_xsid, GenerateXsidArgs};
-use crate::endpoint_bindings::old_bindings::upload_file::grok_upload_file::{GrokUploadFile, GrokUploadFileResponse};
+use crate::endpoint_bindings::old_bindings::upload_file::grok_upload_file::{grok_upload_file, GrokUploadFileArgs, GrokUploadFileRequest, PathOrFile};
 use crate::endpoint_bindings::old_bindings::video_chat::parse_video_id::parse_video_id;
 use crate::endpoint_bindings::old_bindings::video_chat::parse_video_id_from_partial_byte_stream_buffer::parse_video_id_from_partial_byte_stream_buffer;
 use crate::endpoint_bindings::old_bindings::video_chat::request::{CreateChatConversationWireRequest, ModelConfigOverride, ModelMap, ResponseMetadata, ToolOverrides, VideoGenAspectRatio, VideoGenModelConfig};
@@ -320,7 +320,6 @@ impl <'a> GrokVideoGenChatConversationBuilder<'a> {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::datatypes::file_upload_spec::FileUploadSpec;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
   use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
   use crate::test_utils::setup_test_logging::setup_test_logging;
@@ -344,13 +343,14 @@ mod tests {
       cookies: &cookies,
     }).await?;
 
-    let upload_request = GrokUploadFile {
-      file: FileUploadSpec::Path(image_path),
-      cookie: cookies.to_string(),
+    let upload_result = grok_upload_file(GrokUploadFileArgs {
+      request: GrokUploadFileRequest {
+        file: PathOrFile::Path(std::path::Path::new(image_path)),
+      },
+      cookie: cookies.as_str(),
+      domain_override: None,
       request_timeout: None,
-    };
-
-    let upload_result = upload_request.upload().await?;
+    }).await?;
 
     let file_id = upload_result.file_id.expect("upload should have file_id");
 
@@ -408,13 +408,14 @@ mod tests {
       cookies: &cookies,
     }).await?;
 
-    let upload_request = GrokUploadFile {
-      file: FileUploadSpec::Path(image_path),
-      cookie: cookies.to_string(),
+    let upload_result = grok_upload_file(GrokUploadFileArgs {
+      request: GrokUploadFileRequest {
+        file: PathOrFile::Path(std::path::Path::new(image_path)),
+      },
+      cookie: cookies.as_str(),
+      domain_override: None,
       request_timeout: None,
-    };
-
-    let upload_result = upload_request.upload().await?;
+    }).await?;
 
     let file_id = upload_result.file_id.expect("upload should have file_id");
 

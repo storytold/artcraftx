@@ -3,24 +3,22 @@ use crate::datatypes::api::aspect_ratio::AspectRatio;
 use crate::datatypes::api::file_id::FileId;
 use crate::datatypes::api::post_id::PostId;
 use crate::datatypes::api::video_generation_mode::VideoGenerationMode;
-use crate::datatypes::file_upload_spec::FileUploadSpec;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::endpoint_bindings::old_bindings::media_posts::create_media_post::grok_create_media_post::{GrokCreateMediaPost, MediaPostType};
 use crate::endpoint_bindings::old_bindings::media_posts::like_media_post::grok_like_media::GrokLikeMediaPost;
-use crate::endpoint_bindings::old_bindings::upload_file::grok_upload_file::GrokUploadFile;
+use crate::endpoint_bindings::old_bindings::upload_file::grok_upload_file::{grok_upload_file, GrokUploadFileArgs, GrokUploadFileRequest, PathOrFile};
 use crate::endpoint_bindings::old_bindings::video_chat::grok_video_gen_chat_conversation::{GrokVideoGenChatConversationBuilder, VideoMediaPostType};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 use crate::utils::user_and_file_id_to_video_url::user_and_file_id_to_video_url;
 use log::{error, info};
-use std::path::Path;
 use std::time::Duration;
 
-pub struct UploadImageAndGenerateVideo<'a, P: AsRef<Path>> {
+pub struct UploadImageAndGenerateVideo<'a> {
   pub full_credentials: &'a GrokFullCredentials,
 
   // NB: Must be owned.
-  pub file: FileUploadSpec<P>,
+  pub file: PathOrFile<'a>,
 
   /// Video generation prompt
   pub prompt: Option<&'a str>,
@@ -63,19 +61,18 @@ pub struct ImageUploadAndGenerateVideoResult {
   pub generation_is_complete: bool,
 }
 
-pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAndGenerateVideo<'_, P>)
+pub async fn upload_image_and_generate_video(args: UploadImageAndGenerateVideo<'_>)
   -> Result<ImageUploadAndGenerateVideoResult, GrokError>
 {
 
   info!("Uploading file to Grok...");
 
-  let request = GrokUploadFile {
-    file: args.file,
-    cookie: args.full_credentials.cookies.to_string(),
+  let upload_result = grok_upload_file(GrokUploadFileArgs {
+    request: GrokUploadFileRequest { file: args.file },
+    cookie: args.full_credentials.cookies.as_str(),
+    domain_override: None,
     request_timeout: args.individual_request_timeout,
-  };
-
-  let upload_result = request.upload().await?;
+  }).await?;
 
   info!("File URI: {:?}", upload_result.file_uri);
   info!("File Metadata ID: {:?}", upload_result.file_id);
@@ -182,9 +179,10 @@ pub async fn upload_image_and_generate_video<P: AsRef<Path>>(args: UploadImageAn
 
 #[cfg(test)]
 mod tests {
+  use crate::endpoint_bindings::old_bindings::upload_file::grok_upload_file::PathOrFile;
+  use std::path::Path;
   use crate::credentials::grok_full_credentials::GrokFullCredentials;
   use crate::datatypes::api::aspect_ratio::AspectRatio;
-  use crate::datatypes::file_upload_spec::FileUploadSpec;
   use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
   use crate::recipes::upload_image_and_generate_video::{upload_image_and_generate_video, UploadImageAndGenerateVideo};
   use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
@@ -222,7 +220,7 @@ mod tests {
 
     let video_result = upload_image_and_generate_video(UploadImageAndGenerateVideo {
       full_credentials: &credentials,
-      file: FileUploadSpec::Path(image_path),
+      file: PathOrFile::Path(Path::new(image_path)),
       prompt: maybe_prompt,
       aspect_ratio: Some(AspectRatio::Square),
       mode: None,
