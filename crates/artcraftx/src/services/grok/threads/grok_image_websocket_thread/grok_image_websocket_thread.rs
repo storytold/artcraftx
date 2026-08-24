@@ -111,6 +111,8 @@ async fn inner_loop(
       websocket.send_fast_image_prompt_with_retry(
         &prompt_item.prompt,
         prompt_item.aspect_ratio,
+        // No prompt flags yet; the prompt is sent as-is.
+        &grok_consumer_client::prompt_flags::PromptFlags::default(),
       ).await?;
 
       let images = websocket.collect_images(Duration::from_millis(30_000)).await?;

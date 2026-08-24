@@ -17,6 +17,7 @@ use crate::error::categorize_grok_http_error::categorize_grok_http_error;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
+use crate::prompt_flags::{GenerationMode, PromptFlags};
 use crate::utils::create_firefox_client::create_firefox_client;
 use log::{error, info};
 use serde::{Deserialize, Serialize};
@@ -122,6 +123,11 @@ pub struct GenerateVideoRequest<'a> {
 
   /// Whether the video has generated audio. `false` sends `skipAudio: true`.
   pub enable_audio: bool,
+
+  /// Optional `--` prompt flags (e.g. `--mode`). When `mode` is unset, the
+  /// binding picks the source's default (`custom` for a prompt, `normal` for a
+  /// bare image-to-video). See [`PromptFlags`].
+  pub flags: PromptFlags,
 }
 
 pub struct GenerateVideoArgs<'a> {
@@ -347,43 +353,43 @@ impl GenerateVideoWireRequest {
     let duration = request.duration.as_seconds();
     let skip_audio = !request.enable_audio;
 
-    // The `message` mirrors the web app: a prompt becomes "<prompt> --mode=custom",
-    // a bare image-to-video becomes "--mode=normal".
-    let (message, media_gen_input) = match &request.source {
-      VideoSource::Text { prompt } => (
-        format!("{prompt} --mode=custom"),
-        MediaGenInput {
-          image_to_video: None,
-          text_to_video: Some(TextToVideo {
-            prompt: prompt.to_string(),
-            aspect_ratio,
-            duration,
-            resolution_name,
-            skip_audio,
-          }),
-        },
-      ),
-      VideoSource::Image { input_asset_id, prompt } => {
-        let (message, mode) = match prompt {
-          Some(prompt) => (format!("{prompt} --mode=custom"), "custom"),
-          None => ("--mode=normal".to_string(), "normal"),
-        };
-        (
-          message,
-          MediaGenInput {
-            image_to_video: Some(ImageToVideo {
-              prompt: prompt.map(str::to_string),
-              input_assets: vec![input_asset_id.to_string()],
-              aspect_ratio,
-              duration,
-              resolution_name,
-              mode,
-              skip_audio,
-            }),
-            text_to_video: None,
-          },
-        )
-      }
+    // The base prompt and default `--mode` come from the source (custom for a
+    // prompt, normal for a bare image-to-video); a caller-supplied `flags.mode`
+    // overrides it. The `message` is the prompt with all flags applied.
+    let (base_prompt, default_mode): (&str, GenerationMode) = match &request.source {
+      VideoSource::Text { prompt } => (prompt, GenerationMode::Custom),
+      VideoSource::Image { prompt: Some(prompt), .. } => (prompt, GenerationMode::Custom),
+      VideoSource::Image { prompt: None, .. } => ("", GenerationMode::Normal),
+    };
+    let mode = request.flags.mode.unwrap_or(default_mode);
+
+    let mut flags = request.flags.clone();
+    flags.mode = Some(mode);
+    let message = flags.apply_to(base_prompt);
+
+    let media_gen_input = match &request.source {
+      VideoSource::Text { prompt } => MediaGenInput {
+        image_to_video: None,
+        text_to_video: Some(TextToVideo {
+          prompt: prompt.to_string(),
+          aspect_ratio,
+          duration,
+          resolution_name,
+          skip_audio,
+        }),
+      },
+      VideoSource::Image { input_asset_id, prompt } => MediaGenInput {
+        image_to_video: Some(ImageToVideo {
+          prompt: prompt.map(str::to_string),
+          input_assets: vec![input_asset_id.to_string()],
+          aspect_ratio,
+          duration,
+          resolution_name,
+          mode: mode.as_flag_value(),
+          skip_audio,
+        }),
+        text_to_video: None,
+      },
     };
 
     Self {
@@ -488,6 +494,7 @@ mod tests {
         resolution: VideoResolution::FullHd1080p,
         duration: VideoDuration::TenSeconds,
         enable_audio: false,
+        flags: PromptFlags::default(),
       };
       let value = serde_json::to_value(GenerateVideoWireRequest::from_request(&no_audio)).unwrap();
       let text_to_video = &value["mediaGenInput"]["textToVideo"];
@@ -498,6 +505,38 @@ mod tests {
       let with_audio = GenerateVideoRequest { enable_audio: true, ..no_audio };
       let value = serde_json::to_value(GenerateVideoWireRequest::from_request(&with_audio)).unwrap();
       assert!(value["mediaGenInput"]["textToVideo"].get("skipAudio").is_none());
+    }
+
+    // A caller-supplied `--mode` flows into the text-to-video message.
+    #[test]
+    fn caller_mode_flag_flows_into_message() {
+      let request = GenerateVideoRequest {
+        source: VideoSource::Text { prompt: "woman on beach" },
+        aspect_ratio: VideoAspectRatio::WideThreeByTwo,
+        resolution: VideoResolution::Sd480p,
+        duration: VideoDuration::SixSeconds,
+        enable_audio: true,
+        flags: PromptFlags::with_mode(GenerationMode::Spicy),
+      };
+      let value = serde_json::to_value(GenerateVideoWireRequest::from_request(&request)).unwrap();
+      assert_eq!(value["message"], "woman on beach --mode=extremely-spicy-or-crazy");
+    }
+
+    // For image-to-video, a caller mode overrides the default in BOTH the
+    // message text and the structured `mode` field.
+    #[test]
+    fn caller_mode_overrides_default_for_image_to_video() {
+      let request = GenerateVideoRequest {
+        source: VideoSource::Image { input_asset_id: "abc", prompt: None },
+        aspect_ratio: VideoAspectRatio::WideThreeByTwo,
+        resolution: VideoResolution::Sd480p,
+        duration: VideoDuration::SixSeconds,
+        enable_audio: true,
+        flags: PromptFlags::with_mode(GenerationMode::Spicy),
+      };
+      let value = serde_json::to_value(GenerateVideoWireRequest::from_request(&request)).unwrap();
+      assert_eq!(value["message"], "--mode=extremely-spicy-or-crazy");
+      assert_eq!(value["mediaGenInput"]["imageToVideo"]["mode"], "extremely-spicy-or-crazy");
     }
 
     // Real image-to-video "from generation" send frame (no prompt, normal, 480p).
@@ -512,6 +551,7 @@ mod tests {
         resolution: VideoResolution::Sd480p,
         duration: VideoDuration::SixSeconds,
         enable_audio: true,
+        flags: PromptFlags::default(),
       };
       let ours = serde_json::to_value(GenerateVideoWireRequest::from_request(&request)).unwrap();
       let captured: serde_json::Value =
@@ -531,6 +571,7 @@ mod tests {
         resolution: VideoResolution::Hd720p,
         duration: VideoDuration::SixSeconds,
         enable_audio: true,
+        flags: PromptFlags::default(),
       };
       let ours = serde_json::to_value(GenerateVideoWireRequest::from_request(&request)).unwrap();
       let captured: serde_json::Value =
@@ -547,6 +588,7 @@ mod tests {
         resolution: VideoResolution::Sd480p,
         duration: VideoDuration::SixSeconds,
         enable_audio: true,
+        flags: PromptFlags::default(),
       };
       let ours = serde_json::to_value(GenerateVideoWireRequest::from_request(&request)).unwrap();
       let captured: serde_json::Value =
@@ -640,6 +682,7 @@ mod tests {
           resolution,
           duration,
           enable_audio,
+          flags: PromptFlags::default(),
         },
         credentials: &secrets.cookies,
         request_headers: Some(headers),
@@ -695,6 +738,7 @@ mod tests {
           resolution: VideoResolution::FullHd1080p,
           duration: VideoDuration::TenSeconds,
           enable_audio: false,
+          flags: PromptFlags::default(),
         },
         credentials: &secrets.cookies,
         request_headers: Some(&headers),

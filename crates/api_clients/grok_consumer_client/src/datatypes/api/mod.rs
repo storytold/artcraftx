@@ -1,7 +1,6 @@
 pub mod aspect_ratio;
 pub mod baggage;
 pub mod file_id;
-pub mod video_generation_mode;
 pub mod post_id;
 pub mod request_id;
 pub mod sentry_trace;

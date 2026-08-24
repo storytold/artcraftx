@@ -1,3 +1,4 @@
+use crate::prompt_flags::PromptFlags;
 use chrono::Utc;
 use serde::Serialize;
 use uuid::Uuid;
@@ -136,21 +137,25 @@ pub struct ClientMessageItemContentProperties {
 impl WebsocketClientMessage {
   /// A **fast** ("speed") image prompt (`enable_pro: false`).
   ///
-  /// Mirrors the web app's `conversation.item.create` send frame (see
-  /// `external/requests/sites/grok.com/2026-08-23-imagine/14_same_websocket_low_quality_fast_images.har.json`).
-  pub fn new_fast_image_prompt(prompt: &str, aspect_ratio: FastAspectRatio) -> Self {
-    Self::new_image_prompt(prompt, aspect_ratio.as_grok_str(), false)
+  /// `flags` appends any `--` long args (e.g. `--mode=extremely-spicy-or-crazy`)
+  /// to the prompt text; [`PromptFlags::default()`] leaves the prompt untouched,
+  /// matching the plain-prompt captures. Mirrors the web app's
+  /// `conversation.item.create` send frame (see
+  /// `external/requests/sites/grok.com/2026-08-23-imagine/14_same_websocket_low_quality_fast_images.har.json`
+  /// and `21_spicey_image_gen_test.har.json`).
+  pub fn new_fast_image_prompt(prompt: &str, aspect_ratio: FastAspectRatio, flags: &PromptFlags) -> Self {
+    Self::new_image_prompt(prompt, aspect_ratio.as_grok_str(), false, flags)
   }
 
   /// A **quality** ("pro") image prompt (`enable_pro: true`).
   ///
   /// Mirrors the web app's send frame (see
   /// `external/requests/sites/grok.com/2026-08-23-imagine/13_image_high_quality_websocket.har.json`).
-  pub fn new_quality_image_prompt(prompt: &str, aspect_ratio: QualityAspectRatio) -> Self {
-    Self::new_image_prompt(prompt, aspect_ratio.as_grok_str(), true)
+  pub fn new_quality_image_prompt(prompt: &str, aspect_ratio: QualityAspectRatio, flags: &PromptFlags) -> Self {
+    Self::new_image_prompt(prompt, aspect_ratio.as_grok_str(), true, flags)
   }
 
-  fn new_image_prompt(prompt: &str, aspect_ratio: &str, enable_pro: bool) -> Self {
+  fn new_image_prompt(prompt: &str, aspect_ratio: &str, enable_pro: bool, flags: &PromptFlags) -> Self {
     Self {
       r#type: "conversation.item.create".to_string(),
       timestamp: Utc::now().timestamp_millis() as u64,
@@ -160,7 +165,7 @@ impl WebsocketClientMessage {
           ClientMessageItemContent {
             request_id: Uuid::new_v4().to_string(),
             r#type: "input_text".to_string(),
-            text: prompt.to_string(),
+            text: flags.apply_to(prompt),
             properties: ClientMessageItemContentProperties {
               section_count: 0,
               is_kids_mode: false,
@@ -210,13 +215,31 @@ mod tests {
     }
   }
 
+  // A `--mode` flag is appended to the image prompt text, matching the real
+  // spicy capture (21_spicey_image_gen_test.har.json).
+  #[test]
+  fn mode_flag_appended_to_image_prompt() {
+    use crate::prompt_flags::GenerationMode;
+    let value = serde_json::to_value(
+      WebsocketClientMessage::new_fast_image_prompt(
+        "woman on beach",
+        FastAspectRatio::WideSixteenByNine,
+        &PromptFlags::with_mode(GenerationMode::Spicy),
+      ),
+    ).unwrap();
+    assert_eq!(
+      value["item"]["content"][0]["text"],
+      "woman on beach --mode=extremely-spicy-or-crazy",
+    );
+  }
+
   mod fast_mode_tests {
     use super::*;
 
     #[test]
     fn wire_format() {
       let value = serde_json::to_value(
-        WebsocketClientMessage::new_fast_image_prompt("a cat", FastAspectRatio::TallTwoByThree),
+        WebsocketClientMessage::new_fast_image_prompt("a cat", FastAspectRatio::TallTwoByThree, &PromptFlags::default()),
       ).unwrap();
       let properties = &value["item"]["content"][0]["properties"];
 
@@ -233,7 +256,7 @@ mod tests {
     #[test]
     fn matches_real_captured_frame() {
       let ours = serde_json::to_value(
-        WebsocketClientMessage::new_fast_image_prompt("Race car", FastAspectRatio::WideThreeByTwo),
+        WebsocketClientMessage::new_fast_image_prompt("Race car", FastAspectRatio::WideThreeByTwo, &PromptFlags::default()),
       ).unwrap();
       assert_matches_capture(&ours, &load_send_frame("real_fast_image_prompt_request.json"));
     }
@@ -254,7 +277,7 @@ mod tests {
     #[test]
     fn wire_format() {
       let value = serde_json::to_value(
-        WebsocketClientMessage::new_quality_image_prompt("a cat", QualityAspectRatio::WideTwentyOneByNine),
+        WebsocketClientMessage::new_quality_image_prompt("a cat", QualityAspectRatio::WideTwentyOneByNine, &PromptFlags::default()),
       ).unwrap();
       let properties = &value["item"]["content"][0]["properties"];
 
@@ -268,7 +291,7 @@ mod tests {
     #[test]
     fn matches_real_captured_frame() {
       let ours = serde_json::to_value(
-        WebsocketClientMessage::new_quality_image_prompt("luxury car", QualityAspectRatio::WideTwentyOneByNine),
+        WebsocketClientMessage::new_quality_image_prompt("luxury car", QualityAspectRatio::WideTwentyOneByNine, &PromptFlags::default()),
       ).unwrap();
       assert_matches_capture(&ours, &load_send_frame("real_quality_image_prompt_request.json"));
     }

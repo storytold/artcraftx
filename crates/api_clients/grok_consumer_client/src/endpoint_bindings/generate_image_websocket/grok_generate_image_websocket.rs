@@ -6,6 +6,7 @@ use crate::error::grok_specific_api_error::GrokSpecificApiError;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
+use crate::prompt_flags::PromptFlags;
 use cloudflare_mitigation::headers::firefox_websocket_http_1_1_headers::get_firefox_websocket_http_1_1_headers;
 use futures::TryStreamExt;
 use log::warn;
@@ -88,13 +89,15 @@ impl GrokImageWebsocket {
   }
 
   /// Send a **fast** ("speed") image prompt. Fast mode supports the
-  /// [`FastAspectRatio`] set.
+  /// [`FastAspectRatio`] set. `flags` appends any `--` long args (e.g.
+  /// `--mode`) to the prompt; pass `&PromptFlags::default()` for none.
   pub async fn send_fast_image_prompt(
     &self,
     prompt: &str,
     aspect_ratio: FastAspectRatio,
+    flags: &PromptFlags,
   ) -> Result<(), GrokError> {
-    self.send_json(&WebsocketClientMessage::new_fast_image_prompt(prompt, aspect_ratio)).await
+    self.send_json(&WebsocketClientMessage::new_fast_image_prompt(prompt, aspect_ratio, flags)).await
   }
 
   /// [`send_fast_image_prompt`], reconnecting and retrying if the send fails
@@ -105,8 +108,9 @@ impl GrokImageWebsocket {
     &self,
     prompt: &str,
     aspect_ratio: FastAspectRatio,
+    flags: &PromptFlags,
   ) -> Result<(), GrokError> {
-    self.send_with_retry(WebsocketClientMessage::new_fast_image_prompt(prompt, aspect_ratio)).await
+    self.send_with_retry(WebsocketClientMessage::new_fast_image_prompt(prompt, aspect_ratio, flags)).await
   }
 
   /// Send a **quality** ("pro") image prompt — slower, higher quality. Quality
@@ -115,8 +119,9 @@ impl GrokImageWebsocket {
     &self,
     prompt: &str,
     aspect_ratio: QualityAspectRatio,
+    flags: &PromptFlags,
   ) -> Result<(), GrokError> {
-    self.send_json(&WebsocketClientMessage::new_quality_image_prompt(prompt, aspect_ratio)).await
+    self.send_json(&WebsocketClientMessage::new_quality_image_prompt(prompt, aspect_ratio, flags)).await
   }
 
   /// [`send_quality_image_prompt`], reconnecting and retrying if the send
@@ -127,8 +132,9 @@ impl GrokImageWebsocket {
     &self,
     prompt: &str,
     aspect_ratio: QualityAspectRatio,
+    flags: &PromptFlags,
   ) -> Result<(), GrokError> {
-    self.send_with_retry(WebsocketClientMessage::new_quality_image_prompt(prompt, aspect_ratio)).await
+    self.send_with_retry(WebsocketClientMessage::new_quality_image_prompt(prompt, aspect_ratio, flags)).await
   }
 
   /// Send a prepared message, reconnecting and retrying on failure.
@@ -385,6 +391,7 @@ mod tests {
     websocket.send_fast_image_prompt_with_retry(
       "A dinosaur on stilts walking on the beach",
       FastAspectRatio::WideThreeByTwo,
+      &PromptFlags::default(),
     ).await?;
 
     match websocket.collect_images(Duration::from_secs(30)).await {
