@@ -1,7 +1,7 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use crate::client::grok_domain::GrokDomain;
 use crate::datatypes::api::file_id::FileId;
-use crate::endpoint_bindings::old_bindings::upload_file::response::GrokApiUploadFileResponse;
+use crate::endpoint_bindings::upload_file::response::GrokApiUploadFileResponse;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;

@@ -6,7 +6,7 @@ use crate::services::grok::state::grok_credential_manager::GrokCredentialManager
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use grok_consumer_client::datatypes::api::file_id::FileId;
-use grok_consumer_client::endpoint_bindings::old_bindings::upload_file::grok_upload_file::{grok_upload_file, GrokUploadFileArgs, GrokUploadFileRequest, PathOrFile};
+use grok_consumer_client::endpoint_bindings::upload_file::grok_upload_file::{grok_upload_file, GrokUploadFileArgs, GrokUploadFileRequest, PathOrFile};
 use log::info;
 use std::time::Duration;
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;

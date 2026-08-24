@@ -13,7 +13,7 @@ use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::endpoint_bindings::old_bindings::index_page::signature::generate_xsid::{generate_xsid, GenerateXsidArgs};
-use crate::endpoint_bindings::old_bindings::upload_file::grok_upload_file::{grok_upload_file, GrokUploadFileArgs, GrokUploadFileRequest, PathOrFile};
+use crate::endpoint_bindings::upload_file::grok_upload_file::{grok_upload_file, GrokUploadFileArgs, GrokUploadFileRequest, PathOrFile};
 use crate::endpoint_bindings::old_bindings::video_chat::parse_video_id::parse_video_id;
 use crate::endpoint_bindings::old_bindings::video_chat::parse_video_id_from_partial_byte_stream_buffer::parse_video_id_from_partial_byte_stream_buffer;
 use crate::endpoint_bindings::old_bindings::video_chat::request::{CreateChatConversationWireRequest, ModelConfigOverride, ModelMap, ResponseMetadata, ToolOverrides, VideoGenAspectRatio, VideoGenModelConfig};

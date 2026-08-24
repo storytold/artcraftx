@@ -7,7 +7,7 @@ use crate::error::grok_error::GrokError;
 use crate::error::grok_generic_api_error::GrokGenericApiError;
 use crate::endpoint_bindings::old_bindings::media_posts::create_media_post::grok_create_media_post::{GrokCreateMediaPost, MediaPostType};
 use crate::endpoint_bindings::old_bindings::media_posts::like_media_post::grok_like_media::GrokLikeMediaPost;
-use crate::endpoint_bindings::old_bindings::upload_file::grok_upload_file::{grok_upload_file, GrokUploadFileArgs, GrokUploadFileRequest, PathOrFile};
+use crate::endpoint_bindings::upload_file::grok_upload_file::{grok_upload_file, GrokUploadFileArgs, GrokUploadFileRequest, PathOrFile};
 use crate::endpoint_bindings::old_bindings::video_chat::grok_video_gen_chat_conversation::{GrokVideoGenChatConversationBuilder, VideoMediaPostType};
 use crate::utils::user_and_file_id_to_image_url::user_and_file_id_to_image_url;
 use crate::utils::user_and_file_id_to_video_url::user_and_file_id_to_video_url;
@@ -179,7 +179,7 @@ pub async fn upload_image_and_generate_video(args: UploadImageAndGenerateVideo<'
 
 #[cfg(test)]
 mod tests {
-  use crate::endpoint_bindings::old_bindings::upload_file::grok_upload_file::PathOrFile;
+  use crate::endpoint_bindings::upload_file::grok_upload_file::PathOrFile;
   use std::path::Path;
   use crate::credentials::grok_full_credentials::GrokFullCredentials;
   use crate::datatypes::api::aspect_ratio::AspectRatio;
