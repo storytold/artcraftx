@@ -1,5 +1,5 @@
 use crate::error::artcraftx_error::ArtcraftXError;
-use grok_consumer_client::endpoint_bindings::image_websocket::grok_image_websocket::GrokImageWebsocket;
+use grok_consumer_client::endpoint_bindings::generate_image_websocket::grok_generate_image_websocket::GrokImageWebsocket;
 use log::error;
 use std::sync::{Arc, RwLock};
 

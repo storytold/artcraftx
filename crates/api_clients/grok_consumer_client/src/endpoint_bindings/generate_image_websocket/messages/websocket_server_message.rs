@@ -109,7 +109,7 @@ impl WebsocketServerMessage {
 
 #[cfg(test)]
 mod tests {
-  use crate::endpoint_bindings::image_websocket::messages::websocket_server_message::{ERR_CODE_RATE_LIMIT_EXCEEDED, WebsocketServerMessage};
+  use crate::endpoint_bindings::generate_image_websocket::messages::websocket_server_message::{ERR_CODE_RATE_LIMIT_EXCEEDED, WebsocketServerMessage};
 
   fn json_path(file_name: &str) -> String {
     // NB: Cargo runs tests with the crate root as the working directory.

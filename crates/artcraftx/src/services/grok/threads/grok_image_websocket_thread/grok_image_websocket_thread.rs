@@ -16,7 +16,7 @@ use core_types::enums::generation_source::GenerationSource;
 use artcraft_client::enums::common::generation::common_model_type::CommonModelType;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
-use grok_consumer_client::endpoint_bindings::image_websocket::grok_image_websocket::{CompletedImage, GrokImageWebsocket};
+use grok_consumer_client::endpoint_bindings::generate_image_websocket::grok_generate_image_websocket::{CompletedImage, GrokImageWebsocket};
 use uuid_utils::uuid::generate_random_uuid;
 use log::{error, info, warn};
 use sqlite_database::queries::read::get_task_by_provider_and_provider_job_id::{get_task_by_provider_and_provider_job_id, GetTaskByProviderAndProviderJobIdArgs};

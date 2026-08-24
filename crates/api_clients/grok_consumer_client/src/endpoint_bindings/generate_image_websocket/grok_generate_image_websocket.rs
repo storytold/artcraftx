@@ -1,7 +1,7 @@
 use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use crate::datatypes::api::request_id::RequestId;
-use crate::endpoint_bindings::image_websocket::messages::websocket_client_message::{FastAspectRatio, QualityAspectRatio, WebsocketClientMessage};
-use crate::endpoint_bindings::image_websocket::messages::websocket_server_message::{ErrorMessage, ERR_CODE_RATE_LIMIT_EXCEEDED, WebsocketServerMessage};
+use crate::endpoint_bindings::generate_image_websocket::messages::websocket_client_message::{FastAspectRatio, QualityAspectRatio, WebsocketClientMessage};
+use crate::endpoint_bindings::generate_image_websocket::messages::websocket_server_message::{ErrorMessage, ERR_CODE_RATE_LIMIT_EXCEEDED, WebsocketServerMessage};
 use crate::error::grok_specific_api_error::GrokSpecificApiError;
 use crate::error::grok_client_error::GrokClientError;
 use crate::error::grok_error::GrokError;
