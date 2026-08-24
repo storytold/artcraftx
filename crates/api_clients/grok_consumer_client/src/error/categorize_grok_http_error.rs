@@ -26,6 +26,16 @@ pub fn categorize_grok_http_error(status_code: StatusCode, maybe_body: Option<&s
       }.into();
     }
 
+    // Resolution gated to a higher plan, e.g. "1080p video generation is not
+    // available on your current plan. Use 720p instead." (Same 403/code 7 shape
+    // as the statsig notice, so this must come after `is_statsig_rejection`.)
+    if is_resolution_not_allowed(&lowered) {
+      return GrokSpecificApiError::VideoResolutionNotAllowed {
+        status_code: status_code.as_u16(),
+        body: body.to_string(),
+      }.into();
+    }
+
     let anti_bot = lowered.contains("anti-bot") || lowered.contains("rejected");
 
     if anti_bot {
@@ -57,6 +67,12 @@ fn is_statsig_rejection(lowered_body: &str) -> bool {
       || lowered_body.contains("x-statsig")
 }
 
+/// Whether a (lowercased) response body reads like a plan-gated resolution
+/// (e.g. 1080p on a lower tier).
+fn is_resolution_not_allowed(lowered_body: &str) -> bool {
+  lowered_body.contains("not available on your current plan")
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -65,6 +81,10 @@ mod tests {
   // Real 403 body observed when sending a stale/invalid x-statsig-id.
   const STATSIG_403_BODY: &str =
     r#"{"error":{"code":7,"message":"This page is out of date. Reload to continue.","details":[]}}"#;
+
+  // Real 403 body observed when requesting 1080p on a lower-tier plan.
+  const RESOLUTION_403_BODY: &str =
+    r#"{"error":{"code":7,"message":"1080p video generation is not available on your current plan. Use 720p instead.","details":[]}}"#;
 
   #[test]
   fn statsig_rejection_is_categorized_with_status_and_body() {
@@ -77,6 +97,19 @@ mod tests {
         assert!(body.contains("out of date"));
       }
       other => panic!("expected StatsigSignatureRejected, got {:?}", other),
+    }
+  }
+
+  #[test]
+  fn plan_gated_resolution_is_categorized_with_status_and_body() {
+    let error = categorize_grok_http_error(StatusCode::FORBIDDEN, Some(RESOLUTION_403_BODY));
+    match error {
+      GrokError::ApiSpecific(GrokSpecificApiError::VideoResolutionNotAllowed { status_code, body }) => {
+        assert_eq!(status_code, 403);
+        assert_eq!(body, RESOLUTION_403_BODY);
+        assert!(body.contains("not available on your current plan"));
+      }
+      other => panic!("expected VideoResolutionNotAllowed, got {:?}", other),
     }
   }
 }

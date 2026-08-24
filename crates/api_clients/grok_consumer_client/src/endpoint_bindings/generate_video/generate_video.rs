@@ -60,13 +60,17 @@ impl VideoAspectRatio {
   }
 }
 
-/// Output resolution for generated video.
+/// Output resolution for generated video. `1080p` may be gated to certain
+/// plans; the live `full_hd_no_audio_ten_seconds` test probes whether this
+/// account can use it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum VideoResolution {
   /// 480p
   Sd480p,
   /// 720p
   Hd720p,
+  /// 1080p (may require a higher-tier plan)
+  FullHd1080p,
 }
 
 impl VideoResolution {
@@ -74,6 +78,28 @@ impl VideoResolution {
     match self {
       Self::Sd480p => "480p",
       Self::Hd720p => "720p",
+      Self::FullHd1080p => "1080p",
+    }
+  }
+}
+
+/// Length of the generated video. Grok offers a fixed set of durations.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum VideoDuration {
+  /// 6 seconds
+  SixSeconds,
+  /// 10 seconds
+  TenSeconds,
+  /// 15 seconds
+  FifteenSeconds,
+}
+
+impl VideoDuration {
+  pub fn as_seconds(self) -> u32 {
+    match self {
+      Self::SixSeconds => 6,
+      Self::TenSeconds => 10,
+      Self::FifteenSeconds => 15,
     }
   }
 }
@@ -92,9 +118,10 @@ pub struct GenerateVideoRequest<'a> {
   pub source: VideoSource<'a>,
   pub aspect_ratio: VideoAspectRatio,
   pub resolution: VideoResolution,
+  pub duration: VideoDuration,
 
-  /// Video length in seconds. The web app defaults to 6.
-  pub duration_seconds: u32,
+  /// Whether the video has generated audio. `false` sends `skipAudio: true`.
+  pub enable_audio: bool,
 }
 
 pub struct GenerateVideoArgs<'a> {
@@ -291,6 +318,10 @@ struct ImageToVideo {
   #[serde(rename = "resolutionName")]
   resolution_name: &'static str,
   mode: &'static str,
+  // Present only when audio is off; audio-on requests omit it (matching the
+  // web app / captured requests).
+  #[serde(rename = "skipAudio", skip_serializing_if = "is_false")]
+  skip_audio: bool,
 }
 
 #[derive(Serialize)]
@@ -301,13 +332,20 @@ struct TextToVideo {
   duration: u32,
   #[serde(rename = "resolutionName")]
   resolution_name: &'static str,
+  #[serde(rename = "skipAudio", skip_serializing_if = "is_false")]
+  skip_audio: bool,
+}
+
+fn is_false(value: &bool) -> bool {
+  !*value
 }
 
 impl GenerateVideoWireRequest {
   fn from_request(request: &GenerateVideoRequest) -> Self {
     let aspect_ratio = request.aspect_ratio.as_grok_str();
     let resolution_name = request.resolution.as_grok_str();
-    let duration = request.duration_seconds;
+    let duration = request.duration.as_seconds();
+    let skip_audio = !request.enable_audio;
 
     // The `message` mirrors the web app: a prompt becomes "<prompt> --mode=custom",
     // a bare image-to-video becomes "--mode=normal".
@@ -321,6 +359,7 @@ impl GenerateVideoWireRequest {
             aspect_ratio,
             duration,
             resolution_name,
+            skip_audio,
           }),
         },
       ),
@@ -339,6 +378,7 @@ impl GenerateVideoWireRequest {
               duration,
               resolution_name,
               mode,
+              skip_audio,
             }),
             text_to_video: None,
           },
@@ -433,6 +473,31 @@ mod tests {
       assert_eq!(VideoAspectRatio::TallNineBySixteen.as_grok_str(), "9:16");
       assert_eq!(VideoResolution::Sd480p.as_grok_str(), "480p");
       assert_eq!(VideoResolution::Hd720p.as_grok_str(), "720p");
+      assert_eq!(VideoResolution::FullHd1080p.as_grok_str(), "1080p");
+      assert_eq!(VideoDuration::SixSeconds.as_seconds(), 6);
+      assert_eq!(VideoDuration::TenSeconds.as_seconds(), 10);
+      assert_eq!(VideoDuration::FifteenSeconds.as_seconds(), 15);
+    }
+
+    // Audio off adds `skipAudio: true`; audio on omits the field entirely.
+    #[test]
+    fn skip_audio_only_serialized_when_audio_off() {
+      let no_audio = GenerateVideoRequest {
+        source: VideoSource::Text { prompt: "x" },
+        aspect_ratio: VideoAspectRatio::WideThreeByTwo,
+        resolution: VideoResolution::FullHd1080p,
+        duration: VideoDuration::TenSeconds,
+        enable_audio: false,
+      };
+      let value = serde_json::to_value(GenerateVideoWireRequest::from_request(&no_audio)).unwrap();
+      let text_to_video = &value["mediaGenInput"]["textToVideo"];
+      assert_eq!(text_to_video["skipAudio"], serde_json::json!(true));
+      assert_eq!(text_to_video["duration"], serde_json::json!(10));
+      assert_eq!(text_to_video["resolutionName"], serde_json::json!("1080p"));
+
+      let with_audio = GenerateVideoRequest { enable_audio: true, ..no_audio };
+      let value = serde_json::to_value(GenerateVideoWireRequest::from_request(&with_audio)).unwrap();
+      assert!(value["mediaGenInput"]["textToVideo"].get("skipAudio").is_none());
     }
 
     // Real image-to-video "from generation" send frame (no prompt, normal, 480p).
@@ -445,7 +510,8 @@ mod tests {
         },
         aspect_ratio: VideoAspectRatio::WideThreeByTwo,
         resolution: VideoResolution::Sd480p,
-        duration_seconds: 6,
+        duration: VideoDuration::SixSeconds,
+        enable_audio: true,
       };
       let ours = serde_json::to_value(GenerateVideoWireRequest::from_request(&request)).unwrap();
       let captured: serde_json::Value =
@@ -463,7 +529,8 @@ mod tests {
         },
         aspect_ratio: VideoAspectRatio::WideThreeByTwo,
         resolution: VideoResolution::Hd720p,
-        duration_seconds: 6,
+        duration: VideoDuration::SixSeconds,
+        enable_audio: true,
       };
       let ours = serde_json::to_value(GenerateVideoWireRequest::from_request(&request)).unwrap();
       let captured: serde_json::Value =
@@ -478,7 +545,8 @@ mod tests {
         source: VideoSource::Text { prompt: "An asteroid hits the city." },
         aspect_ratio: VideoAspectRatio::TallTwoByThree,
         resolution: VideoResolution::Sd480p,
-        duration_seconds: 6,
+        duration: VideoDuration::SixSeconds,
+        enable_audio: true,
       };
       let ours = serde_json::to_value(GenerateVideoWireRequest::from_request(&request)).unwrap();
       let captured: serde_json::Value =
@@ -553,18 +621,25 @@ mod tests {
       }
     }
 
-    /// Generate a video from `source` with the given headers and assert a
-    /// finished video URL comes back. A statsig rejection surfaces as
+    /// Generate a video from `source` at the given resolution/duration/audio and
+    /// assert a finished video URL comes back. A statsig rejection surfaces as
     /// [`GrokSpecificApiError::StatsigSignatureRejected`].
-    async fn generate_and_assert(source: VideoSource<'_>, headers: &GrokRequestHeaders) -> AnyhowResult<()> {
+    async fn generate_and_assert(
+      source: VideoSource<'_>,
+      resolution: VideoResolution,
+      duration: VideoDuration,
+      enable_audio: bool,
+      headers: &GrokRequestHeaders,
+    ) -> AnyhowResult<()> {
       let secrets = load_grok_test_secrets()?;
 
       let result = generate_video(GenerateVideoArgs {
         request: GenerateVideoRequest {
           source,
           aspect_ratio: VideoAspectRatio::TallTwoByThree,
-          resolution: VideoResolution::Sd480p,
-          duration_seconds: 6,
+          resolution,
+          duration,
+          enable_audio,
         },
         credentials: &secrets.cookies,
         request_headers: Some(headers),
@@ -595,8 +670,54 @@ mod tests {
       setup_test_logging(LevelFilter::Info);
       generate_and_assert(
         VideoSource::Text { prompt: "a lone lighthouse on a cliff at dusk, the light beam sweeps across the water" },
+        VideoResolution::Sd480p,
+        VideoDuration::SixSeconds,
+        true,
         &captured_statsig_headers(),
       ).await
+    }
+
+    // 1080p, audio off, 10 seconds — exercises the new resolution/duration/audio
+    // controls end-to-end. 1080p is plan-gated; on a lower tier the server
+    // returns a concrete `VideoResolutionNotAllowed` (verified here) instead of
+    // a silent failure. A finished video is also accepted (higher-tier plans).
+    #[tokio::test]
+    #[ignore] // Hits the real website; spends video quota; needs a fresh GROK_STATSIG.
+    async fn full_hd_no_audio_ten_seconds() -> AnyhowResult<()> {
+      setup_test_logging(LevelFilter::Info);
+      let secrets = load_grok_test_secrets()?;
+      let headers = captured_statsig_headers();
+
+      let result = generate_video(GenerateVideoArgs {
+        request: GenerateVideoRequest {
+          source: VideoSource::Text { prompt: "a red kite flying over a green field" },
+          aspect_ratio: VideoAspectRatio::WideThreeByTwo,
+          resolution: VideoResolution::FullHd1080p,
+          duration: VideoDuration::TenSeconds,
+          enable_audio: false,
+        },
+        credentials: &secrets.cookies,
+        request_headers: Some(&headers),
+        domain_override: None,
+        request_timeout: Some(VIDEO_TIMEOUT),
+      }).await;
+
+      match result {
+        Ok(response) => {
+          info!("1080p video finished (plan allows it): {:?}", response);
+          assert_eq!(response.progress, Some(100), "video did not finish");
+          assert!(response.video_url.is_some(), "expected a finished video url");
+          Ok(())
+        }
+        Err(GrokError::ApiSpecific(GrokSpecificApiError::VideoResolutionNotAllowed { status_code, body })) => {
+          info!("1080p correctly reported as plan-gated (HTTP {status_code}): {body}");
+          Ok(())
+        }
+        Err(GrokError::ApiSpecific(GrokSpecificApiError::StatsigSignatureRejected { status_code, body })) => {
+          panic!("x-statsig-id rejected (HTTP {status_code}) — harvest a fresh GROK_STATSIG. Body: {body}");
+        }
+        Err(err) => Err(err.into()),
+      }
     }
 
     // Way 2: from an existing generated image (fetched from the asset list).
@@ -620,6 +741,9 @@ mod tests {
 
       generate_and_assert(
         VideoSource::Image { input_asset_id: &image.asset_id, prompt: None },
+        VideoResolution::Sd480p,
+        VideoDuration::SixSeconds,
+        true,
         &captured_statsig_headers(),
       ).await
     }
@@ -641,6 +765,9 @@ mod tests {
 
       generate_and_assert(
         VideoSource::Image { input_asset_id: &asset_id, prompt: Some("slow cinematic zoom") },
+        VideoResolution::Sd480p,
+        VideoDuration::SixSeconds,
+        true,
         &captured_statsig_headers(),
       ).await
     }
