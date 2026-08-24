@@ -584,9 +584,10 @@ mod tests {
     #[ignore] // Hits the real website; spends video quota; needs a fresh captured statsig.
     async fn text_to_video_with_captured_statsig() -> AnyhowResult<()> {
       setup_test_logging(LevelFilter::Info);
-      let captured_statsig = "XbHvyYh7hmNc+8sVAGnrpcuHN/MK+mgN63cmnBljOJaoCKu6zTPVw6C7HVv1wculKCNmYVum+L1h0IjFmtyZD/C53M+ZXg";
+      let captured_statsig = std::env::var("GROK_STATSIG").unwrap_or_else(|_|
+        "XbHvyYh7hmNc+8sVAGnrpcuHN/MK+mgN63cmnBljOJaoCKu6zTPVw6C7HVv1wculKCNmYVum+L1h0IjFmtyZD/C53M+ZXg".to_string());
       let headers = GrokRequestHeaders {
-        statsig_id: Some(captured_statsig.to_string()),
+        statsig_id: Some(captured_statsig),
         ..Default::default()
       };
       generate_and_assert(

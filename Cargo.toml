@@ -11,6 +11,7 @@ members = [
   "crates/api_clients/gmicloud_client",
   "crates/api_clients/grok_api_client",
   "crates/api_clients/grok_consumer_client",
+  "crates/api_clients/grok_consumer_statsig",
   "crates/api_clients/midjourney_client",
   "crates/api_clients/openai_sora_client",
   "crates/router",
@@ -96,6 +97,7 @@ filesys = { path = "crates/lib/files/filesys" }
 gmicloud_client = { path = "crates/api_clients/gmicloud_client" }
 grok_api_client = { path = "crates/api_clients/grok_api_client" }
 grok_consumer_client = { path = "crates/api_clients/grok_consumer_client" }
+grok_consumer_statsig = { path = "crates/api_clients/grok_consumer_statsig" }
 http_headers = { path = "crates/lib/http_headers" }
 core_types = { path = "crates/core_types" }
 images = { path = "crates/lib/files/images" }
