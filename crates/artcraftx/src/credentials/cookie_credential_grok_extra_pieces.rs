@@ -34,4 +34,55 @@ impl CookieCredentialGrokExtraPieces {
       statsig_material: Some(material),
     }
   }
+
+  /// Whether the statsig material is missing or its refresh time has passed, so
+  /// it should be re-captured.
+  pub fn is_stale(&self, now: DateTime<Utc>) -> bool {
+    match (&self.statsig_material, self.statsig_refresh_at) {
+      (Some(_), Some(refresh_at)) => now >= refresh_at,
+      _ => true, // no material, or no refresh time recorded
+    }
+  }
+}
+
+/// Whether a cookie credential's Grok statsig material is absent or stale and
+/// should be re-captured. `None` (no `grok_data` at all) counts as stale.
+pub fn grok_statsig_needs_refresh(
+  grok_data: Option<&CookieCredentialGrokExtraPieces>,
+  now: DateTime<Utc>,
+) -> bool {
+  grok_data.map_or(true, |data| data.is_stale(now))
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  fn material() -> StatsigMaterial {
+    StatsigMaterial::from_seed_b64("7LKU1SbbPgGmlkhdNLb4ltpqrlenNVC2KnvBRD5ly/VV9ueQboie/eZABqiclvh1")
+  }
+
+  #[test]
+  fn missing_grok_data_is_stale() {
+    assert!(grok_statsig_needs_refresh(None, Utc::now()));
+  }
+
+  #[test]
+  fn fresh_material_is_not_stale_until_refresh_time() {
+    let now = Utc::now();
+    let data = CookieCredentialGrokExtraPieces::fresh(material(), now, 30);
+    assert!(!data.is_stale(now));
+    assert!(!data.is_stale(now + chrono::Duration::minutes(29)));
+    assert!(data.is_stale(now + chrono::Duration::minutes(30)));
+  }
+
+  #[test]
+  fn material_without_refresh_time_is_stale() {
+    let data = CookieCredentialGrokExtraPieces {
+      statsig_fetched_at: None,
+      statsig_refresh_at: None,
+      statsig_material: Some(material()),
+    };
+    assert!(data.is_stale(Utc::now()));
+  }
 }

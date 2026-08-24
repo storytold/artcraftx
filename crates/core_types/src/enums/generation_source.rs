@@ -54,10 +54,10 @@ pub enum GenerationSource {
   // ── Grok / xAI ──
   #[serde(rename = "grok")]
   Grok,
-  #[serde(rename = "grok_cookies")]
+  // `xai_cookies` is the legacy name for this service; kept as a serde alias so
+  // existing credential files still load.
+  #[serde(rename = "grok_cookies", alias = "xai_cookies")]
   GrokCookies,
-  #[serde(rename = "xai_cookies")]
-  XAiCookies,
   #[serde(rename = "xai_api")]
   XAiApi,
 
@@ -105,7 +105,6 @@ impl GenerationSource {
       | Self::ArtcraftCookies
       | Self::Grok
       | Self::GrokCookies
-      | Self::XAiCookies
       | Self::Midjourney
       | Self::Sora
       | Self::SoraCookies
@@ -135,7 +134,6 @@ impl GenerationSource {
       Self::FalApi => "fal_api",
       Self::Grok => "grok",
       Self::GrokCookies => "grok_cookies",
-      Self::XAiCookies => "xai_cookies",
       Self::XAiApi => "xai_api",
       Self::Midjourney => "midjourney",
       Self::MidjourneyCookies => "midjourney_cookies",
@@ -161,8 +159,7 @@ impl GenerationSource {
       "fal" => Ok(Self::Fal),
       "fal_api" => Ok(Self::FalApi),
       "grok" => Ok(Self::Grok),
-      "grok_cookies" => Ok(Self::GrokCookies),
-      "xai_cookies" => Ok(Self::XAiCookies),
+      "grok_cookies" | "xai_cookies" => Ok(Self::GrokCookies),
       "xai_api" => Ok(Self::XAiApi),
       "midjourney" => Ok(Self::Midjourney),
       "midjourney_cookies" => Ok(Self::MidjourneyCookies),
@@ -191,7 +188,6 @@ impl GenerationSource {
       Self::FalApi,
       Self::Grok,
       Self::GrokCookies,
-      Self::XAiCookies,
       Self::XAiApi,
       Self::Midjourney,
       Self::MidjourneyCookies,
@@ -249,7 +245,7 @@ mod tests {
 
     #[test]
     fn all_variants_count() {
-      assert_eq!(GenerationSource::all_variants().len(), 22);
+      assert_eq!(GenerationSource::all_variants().len(), 21);
     }
 
     #[test]

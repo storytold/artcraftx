@@ -63,7 +63,7 @@ export const WEBSITE_LOGIN_SERVICES: ServiceMeta[] = [
   { value: "openart_cookies", label: "OpenArt", logo: "openart.svg", loginWebsite: "openart" },
   { value: "magnific_cookies", label: "Magnific", logo: "magnific.svg", loginWebsite: "magnific" },
   { value: "midjourney_cookies", label: "Midjourney", logo: "midjourney.svg", loginWebsite: "midjourney" },
-  { value: "xai_cookies", label: "Grok", logo: "grok.svg", loginWebsite: "xai" },
+  { value: "grok_cookies", label: "Grok", logo: "grok.svg", loginWebsite: "xai" },
   { value: "artcraft_local", label: "ArtCraft Local Dev", logo: "artcraft.svg", passwordLogin: true },
 ];
 
@@ -138,6 +138,19 @@ export const deleteCredential = async (
  */
 export const openWebLogin = async (website: string): Promise<void> => {
   await invoke("open_web_login_command", { website });
+};
+
+/**
+ * Ask the backend to refresh the Grok statsig material if it's missing or
+ * stale. Fire-and-forget: the backend spawns the work and returns immediately,
+ * so this never blocks the UI. Safe to call whenever the credentials page opens.
+ */
+export const refreshGrokStatsig = async (): Promise<void> => {
+  try {
+    await invoke("refresh_grok_statsig_command");
+  } catch (error) {
+    console.warn("Failed to trigger Grok statsig refresh:", error);
+  }
 };
 
 // Mirrors the Rust `ArtcraftLoginCommandError` payload.

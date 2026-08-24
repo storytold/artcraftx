@@ -13,8 +13,7 @@ pub fn cookie_origin_for_service(service: GenerationSource) -> Option<Url> {
     | GenerationSource::ArtcraftLocal
     | GenerationSource::ArtcraftCookies => "https://storyteller.ai/",
     GenerationSource::Grok
-    | GenerationSource::GrokCookies
-    | GenerationSource::XAiCookies => "https://grok.com/",
+    | GenerationSource::GrokCookies => "https://grok.com/",
     GenerationSource::Midjourney
     | GenerationSource::MidjourneyCookies => "https://www.midjourney.com/",
     GenerationSource::Sora

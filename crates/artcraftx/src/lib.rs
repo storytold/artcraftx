@@ -21,6 +21,7 @@ use crate::commands::credentials::edit_api_credential_command::edit_api_credenti
 use crate::commands::credentials::edit_web_credential_command::edit_web_credential_command;
 use crate::commands::credentials::list_credentials_command::list_credentials_command;
 use crate::commands::credentials::open_web_login_command::open_web_login_command;
+use crate::commands::credentials::refresh_grok_statsig_command::refresh_grok_statsig_command;
 use crate::commands::service::app_preferences::get_app_preferences_command::get_app_preferences_command;
 use crate::commands::service::app_preferences::update_app_preference_command::update_app_preferences_command;
 use crate::commands::cost_estimate::estimate_audio_cost_command::estimate_audio_cost_command;
@@ -198,6 +199,7 @@ pub fn run() {
     edit_web_credential_command,
     list_credentials_command,
     open_web_login_command,
+    refresh_grok_statsig_command,
     download_directory_reveal_command,
     download_media_file_command,
     download_url_command,

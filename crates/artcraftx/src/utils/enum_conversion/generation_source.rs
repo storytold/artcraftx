@@ -12,7 +12,6 @@ pub fn to_generation_service_provider(source: GenerationSource) -> GenerationSer
     | GenerationSource::FalApi => GenerationServiceProvider::Fal,
     GenerationSource::Grok
     | GenerationSource::GrokCookies
-    | GenerationSource::XAiCookies
     | GenerationSource::XAiApi => GenerationServiceProvider::Grok,
     GenerationSource::Midjourney
     | GenerationSource::MidjourneyCookies => GenerationServiceProvider::Midjourney,

@@ -8,6 +8,7 @@ import {
   getServiceLogoPath,
   getServiceMeta,
   listCredentials,
+  refreshGrokStatsig,
 } from "./credential-helpers";
 import { AddCredentialModal } from "./AddCredentialModal";
 import { ArtcraftLoginModal } from "./ArtcraftLoginModal";
@@ -42,6 +43,9 @@ export const CredentialsManager = () => {
 
   useEffect(() => {
     refresh();
+    // Preemptively top up the Grok statsig material if it's missing/stale.
+    // Fire-and-forget; no-op unless a Grok credential exists and is due.
+    refreshGrokStatsig();
   }, [refresh]);
 
   // A completed web login saves a credential and emits this event; reload so

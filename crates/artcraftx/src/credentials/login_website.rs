@@ -39,7 +39,7 @@ impl LoginWebsite {
       Self::Runway => GenerationSource::RunwayCookies,
       Self::Magnific => GenerationSource::MagnificCookies,
       Self::Midjourney => GenerationSource::MidjourneyCookies,
-      Self::XAi => GenerationSource::XAiCookies,
+      Self::XAi => GenerationSource::GrokCookies,
     }
   }
 

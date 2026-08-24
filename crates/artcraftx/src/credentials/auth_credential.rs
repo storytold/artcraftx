@@ -122,10 +122,10 @@ mod tests {
     cookie.grok_data = Some(CookieCredentialGrokExtraPieces::fresh(material.clone(), now, 30));
 
     let dir = tempfile::tempdir().unwrap();
-    let path = dir.path().join("xai_cookies.toml");
+    let path = dir.path().join("grok_cookies.toml");
     let credential = AuthCredential {
       id: CredentialId::generate(),
-      service: GenerationSource::XAiCookies,
+      service: GenerationSource::GrokCookies,
       name: None,
       secret: CredentialSecret::Cookies(cookie),
       user_info: None,
