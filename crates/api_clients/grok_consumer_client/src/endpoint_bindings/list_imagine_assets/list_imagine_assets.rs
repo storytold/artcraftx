@@ -238,26 +238,31 @@ mod tests {
     use errors::AnyhowResult;
     use log::LevelFilter;
 
-    // Reaching `Ok` here means `send` saw a 2xx (it returns `Err` otherwise),
-    // so a successful parse is the 200 assertion.
     #[tokio::test]
     #[ignore] // Hits the real website; requires external/credentials/grok.
     async fn fetch_imagine_conversations() -> AnyhowResult<()> {
       setup_test_logging(LevelFilter::Info);
       let secrets = load_grok_test_secrets()?;
 
+      let page_size: u32 = 5;
       let args = ListImagineAssetsArgs {
-        request: ListImagineAssetsRequest { page_size: Some(5) },
+        request: ListImagineAssetsRequest { page_size: Some(page_size) },
         credentials: &secrets.cookies,
         domain_override: None,
         request_headers: Some(&secrets.headers),
         request_timeout: None,
       };
 
-      let response = args.send().await?;
+      // Fetch raw so we can print the whole body and spot fields the typed
+      // response might be dropping.
+      let raw = args.fetch_raw().await?;
+      println!("[test] full response body:\n{}", pretty_json(&raw.body));
+      assert!(raw.status.is_success(), "expected 2xx, got {}", raw.status);
+
+      let response: ListImagineAssetsResponse = serde_json::from_str(&raw.body)?;
       print_conversations(&response);
 
-      assert_list_imagine_assets(&response, 5);
+      assert_list_imagine_assets(&response, page_size);
       Ok(())
     }
 
@@ -281,6 +286,7 @@ mod tests {
       };
 
       let raw = args.fetch_raw().await?;
+      println!("[test] full response body:\n{}", pretty_json(&raw.body));
 
       let dump = || {
         println!("[test] status: {}", raw.status);
@@ -307,6 +313,13 @@ mod tests {
         panic!("list_imagine_assets (cookies only) assertions failed");
       }
       Ok(())
+    }
+
+    /// Pretty-print a JSON body for inspection, falling back to the raw string.
+    fn pretty_json(body: &str) -> String {
+      serde_json::from_str::<serde_json::Value>(body)
+          .and_then(|value| serde_json::to_string_pretty(&value))
+          .unwrap_or_else(|_| body.to_string())
     }
 
     fn print_conversations(response: &ListImagineAssetsResponse) {
