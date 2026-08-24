@@ -1,3 +1,1 @@
 pub mod request_client_secrets;
-pub mod upload_image_and_generate_video;
-pub mod upload_image_and_generate_video_with_retry;
