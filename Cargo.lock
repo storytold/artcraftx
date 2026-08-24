@@ -2603,7 +2603,6 @@ dependencies = [
  "errors",
  "filesys",
  "futures",
- "grok_consumer_statsig",
  "log",
  "log4rs",
  "once_cell",
@@ -2612,7 +2611,6 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.11.0-rc.5",
- "tao",
  "test_data",
  "test_utils",
  "tokio",
@@ -2622,18 +2620,24 @@ dependencies = [
  "workspace-build-acceleration",
  "wreq",
  "wreq-util",
- "wry",
 ]
 
 [[package]]
 name = "grok_consumer_statsig"
 version = "0.0.1"
 dependencies = [
+ "base64 0.22.1",
  "chrono",
+ "env_logger",
+ "errors",
  "log",
  "serde",
+ "serde_json",
+ "tao",
  "thiserror 2.0.18",
  "tokio",
+ "toml 1.0.7+spec-1.1.0",
+ "wry",
 ]
 
 [[package]]

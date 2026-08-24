@@ -60,7 +60,12 @@ mod statsig_minter;
 mod statsig_oracle;
 mod statsig_request;
 
-pub use browser_context::BrowserContext;
+// Harvesting fresh signatures from a real browser and caching them.
+pub mod statsig_cache_file;
+#[cfg(feature = "webview-harvest")]
+pub mod harvest_via_webview;
+
+pub use browser_context::{BrowserContext, DEFAULT_USER_AGENT};
 pub use mint_harness::MINT_HARNESS_SCRIPT;
 pub use minted_statsig::MintedStatsig;
 pub use statsig_minter::{MinterConfig, StatsigMinter};

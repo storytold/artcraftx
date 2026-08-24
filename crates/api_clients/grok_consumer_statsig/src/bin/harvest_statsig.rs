@@ -4,7 +4,7 @@
 //! emits, and writes them (with every decoded piece) to `statsig.toml`.
 //!
 //! ```sh
-//! cargo run -p grok_consumer_client --features webview-harvest --bin harvest_statsig -- [out.toml] [seconds]
+//! cargo run -p grok_consumer_statsig --features webview-harvest --bin harvest_statsig -- [out.toml] [seconds]
 //! ```
 //!
 //! Log in and start a chat in the window to emit a `POST /conversations/new`
@@ -12,8 +12,8 @@
 //! automatically as the page loads.
 
 use errors::AnyhowResult;
-use grok_consumer_client::harvest::harvest_via_webview::{harvest_statsigs, HarvestConfig};
-use grok_consumer_client::harvest::statsig_cache_file::StatsigCacheFile;
+use grok_consumer_statsig::harvest_via_webview::{harvest_statsigs, HarvestConfig};
+use grok_consumer_statsig::statsig_cache_file::StatsigCacheFile;
 
 const DEFAULT_OUTPUT: &str = "statsig.toml";
 

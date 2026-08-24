@@ -7,10 +7,10 @@
 //! both the `harvest_statsig` binary (main thread) and an `#[ignore]` test
 //! (`any_thread`).
 
-use crate::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
-use crate::harvest::statsig_cache_file::{decode_statsig, CapturedStatsig};
+use crate::browser_context::DEFAULT_USER_AGENT;
+use crate::mint_harness::MINT_HARNESS_SCRIPT;
+use crate::statsig_cache_file::{decode_statsig, CapturedStatsig};
 use errors::AnyhowResult;
-use grok_consumer_statsig::MINT_HARNESS_SCRIPT;
 use log::{debug, info, warn};
 use serde::Deserialize;
 use std::sync::{Arc, Mutex};
@@ -50,7 +50,7 @@ impl Default for HarvestConfig {
   fn default() -> Self {
     Self {
       start_url: GROK_URL.to_string(),
-      user_agent: Some(FIREFOX_143_MAC_USER_AGENT.to_string()),
+      user_agent: Some(DEFAULT_USER_AGENT.to_string()),
       capture_secs: DEFAULT_CAPTURE_SECS,
       visible: true,
       any_thread: false,
@@ -153,7 +153,7 @@ mod tests {
   // Tool 1 (live): open a real Grok WebView, harvest, and print. Manual: log in
   // and start a chat in the window to emit a POST /conversations/new signature.
   // Run with:
-  //   cargo test -p grok_consumer_client --features webview-harvest \
+  //   cargo test -p grok_consumer_statsig --features webview-harvest \
   //     harvest_and_print -- --ignored --nocapture
   #[test]
   #[ignore]

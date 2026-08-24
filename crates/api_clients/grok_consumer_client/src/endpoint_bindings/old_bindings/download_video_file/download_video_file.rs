@@ -104,10 +104,7 @@ mod tests {
       cookies: &cookies,
     }).await?;
 
-    println!("Verification Token: {:?}", secrets.verification_token);
     println!("Sentry Trace: {:?}", secrets.sentry_trace);
-    println!("Numbers: {:?}", secrets.numbers);
-    println!("Svg Path: {:?}", secrets.svg_path_data);
     println!("Baggage: {:?}", secrets.baggage);
 
     let download = download_video_file(DownloadVideoFileArgs {
