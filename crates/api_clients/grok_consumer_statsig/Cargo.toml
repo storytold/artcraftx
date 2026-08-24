@@ -1,0 +1,20 @@
+[package]
+name = "grok_consumer_statsig"
+edition = "2024"
+version = "0.0.1"
+publish = false
+
+[lib]
+name = "grok_consumer_statsig"
+path = "src/lib.rs"
+
+[dependencies]
+# External
+chrono.workspace = true
+log.workspace = true
+serde = { workspace = true, features = ["derive"] }
+thiserror.workspace = true
+tokio = { version = "1", features = ["sync", "time", "macros", "rt"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["sync", "time", "macros", "rt", "rt-multi-thread"] }

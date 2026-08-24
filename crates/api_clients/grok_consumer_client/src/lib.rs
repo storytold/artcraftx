@@ -12,4 +12,5 @@ pub mod datatypes;
 pub mod error;
 pub mod recipes;
 pub mod endpoint_bindings;
+pub mod harvest;
 pub mod utils;

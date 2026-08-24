@@ -78,15 +78,18 @@ impl VideoResolution {
   }
 }
 
+/// What the video is generated from.
+pub enum VideoSource<'a> {
+  /// Text-to-video: generate from a prompt alone (no input image).
+  Text { prompt: &'a str },
+  /// Image-to-video: animate an input image asset (a Grok-generated image or
+  /// an uploaded, untrusted one — the wire shape is identical). An optional
+  /// prompt guides the motion.
+  Image { input_asset_id: &'a str, prompt: Option<&'a str> },
+}
+
 pub struct GenerateVideoRequest<'a> {
-  /// The input image asset id to animate. It may be a Grok-generated image or
-  /// an uploaded (untrusted) image — the wire shape is identical either way.
-  pub input_asset_id: &'a str,
-
-  /// Optional text prompt. When present the request uses "custom" mode;
-  /// otherwise plain "normal" mode.
-  pub prompt: Option<&'a str>,
-
+  pub source: VideoSource<'a>,
   pub aspect_ratio: VideoAspectRatio,
   pub resolution: VideoResolution,
 
@@ -270,8 +273,10 @@ struct ModelMap {}
 
 #[derive(Serialize)]
 struct MediaGenInput {
-  #[serde(rename = "imageToVideo")]
-  image_to_video: ImageToVideo,
+  #[serde(rename = "imageToVideo", skip_serializing_if = "Option::is_none")]
+  image_to_video: Option<ImageToVideo>,
+  #[serde(rename = "textToVideo", skip_serializing_if = "Option::is_none")]
+  text_to_video: Option<TextToVideo>,
 }
 
 #[derive(Serialize)]
@@ -288,13 +293,57 @@ struct ImageToVideo {
   mode: &'static str,
 }
 
+#[derive(Serialize)]
+struct TextToVideo {
+  prompt: String,
+  #[serde(rename = "aspectRatio")]
+  aspect_ratio: &'static str,
+  duration: u32,
+  #[serde(rename = "resolutionName")]
+  resolution_name: &'static str,
+}
+
 impl GenerateVideoWireRequest {
   fn from_request(request: &GenerateVideoRequest) -> Self {
-    // With a prompt the web app sends "<prompt> --mode=custom"; without one it
-    // sends just "--mode=normal".
-    let (message, mode, prompt) = match request.prompt {
-      Some(prompt) => (format!("{prompt} --mode=custom"), "custom", Some(prompt.to_string())),
-      None => ("--mode=normal".to_string(), "normal", None),
+    let aspect_ratio = request.aspect_ratio.as_grok_str();
+    let resolution_name = request.resolution.as_grok_str();
+    let duration = request.duration_seconds;
+
+    // The `message` mirrors the web app: a prompt becomes "<prompt> --mode=custom",
+    // a bare image-to-video becomes "--mode=normal".
+    let (message, media_gen_input) = match &request.source {
+      VideoSource::Text { prompt } => (
+        format!("{prompt} --mode=custom"),
+        MediaGenInput {
+          image_to_video: None,
+          text_to_video: Some(TextToVideo {
+            prompt: prompt.to_string(),
+            aspect_ratio,
+            duration,
+            resolution_name,
+          }),
+        },
+      ),
+      VideoSource::Image { input_asset_id, prompt } => {
+        let (message, mode) = match prompt {
+          Some(prompt) => (format!("{prompt} --mode=custom"), "custom"),
+          None => ("--mode=normal".to_string(), "normal"),
+        };
+        (
+          message,
+          MediaGenInput {
+            image_to_video: Some(ImageToVideo {
+              prompt: prompt.map(str::to_string),
+              input_assets: vec![input_asset_id.to_string()],
+              aspect_ratio,
+              duration,
+              resolution_name,
+              mode,
+            }),
+            text_to_video: None,
+          },
+        )
+      }
     };
 
     Self {
@@ -307,16 +356,7 @@ impl GenerateVideoWireRequest {
         experiments: Vec::new(),
         model_config_override: ModelConfigOverride { model_map: ModelMap {} },
       },
-      media_gen_input: MediaGenInput {
-        image_to_video: ImageToVideo {
-          prompt,
-          input_assets: vec![request.input_asset_id.to_string()],
-          aspect_ratio: request.aspect_ratio.as_grok_str(),
-          duration: request.duration_seconds,
-          resolution_name: request.resolution.as_grok_str(),
-          mode,
-        },
-      },
+      media_gen_input,
       kind: CONVERSATION_KIND_IMAGINE,
     }
   }
@@ -395,12 +435,14 @@ mod tests {
       assert_eq!(VideoResolution::Hd720p.as_grok_str(), "720p");
     }
 
-    // Real "from generation" send frame (no prompt, normal mode, 480p).
+    // Real image-to-video "from generation" send frame (no prompt, normal, 480p).
     #[test]
-    fn normal_mode_request_matches_capture() {
+    fn image_to_video_normal_mode_matches_capture() {
       let request = GenerateVideoRequest {
-        input_asset_id: "11111111-1111-4111-8111-111111111111",
-        prompt: None,
+        source: VideoSource::Image {
+          input_asset_id: "11111111-1111-4111-8111-111111111111",
+          prompt: None,
+        },
         aspect_ratio: VideoAspectRatio::WideThreeByTwo,
         resolution: VideoResolution::Sd480p,
         duration_seconds: 6,
@@ -411,12 +453,14 @@ mod tests {
       assert_eq!(ours, captured);
     }
 
-    // Real "from upload" send frame (with prompt, custom mode, 720p).
+    // Real image-to-video "from upload" send frame (with prompt, custom, 720p).
     #[test]
-    fn custom_mode_request_matches_capture() {
+    fn image_to_video_custom_mode_matches_capture() {
       let request = GenerateVideoRequest {
-        input_asset_id: "22222222-2222-4222-8222-222222222222",
-        prompt: Some("Windmill spins as the camera orbits the night scene. Stars above."),
+        source: VideoSource::Image {
+          input_asset_id: "22222222-2222-4222-8222-222222222222",
+          prompt: Some("Windmill spins as the camera orbits the night scene. Stars above."),
+        },
         aspect_ratio: VideoAspectRatio::WideThreeByTwo,
         resolution: VideoResolution::Hd720p,
         duration_seconds: 6,
@@ -424,6 +468,21 @@ mod tests {
       let ours = serde_json::to_value(GenerateVideoWireRequest::from_request(&request)).unwrap();
       let captured: serde_json::Value =
           serde_json::from_str(&load("generate_video_from_upload_request.json")).unwrap();
+      assert_eq!(ours, captured);
+    }
+
+    // Real text-to-video send frame (prompt only, 2:3, 480p) — capture 18.
+    #[test]
+    fn text_to_video_matches_capture() {
+      let request = GenerateVideoRequest {
+        source: VideoSource::Text { prompt: "An asteroid hits the city." },
+        aspect_ratio: VideoAspectRatio::TallTwoByThree,
+        resolution: VideoResolution::Sd480p,
+        duration_seconds: 6,
+      };
+      let ours = serde_json::to_value(GenerateVideoWireRequest::from_request(&request)).unwrap();
+      let captured: serde_json::Value =
+          serde_json::from_str(&load("generate_video_from_text_request.json")).unwrap();
       assert_eq!(ours, captured);
     }
   }
@@ -466,13 +525,10 @@ mod tests {
 
   mod real_wire_tests {
     use super::*;
-    use crate::credentials::grok_cookies::GrokCookies;
-    use crate::endpoint_bindings::generate_image_websocket::grok_generate_image_websocket::GrokImageWebsocket;
-    use crate::endpoint_bindings::generate_image_websocket::messages::websocket_client_message::FastAspectRatio;
+    use crate::client::statsig::generate_statsig_id;
     use crate::endpoint_bindings::list_assets::list_assets::{ListAssetsArgs, ListAssetsRequest};
-    use crate::endpoint_bindings::old_bindings::index_page::signature::generate_xsid::{generate_xsid, GenerateXsidArgs};
     use crate::endpoint_bindings::upload_file::grok_upload_file::{grok_upload_file, GrokUploadFileArgs, GrokUploadFileRequest, PathOrFile};
-    use crate::recipes::request_client_secrets::{request_client_secrets, RequestClientSecretsArgs};
+    use crate::error::grok_specific_api_error::GrokSpecificApiError;
     use crate::test_utils::grok_test_secrets::load_grok_test_secrets;
     use crate::test_utils::setup_test_logging::setup_test_logging;
     use errors::AnyhowResult;
@@ -482,74 +538,72 @@ mod tests {
     const TEST_IMAGE_PATH: &str = "test_data/images/test_upload.png";
     const VIDEO_TIMEOUT: Duration = Duration::from_secs(180);
 
-    /// This endpoint validates `x-statsig-id`, so we must mint a fresh one for
-    /// this exact path+method (a stale/replayed id — or none — gets a 403
-    /// "page is out of date"). Everything needed is scraped from the index page
-    /// + xsid script.
-    ///
-    /// NB: as of 2026-08 the `index_page` scrapers are themselves out of date
-    /// (Grok changed index.html), so this currently fails to find the
-    /// verification token. These live tests will pass once that machinery is
-    /// refreshed; the request/response binding itself is verified by the
-    /// offline tests above.
-    async fn fresh_statsig_headers(cookies: &GrokCookies) -> AnyhowResult<GrokRequestHeaders> {
-      let secrets = request_client_secrets(RequestClientSecretsArgs { cookies }).await?;
-      let statsig_id = generate_xsid(GenerateXsidArgs {
-        path: NEW_CONVERSATION_PATH,
-        method: "POST",
-        verification_token: &secrets.verification_token,
-        svg_data: &secrets.svg_path_data,
-        numbers: &secrets.numbers,
-      })?;
-      Ok(GrokRequestHeaders { statsig_id: Some(statsig_id), ..Default::default() })
+    /// A freshly-minted local statsig for this endpoint.
+    fn fresh_statsig_headers() -> GrokRequestHeaders {
+      generate_statsig_id("POST", NEW_CONVERSATION_PATH).into_request_headers()
     }
 
-    /// Generate a video from `input_asset_id` and assert we get a finished
-    /// video URL back.
-    async fn generate_and_assert(input_asset_id: &str, prompt: Option<&str>) -> AnyhowResult<()> {
+    /// Generate a video from `source` with the given headers and assert a
+    /// finished video URL comes back. A statsig rejection surfaces as
+    /// [`GrokSpecificApiError::StatsigSignatureRejected`].
+    async fn generate_and_assert(source: VideoSource<'_>, headers: &GrokRequestHeaders) -> AnyhowResult<()> {
       let secrets = load_grok_test_secrets()?;
-      let headers = fresh_statsig_headers(&secrets.cookies).await?;
 
-      let response = generate_video(GenerateVideoArgs {
+      let result = generate_video(GenerateVideoArgs {
         request: GenerateVideoRequest {
-          input_asset_id,
-          prompt,
-          aspect_ratio: VideoAspectRatio::WideThreeByTwo,
+          source,
+          aspect_ratio: VideoAspectRatio::TallTwoByThree,
           resolution: VideoResolution::Sd480p,
           duration_seconds: 6,
         },
         credentials: &secrets.cookies,
-        request_headers: Some(&headers),
+        request_headers: Some(headers),
         domain_override: None,
         request_timeout: Some(VIDEO_TIMEOUT),
-      }).await?;
+      }).await;
 
-      info!("generate_video response: {:?}", response);
-      assert_eq!(response.progress, Some(100), "video did not finish");
-      assert!(response.video_url.is_some(), "expected a finished video url");
-      Ok(())
+      match result {
+        Ok(response) => {
+          info!("generate_video response: {:?}", response);
+          assert_eq!(response.progress, Some(100), "video did not finish");
+          assert!(response.video_url.is_some(), "expected a finished video url");
+          Ok(())
+        }
+        Err(GrokError::ApiSpecific(GrokSpecificApiError::StatsigSignatureRejected { status_code, body })) => {
+          panic!("x-statsig-id rejected (HTTP {status_code}). Body: {body}");
+        }
+        Err(err) => Err(err.into()),
+      }
     }
 
-    // Way 1: from a text prompt — generate a seed image from text, then animate
-    // it. (We only have image-to-video wire captures, so a text prompt becomes
-    // a generated seed image.)
+    // Isolation test: use a *known-good* statsig captured from a real browser
+    // request (18_generate_video.txt) to verify the rest of the video request
+    // is correct. The statsig is time-bound, so recapture it right before
+    // running (paste the fresh `x-statsig-id` below).
     #[tokio::test]
-    #[ignore] // Hits the real website; spends image + video quota.
+    #[ignore] // Hits the real website; spends video quota; needs a fresh captured statsig.
+    async fn text_to_video_with_captured_statsig() -> AnyhowResult<()> {
+      setup_test_logging(LevelFilter::Info);
+      let captured_statsig = "XbHvyYh7hmNc+8sVAGnrpcuHN/MK+mgN63cmnBljOJaoCKu6zTPVw6C7HVv1wculKCNmYVum+L1h0IjFmtyZD/C53M+ZXg";
+      let headers = GrokRequestHeaders {
+        statsig_id: Some(captured_statsig.to_string()),
+        ..Default::default()
+      };
+      generate_and_assert(
+        VideoSource::Text { prompt: "An asteroid hits the city." },
+        &headers,
+      ).await
+    }
+
+    // Way 1: text-to-video (from a text prompt alone) — locally-minted statsig.
+    #[tokio::test]
+    #[ignore] // Hits the real website; spends video quota.
     async fn generate_video_from_text_prompt() -> AnyhowResult<()> {
       setup_test_logging(LevelFilter::Info);
-      let secrets = load_grok_test_secrets()?;
-
-      let websocket = GrokImageWebsocket::connect(secrets.cookies.as_str()).await?;
-      websocket.send_fast_image_prompt_with_retry(
-        "a lone lighthouse on a cliff at dusk",
-        FastAspectRatio::WideThreeByTwo,
-      ).await?;
-      let images = websocket.collect_images(Duration::from_secs(60)).await?;
-      let seed = images.first().expect("expected a generated seed image");
-      // The image url ends with `/generated/{asset_id}/image.jpg`.
-      let asset_id = seed.url.split('/').nth_back(1).expect("asset id in url").to_string();
-
-      generate_and_assert(&asset_id, Some("the light beam sweeps across the water")).await
+      generate_and_assert(
+        VideoSource::Text { prompt: "a lone lighthouse on a cliff at dusk, the light beam sweeps across the water" },
+        &fresh_statsig_headers(),
+      ).await
     }
 
     // Way 2: from an existing generated image (fetched from the asset list).
@@ -571,7 +625,10 @@ mod tests {
           .find(|a| a.mime_type.as_deref() == Some("image/jpeg"))
           .expect("expected at least one generated image asset");
 
-      generate_and_assert(&image.asset_id, None).await
+      generate_and_assert(
+        VideoSource::Image { input_asset_id: &image.asset_id, prompt: None },
+        &fresh_statsig_headers(),
+      ).await
     }
 
     // Way 3: from an uploaded (untrusted) image.
@@ -589,7 +646,10 @@ mod tests {
       }).await?;
       let asset_id = upload.file_id.expect("upload should yield a file id").0;
 
-      generate_and_assert(&asset_id, Some("slow cinematic zoom")).await
+      generate_and_assert(
+        VideoSource::Image { input_asset_id: &asset_id, prompt: Some("slow cinematic zoom") },
+        &fresh_statsig_headers(),
+      ).await
     }
   }
 }
