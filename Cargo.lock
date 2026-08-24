@@ -229,6 +229,7 @@ dependencies = [
  "filesys",
  "futures",
  "grok_consumer_client",
+ "grok_consumer_statsig",
  "image",
  "images",
  "indexmap 2.13.0",

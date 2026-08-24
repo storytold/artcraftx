@@ -34,6 +34,7 @@ errors.workspace = true
 fal_client.workspace = true
 filesys.workspace = true
 grok_consumer_client.workspace = true
+grok_consumer_statsig.workspace = true
 uuid_utils.workspace = true
 browser_emulation.workspace = true
 images.workspace = true

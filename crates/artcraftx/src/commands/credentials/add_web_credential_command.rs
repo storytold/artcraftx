@@ -8,16 +8,23 @@ use crate::error::artcraftx_error::ArtcraftXError;
 use cookie_store_wrapper::cookie_store::CookieStore;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::subdirectory::app_credentials_dir::AppCredentialsDir;
-use chrono::Utc;
+use chrono::{Duration, Utc};
+use grok_consumer_statsig::statsig_cache_file::CapturedStatsig;
 use log::{error, info};
 use serde_derive::Serialize;
 use tauri::State;
+
+/// How long a preemptively-captured statsig is considered current before the
+/// app should re-capture (per the credential's `statsig_refresh_at`).
+const STATSIG_REFRESH_MINUTES: i64 = 30;
 
 /// The captured result of a web login, ready to persist.
 pub struct WebCredentialSave {
   pub service: GenerationSource,
   pub cookies: CookieStore,
   pub maybe_user_info: Option<CredentialUserInfo>,
+  /// Preemptively captured statsig pieces (Grok only; `None` for other sites).
+  pub maybe_statsig: Option<CapturedStatsig>,
 }
 
 /// Save a web-login (cookie) credential to the credentials directory.
@@ -38,10 +45,30 @@ pub fn save_web_credential(
         credential.service == save.service && credential.kind() == CredentialKind::Cookies
       });
 
+  let now = Utc::now();
+
+  // A fresh capture stamps fetched/refresh times; without one, preserve
+  // whatever the existing credential already had.
+  let (statsig, statsig_fetched_at, statsig_refresh_at) = match save.maybe_statsig {
+    Some(captured) => (
+      Some(captured),
+      Some(now),
+      Some(now + Duration::minutes(STATSIG_REFRESH_MINUTES)),
+    ),
+    None => existing
+        .as_ref()
+        .and_then(|credential| credential.cookies())
+        .map(|cookie| (cookie.statsig.clone(), cookie.statsig_fetched_at, cookie.statsig_refresh_at))
+        .unwrap_or((None, None, None)),
+  };
+
   let cookie = CookieCredential {
-    updated_at: Some(Utc::now()),
+    updated_at: Some(now),
     failed_at: None,
     succeeded_at: None,
+    statsig_fetched_at,
+    statsig_refresh_at,
+    statsig,
     cookies: save.cookies,
   };
 
@@ -129,6 +156,7 @@ pub async fn add_web_credential_command(
       service,
       cookies,
       maybe_user_info: None,
+      maybe_statsig: None,
     },
   ).map_err(|err| {
     error!("Error saving web credential: {}", err);

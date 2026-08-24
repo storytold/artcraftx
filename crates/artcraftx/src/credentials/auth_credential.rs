@@ -99,6 +99,50 @@ impl AuthCredential {
 mod tests {
   use super::*;
 
+  // A cookie credential carrying captured statsig pieces must round-trip: the
+  // statsig table has to serialize before the `cookies` array-of-tables, or the
+  // TOML is invalid.
+  #[test]
+  fn cookie_credential_with_statsig_round_trips() {
+    use crate::credentials::cookie_credential::CookieCredential;
+    use chrono::{Duration, Utc};
+    use cookie_store_wrapper::cookie_store::CookieStore;
+    use grok_consumer_statsig::statsig_cache_file::decode_statsig;
+    use reqwest::Url;
+
+    let capture = "XbHvyYh7hmNc+8sVAGnrpcuHN/MK+mgN63cmnBljOJaoCKu6zTPVw6C7HVv1wculKCNmYVum+L1h0IjFmtyZD/C53M+ZXg";
+    let statsig = decode_statsig(capture, "POST", "/rest/app-chat/conversations/new", 1_787_535_100).unwrap();
+
+    let mut cookies = CookieStore::empty();
+    cookies.insert_named("sso", "token-value", &Url::parse("https://grok.com/").unwrap());
+
+    let now = Utc::now();
+    let mut cookie = CookieCredential::new(cookies);
+    cookie.updated_at = Some(now);
+    cookie.statsig_fetched_at = Some(now);
+    cookie.statsig_refresh_at = Some(now + Duration::minutes(30));
+    cookie.statsig = Some(statsig.clone());
+
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("xai_cookies.toml");
+    let credential = AuthCredential {
+      id: CredentialId::generate(),
+      service: GenerationSource::XAiCookies,
+      name: None,
+      secret: CredentialSecret::Cookies(cookie),
+      user_info: None,
+      source_path: path.clone(),
+    };
+    credential.save().unwrap();
+
+    let loaded = AuthCredential::load_from_file(&path).unwrap();
+    let loaded_cookie = loaded.cookies().unwrap();
+    assert_eq!(loaded_cookie.statsig.as_ref(), Some(&statsig));
+    assert!(loaded_cookie.statsig_fetched_at.is_some());
+    assert!(loaded_cookie.statsig_refresh_at.is_some());
+    assert!(loaded_cookie.cookies.has_cookie("sso"));
+  }
+
   #[test]
   fn save_and_load_round_trip() {
     let dir = tempfile::tempdir().unwrap();

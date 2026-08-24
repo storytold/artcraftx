@@ -14,7 +14,7 @@ use crate::windows::login_window::logins::magnific_login_window::MagnificLoginWi
 use crate::windows::login_window::logins::midjourney_login_window::MidjourneyLoginWindow;
 use crate::windows::login_window::logins::openart_login_window::OpenArtLoginWindow;
 use crate::windows::login_window::logins::runway_login_window::RunwayLoginWindow;
-use crate::windows::login_window::logins::xai_login_window::XAiLoginWindow;
+use crate::windows::login_window::logins::xai_login_window::GrokLoginWindow;
 
 /// Resolve the [`LoginWindowSite`] driver for a website.
 pub fn login_site_for(website: LoginWebsite) -> Box<dyn LoginWindowSite> {
@@ -25,7 +25,7 @@ pub fn login_site_for(website: LoginWebsite) -> Box<dyn LoginWindowSite> {
     LoginWebsite::Runway => Box::new(RunwayLoginWindow),
     LoginWebsite::Magnific => Box::new(MagnificLoginWindow),
     LoginWebsite::Midjourney => Box::new(MidjourneyLoginWindow),
-    LoginWebsite::XAi => Box::new(XAiLoginWindow),
+    LoginWebsite::XAi => Box::new(GrokLoginWindow),
   }
 }
 
@@ -135,11 +135,11 @@ mod tests {
   }
 
   #[test]
-  fn xai_journey() {
+  fn grok_journey() {
     let plan = login_site_for(LoginWebsite::XAi).journey().plan();
     assert_eq!(plan.len(), 3);
     assert_navigates_to(&plan[1], "grok.com", "/");
-    assert_navigates_to(&plan[2], "accounts.x.ai", "/account");
+    assert_navigates_to(&plan[2], "accounts.x.ai", "/sign-in");
   }
 
   fn assert_navigates_to(action: &NavigationAction, host: &str, path: &str) {

@@ -74,6 +74,12 @@ pub async fn open_login_window(
     builder = builder.user_agent(user_agent);
   }
 
+  // An optional init script that runs before page scripts on every load (Grok
+  // uses it to install the passive statsig-capture harness).
+  if let Some(script) = site.initialization_script() {
+    builder = builder.initialization_script(&script);
+  }
+
   let window = builder.build()?;
 
   let webview = window.get_webview(&window_name)

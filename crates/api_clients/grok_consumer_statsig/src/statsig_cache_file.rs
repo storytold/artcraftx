@@ -57,7 +57,7 @@ pub struct StatsigCacheFile {
 }
 
 /// One harvested signature and everything decodable from it.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct CapturedStatsig {
   /// Uppercase HTTP method the signature was minted for.
   pub method: String,

@@ -4,6 +4,7 @@ use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::refresh_account_state_event::RefreshAccountStateEvent;
 use crate::windows::login_window::utils::extract_login_window_cookies::extract_login_window_cookies;
 use crate::windows::login_window::utils::extract_user_info_from_cookies::extract_user_info_from_cookies;
+use crate::windows::login_window::utils::grok_statsig_capture::read_captured_statsig;
 use crate::windows::login_window::login_window_trait::LoginWindowSite;
 use crate::windows::login_window::logins::login_site_for;
 use crate::windows::login_window::open_login_window::login_window_name;
@@ -134,12 +135,20 @@ fn check_login_window(
     info!("Detected {} login identity: {:?}", website, user_info);
   }
 
+  // Preemptively grab the statsig pieces the capture harness stashed (Grok
+  // only; other sites don't install it, so this is `None`).
+  let maybe_statsig = read_captured_statsig(webview_window);
+  if let Some(statsig) = &maybe_statsig {
+    info!("Captured {} statsig for {} {}", website, statsig.method, statsig.path);
+  }
+
   let credential = save_web_credential(
     app_data_root.credentials_dir(),
     WebCredentialSave {
       service: site.credential_service(),
       cookies: cookie_store,
       maybe_user_info,
+      maybe_statsig,
     },
   )?;
 

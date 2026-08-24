@@ -1,3 +1,4 @@
+use crate::windows::login_window::utils::grok_statsig_capture::STATSIG_CAPTURE_COOKIE;
 use cookie_store_wrapper::cookie_store::{CapturedCookie, CookieStore};
 use errors::AnyhowResult;
 use reqwest::Url;
@@ -29,6 +30,11 @@ pub fn extract_login_window_cookies(
 
   let mut cookie_store = CookieStore::empty();
   for cookie in webview.cookies()?.iter() {
+    // The Grok statsig-capture harness stashes its output in a client-only
+    // cookie; never persist it into the saved session.
+    if cookie.name() == STATSIG_CAPTURE_COOKIE {
+      continue;
+    }
     if cookie_domain_matches(cookie.domain(), &hosts) {
       cookie_store.insert_captured(
         CapturedCookie {

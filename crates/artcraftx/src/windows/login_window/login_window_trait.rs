@@ -66,6 +66,13 @@ pub trait LoginWindowSite: Send + Sync {
     DEFAULT_AUTH_FLOW_HOSTNAMES
   }
 
+  /// An optional JS initialization script injected before page scripts on every
+  /// load of the login webview. Used by Grok to install the passive statsig
+  /// capture harness. Defaults to none.
+  fn initialization_script(&self) -> Option<String> {
+    None
+  }
+
   /// URLs whose cookies we read once the user appears logged in. Defaults to
   /// the origins of the journey's site URLs plus the destination hostnames
   /// (which covers sites whose login page is discovered at runtime).
