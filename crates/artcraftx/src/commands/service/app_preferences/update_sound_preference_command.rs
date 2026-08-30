@@ -1,9 +1,10 @@
+use crate::commands::service::app_preferences::notify_app_preferences_changed::notify_app_preferences_changed;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::app_preferences::settings::app_sound_file::{optional_sound, AppSoundFile};
 use crate::state::app_preferences::settings::app_sound_preferences::{AppSoundEvent, AppSoundPreferences};
 use log::{error, info, warn};
 use serde_derive::{Deserialize, Serialize};
-use tauri::State;
+use tauri::{AppHandle, State};
 
 /// Change the sound for one event.
 ///
@@ -35,6 +36,7 @@ pub struct UpdateSoundPreferenceResponse {
 #[tauri::command]
 pub async fn update_sound_preference_command(
   request: UpdateSoundPreferenceRequest,
+  app: AppHandle,
   app_prefs: State<'_, AppPreferencesManager>,
 ) -> Result<UpdateSoundPreferenceResponse, String> {
   info!("update_sound_preference_command called: {:?}", request);
@@ -55,6 +57,8 @@ pub async fn update_sound_preference_command(
         error!("Error updating sound preference: {:?}", err);
         format!("Error updating sound preference: {:?}", err)
       })?;
+
+  notify_app_preferences_changed(&app);
 
   Ok(UpdateSoundPreferenceResponse { sounds: prefs.sounds })
 }

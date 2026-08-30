@@ -1,3 +1,4 @@
+use crate::commands::service::app_preferences::notify_app_preferences_changed::notify_app_preferences_changed;
 use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::app_preferences::settings::preferred_download_directory::PreferredDownloadDirectory;
@@ -6,7 +7,7 @@ use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{error, info};
 use serde_derive::{Deserialize, Serialize};
-use tauri::State;
+use tauri::{AppHandle, State};
 
 /// One preference change, typed per preference. The frontend sends
 /// `{ "preference": "<name>", "value": <value> }`.
@@ -29,6 +30,7 @@ pub struct UpdateAppPreferencesResponse {
 #[tauri::command]
 pub async fn update_app_preferences_command(
   request: UpdateAppPreferencesRequest,
+  app: AppHandle,
   app_prefs: State<'_, AppPreferencesManager>,
 ) -> Result<UpdateAppPreferencesResponse, String> {
   info!("update_app_preferences_command called: {:?}", request);
@@ -37,6 +39,8 @@ pub async fn update_app_preferences_command(
     error!("Error updating app preferences: {:?}", err);
     format!("Error updating app preferences: {:?}", err)
   })?;
+
+  notify_app_preferences_changed(&app);
 
   Ok(UpdateAppPreferencesResponse { success: true })
 }

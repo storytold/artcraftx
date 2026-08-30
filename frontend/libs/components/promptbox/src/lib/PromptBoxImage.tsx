@@ -1,3 +1,4 @@
+import { useEnterToGenerate } from "@storyteller/tauri-api";
 import { useState, useRef, useEffect, useMemo, ReactNode } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { UploaderState } from "@storyteller/common";
@@ -13,7 +14,6 @@ import type { UploadMediaFn } from "@storyteller/api";
 import {
   usePromptImageStore,
   RefImage,
-  useEnterToGenerateStore,
 } from "./promptStore";
 import { useAutoGrowEditorHeight } from "./useAutoGrowEditorHeight";
 import {
@@ -131,7 +131,7 @@ export const PromptBoxImage = ({
 
   const referenceImages = usePromptImageStore((s) => s.referenceImages);
   const setReferenceImages = usePromptImageStore((s) => s.setReferenceImages);
-  const enterToGenerate = useEnterToGenerateStore((s) => s.enabled);
+  const enterToGenerate = useEnterToGenerate();
 
   const maxImagePromptCount = Math.max(
     1,

@@ -20,6 +20,7 @@ import {
   ActionReminderModal,
 } from "@storyteller/ui-action-reminder-modal";
 import {
+  useAppPreferencesSync,
   useFlashFileDownloadErrorEvent,
   useFlashUserInputErrorEvent,
   useGenerationCompleteEvent,
@@ -54,6 +55,9 @@ export const MainApp = () => {
 
   // Tauri event listeners. Must always be mounted so generation/upload
   // completions are surfaced no matter which tab the user is on.
+  // Keep the app-preferences cache (Enter-to-generate, sounds, ...) in sync.
+  useAppPreferencesSync();
+
   useGenerationEnqueueSuccessEvent();
   useGenerationEnqueueFailureEvent();
   useGenerationCompleteEvent();

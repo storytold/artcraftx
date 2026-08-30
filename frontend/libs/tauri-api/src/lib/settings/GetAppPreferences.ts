@@ -8,6 +8,13 @@ export interface GetAppPreferencesResult {
 export interface AppPreferencesPayload {
   sounds: AppSoundPreferences,
   downloads: AppDownloadPreferences,
+  prompt: AppPromptPreferences,
+}
+
+export interface AppPromptPreferences {
+  // When on, Enter submits the prompt and Shift+Enter inserts a newline.
+  // When off, both insert a newline and only the button submits.
+  enter_to_generate: boolean,
 }
 
 export interface AppSoundPreferences {

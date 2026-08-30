@@ -1,3 +1,4 @@
+pub mod app_preferences_changed_event;
 pub mod credits_balance_changed_event;
 pub mod gaussian_generation_complete_event;
 pub mod object_generation_complete_event;

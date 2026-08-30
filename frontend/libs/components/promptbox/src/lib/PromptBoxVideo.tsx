@@ -1,3 +1,4 @@
+import { useEnterToGenerate } from "@storyteller/tauri-api";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
@@ -27,7 +28,6 @@ import {
   VideoInputMode,
   useCharactersStore,
   StoredCharacter,
-  useEnterToGenerateStore,
 } from "./promptStore";
 import { gtagEvent } from "@storyteller/google-analytics";
 import type { UploadImageFn } from "./ImagePromptRow";
@@ -186,7 +186,7 @@ export const PromptBoxVideo = ({
   const setInputMode = usePromptVideoStore((s) => s.setInputMode);
   const generationCount = usePromptVideoStore((s) => s.generationCount);
   const setGenerationCount = usePromptVideoStore((s) => s.setGenerationCount);
-  const enterToGenerate = useEnterToGenerateStore((s) => s.enabled);
+  const enterToGenerate = useEnterToGenerate();
   const [isEnqueueing, setIsEnqueueing] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);

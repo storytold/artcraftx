@@ -1,3 +1,4 @@
+import { useEnterToGenerate } from "@storyteller/tauri-api";
 import { useMemo, useRef, useState, ReactNode } from "react";
 import { toast } from "@storyteller/ui-toaster";
 import {
@@ -23,7 +24,6 @@ import {
 } from "@storyteller/model-list";
 import {
   usePromptAudioStore,
-  useEnterToGenerateStore,
   type RefAudio,
 } from "./promptStore";
 import { useAutoGrowEditorHeight } from "./useAutoGrowEditorHeight";
@@ -127,7 +127,7 @@ export const PromptBoxAudio = ({
 
   const [isEnqueueing, setIsEnqueueing] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const enterToGenerate = useEnterToGenerateStore((s) => s.enabled);
+  const enterToGenerate = useEnterToGenerate();
 
   // Audio library picker (the "From library" button in the reference row).
   const [isAudioLibraryOpen, setIsAudioLibraryOpen] = useState(false);

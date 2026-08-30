@@ -43,6 +43,11 @@ pub enum TauriEventName {
   CreditsBalanceChangedEvent,
 
   /// Informational event:
+  /// The app preferences were saved; re-read them.
+  #[serde(rename = "app_preferences_changed_event")]
+  AppPreferencesChangedEvent,
+
+  /// Informational event:
   /// Subscription was changed (but we don't know the details - upgrade, cancel, etc.)
   #[serde(rename = "subscription_plan_changed_event")]
   SubscriptionPlanChangedEvent,
@@ -106,6 +111,7 @@ impl TauriEventName {
       Self::GenerationCompleteEvent => "generation-complete-event",
       Self::GenerationFailedEvent => "generation-failed-event",
       Self::CreditsBalanceChangedEvent => "credits_balance_changed_event",
+      Self::AppPreferencesChangedEvent => "app_preferences_changed_event",
       Self::SubscriptionPlanChangedEvent => "subscription_plan_changed_event",
       Self::TextToImageGenerationCompleteEvent => "text_to_image_generation_complete_event",
       Self::ObjectGenerationCompleteEvent => "object_generation_complete_event",
@@ -126,6 +132,7 @@ impl TauriEventName {
       "generation-complete-event" => Ok(Self::GenerationCompleteEvent),
       "generation-failed-event" => Ok(Self::GenerationFailedEvent),
       "credits_balance_changed_event" => Ok(Self::CreditsBalanceChangedEvent),
+      "app_preferences_changed_event" => Ok(Self::AppPreferencesChangedEvent),
       "subscription_plan_changed_event" => Ok(Self::SubscriptionPlanChangedEvent),
       "text_to_image_generation_complete_event" => Ok(Self::TextToImageGenerationCompleteEvent),
       "object_generation_complete_event" => Ok(Self::ObjectGenerationCompleteEvent),
@@ -149,6 +156,7 @@ impl TauriEventName {
       Self::GenerationCompleteEvent,
       Self::GenerationFailedEvent,
       Self::CreditsBalanceChangedEvent,
+      Self::AppPreferencesChangedEvent,
       Self::SubscriptionPlanChangedEvent,
       Self::TextToImageGenerationCompleteEvent,
       Self::ObjectGenerationCompleteEvent,
@@ -178,6 +186,7 @@ mod tests {
       assert_serialization(TauriEventName::GenerationCompleteEvent, "generation-complete-event");
       assert_serialization(TauriEventName::GenerationFailedEvent, "generation-failed-event");
       assert_serialization(TauriEventName::CreditsBalanceChangedEvent, "credits_balance_changed_event");
+      assert_serialization(TauriEventName::AppPreferencesChangedEvent, "app_preferences_changed_event");
       assert_serialization(TauriEventName::SubscriptionPlanChangedEvent, "subscription_plan_changed_event");
       assert_serialization(TauriEventName::TextToImageGenerationCompleteEvent, "text_to_image_generation_complete_event");
       assert_serialization(TauriEventName::ObjectGenerationCompleteEvent, "object_generation_complete_event");
@@ -197,6 +206,7 @@ mod tests {
       assert_eq!(TauriEventName::GenerationCompleteEvent.to_str(), "generation-complete-event");
       assert_eq!(TauriEventName::GenerationFailedEvent.to_str(), "generation-failed-event");
       assert_eq!(TauriEventName::CreditsBalanceChangedEvent.to_str(), "credits_balance_changed_event");
+      assert_eq!(TauriEventName::AppPreferencesChangedEvent.to_str(), "app_preferences_changed_event");
       assert_eq!(TauriEventName::SubscriptionPlanChangedEvent.to_str(), "subscription_plan_changed_event");
       assert_eq!(TauriEventName::TextToImageGenerationCompleteEvent.to_str(), "text_to_image_generation_complete_event");
       assert_eq!(TauriEventName::ObjectGenerationCompleteEvent.to_str(), "object_generation_complete_event");
@@ -215,6 +225,7 @@ mod tests {
       assert_eq!(TauriEventName::from_str("generation-complete-event").unwrap(), TauriEventName::GenerationCompleteEvent);
       assert_eq!(TauriEventName::from_str("generation-failed-event").unwrap(), TauriEventName::GenerationFailedEvent);
       assert_eq!(TauriEventName::from_str("credits_balance_changed_event").unwrap(), TauriEventName::CreditsBalanceChangedEvent);
+      assert_eq!(TauriEventName::from_str("app_preferences_changed_event").unwrap(), TauriEventName::AppPreferencesChangedEvent);
       assert_eq!(TauriEventName::from_str("subscription_plan_changed_event").unwrap(), TauriEventName::SubscriptionPlanChangedEvent);
       assert_eq!(TauriEventName::from_str("text_to_image_generation_complete_event").unwrap(), TauriEventName::TextToImageGenerationCompleteEvent);
       assert_eq!(TauriEventName::from_str("object_generation_complete_event").unwrap(), TauriEventName::ObjectGenerationCompleteEvent);
@@ -230,12 +241,13 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TauriEventName::all_variants();
-      assert_eq!(variants.len(), 15);
+      assert_eq!(variants.len(), 16);
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueSuccessEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueFailureEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationFailedEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::CreditsBalanceChangedEvent));
+      assert_eq!(variants.pop_first(), Some(TauriEventName::AppPreferencesChangedEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::SubscriptionPlanChangedEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::TextToImageGenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ObjectGenerationCompleteEvent));

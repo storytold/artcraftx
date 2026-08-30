@@ -1,5 +1,6 @@
 use crate::state::app_preferences::legacy_json_preferences::LegacyJsonPreferences;
 use crate::state::app_preferences::settings::app_download_preferences::AppDownloadPreferences;
+use crate::state::app_preferences::settings::app_prompt_preferences::AppPromptPreferences;
 use crate::state::app_preferences::settings::app_sound_preferences::AppSoundPreferences;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use errors::AnyhowResult;
@@ -10,7 +11,8 @@ use std::path::Path;
 /// File format version (not semver).
 ///  - 1..=3: the legacy JSON layout (see `legacy_json_preferences`).
 ///  - 4: TOML, grouped into `[sounds]` / `[downloads]` tables.
-const CURRENT_VERSION: u32 = 4;
+///  - 5: added the `[prompt]` table.
+const CURRENT_VERSION: u32 = 5;
 
 /// User-adjustable app preferences, persisted as `settings/app_preferences.toml`.
 ///
@@ -26,6 +28,9 @@ const CURRENT_VERSION: u32 = 4;
 /// [downloads]
 /// preferred_download_filename = "artcraft_convention"
 ///
+/// [prompt]
+/// enter_to_generate = true
+///
 /// [downloads.preferred_download_directory]
 /// system = "downloads"
 /// ```
@@ -38,6 +43,7 @@ pub struct AppPreferences {
   pub version: u32,
   pub sounds: AppSoundPreferences,
   pub downloads: AppDownloadPreferences,
+  pub prompt: AppPromptPreferences,
 }
 
 impl Default for AppPreferences {
@@ -46,6 +52,7 @@ impl Default for AppPreferences {
       version: CURRENT_VERSION,
       sounds: AppSoundPreferences::default(),
       downloads: AppDownloadPreferences::default(),
+      prompt: AppPromptPreferences::default(),
     }
   }
 }
@@ -123,11 +130,12 @@ mod tests {
   #[test]
   fn defaults_serialize_to_nested_toml() {
     let toml = toml::to_string_pretty(&AppPreferences::default()).unwrap();
-    assert!(toml.starts_with("version = 4\n"), "{toml}");
+    assert!(toml.starts_with("version = 5\n"), "{toml}");
     assert!(toml.contains("[sounds]\nplay_sounds = true\n"), "{toml}");
     assert!(toml.contains("enqueue_success = \"done\""), "{toml}");
     assert!(toml.contains("[downloads]\n"), "{toml}");
     assert!(toml.contains("[downloads.preferred_download_directory]\nsystem = \"downloads\""), "{toml}");
+    assert!(toml.contains("[prompt]\nenter_to_generate = true"), "{toml}");
   }
 
   #[test]
@@ -141,6 +149,7 @@ mod tests {
     prefs.sounds.generation_success = Some(AppSoundFile::CustomWav("/tmp/ding.wav".into()));
     prefs.downloads.preferred_download_directory = PreferredDownloadDirectory::Custom("/tmp/out".into());
     prefs.downloads.preferred_download_filename = PreferredDownloadFilename::Custom("{model}_{date}".into());
+    prefs.prompt.enter_to_generate = false;
 
     prefs.save_to_file(&path).unwrap();
     let loaded = AppPreferences::load_from_file(&path).unwrap();
@@ -153,6 +162,7 @@ mod tests {
     assert!(!prefs.sounds.play_sounds);
     assert_eq!(prefs.sounds.enqueue_success, Some(AppSoundFile::Done));
     assert_eq!(prefs.downloads, AppPreferences::default().downloads);
+    assert!(prefs.prompt.enter_to_generate, "prompt table absent -> default");
   }
 
   #[test]

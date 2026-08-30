@@ -11,7 +11,7 @@ import {
 import { createPortal } from "react-dom";
 import { twMerge } from "tailwind-merge";
 import { Music, User, Video } from "lucide-react";
-import { useEnterToGenerateStore } from "./promptStore";
+import { useEnterToGenerate } from "@storyteller/tauri-api";
 import { MentionChipMenu } from "./MentionChipMenu";
 import { DeckPreviewModal } from "./deck/DeckCard";
 
@@ -537,8 +537,8 @@ export const MentionTextarea = forwardRef<HTMLDivElement, MentionTextareaProps>(
     // right after a mention label, which detectMention would read as a fresh
     // "@..." trigger and reopen the dropdown over the already-confirmed chip.
     const suppressMentionDetect = useRef(false);
-    const enterToGenerateStore = useEnterToGenerateStore((s) => s.enabled);
-    const enterToGenerate = enterToGenerateProp ?? enterToGenerateStore;
+    const enterToGeneratePreference = useEnterToGenerate();
+    const enterToGenerate = enterToGenerateProp ?? enterToGeneratePreference;
 
     const [mentionState, setMentionState] = useState<MentionState>({
       isOpen: false,

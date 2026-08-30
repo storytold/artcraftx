@@ -1,12 +1,31 @@
-import { useEnterToGenerateStore } from "@storyteller/ui-promptbox";
+import {
+  PromptPreferenceName,
+  UpdatePromptPreference,
+  useAppPreferencesStore,
+  useEnterToGenerate,
+} from "@storyteller/tauri-api";
 import { Switch } from "@storyteller/ui-switch";
 import { SettingsRow } from "./SettingsRow";
 
 interface MiscSettingsPaneProps {}
 
 export const MiscSettingsPane = (args: MiscSettingsPaneProps) => {
-  const enterToGenerate = useEnterToGenerateStore((s) => s.enabled);
-  const setEnterToGenerate = useEnterToGenerateStore((s) => s.setEnabled);
+  const enterToGenerate = useEnterToGenerate();
+  const refreshPreferences = useAppPreferencesStore((s) => s.refresh);
+
+  const setEnterToGenerate = async (enabled: boolean) => {
+    try {
+      await UpdatePromptPreference({
+        preference: PromptPreferenceName.EnterToGenerate,
+        value: enabled,
+      });
+    } catch (err) {
+      console.error("Could not save Enter-to-generate preference:", err);
+    }
+    // The backend also broadcasts app_preferences_changed_event; refreshing
+    // here just makes the switch settle without waiting on it.
+    await refreshPreferences();
+  };
 
   return (
     <div className="text-base-fg">

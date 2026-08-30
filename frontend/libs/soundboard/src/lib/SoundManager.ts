@@ -1,9 +1,10 @@
 import {
   AppSoundEvent,
   AppSoundFile,
-  GetAppPreferences,
   SILENT_SOUND,
+  getCachedAppPreferences,
   isCustomWavSound,
+  useAppPreferencesStore,
 } from "@storyteller/tauri-api";
 import { CustomSoundPlayer } from "./CustomSoundPlayer";
 import { SoundEffect } from "./SoundEffect";
@@ -98,13 +99,11 @@ export class SoundManager {
   static async playGenerationFailure() { await this.playEvent("generation_failure"); }
 
   private static async playEvent(event: AppSoundEvent) {
-    let sounds;
-    try {
-      sounds = (await GetAppPreferences()).preferences?.sounds;
-    } catch (err) {
-      console.warn("Could not read sound preferences; not playing a sound:", err);
-      return;
+    // Read the synced cache; load it once if this fires before the app root did.
+    if (getCachedAppPreferences() === undefined) {
+      await useAppPreferencesStore.getState().refresh();
     }
+    const sounds = getCachedAppPreferences()?.sounds;
     if (!sounds?.play_sounds) return;
     await this.playSound(sounds[event], event);
   }
