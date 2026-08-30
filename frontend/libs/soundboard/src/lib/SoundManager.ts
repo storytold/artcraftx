@@ -1,4 +1,11 @@
-import { GetAppPreferences } from "@storyteller/tauri-api";
+import {
+  AppSoundEvent,
+  AppSoundFile,
+  GetAppPreferences,
+  SILENT_SOUND,
+  isCustomWavSound,
+} from "@storyteller/tauri-api";
+import { CustomSoundPlayer } from "./CustomSoundPlayer";
 import { SoundEffect } from "./SoundEffect";
 import { SoundRegistry } from "./SoundRegistry";
 
@@ -54,18 +61,11 @@ const SOUNDS: readonly SoundDef[] = [
 
 export type SoundOption = { value: string; label: string };
 
-type SoundPrefKey =
-  | "delete_file"
-  | "enqueue_success"
-  | "enqueue_failure"
-  | "generation_success"
-  | "generation_failure";
-
 export class SoundManager {
   // Dropdown options for AudioSettingsPane.
   // "None (Silent)" first, then user-selectable sounds A→Z by label.
   static readonly OPTIONS: SoundOption[] = [
-    { value: "none", label: "None (Silent)" },
+    { value: SILENT_SOUND, label: "None (Silent)" },
     ...SOUNDS
       .filter((s): s is SoundDef & { label: string } => !!s.label)
       .map((s) => ({ value: s.key, label: s.label }))
@@ -84,10 +84,10 @@ export class SoundManager {
     this.installed = true;
   }
 
-  // Settings preview — fires regardless of the master toggle.
-  static playPreview(soundName: string) {
-    if (!soundName || soundName === "none") return;
-    SoundRegistry.getInstance().playSound(soundName);
+  // Settings preview — fires regardless of the master toggle. `event` is
+  // needed to play a custom file (the backend serves it by event).
+  static async playPreview(sound: AppSoundFile | undefined, event: AppSoundEvent) {
+    await this.playSound(sound, event);
   }
 
   // Event-driven playback — gated on `play_sounds`.
@@ -97,13 +97,35 @@ export class SoundManager {
   static async playGenerationSuccess() { await this.playEvent("generation_success"); }
   static async playGenerationFailure() { await this.playEvent("generation_failure"); }
 
-  private static async playEvent(prefKey: SoundPrefKey) {
-    const sounds = (await GetAppPreferences()).preferences?.sounds;
+  private static async playEvent(event: AppSoundEvent) {
+    let sounds;
+    try {
+      sounds = (await GetAppPreferences()).preferences?.sounds;
+    } catch (err) {
+      console.warn("Could not read sound preferences; not playing a sound:", err);
+      return;
+    }
     if (!sounds?.play_sounds) return;
-    const sound = sounds[prefKey];
-    // Only catalog keys are playable here; "none" is silent and custom .wav
-    // files aren't supported by the registry yet.
-    if (!sound || sound === "none" || typeof sound !== "string") return;
-    SoundRegistry.getInstance().playSound(sound);
+    await this.playSound(sounds[event], event);
+  }
+
+  // Never throws: a bad or missing sound is logged and skipped.
+  private static async playSound(sound: AppSoundFile | undefined, event: AppSoundEvent) {
+    try {
+      if (!sound || sound === SILENT_SOUND) return;
+      if (isCustomWavSound(sound)) {
+        await CustomSoundPlayer.play(event, sound.custom_wav);
+        return;
+      }
+      if (typeof sound !== "string") return;
+      const registry = SoundRegistry.getInstance();
+      if (!registry.hasSound(sound)) {
+        console.warn(`Unknown sound key "${sound}" for ${event}; not playing.`);
+        return;
+      }
+      registry.playSound(sound);
+    } catch (err) {
+      console.warn(`Could not play sound for ${event}:`, err);
+    }
   }
 }

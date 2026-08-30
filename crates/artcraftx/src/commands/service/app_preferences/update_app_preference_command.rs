@@ -1,6 +1,5 @@
 use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
-use crate::state::app_preferences::settings::app_sound_file::{optional_sound, AppSoundFile};
 use crate::state::app_preferences::settings::preferred_download_directory::PreferredDownloadDirectory;
 use crate::state::app_preferences::settings::preferred_download_filename::PreferredDownloadFilename;
 use anyhow::anyhow;
@@ -10,19 +9,16 @@ use serde_derive::{Deserialize, Serialize};
 use tauri::State;
 
 /// One preference change, typed per preference. The frontend sends
-/// `{ "preference": "<name>", "value": <value> }`; a sound preference with a
-/// missing, `null`, or `"none"` value means "silent".
+/// `{ "preference": "<name>", "value": <value> }`.
+///
+/// Per-event sounds have their own command (`update_sound_preference_command`),
+/// since custom files need validating.
 #[derive(Deserialize, Debug)]
 #[serde(tag = "preference", content = "value", rename_all = "snake_case")]
 pub enum UpdateAppPreferencesRequest {
   PreferredDownloadDirectory(PreferredDownloadDirectory),
   PreferredDownloadFilename(PreferredDownloadFilename),
   PlaySounds(bool),
-  DeleteFileSound(#[serde(with = "optional_sound")] Option<AppSoundFile>),
-  EnqueueSuccessSound(#[serde(with = "optional_sound")] Option<AppSoundFile>),
-  EnqueueFailureSound(#[serde(with = "optional_sound")] Option<AppSoundFile>),
-  GenerationSuccessSound(#[serde(with = "optional_sound")] Option<AppSoundFile>),
-  GenerationFailureSound(#[serde(with = "optional_sound")] Option<AppSoundFile>),
 }
 
 #[derive(Serialize)]
@@ -67,11 +63,6 @@ fn apply(request: UpdateAppPreferencesRequest, prefs: &mut AppPreferences) {
     PreferredDownloadDirectory(directory) => prefs.downloads.preferred_download_directory = directory,
     PreferredDownloadFilename(filename) => prefs.downloads.preferred_download_filename = filename,
     PlaySounds(enabled) => prefs.sounds.play_sounds = enabled,
-    DeleteFileSound(sound) => prefs.sounds.delete_file = sound,
-    EnqueueSuccessSound(sound) => prefs.sounds.enqueue_success = sound,
-    EnqueueFailureSound(sound) => prefs.sounds.enqueue_failure = sound,
-    GenerationSuccessSound(sound) => prefs.sounds.generation_success = sound,
-    GenerationFailureSound(sound) => prefs.sounds.generation_failure = sound,
   }
 }
 
@@ -106,39 +97,13 @@ mod tests {
       decode(r#"{"preference":"preferred_download_directory","value":{"system":"downloads"}}"#),
       UpdateAppPreferencesRequest::PreferredDownloadDirectory(PreferredDownloadDirectory::System(_)),
     ));
-    assert!(matches!(
-      decode(r#"{"preference":"enqueue_success_sound","value":"done"}"#),
-      UpdateAppPreferencesRequest::EnqueueSuccessSound(Some(AppSoundFile::Done)),
-    ));
-    assert!(matches!(
-      decode(r#"{"preference":"generation_failure_sound","value":{"custom_wav":"/tmp/x.wav"}}"#),
-      UpdateAppPreferencesRequest::GenerationFailureSound(Some(AppSoundFile::CustomWav(_))),
-    ));
-  }
-
-  /// "None (Silent)" in the UI sends `value: undefined` (key absent) — and
-  /// `null` must work too.
-  #[test]
-  fn silent_sound_decodes_from_missing_or_null_value() {
-    assert!(matches!(
-      decode(r#"{"preference":"delete_file_sound"}"#),
-      UpdateAppPreferencesRequest::DeleteFileSound(None),
-    ));
-    assert!(matches!(
-      decode(r#"{"preference":"delete_file_sound","value":null}"#),
-      UpdateAppPreferencesRequest::DeleteFileSound(None),
-    ));
-    assert!(matches!(
-      decode(r#"{"preference":"delete_file_sound","value":"none"}"#),
-      UpdateAppPreferencesRequest::DeleteFileSound(None),
-    ));
   }
 
   #[test]
   fn wrong_value_type_is_rejected() {
     assert!(serde_json::from_str::<UpdateAppPreferencesRequest>(r#"{"preference":"play_sounds","value":"yes"}"#).is_err());
-    assert!(serde_json::from_str::<UpdateAppPreferencesRequest>(r#"{"preference":"enqueue_success_sound","value":"not_a_sound"}"#).is_err());
-    assert!(serde_json::from_str::<UpdateAppPreferencesRequest>(r#"{"preference":"generation_enqueue_sound","value":"done"}"#).is_err());
+    // Per-event sounds moved to `update_sound_preference_command`.
+    assert!(serde_json::from_str::<UpdateAppPreferencesRequest>(r#"{"preference":"enqueue_success_sound","value":"done"}"#).is_err());
   }
 
   #[test]
@@ -153,10 +118,8 @@ mod tests {
   fn apply_writes_into_the_right_group() {
     let mut prefs = AppPreferences::default();
     apply(decode(r#"{"preference":"play_sounds","value":false}"#), &mut prefs);
-    apply(decode(r#"{"preference":"generation_success_sound"}"#), &mut prefs);
     apply(decode(r#"{"preference":"preferred_download_directory","value":{"custom":"/tmp/out"}}"#), &mut prefs);
     assert!(!prefs.sounds.play_sounds);
-    assert_eq!(prefs.sounds.generation_success, None);
     assert_eq!(prefs.downloads.preferred_download_directory, PreferredDownloadDirectory::Custom("/tmp/out".into()));
   }
 }

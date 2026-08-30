@@ -60,6 +60,37 @@ pub enum AppSoundFile {
   CustomWav(PathBuf),
 }
 
+impl AppSoundFile {
+  /// Whether this sound can be saved: catalog sounds always can; a custom file
+  /// must be an absolute path to an existing `.wav` file. Returns a
+  /// user-facing reason when it can't.
+  pub fn validate(&self) -> Result<(), String> {
+    let Self::CustomWav(path) = self else {
+      return Ok(());
+    };
+    if !path.is_absolute() {
+      return Err(format!("Sound file path must be absolute: {}", path.display()));
+    }
+    let is_wav = path.extension()
+        .map(|ext| ext.eq_ignore_ascii_case("wav"))
+        .unwrap_or(false);
+    if !is_wav {
+      return Err(format!("Sound file must be a .wav file: {}", path.display()));
+    }
+    if !path.is_file() {
+      return Err(format!("Sound file does not exist: {}", path.display()));
+    }
+    Ok(())
+  }
+
+  pub fn custom_wav_path(&self) -> Option<&std::path::Path> {
+    match self {
+      Self::CustomWav(path) => Some(path),
+      _ => None,
+    }
+  }
+}
+
 /// Serde helper for `Option<AppSoundFile>` fields: `None` (silent) is written
 /// as the string `"none"` — TOML has no null, and the frontend already uses
 /// `"none"` for "None (Silent)". Reading accepts `"none"`, `null`, or a sound.
@@ -123,6 +154,28 @@ mod tests {
     assert_eq!(toml::to_string(&done).unwrap(), "sound = \"done\"\n");
     assert_eq!(toml::from_str::<Holder>("sound = \"done\"").unwrap(), done);
     assert!(serde_json::from_str::<Holder>("{\"sound\":\"bogus\"}").is_err());
+  }
+
+  #[test]
+  fn validate_requires_an_existing_absolute_wav() {
+    assert!(AppSoundFile::Done.validate().is_ok());
+
+    let dir = tempfile::tempdir().unwrap();
+    let wav = dir.path().join("ding.wav");
+    std::fs::write(&wav, b"RIFF").unwrap();
+    let upper = dir.path().join("DING.WAV");
+    std::fs::write(&upper, b"RIFF").unwrap();
+    let mp3 = dir.path().join("ding.mp3");
+    std::fs::write(&mp3, b"ID3").unwrap();
+
+    assert!(AppSoundFile::CustomWav(wav).validate().is_ok());
+    assert!(AppSoundFile::CustomWav(upper).validate().is_ok());
+    assert!(AppSoundFile::CustomWav(mp3).validate().unwrap_err().contains(".wav"));
+    assert!(AppSoundFile::CustomWav(dir.path().join("missing.wav")).validate().unwrap_err().contains("does not exist"));
+    let dir_named_wav = dir.path().join("folder.wav");
+    std::fs::create_dir(&dir_named_wav).unwrap();
+    assert!(AppSoundFile::CustomWav(dir_named_wav).validate().unwrap_err().contains("does not exist"));
+    assert!(AppSoundFile::CustomWav("relative/ding.wav".into()).validate().unwrap_err().contains("absolute"));
   }
 
   #[test]

@@ -1,109 +1,55 @@
 import { useEffect, useState } from "react";
-import { SoundManager } from "@storyteller/soundboard";
+import { SoundManager, SoundOption } from "@storyteller/soundboard";
 import { Button } from "@storyteller/ui-button";
-import { Play } from "lucide-react";
+import { FolderOpen, Play, RotateCcw } from "lucide-react";
 import {
-  AppPreferencesPayload,
+  AppSoundEvent,
   AppSoundFile,
+  AppSoundPreferences,
   GetAppPreferences,
+  PreferenceName,
+  ResetSoundPreference,
+  SILENT_SOUND,
+  UpdateAppPreferences,
+  UpdateSoundPreference,
+  isCustomWavSound,
 } from "@storyteller/tauri-api";
-import { PreferenceName, UpdateAppPreferences } from "@storyteller/tauri-api";
+import { open } from "@tauri-apps/plugin-dialog";
 import { Select, SelectValue } from "@storyteller/ui-select";
 import { Switch } from "@storyteller/ui-switch";
 import { Label } from "@storyteller/ui-label";
 
 interface AudioSettingsPaneProps {}
 
+// Rows in display order.
+const SOUND_EVENTS: { event: AppSoundEvent; label: string }[] = [
+  { event: "delete_file", label: "Delete File Sound" },
+  { event: "enqueue_success", label: "Enqueue Success Sound" },
+  { event: "enqueue_failure", label: "Enqueue Failure Sound" },
+  { event: "generation_success", label: "Generation Success Sound" },
+  { event: "generation_failure", label: "Generation Failure Sound" },
+];
+
 export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
-  const [preferences, setPreferences] = useState<
-    AppPreferencesPayload | undefined
-  >(undefined);
+  const [sounds, setSounds] = useState<AppSoundPreferences | undefined>(undefined);
 
   useEffect(() => {
     const fetchData = async () => {
       const prefs = await GetAppPreferences();
-      setPreferences(prefs.preferences);
+      setSounds(prefs.preferences.sounds);
     };
     fetchData();
   }, []);
 
-  const sounds = preferences?.sounds;
   const playSounds = sounds?.play_sounds || false;
 
-  const deleteFileSound = orNone(sounds?.delete_file);
-  const enqueueSuccessSound = orNone(sounds?.enqueue_success);
-  const enqueueFailureSound = orNone(sounds?.enqueue_failure);
-  const generationSuccessSound = orNone(sounds?.generation_success);
-  const generationFailureSound = orNone(sounds?.generation_failure);
-
-  const reloadPreferences = async () => {
-    const prefs = await GetAppPreferences();
-    setPreferences(prefs.preferences);
-  };
-
   const setPlaySounds = async (checked: boolean) => {
-    //const value = checked ? "true" : "false";
     await UpdateAppPreferences({
       preference: PreferenceName.PlaySounds,
       value: checked,
     });
-    await reloadPreferences();
-  };
-
-  const setDeleteFileSound = async (val: string) => {
-    let sendVal = val === "none" ? undefined : val;
-    await UpdateAppPreferences({
-      preference: PreferenceName.DeleteFileSound,
-      value: sendVal,
-    });
-    SoundManager.playPreview(val);
-    await reloadPreferences();
-  };
-
-  const setEnqueueSuccessSound = async (val: string) => {
-    let sendVal = val === "none" ? undefined : val;
-    await UpdateAppPreferences({
-      preference: PreferenceName.EnqueueSuccessSound,
-      value: sendVal,
-    });
-    SoundManager.playPreview(val);
-    await reloadPreferences();
-  };
-
-  const setEnqueueFailureSound = async (val: string) => {
-    let sendVal = val === "none" ? undefined : val;
-    await UpdateAppPreferences({
-      preference: PreferenceName.EnqueueFailureSound,
-      value: sendVal,
-    });
-    SoundManager.playPreview(val);
-    await reloadPreferences();
-  };
-
-  const setSuccessSound = async (val: string) => {
-    let sendVal = val === "none" ? undefined : val;
-    await UpdateAppPreferences({
-      preference: PreferenceName.GenerationSuccessSound,
-      value: sendVal,
-    });
-    SoundManager.playPreview(val);
-    await reloadPreferences();
-  };
-
-  const setFailureSound = async (val: string) => {
-    let sendVal = val === "none" ? undefined : val;
-    await UpdateAppPreferences({
-      preference: PreferenceName.GenerationFailureSound,
-      value: sendVal,
-    });
-    SoundManager.playPreview(val);
-    await reloadPreferences();
-  };
-
-  const playSound = (val?: string) => {
-    if (val !== undefined && val !== "none") {
-      SoundManager.playPreview(val);
-    }
+    const prefs = await GetAppPreferences();
+    setSounds(prefs.preferences.sounds);
   };
 
   return (
@@ -116,111 +62,126 @@ export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
           <Switch enabled={playSounds} setEnabled={setPlaySounds} />
         </div>
 
-        <div className="space-y-1">
-          <Label htmlFor="success-sound">Delete File Sound</Label>
-          <div className="flex items-center gap-2">
-            <Select
-              id="success-sound"
-              value={deleteFileSound}
-              onChange={(val: SelectValue) => setDeleteFileSound(val as string)}
-              options={SoundManager.OPTIONS}
-              className="grow"
-            />
-            <Button
-              variant="primary"
-              className="w-[40px] h-[40px]"
-              icon={Play}
-              onClick={() => playSound(deleteFileSound)}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <Label htmlFor="success-sound">Enqueue Success Sound</Label>
-          <div className="flex items-center gap-2">
-            <Select
-              id="success-sound"
-              value={enqueueSuccessSound}
-              onChange={(val: SelectValue) => setEnqueueSuccessSound(val as string)}
-              options={SoundManager.OPTIONS}
-              className="grow"
-            />
-            <Button
-              variant="primary"
-              className="w-[40px] h-[40px]"
-              icon={Play}
-              onClick={() => playSound(enqueueSuccessSound)}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <Label htmlFor="success-sound">Enqueue Failure Sound</Label>
-          <div className="flex items-center gap-2">
-            <Select
-              id="success-sound"
-              value={enqueueFailureSound}
-              onChange={(val: SelectValue) => setEnqueueFailureSound(val as string)}
-              options={SoundManager.OPTIONS}
-              className="grow"
-            />
-            <Button
-              variant="primary"
-              className="w-[40px] h-[40px]"
-              icon={Play}
-              onClick={() => playSound(enqueueFailureSound)}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <Label htmlFor="success-sound">Generation Success Sound</Label>
-          <div className="flex items-center gap-2">
-            <Select
-              id="success-sound"
-              value={generationSuccessSound}
-              onChange={(val: SelectValue) => setSuccessSound(val as string)}
-              options={SoundManager.OPTIONS}
-              className="grow"
-            />
-            <Button
-              variant="primary"
-              className="w-[40px] h-[40px]"
-              icon={Play}
-              onClick={() => playSound(generationSuccessSound)}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <Label htmlFor="failure-sound">Generation Failure Sound</Label>
-          <div className="flex items-center gap-2">
-            <Select
-              id="failure-sound"
-              value={generationFailureSound}
-              onChange={(val: SelectValue) => setFailureSound(val as string)}
-              options={SoundManager.OPTIONS}
-              className="grow"
-            />
-            <Button
-              variant="primary"
-              className="w-[40px] h-[40px]"
-              icon={Play}
-              onClick={() => playSound(generationFailureSound)}
-            />
-          </div>
-        </div>
-
+        {SOUND_EVENTS.map(({ event, label }) => (
+          <SoundEventRow
+            key={event}
+            event={event}
+            label={label}
+            sound={sounds?.[event]}
+            onSoundsChanged={setSounds}
+          />
+        ))}
       </div>
     </>
   );
 };
 
-// The dropdown only knows catalog keys; anything else (silent, or a custom
-// .wav the UI can't pick yet) shows as "None (Silent)".
-const orNone = (val: AppSoundFile | undefined | null): string => {
-  if (!val || typeof val !== "string") {
-    return "none";
+// ── One event's sound picker ──
+
+interface SoundEventRowProps {
+  event: AppSoundEvent;
+  label: string;
+  sound: AppSoundFile | undefined;
+  onSoundsChanged: (sounds: AppSoundPreferences) => void;
+}
+
+const SoundEventRow = ({ event, label, sound, onSoundsChanged }: SoundEventRowProps) => {
+  const [error, setError] = useState<string | undefined>(undefined);
+
+  // The dropdown lists the presets; when a custom file is set, it also shows
+  // that file's full path as the selected entry.
+  const customPath = isCustomWavSound(sound) ? sound.custom_wav : undefined;
+  const selectedValue = customPath ?? presetValue(sound);
+  const options: SoundOption[] = customPath
+    ? [{ value: customPath, label: customPath }, ...SoundManager.OPTIONS]
+    : SoundManager.OPTIONS;
+
+  const save = async (next: AppSoundFile | undefined) => {
+    setError(undefined);
+    try {
+      const result = await UpdateSoundPreference({ event, sound: next });
+      onSoundsChanged(result.sounds);
+      SoundManager.playPreview(next, event);
+    } catch (err) {
+      setError(String(err));
+    }
+  };
+
+  const resetToDefault = async () => {
+    setError(undefined);
+    try {
+      const result = await ResetSoundPreference(event);
+      onSoundsChanged(result.sounds);
+      SoundManager.playPreview(result.sounds[event], event);
+    } catch (err) {
+      setError(String(err));
+    }
+  };
+
+  // Picking a preset or "None" from the dropdown replaces a custom file too.
+  const onSelect = async (val: SelectValue) => {
+    const value = String(val);
+    if (value === customPath) return; // Re-selected the current custom file.
+    await save(value === SILENT_SOUND ? undefined : value);
+  };
+
+  const chooseCustomFile = async () => {
+    const selected = await open({
+      multiple: false,
+      directory: false,
+      title: `Choose a .wav file for: ${label}`,
+      filters: [{ name: "WAV audio", extensions: ["wav"] }],
+    });
+    if (selected === null) {
+      return; // User dismissed the dialog.
+    }
+    await save({ custom_wav: selected });
+  };
+
+  const inputId = `${event}-sound`;
+
+  return (
+    <div className="space-y-1">
+      <Label htmlFor={inputId}>{label}</Label>
+      <div className="flex items-center gap-2">
+        <Select
+          id={inputId}
+          value={selectedValue}
+          onChange={onSelect}
+          options={options}
+          className="grow min-w-0"
+        />
+        <Button
+          variant="primary"
+          className="w-[40px] h-[40px]"
+          icon={Play}
+          title="Preview"
+          onClick={() => SoundManager.playPreview(sound, event)}
+        />
+        <Button
+          variant="secondary"
+          className="w-[40px] h-[40px]"
+          icon={FolderOpen}
+          title="Use a custom .wav file"
+          onClick={chooseCustomFile}
+        />
+        <Button
+          variant="secondary"
+          className="w-[40px] h-[40px]"
+          icon={RotateCcw}
+          title="Reset to default"
+          onClick={resetToDefault}
+        />
+      </div>
+      {error && <p className="text-sm text-red-500">{error}</p>}
+    </div>
+  );
+};
+
+// The dropdown value for a preset (or silent) sound.
+const presetValue = (sound: AppSoundFile | undefined): string => {
+  if (!sound || typeof sound !== "string") {
+    return SILENT_SOUND;
   }
-  return val;
+  return sound;
 };

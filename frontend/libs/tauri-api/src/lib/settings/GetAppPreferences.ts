@@ -27,8 +27,14 @@ export interface AppSoundPreferences {
 export type AppSoundFile = string | CustomWavSound;
 
 export interface CustomWavSound {
+  // Absolute path to the user's .wav file.
   custom_wav: string,
 }
+
+export const SILENT_SOUND = "none";
+
+export const isCustomWavSound = (sound: AppSoundFile | undefined | null): sound is CustomWavSound =>
+  typeof sound === "object" && sound !== null && typeof sound.custom_wav === "string";
 
 export interface AppDownloadPreferences {
   // Preferred download directory
