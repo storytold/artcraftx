@@ -55,11 +55,11 @@ const SOUNDS: readonly SoundDef[] = [
 export type SoundOption = { value: string; label: string };
 
 type SoundPrefKey =
-  | "delete_file_sound"
-  | "enqueue_success_sound"
-  | "enqueue_failure_sound"
-  | "generation_success_sound"
-  | "generation_failure_sound";
+  | "delete_file"
+  | "enqueue_success"
+  | "enqueue_failure"
+  | "generation_success"
+  | "generation_failure";
 
 export class SoundManager {
   // Dropdown options for AudioSettingsPane.
@@ -91,17 +91,19 @@ export class SoundManager {
   }
 
   // Event-driven playback — gated on `play_sounds`.
-  static async playFileDeleted()       { await this.playEvent("delete_file_sound"); }
-  static async playEnqueueSuccess()    { await this.playEvent("enqueue_success_sound"); }
-  static async playEnqueueFailure()    { await this.playEvent("enqueue_failure_sound"); }
-  static async playGenerationSuccess() { await this.playEvent("generation_success_sound"); }
-  static async playGenerationFailure() { await this.playEvent("generation_failure_sound"); }
+  static async playFileDeleted()       { await this.playEvent("delete_file"); }
+  static async playEnqueueSuccess()    { await this.playEvent("enqueue_success"); }
+  static async playEnqueueFailure()    { await this.playEvent("enqueue_failure"); }
+  static async playGenerationSuccess() { await this.playEvent("generation_success"); }
+  static async playGenerationFailure() { await this.playEvent("generation_failure"); }
 
   private static async playEvent(prefKey: SoundPrefKey) {
-    const prefs = (await GetAppPreferences()).preferences;
-    if (!prefs?.play_sounds) return;
-    const soundName = prefs[prefKey];
-    if (!soundName) return;
-    SoundRegistry.getInstance().playSound(soundName);
+    const sounds = (await GetAppPreferences()).preferences?.sounds;
+    if (!sounds?.play_sounds) return;
+    const sound = sounds[prefKey];
+    // Only catalog keys are playable here; "none" is silent and custom .wav
+    // files aren't supported by the registry yet.
+    if (!sound || sound === "none" || typeof sound !== "string") return;
+    SoundRegistry.getInstance().playSound(sound);
   }
 }

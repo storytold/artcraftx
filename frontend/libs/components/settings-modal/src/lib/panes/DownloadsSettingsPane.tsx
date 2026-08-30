@@ -55,7 +55,7 @@ export const DownloadsSettingsPane = (args: DownloadsSettingsPaneProps) => {
   const applyPreferences = (prefs: AppPreferencesPayload) => {
     setPreferences(prefs);
     const filename: PreferredDownloadFilename | undefined =
-      prefs.preferred_download_filename;
+      prefs.downloads.preferred_download_filename;
     if (filename && typeof filename === "object" && "custom_format" in filename) {
       setFilenameMode(CUSTOM);
       setCustomFormat(filename.custom_format);
@@ -78,7 +78,7 @@ export const DownloadsSettingsPane = (args: DownloadsSettingsPaneProps) => {
   };
 
   // NB: This might be a complex type.
-  const outerDownloadObject = preferences?.preferred_download_directory || {};
+  const outerDownloadObject = preferences?.downloads.preferred_download_directory || {};
   const downloadDirectory =
     "custom" in outerDownloadObject
       ? (outerDownloadObject.custom as string)

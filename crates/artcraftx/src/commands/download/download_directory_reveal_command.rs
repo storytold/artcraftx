@@ -45,9 +45,10 @@ pub async fn handle_request(
   app_data_root: &AppDataRoot,
 ) -> Result<(), ArtcraftXError> {
 
-  let app_prefs = app_prefs.get_clone()?;
+  let app_prefs = app_prefs.get()?;
 
   let download_directory = app_prefs
+      .downloads
       .preferred_download_directory
       .download_directory(app_data_root);
 

@@ -104,7 +104,7 @@ async fn download_all_files(
   task: &Task,
   media_files: &[JobMediaFileInfo],
 ) {
-  let app_prefs = match app_preferences.get_clone() {
+  let app_prefs = match app_preferences.get() {
     Ok(prefs) => prefs,
     Err(err) => {
       error!("Can't read app preferences; skipping downloads for job {}: {:?}", job.job_token.as_str(), err);
@@ -140,7 +140,7 @@ async fn download_all_files(
         .unwrap_or("bin")
         .to_string();
 
-    let filename = app_prefs.preferred_download_filename.build_filename(&DownloadFilenameParts {
+    let filename = app_prefs.downloads.preferred_download_filename.build_filename(&DownloadFilenameParts {
       model_slug: &model_slug,
       download_time,
       maybe_batch_index: (cdn_urls.len() > 1).then(|| index + 1),

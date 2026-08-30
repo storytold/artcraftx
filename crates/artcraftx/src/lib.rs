@@ -47,7 +47,7 @@ use crate::commands::task_queue::mark_task_as_dismissed_command::mark_task_as_di
 use crate::commands::task_queue::tasks_nuke_all_command::tasks_nuke_all_command;
 use crate::lifecycle::startup::handle_tauri_startup::handle_tauri_startup;
 use crate::lifecycle::startup::setup_main_window::setup_main_window;
-use crate::state::app_preferences::app_preferences_manager::load_app_preferences_or_default;
+use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::runtime::artcraft_platform_info::ArtcraftPlatformInfo;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
@@ -80,7 +80,7 @@ pub fn run() {
   println!("Platform info: {:?}", artcraft_platform_info);
 
   println!("Loading app preferences...");
-  let app_preferences = load_app_preferences_or_default(&app_data_root);
+  let app_preferences = AppPreferencesManager::load_or_default(&app_data_root);
   let app_preferences_2 = app_preferences.clone();
   
 

@@ -4,6 +4,7 @@ import { Button } from "@storyteller/ui-button";
 import { Play } from "lucide-react";
 import {
   AppPreferencesPayload,
+  AppSoundFile,
   GetAppPreferences,
 } from "@storyteller/tauri-api";
 import { PreferenceName, UpdateAppPreferences } from "@storyteller/tauri-api";
@@ -26,13 +27,14 @@ export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
     fetchData();
   }, []);
 
-  const playSounds = preferences?.play_sounds || false;
+  const sounds = preferences?.sounds;
+  const playSounds = sounds?.play_sounds || false;
 
-  const deleteFileSound = orNone(preferences?.delete_file_sound);
-  const enqueueSuccessSound = orNone(preferences?.enqueue_success_sound);
-  const enqueueFailureSound = orNone(preferences?.enqueue_failure_sound);
-  const generationSuccessSound = orNone(preferences?.generation_success_sound);
-  const generationFailureSound = orNone(preferences?.generation_failure_sound);
+  const deleteFileSound = orNone(sounds?.delete_file);
+  const enqueueSuccessSound = orNone(sounds?.enqueue_success);
+  const enqueueFailureSound = orNone(sounds?.enqueue_failure);
+  const generationSuccessSound = orNone(sounds?.generation_success);
+  const generationFailureSound = orNone(sounds?.generation_failure);
 
   const reloadPreferences = async () => {
     const prefs = await GetAppPreferences();
@@ -214,8 +216,10 @@ export const AudioSettingsPane = (args: AudioSettingsPaneProps) => {
   );
 };
 
-const orNone = (val: string | undefined | null): string => {
-  if (!!!val) {
+// The dropdown only knows catalog keys; anything else (silent, or a custom
+// .wav the UI can't pick yet) shows as "None (Silent)".
+const orNone = (val: AppSoundFile | undefined | null): string => {
+  if (!val || typeof val !== "string") {
     return "none";
   }
   return val;

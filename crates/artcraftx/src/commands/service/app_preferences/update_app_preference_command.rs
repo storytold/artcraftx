@@ -1,45 +1,28 @@
+use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
+use crate::state::app_preferences::settings::app_sound_file::{optional_sound, AppSoundFile};
 use crate::state::downloads::preferred_download_directory::PreferredDownloadDirectory;
 use crate::state::downloads::preferred_download_filename::PreferredDownloadFilename;
-use crate::state::data_dir::app_data_root::AppDataRoot;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{error, info};
 use serde_derive::{Deserialize, Serialize};
 use tauri::State;
 
-/// For now, we'll only update a single preference at a time.
-#[derive(Deserialize)]
-pub struct UpdateAppPreferencesRequest {
-  pub preference: PreferenceName,
-  /// We'll decode this with respect to the preference value.
-  pub value: Option<ValueType>,
-}
-
-/// NB: Untagged — variant ORDER matters. `DownloadFilename` must precede
-/// `String` (its unit variant arrives as the string "artcraft_convention"),
-/// and its custom variant keys on "custom_format" so it can't collide with
-/// `DownloadDirectory`'s "custom".
+/// One preference change, typed per preference. The frontend sends
+/// `{ "preference": "<name>", "value": <value> }`; a sound preference with a
+/// missing, `null`, or `"none"` value means "silent".
 #[derive(Deserialize, Debug)]
-#[serde(untagged)]
-pub enum ValueType {
-  Bool(bool),
-  DownloadDirectory(PreferredDownloadDirectory),
-  DownloadFilename(PreferredDownloadFilename),
-  String(String),
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum PreferenceName {
-  PreferredDownloadDirectory,
-  PreferredDownloadFilename,
-  PlaySounds,
-  DeleteFileSound,
-  EnqueueSuccessSound,
-  EnqueueFailureSound,
-  GenerationSuccessSound,
-  GenerationFailureSound,
+#[serde(tag = "preference", content = "value", rename_all = "snake_case")]
+pub enum UpdateAppPreferencesRequest {
+  PreferredDownloadDirectory(PreferredDownloadDirectory),
+  PreferredDownloadFilename(PreferredDownloadFilename),
+  PlaySounds(bool),
+  DeleteFileSound(#[serde(with = "optional_sound")] Option<AppSoundFile>),
+  EnqueueSuccessSound(#[serde(with = "optional_sound")] Option<AppSoundFile>),
+  EnqueueFailureSound(#[serde(with = "optional_sound")] Option<AppSoundFile>),
+  GenerationSuccessSound(#[serde(with = "optional_sound")] Option<AppSoundFile>),
+  GenerationFailureSound(#[serde(with = "optional_sound")] Option<AppSoundFile>),
 }
 
 #[derive(Serialize)]
@@ -51,98 +34,44 @@ pub struct UpdateAppPreferencesResponse {
 pub async fn update_app_preferences_command(
   request: UpdateAppPreferencesRequest,
   app_prefs: State<'_, AppPreferencesManager>,
-  app_data_root: State<'_, AppDataRoot>,
 ) -> Result<UpdateAppPreferencesResponse, String> {
-  info!("update_app_preferences_command called");
+  info!("update_app_preferences_command called: {:?}", request);
 
-  update_prefs(request, &app_prefs, &app_data_root)
-      .await
-      .map_err(|err| {
-        error!("Error getting app preferences: {:?}", err);
-        format!("Error getting app preferences: {:?}", err)
-      })?;
+  update_prefs(request, &app_prefs).map_err(|err| {
+    error!("Error updating app preferences: {:?}", err);
+    format!("Error updating app preferences: {:?}", err)
+  })?;
 
-  Ok(UpdateAppPreferencesResponse {
-    success: true,
-  })
+  Ok(UpdateAppPreferencesResponse { success: true })
 }
 
-async fn update_prefs(
-  request: UpdateAppPreferencesRequest, 
-  app_prefs: &AppPreferencesManager,
-  app_data_root: &AppDataRoot,
-) -> AnyhowResult<()> {
-  let mut prefs = app_prefs.get_clone()?;
-  
-  info!("Value is: {:?}", request.value);
-  
-  match request.preference {
-    PreferenceName::PreferredDownloadDirectory => {
-      match request.value {
-        Some(ValueType::DownloadDirectory(dir)) => 
-          prefs.preferred_download_directory = dir,
-        _ =>
-          return Err(anyhow!("Invalid value: {:?}", request.value)),
-      }
-    }
-    PreferenceName::PreferredDownloadFilename => {
-      match request.value {
-        Some(ValueType::DownloadFilename(filename)) => {
-          if let PreferredDownloadFilename::Custom(format) = &filename {
-            PreferredDownloadFilename::validate_custom_format(format)
-                .map_err(|reason| anyhow!("Invalid filename format: {}", reason))?;
-          }
-          prefs.preferred_download_filename = filename;
-        }
-        _ =>
-          return Err(anyhow!("Invalid value: {:?}", request.value)),
-      }
-    }
-    PreferenceName::PlaySounds => {
-      match request.value {
-        Some(ValueType::Bool(val)) => 
-          prefs.play_sounds = val,
-        _ => 
-          return Err(anyhow!("Invalid value: {:?}", request.value)),
-      }
-    }
-    PreferenceName::DeleteFileSound => {
-      prefs.delete_file_sound = request.value
-          .map(|val| string_value(&val))
-          .transpose()?;
-    }
-    PreferenceName::EnqueueSuccessSound => {
-      prefs.enqueue_success_sound = request.value
-          .map(|val| string_value(&val))
-          .transpose()?;
-    }
-    PreferenceName::EnqueueFailureSound => {
-      prefs.enqueue_failure_sound = request.value
-          .map(|val| string_value(&val))
-          .transpose()?;
-    }
-    PreferenceName::GenerationSuccessSound => {
-      prefs.generation_success_sound = request.value
-          .map(|val| string_value(&val))
-          .transpose()?;
-    }
-    PreferenceName::GenerationFailureSound => {
-      prefs.generation_failure_sound = request.value
-          .map(|val| string_value(&val))
-          .transpose()?;
-    }
-  }
-  
-  app_prefs.set_clone(&prefs)?;
-  app_data_root.settings_dir().write_app_preferences(&prefs)?;
-  
+fn update_prefs(request: UpdateAppPreferencesRequest, app_prefs: &AppPreferencesManager) -> AnyhowResult<()> {
+  validate(&request)?;
+  app_prefs.update(|prefs| apply(request, prefs))?;
   Ok(())
 }
 
-fn string_value(value: &ValueType) -> AnyhowResult<String> {
-  match value {
-    ValueType::String(val) => Ok(val.to_string()),
-    _ => Err(anyhow!("Invalid value type: {:?}", value)),
+fn validate(request: &UpdateAppPreferencesRequest) -> AnyhowResult<()> {
+  match request {
+    UpdateAppPreferencesRequest::PreferredDownloadFilename(PreferredDownloadFilename::Custom(format)) => {
+      PreferredDownloadFilename::validate_custom_format(format)
+          .map_err(|reason| anyhow!("Invalid filename format: {}", reason))
+    }
+    _ => Ok(()),
+  }
+}
+
+fn apply(request: UpdateAppPreferencesRequest, prefs: &mut AppPreferences) {
+  use UpdateAppPreferencesRequest::*;
+  match request {
+    PreferredDownloadDirectory(directory) => prefs.downloads.preferred_download_directory = directory,
+    PreferredDownloadFilename(filename) => prefs.downloads.preferred_download_filename = filename,
+    PlaySounds(enabled) => prefs.sounds.play_sounds = enabled,
+    DeleteFileSound(sound) => prefs.sounds.delete_file = sound,
+    EnqueueSuccessSound(sound) => prefs.sounds.enqueue_success = sound,
+    EnqueueFailureSound(sound) => prefs.sounds.enqueue_failure = sound,
+    GenerationSuccessSound(sound) => prefs.sounds.generation_success = sound,
+    GenerationFailureSound(sound) => prefs.sounds.generation_failure = sound,
   }
 }
 
@@ -150,32 +79,84 @@ fn string_value(value: &ValueType) -> AnyhowResult<String> {
 mod tests {
   use super::*;
 
-  /// The untagged `ValueType` decode is order-sensitive; pin the behavior.
+  fn decode(json: &str) -> UpdateAppPreferencesRequest {
+    serde_json::from_str(json).unwrap()
+  }
+
+  /// Pin the wire format the frontend sends (`UpdateAppPreference.ts`).
   #[test]
-  fn value_type_decoding() {
+  fn decodes_each_preference() {
     assert!(matches!(
-      serde_json::from_str::<ValueType>("true").unwrap(),
-      ValueType::Bool(true),
+      decode(r#"{"preference":"play_sounds","value":true}"#),
+      UpdateAppPreferencesRequest::PlaySounds(true),
     ));
     assert!(matches!(
-      serde_json::from_str::<ValueType>("\"artcraft_convention\"").unwrap(),
-      ValueType::DownloadFilename(PreferredDownloadFilename::ArtcraftConvention),
+      decode(r#"{"preference":"preferred_download_filename","value":"artcraft_convention"}"#),
+      UpdateAppPreferencesRequest::PreferredDownloadFilename(PreferredDownloadFilename::ArtcraftConvention),
     ));
     assert!(matches!(
-      serde_json::from_str::<ValueType>("{\"custom_format\":\"{model}_{date}\"}").unwrap(),
-      ValueType::DownloadFilename(PreferredDownloadFilename::Custom(_)),
+      decode(r#"{"preference":"preferred_download_filename","value":{"custom_format":"{model}_{date}"}}"#),
+      UpdateAppPreferencesRequest::PreferredDownloadFilename(PreferredDownloadFilename::Custom(_)),
     ));
     assert!(matches!(
-      serde_json::from_str::<ValueType>("{\"custom\":\"/tmp\"}").unwrap(),
-      ValueType::DownloadDirectory(PreferredDownloadDirectory::Custom(_)),
+      decode(r#"{"preference":"preferred_download_directory","value":{"custom":"/tmp"}}"#),
+      UpdateAppPreferencesRequest::PreferredDownloadDirectory(PreferredDownloadDirectory::Custom(_)),
     ));
     assert!(matches!(
-      serde_json::from_str::<ValueType>("{\"system\":\"downloads\"}").unwrap(),
-      ValueType::DownloadDirectory(PreferredDownloadDirectory::System(_)),
+      decode(r#"{"preference":"preferred_download_directory","value":{"system":"downloads"}}"#),
+      UpdateAppPreferencesRequest::PreferredDownloadDirectory(PreferredDownloadDirectory::System(_)),
     ));
     assert!(matches!(
-      serde_json::from_str::<ValueType>("\"done\"").unwrap(),
-      ValueType::String(_),
+      decode(r#"{"preference":"enqueue_success_sound","value":"done"}"#),
+      UpdateAppPreferencesRequest::EnqueueSuccessSound(Some(AppSoundFile::Done)),
     ));
+    assert!(matches!(
+      decode(r#"{"preference":"generation_failure_sound","value":{"custom_wav":"/tmp/x.wav"}}"#),
+      UpdateAppPreferencesRequest::GenerationFailureSound(Some(AppSoundFile::CustomWav(_))),
+    ));
+  }
+
+  /// "None (Silent)" in the UI sends `value: undefined` (key absent) — and
+  /// `null` must work too.
+  #[test]
+  fn silent_sound_decodes_from_missing_or_null_value() {
+    assert!(matches!(
+      decode(r#"{"preference":"delete_file_sound"}"#),
+      UpdateAppPreferencesRequest::DeleteFileSound(None),
+    ));
+    assert!(matches!(
+      decode(r#"{"preference":"delete_file_sound","value":null}"#),
+      UpdateAppPreferencesRequest::DeleteFileSound(None),
+    ));
+    assert!(matches!(
+      decode(r#"{"preference":"delete_file_sound","value":"none"}"#),
+      UpdateAppPreferencesRequest::DeleteFileSound(None),
+    ));
+  }
+
+  #[test]
+  fn wrong_value_type_is_rejected() {
+    assert!(serde_json::from_str::<UpdateAppPreferencesRequest>(r#"{"preference":"play_sounds","value":"yes"}"#).is_err());
+    assert!(serde_json::from_str::<UpdateAppPreferencesRequest>(r#"{"preference":"enqueue_success_sound","value":"not_a_sound"}"#).is_err());
+    assert!(serde_json::from_str::<UpdateAppPreferencesRequest>(r#"{"preference":"generation_enqueue_sound","value":"done"}"#).is_err());
+  }
+
+  #[test]
+  fn custom_filename_format_is_validated() {
+    let bad = decode(r#"{"preference":"preferred_download_filename","value":{"custom_format":"a/b"}}"#);
+    assert!(validate(&bad).is_err());
+    let good = decode(r#"{"preference":"preferred_download_filename","value":{"custom_format":"{model}_{date}"}}"#);
+    assert!(validate(&good).is_ok());
+  }
+
+  #[test]
+  fn apply_writes_into_the_right_group() {
+    let mut prefs = AppPreferences::default();
+    apply(decode(r#"{"preference":"play_sounds","value":false}"#), &mut prefs);
+    apply(decode(r#"{"preference":"generation_success_sound"}"#), &mut prefs);
+    apply(decode(r#"{"preference":"preferred_download_directory","value":{"custom":"/tmp/out"}}"#), &mut prefs);
+    assert!(!prefs.sounds.play_sounds);
+    assert_eq!(prefs.sounds.generation_success, None);
+    assert_eq!(prefs.downloads.preferred_download_directory, PreferredDownloadDirectory::Custom("/tmp/out".into()));
   }
 }

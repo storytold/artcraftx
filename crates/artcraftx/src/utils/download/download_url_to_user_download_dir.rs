@@ -17,6 +17,7 @@ pub async fn download_url_to_user_download_dir(
   let url_file_name = download_file_name_from_url(url)?;
 
   let download_directory = app_prefs
+      .downloads
       .preferred_download_directory
       .download_directory(app_data_root);
 

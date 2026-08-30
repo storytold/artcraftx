@@ -97,7 +97,7 @@ pub async fn handle_request(
   app_data_root: &AppDataRoot
 ) -> Result<(), ArtcraftXError> {
 
-  let app_prefs = app_prefs.get_clone()?;
+  let app_prefs = app_prefs.get()?;
 
   let download_path = download_url_to_user_download_dir(
     &request.url,

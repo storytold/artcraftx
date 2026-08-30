@@ -34,6 +34,7 @@ pub async fn download_url_to_download_dir_via_temp(
   };
 
   let download_directory = app_prefs
+      .downloads
       .preferred_download_directory
       .download_directory(app_data_root);
 
@@ -108,7 +109,7 @@ mod tests {
     println!("[live] downloaded to {:?}", path);
     assert!(path.exists());
     assert!(std::fs::metadata(&path).unwrap().len() > 0);
-    assert!(path.starts_with(app_prefs.preferred_download_directory.download_directory(&app_data_root)));
+    assert!(path.starts_with(app_prefs.downloads.preferred_download_directory.download_directory(&app_data_root)));
 
     // Second attempt must refuse to clobber.
     let second = download_url_to_download_dir_via_temp(&url, None, &app_data_root, &app_prefs).await;

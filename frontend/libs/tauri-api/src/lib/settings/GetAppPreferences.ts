@@ -4,24 +4,38 @@ export interface GetAppPreferencesResult {
   preferences: AppPreferencesPayload,
 }
 
+// Mirrors the backend's `AppPreferences` (grouped like the on-disk TOML).
 export interface AppPreferencesPayload {
+  sounds: AppSoundPreferences,
+  downloads: AppDownloadPreferences,
+}
+
+export interface AppSoundPreferences {
+  // Master switch: play sounds on events at all.
+  play_sounds: boolean,
+
+  // Which sound plays for each event. A catalog key (defined in the frontend
+  // `SoundManager`), a custom .wav, or "none" for silent.
+  delete_file: AppSoundFile,
+  enqueue_success: AppSoundFile,
+  enqueue_failure: AppSoundFile,
+  generation_success: AppSoundFile,
+  generation_failure: AppSoundFile,
+}
+
+// A sound catalog key (e.g. "done"), a custom .wav, or "none" (silent).
+export type AppSoundFile = string | CustomWavSound;
+
+export interface CustomWavSound {
+  custom_wav: string,
+}
+
+export interface AppDownloadPreferences {
   // Preferred download directory
   preferred_download_directory: PreferredDownloadDirectory,
 
   // How downloaded generation files are named on disk.
   preferred_download_filename: PreferredDownloadFilename,
-
-  // Play sounds on events.
-  play_sounds: boolean,
-
-  // Sound names to play. 
-  // These are keys, not filenames, and are defined by the frontend.
-  delete_file_sound?: string,
-  enqueue_success_sound?: string,
-  enqueue_failure_sound?: string,
-  generation_success_sound?: string,
-  generation_failure_sound?: string,
-  generation_enqueue_sound?: string,
 }
 
 export type PreferredDownloadDirectory = SystemDirectory | CustomDirectory;

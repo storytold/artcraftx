@@ -1,10 +1,12 @@
 
 import { invoke } from "@tauri-apps/api/core";
-import { PreferredDownloadDirectory, PreferredDownloadFilename } from "./GetAppPreferences";
+import { AppSoundFile, PreferredDownloadDirectory, PreferredDownloadFilename } from "./GetAppPreferences";
 
+// One preference change. For the sound preferences, `undefined` or "none"
+// means silent.
 export interface UpdateAppPreferencesRequest {
   preference: PreferenceName,
-  value: undefined | string | boolean | PreferredDownloadDirectory | PreferredDownloadFilename,
+  value: undefined | boolean | AppSoundFile | PreferredDownloadDirectory | PreferredDownloadFilename,
 }
 
 export enum PreferenceName {
@@ -16,7 +18,6 @@ export enum PreferenceName {
   EnqueueFailureSound = "enqueue_failure_sound",
   GenerationSuccessSound = "generation_success_sound",
   GenerationFailureSound = "generation_failure_sound",
-  GenerationEnqueueSound = "generation_enqueue_sound",
 }
 
 export interface UpdateAppPreferencesResult {

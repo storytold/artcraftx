@@ -73,7 +73,7 @@ pub async fn handle_request(
   app_data_root: &AppDataRoot
 ) -> Result<(), ArtcraftXError> {
 
-  let app_prefs = app_prefs.get_clone()?;
+  let app_prefs = app_prefs.get()?;
 
   // TODO: Api should return the extension and suggested filename so we can better construct something.
   let media_file = get_media_file(

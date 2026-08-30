@@ -204,7 +204,7 @@ async fn save_to_download_directory(
   task: &Task,
   images: &[CompletedImage],
 ) {
-  let app_prefs = match app_preferences.get_clone() {
+  let app_prefs = match app_preferences.get() {
     Ok(prefs) => prefs,
     Err(err) => {
       error!("[GrokComplete] Can't read app preferences; skipping downloads for task {}: {:?}", task.id.as_str(), err);
@@ -225,7 +225,7 @@ async fn save_to_download_directory(
 
     let extension = url.path().rsplit('.').next().unwrap_or("jpg").to_string();
 
-    let filename = app_prefs.preferred_download_filename.build_filename(&DownloadFilenameParts {
+    let filename = app_prefs.downloads.preferred_download_filename.build_filename(&DownloadFilenameParts {
       model_slug: GROK_IMAGE_MODEL_SLUG,
       download_time,
       maybe_batch_index: (images.len() > 1).then(|| index + 1),

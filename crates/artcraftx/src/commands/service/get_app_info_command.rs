@@ -61,9 +61,9 @@ pub fn get_app_info_command(
 
   let root_directory = app_data_root.path().to_path_buf();
 
-  let download_directory = match app_prefs.get_clone() {
+  let download_directory = match app_prefs.get() {
     Ok(app_prefs) => {
-      app_prefs.preferred_download_directory
+      app_prefs.downloads.preferred_download_directory
           .download_directory(&app_data_root)
     }
     Err(err) => {
