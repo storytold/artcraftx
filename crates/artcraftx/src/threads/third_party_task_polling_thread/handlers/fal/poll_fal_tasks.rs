@@ -1,4 +1,5 @@
 use crate::credentials::find_service_credentials::find_fal_api_key;
+use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
 use crate::threads::third_party_task_polling_thread::handlers::fal::handle_fal_complete::handle_fal_complete;
@@ -14,6 +15,7 @@ use tauri::AppHandle;
 pub async fn poll_fal_tasks(
   app_handle: &AppHandle,
   app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
   fal_tasks: &[&Task],
@@ -30,6 +32,7 @@ pub async fn poll_fal_tasks(
     let result = poll_single_fal_task(
       app_handle,
       app_data_root,
+      app_preferences,
       task_database,
       storyteller_creds_manager,
       &api_key,
@@ -49,6 +52,7 @@ pub async fn poll_fal_tasks(
 async fn poll_single_fal_task(
   app_handle: &AppHandle,
   app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
   api_key: &FalApiKey,
@@ -131,6 +135,7 @@ async fn poll_single_fal_task(
   handle_fal_complete(
     app_handle,
     app_data_root,
+    app_preferences,
     task_database,
     storyteller_creds_manager,
     task,

@@ -33,6 +33,9 @@ pub struct TaskQueueItem {
   pub provider: Option<GenerationSource>,
   pub provider_job_id: Option<String>,
 
+  /// Whether the job produces more than one file.
+  pub is_batch_generation: bool,
+
   /// If the item is done, these will be filled out.
   pub completed_item: Option<CompletedItemData>,
 
@@ -53,6 +56,11 @@ pub struct CompletedItemData {
 
   /// If generated in a batch, we probably have a batch token we can query.
   pub maybe_batch_token: Option<BatchGenerationToken>,
+
+  /// If the results were downloaded: the directory they were saved into and
+  /// the first (or only) file. Absolute paths recorded at completion time.
+  pub maybe_download_directory: Option<String>,
+  pub maybe_first_downloaded_file: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -127,6 +135,8 @@ pub async fn handle_request(
           },
           media_file_class: task.on_complete_primary_media_file_class,
           maybe_batch_token: task.on_complete_batch_token,
+          maybe_download_directory: task.on_complete_directory_location.clone(),
+          maybe_first_downloaded_file: task.on_complete_first_file_location.clone(),
         });
       } else {
         warn!("Task {} is marked complete but has no primary media file token or URL.", task.id);
@@ -153,6 +163,7 @@ pub async fn handle_request(
       model_type: task.model_type,
       provider: task.provider,
       provider_job_id: task.provider_job_id,
+      is_batch_generation: task.is_batch_generation,
       created_at: task.created_at,
       updated_at: task.updated_at,
       completed_at: task.completed_at,

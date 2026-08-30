@@ -71,11 +71,13 @@ pub async fn handle_tauri_startup(
     &sora_credential_manager,
     &storyteller_creds_manager,
     &sora_task_queue,
+    &app_preferences,
   )?;
 
   tauri::async_runtime::spawn(grok_video_task_polling_thread(
     app.clone(),
     root.clone(),
+    app_preferences.clone(),
     task_database.clone(),
     grok_creds_manager.clone(),
     storyteller_creds_manager.clone(),
@@ -84,6 +86,7 @@ pub async fn handle_tauri_startup(
   tauri::async_runtime::spawn(midjourney_websocket_thread(
     app.clone(),
     root.clone(),
+    app_preferences.clone(),
     task_database.clone(),
     midjourney_live_session.clone(),
     storyteller_creds_manager.clone(),
@@ -92,6 +95,7 @@ pub async fn handle_tauri_startup(
   tauri::async_runtime::spawn(midjourney_long_polling_thread(
     app.clone(),
     root.clone(),
+    app_preferences.clone(),
     task_database.clone(),
     midjourney_live_session.clone(),
     storyteller_creds_manager.clone(),
@@ -100,6 +104,7 @@ pub async fn handle_tauri_startup(
   tauri::async_runtime::spawn(worldlabs_marble_task_polling(
     app.clone(),
     root.clone(),
+    app_preferences.clone(),
     task_database.clone(),
     worldlabs_creds_manager.clone(),
     storyteller_creds_manager.clone(),

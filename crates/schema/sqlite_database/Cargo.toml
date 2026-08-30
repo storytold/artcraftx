@@ -39,6 +39,9 @@ serde_derive.workspace = true
 serde_json.workspace = true
 
 [dev-dependencies]
+# Integration tests run queries against a throwaway migrated database.
+tempfile.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 # serial_test = "3.0.0"
 
 [build-dependencies]

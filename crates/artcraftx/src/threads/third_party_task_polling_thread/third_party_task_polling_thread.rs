@@ -132,6 +132,7 @@ async fn poll_iteration(
   poll_fal_tasks(
     app_handle,
     app_data_root,
+    app_preferences,
     task_database,
     storyteller_creds_manager,
     &fal_tasks,

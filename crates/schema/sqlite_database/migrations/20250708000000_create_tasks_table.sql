@@ -7,6 +7,7 @@
 --
 -- Migration history:
 --   tasks_v1.sqlite - initial version
+--   tasks_v8.sqlite - is_batch_generation, on_complete_directory_location, on_complete_first_file_location
 
 CREATE TABLE tasks (
     -- Task auto-incrementing primary key.
@@ -34,6 +35,10 @@ CREATE TABLE tasks (
     -- The primary key for the job in the provider's system.
     -- Sometimes this may not be enough to look up the job
     provider_job_id TEXT,
+
+    -- Whether the job produces more than one file (a batch). Written on enqueue.
+    -- When false, exactly one file is generated.
+    is_batch_generation INTEGER NOT NULL DEFAULT 0,
 
     -- TODO: Need to store prompts
     -- OPTIONAL.
@@ -67,6 +72,17 @@ CREATE TABLE tasks (
     -- For some third party systems (eg. FAL), the URL to check the
     -- results (when the job completes)
     queue_response_url TEXT,
+
+    -- OPTIONAL.
+    -- If the results were downloaded, the directory they were saved into.
+    -- Recorded as an absolute path at completion time, so it stays correct
+    -- even if the preferred download directory changes later.
+    on_complete_directory_location TEXT,
+
+    -- OPTIONAL.
+    -- If the results were downloaded, the first file of the batch (or the only
+    -- file). Absolute path, recorded at completion time.
+    on_complete_first_file_location TEXT,
 
     -- TODO: Necessary? Can probably kill this.
     -- OPTIONAL.

@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n    SELECT\n      id,\n      task_status,\n      task_type,\n      model_type,\n      provider,\n      provider_job_id,\n      frontend_caller,\n      queue_status_url,\n      queue_response_url,\n      prompt_token,\n      frontend_subscriber_id,\n      frontend_subscriber_payload\n    FROM tasks\n    WHERE\n      provider = ?\n      AND provider_job_id = ?\n  ",
+  "query": "\n    SELECT\n      id,\n      task_status,\n      task_type,\n      model_type,\n      provider,\n      provider_job_id,\n      is_batch_generation,\n      frontend_caller,\n      queue_status_url,\n      queue_response_url,\n      prompt_token,\n      frontend_subscriber_id,\n      frontend_subscriber_payload\n    FROM tasks\n    WHERE\n      provider = ?\n      AND provider_job_id = ?\n  ",
   "describe": {
     "columns": [
       {
@@ -34,33 +34,38 @@
         "type_info": "Text"
       },
       {
-        "name": "frontend_caller",
+        "name": "is_batch_generation",
         "ordinal": 6,
-        "type_info": "Text"
+        "type_info": "Int64"
       },
       {
-        "name": "queue_status_url",
+        "name": "frontend_caller",
         "ordinal": 7,
         "type_info": "Text"
       },
       {
-        "name": "queue_response_url",
+        "name": "queue_status_url",
         "ordinal": 8,
         "type_info": "Text"
       },
       {
-        "name": "prompt_token",
+        "name": "queue_response_url",
         "ordinal": 9,
         "type_info": "Text"
       },
       {
-        "name": "frontend_subscriber_id",
+        "name": "prompt_token",
         "ordinal": 10,
         "type_info": "Text"
       },
       {
-        "name": "frontend_subscriber_payload",
+        "name": "frontend_subscriber_id",
         "ordinal": 11,
+        "type_info": "Text"
+      },
+      {
+        "name": "frontend_subscriber_payload",
+        "ordinal": 12,
         "type_info": "Text"
       }
     ],
@@ -74,6 +79,7 @@
       true,
       true,
       true,
+      false,
       true,
       true,
       true,
@@ -82,5 +88,5 @@
       true
     ]
   },
-  "hash": "35677894f7b02f32a1bf6396fa6d10caba69bb0f3f03ee7ffbfa1437689d42df"
+  "hash": "bc8df0a71de3547cf9e015c7facd8a9856c000a47f91114cc5c2a4aba9c11b47"
 }

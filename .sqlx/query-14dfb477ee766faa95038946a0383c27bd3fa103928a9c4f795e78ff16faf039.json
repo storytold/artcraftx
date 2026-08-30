@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n    SELECT\n      id,\n      task_status,\n      task_type,\n      model_type,\n      provider,\n      provider_job_id,\n      frontend_caller,\n      frontend_subscriber_id,\n      frontend_subscriber_payload,\n      on_complete_primary_media_file_token,\n      on_complete_primary_media_file_class,\n      on_complete_batch_token,\n      on_complete_primary_media_file_cdn_url,\n      on_complete_primary_media_file_thumbnail_url_template,\n      on_failure_type,\n      on_failure_message,\n      created_at as \"created_at: DateTime<Utc>\",\n      updated_at as \"updated_at: DateTime<Utc>\",\n      completed_at as \"completed_at: DateTime<Utc>\"\n    FROM tasks\n    WHERE is_dismissed_by_user == 0\n  ",
+  "query": "\n    SELECT\n      id,\n      task_status,\n      task_type,\n      model_type,\n      provider,\n      provider_job_id,\n      is_batch_generation,\n      frontend_caller,\n      frontend_subscriber_id,\n      frontend_subscriber_payload,\n      on_complete_primary_media_file_token,\n      on_complete_primary_media_file_class,\n      on_complete_batch_token,\n      on_complete_primary_media_file_cdn_url,\n      on_complete_primary_media_file_thumbnail_url_template,\n      on_complete_directory_location,\n      on_complete_first_file_location,\n      on_failure_type,\n      on_failure_message,\n      created_at as \"created_at: DateTime<Utc>\",\n      updated_at as \"updated_at: DateTime<Utc>\",\n      completed_at as \"completed_at: DateTime<Utc>\"\n    FROM tasks\n    WHERE is_dismissed_by_user == 0\n  ",
   "describe": {
     "columns": [
       {
@@ -34,68 +34,83 @@
         "type_info": "Text"
       },
       {
-        "name": "frontend_caller",
+        "name": "is_batch_generation",
         "ordinal": 6,
-        "type_info": "Text"
+        "type_info": "Int64"
       },
       {
-        "name": "frontend_subscriber_id",
+        "name": "frontend_caller",
         "ordinal": 7,
         "type_info": "Text"
       },
       {
-        "name": "frontend_subscriber_payload",
+        "name": "frontend_subscriber_id",
         "ordinal": 8,
         "type_info": "Text"
       },
       {
-        "name": "on_complete_primary_media_file_token",
+        "name": "frontend_subscriber_payload",
         "ordinal": 9,
         "type_info": "Text"
       },
       {
-        "name": "on_complete_primary_media_file_class",
+        "name": "on_complete_primary_media_file_token",
         "ordinal": 10,
         "type_info": "Text"
       },
       {
-        "name": "on_complete_batch_token",
+        "name": "on_complete_primary_media_file_class",
         "ordinal": 11,
         "type_info": "Text"
       },
       {
-        "name": "on_complete_primary_media_file_cdn_url",
+        "name": "on_complete_batch_token",
         "ordinal": 12,
         "type_info": "Text"
       },
       {
-        "name": "on_complete_primary_media_file_thumbnail_url_template",
+        "name": "on_complete_primary_media_file_cdn_url",
         "ordinal": 13,
         "type_info": "Text"
       },
       {
-        "name": "on_failure_type",
+        "name": "on_complete_primary_media_file_thumbnail_url_template",
         "ordinal": 14,
         "type_info": "Text"
       },
       {
-        "name": "on_failure_message",
+        "name": "on_complete_directory_location",
         "ordinal": 15,
         "type_info": "Text"
       },
       {
-        "name": "created_at: DateTime<Utc>",
+        "name": "on_complete_first_file_location",
         "ordinal": 16,
+        "type_info": "Text"
+      },
+      {
+        "name": "on_failure_type",
+        "ordinal": 17,
+        "type_info": "Text"
+      },
+      {
+        "name": "on_failure_message",
+        "ordinal": 18,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at: DateTime<Utc>",
+        "ordinal": 19,
         "type_info": "Int64"
       },
       {
         "name": "updated_at: DateTime<Utc>",
-        "ordinal": 17,
+        "ordinal": 20,
         "type_info": "Int64"
       },
       {
         "name": "completed_at: DateTime<Utc>",
-        "ordinal": 18,
+        "ordinal": 21,
         "type_info": "Int64"
       }
     ],
@@ -107,6 +122,9 @@
       false,
       false,
       true,
+      true,
+      true,
+      false,
       true,
       true,
       true,
@@ -124,5 +142,5 @@
       true
     ]
   },
-  "hash": "2436eb7bf4b0e23a899311a67a77f71d89eb35461e2113e43cd9d221bfa91c9a"
+  "hash": "14dfb477ee766faa95038946a0383c27bd3fa103928a9c4f795e78ff16faf039"
 }

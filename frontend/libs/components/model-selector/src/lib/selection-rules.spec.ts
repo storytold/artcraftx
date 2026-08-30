@@ -1,6 +1,7 @@
 import { GenerationProvider } from "@storyteller/api-enums";
 import { ImageModel, ModelCreator } from "@storyteller/model-list";
 import {
+  chooseAccountForModel,
   chooseAccountForProvider,
   chooseModelForProvider,
   chooseProviderForModel,
@@ -52,6 +53,28 @@ describe("chooseModelForProvider", () => {
   });
   it("is undefined when the provider offers nothing on the page", () => {
     expect(chooseModelForProvider(GenerationProvider.WorldLabs, page)).toBeUndefined();
+  });
+});
+
+describe("chooseAccountForModel", () => {
+  const artcraft2 = { id: "c_artcraft_2", service: "artcraft" };
+  const all = [...accounts, artcraft2];
+
+  it("prefers the account last used with the model, even when the current one could run it", () => {
+    // Midjourney v8 was run on the Midjourney account; v7 was last run on ArtCraft #2.
+    const pick = chooseAccountForModel(midjourney7, all, "c_mj", { midjourney_7: "c_artcraft_2" });
+    expect(pick.account?.id).toBe("c_artcraft_2");
+    expect(pick.provider).toBe(GenerationProvider.Artcraft);
+  });
+  it("ignores a remembered account that no longer exists or can't run the model", () => {
+    expect(chooseAccountForModel(midjourney7, all, "c_mj", { midjourney_7: "c_gone" }).account?.id).toBe("c_mj");
+    expect(chooseAccountForModel(midjourney7, all, "c_mj", { midjourney_7: "c_grok" }).account?.id).toBe("c_mj");
+  });
+  it("keeps the current account when compatible, else falls back to the default provider", () => {
+    expect(chooseAccountForModel(flux, all, "c_artcraft", {}).account?.id).toBe("c_artcraft");
+    const pick = chooseAccountForModel(grokImagine, all, "c_artcraft", {});
+    expect(pick.account).toBeUndefined();
+    expect(pick.provider).toBe(GenerationProvider.Grok);
   });
 });
 

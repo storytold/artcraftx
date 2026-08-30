@@ -23,6 +23,7 @@ pub struct TaskItem {
   pub model_type: Option<TaskModelType>,
   pub provider: Option<GenerationSource>,
   pub provider_job_id: Option<String>,
+  pub is_batch_generation: bool,
   pub frontend_caller: Option<TauriCommandCaller>,
   pub frontend_subscriber_id: Option<String>,
   pub frontend_subscriber_payload: Option<String>,
@@ -31,6 +32,9 @@ pub struct TaskItem {
   pub on_complete_batch_token: Option<BatchGenerationToken>,
   pub on_complete_primary_media_file_cdn_url: Option<String>,
   pub on_complete_primary_media_file_thumbnail_url_template: Option<String>,
+  /// Where the results were downloaded, if they were (absolute paths).
+  pub on_complete_directory_location: Option<String>,
+  pub on_complete_first_file_location: Option<String>,
   pub on_failure_type: Option<TaskFailureType>,
   pub on_failure_message: Option<String>,
   pub created_at: DateTime<Utc>,
@@ -51,6 +55,7 @@ pub async fn list_tasks_for_frontend(
       model_type,
       provider,
       provider_job_id,
+      is_batch_generation,
       frontend_caller,
       frontend_subscriber_id,
       frontend_subscriber_payload,
@@ -59,6 +64,8 @@ pub async fn list_tasks_for_frontend(
       on_complete_batch_token,
       on_complete_primary_media_file_cdn_url,
       on_complete_primary_media_file_thumbnail_url_template,
+      on_complete_directory_location,
+      on_complete_first_file_location,
       on_failure_type,
       on_failure_message,
       created_at as "created_at: DateTime<Utc>",
@@ -85,6 +92,7 @@ pub async fn list_tasks_for_frontend(
           .map(|provider| GenerationSource::from_str(&provider))
           .transpose()?,
       provider_job_id: raw.provider_job_id,
+      is_batch_generation: raw.is_batch_generation != 0,
       frontend_caller: raw.frontend_caller
           .map(|caller| TauriCommandCaller::from_str(&caller))
           .transpose()?,
@@ -97,6 +105,8 @@ pub async fn list_tasks_for_frontend(
       on_complete_batch_token: raw.on_complete_batch_token.map(|t| BatchGenerationToken::new_from_str(&t)),
       on_complete_primary_media_file_cdn_url: raw.on_complete_primary_media_file_cdn_url,
       on_complete_primary_media_file_thumbnail_url_template: raw.on_complete_primary_media_file_thumbnail_url_template,
+      on_complete_directory_location: raw.on_complete_directory_location,
+      on_complete_first_file_location: raw.on_complete_first_file_location,
       on_failure_type: raw.on_failure_type
           .map(|t| TaskFailureType::from_str(&t))
           .transpose()?,
@@ -119,6 +129,7 @@ struct TaskItemRaw {
   model_type: Option<String>,
   provider: Option<String>,
   provider_job_id: Option<String>,
+  is_batch_generation: i64,
   frontend_caller: Option<String>,
   frontend_subscriber_id: Option<String>,
   frontend_subscriber_payload: Option<String>,
@@ -127,6 +138,8 @@ struct TaskItemRaw {
   on_complete_batch_token: Option<String>,
   on_complete_primary_media_file_cdn_url: Option<String>,
   on_complete_primary_media_file_thumbnail_url_template: Option<String>,
+  on_complete_directory_location: Option<String>,
+  on_complete_first_file_location: Option<String>,
   on_failure_type: Option<String>,
   on_failure_message: Option<String>,
   created_at: DateTime<Utc>,

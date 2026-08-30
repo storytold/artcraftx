@@ -6418,6 +6418,7 @@ dependencies = [
  "sqlite_identifiers",
  "sqlx",
  "tempfile",
+ "tokio",
  "workspace-build-acceleration",
 ]
 

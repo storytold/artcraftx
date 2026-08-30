@@ -67,9 +67,33 @@ export const chooseModelForProvider = (
   pageModels: Model[],
 ): Model | undefined => pageModels.find((m) => modelIsOfferedBy(m, provider));
 
+// The (account, provider) to use when a model is selected:
+//   1. the account last used with this model, if it still exists and its
+//      provider still offers the model;
+//   2. else the current account, if its provider offers the model;
+//   3. else the model's default provider (the account follows separately).
+export const chooseAccountForModel = (
+  model: Model,
+  accounts: AccountSummary[],
+  currentAccountId: string | null,
+  lastAccountByModel: Record<string, string>,
+): { account: AccountSummary | undefined; provider: GenerationProvider | undefined } => {
+  const remembered = accounts.find((a) => a.id === lastAccountByModel[model.id]);
+  const rememberedProvider = remembered ? providerForService(remembered.service) : undefined;
+  if (remembered && rememberedProvider && modelIsOfferedBy(model, rememberedProvider)) {
+    return { account: remembered, provider: rememberedProvider };
+  }
+  const current = accounts.find((a) => a.id === currentAccountId);
+  const currentProvider = current ? providerForService(current.service) : undefined;
+  if (current && currentProvider && modelIsOfferedBy(model, currentProvider)) {
+    return { account: current, provider: currentProvider };
+  }
+  const provider = model.getProviders()[0];
+  return { account: undefined, provider };
+};
+
 // The account to use for a provider: the current one if it generates through
-// that provider, else the first stored account that does. (Future: the last
-// account used for that model/provider.)
+// that provider, else the first stored account that does.
 export const chooseAccountForProvider = (
   provider: GenerationProvider,
   accounts: AccountSummary[],

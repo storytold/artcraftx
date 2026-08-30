@@ -132,6 +132,7 @@ async fn handle_artcraft_credential(
     model: Some(generation_model),
     provider: GenerationSource::Artcraft,
     provider_job_id: Some(payload.inference_job_token.to_string()),
+    is_batch_generation: false,
     maybe_queue_status_url: None,
     maybe_queue_response_url: None,
     maybe_prompt_token: None,

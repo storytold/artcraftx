@@ -35,4 +35,9 @@ impl AppStateDir {
   pub fn get_window_position_config_file(&self) -> PathBuf {
     self.path.join("window_position.json")
   }
+
+  /// What each prompt box last had selected (see `state::promptbox`).
+  pub fn get_promptbox_state_path(&self) -> PathBuf {
+    self.path.join("promptbox_state.json")
+  }
 }

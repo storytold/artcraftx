@@ -13,6 +13,8 @@ pub struct Task {
   pub model_type: Option<TaskModelType>,
   pub provider: GenerationSource,
   pub provider_job_id: Option<String>,
+  /// The job produces more than one file. Written on enqueue.
+  pub is_batch_generation: bool,
   pub queue_status_url: Option<String>,
   pub queue_response_url: Option<String>,
   pub prompt_token: Option<String>,
@@ -30,6 +32,7 @@ pub (crate) struct RawTask {
   pub (crate) model_type: Option<String>,
   pub (crate) provider: String,
   pub (crate) provider_job_id: Option<String>,
+  pub (crate) is_batch_generation: bool,
   pub (crate) queue_status_url: Option<String>,
   pub (crate) queue_response_url: Option<String>,
   pub (crate) prompt_token: Option<String>,

@@ -6,6 +6,7 @@ use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveS
 use crate::services::midjourney::utils::extract_midjourney_user_id_from_cookies::extract_midjourney_user_id_from_cookie_header;
 use crate::services::midjourney::utils::midjourney_browser_profile::midjourney_browser_profile;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
 use crate::database::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
@@ -26,7 +27,6 @@ use std::collections::HashMap;
 use tauri::AppHandle;
 
 const SLEEP_NO_SESSION_MS: u64 = 30_000;
-const SLEEP_NO_STORYTELLER_MS: u64 = 5_000;
 const SLEEP_BETWEEN_TASKS_MS: u64 = 2_000;
 const SLEEP_AFTER_BATCH_MS: u64 = 60_000;
 const SLEEP_ON_ERROR_MS: u64 = 30_000;
@@ -39,6 +39,7 @@ const SLEEP_ON_ERROR_MS: u64 = 30_000;
 pub async fn midjourney_long_polling_thread(
   app_handle: AppHandle,
   app_data_root: AppDataRoot,
+  app_preferences: AppPreferencesManager,
   task_database: TaskDatabase,
   mj_session: MidjourneyLiveSession,
   storyteller_creds_manager: StorytellerCredentialManager,
@@ -47,6 +48,7 @@ pub async fn midjourney_long_polling_thread(
     let res = polling_loop(
       &app_handle,
       &app_data_root,
+      &app_preferences,
       &task_database,
       &mj_session,
       &storyteller_creds_manager,
@@ -62,6 +64,7 @@ pub async fn midjourney_long_polling_thread(
 async fn polling_loop(
   app_handle: &AppHandle,
   app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   mj_session: &MidjourneyLiveSession,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -76,13 +79,8 @@ async fn polling_loop(
       }
     };
 
-    let storyteller_creds = match storyteller_creds_manager.get_credentials()? {
-      Some(creds) => creds,
-      None => {
-        tokio::time::sleep(std::time::Duration::from_millis(SLEEP_NO_STORYTELLER_MS)).await;
-        continue;
-      }
-    };
+    // Optional: without an ArtCraft session, results are still saved locally.
+    let maybe_storyteller_creds = storyteller_creds_manager.get_credentials()?;
 
     let user_id = match resolve_user_id(mj_session, &cookie_header).await {
       Some(user_id) => user_id,
@@ -101,11 +99,12 @@ async fn polling_loop(
     poll_midjourney_tasks(
       app_handle,
       app_data_root,
+      app_preferences,
       task_database,
       mj_session,
       &cookie_header,
       &user_id,
-      &storyteller_creds,
+      maybe_storyteller_creds.as_ref(),
       local_tasks,
     ).await?;
 
@@ -116,11 +115,12 @@ async fn polling_loop(
 async fn poll_midjourney_tasks(
   app_handle: &AppHandle,
   app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   mj_session: &MidjourneyLiveSession,
   cookie_header: &str,
   mj_user_id: &MidjourneyUserId,
-  storyteller_creds: &StorytellerCredentialSet,
+  maybe_storyteller_creds: Option<&StorytellerCredentialSet>,
   local_tasks: TaskList,
 ) -> AnyhowResult<()> {
   let local_tasks = local_tasks.tasks;
@@ -162,8 +162,9 @@ async fn poll_midjourney_tasks(
     let result = finalize_midjourney_job(FinalizeMidjourneyJobArgs {
       app_handle,
       app_data_root,
+      app_preferences,
       task_database,
-      storyteller_creds,
+      maybe_storyteller_creds,
       image_downloader: &image_downloader,
       midjourney_job_id: job_id,
       local_task,

@@ -9,9 +9,9 @@ import { ImageModel, Model, VideoModel } from "@storyteller/model-list";
 import { GenerationProvider } from "@storyteller/api-enums";
 import {
   AccountSummary,
+  chooseAccountForModel,
   chooseAccountForProvider,
   chooseModelForProvider,
-  chooseProviderForModel,
   modelIsOfferedBy,
   providerForService,
 } from "./selection-rules";
@@ -25,11 +25,18 @@ interface ClassyModelSelectorState {
   // Stored credentials, and the one the toolbar account picker selected
   // (shared across pages). `null` until accounts load or when none exist.
   accounts: AccountSummary[];
+  // True once the account picker has delivered the credential list (even an
+  // empty one), so persisted selections can be hydrated safely.
+  accountsLoaded: boolean;
   selectedAccountId: string | null;
+  // The account last used with each model (model id -> credential id). Wins
+  // over the current account when a model is re-selected. Persisted.
+  lastAccountByModel: Record<string, string>;
 
   registerPageModels: (page: ModelPage, models: Model[]) => void;
-  // Select a model. Its provider becomes the account's provider when the model
-  // is offered there, else the model's default — and the account follows.
+  // Select a model. The account becomes the one last used with it, else the
+  // current one if it can run the model, else one for the model's default
+  // provider; the provider follows the account.
   setSelectedModel: (page: ModelPage, model: Model) => void;
   // Remember a provider for a model on a page. When that model is the page's
   // selection, the account follows the provider.
@@ -41,9 +48,11 @@ interface ClassyModelSelectorState {
   // Select an account. Every page's model switches to one its provider
   // offers (keeping the model when it already does).
   setSelectedAccountId: (id: string | null) => void;
+  // Restore the persisted model -> account memory (merged over the current).
+  setLastAccountByModel: (entries: Record<string, string>) => void;
 }
 
-type Draft = Pick<ClassyModelSelectorState, "selectedModels" | "selectedProviders" | "selectedAccountId">;
+type Draft = Pick<ClassyModelSelectorState, "selectedModels" | "selectedProviders" | "selectedAccountId" | "lastAccountByModel">;
 
 export const useClassyModelSelectorStore = create<ClassyModelSelectorState>(
   (set, get) => ({
@@ -51,27 +60,35 @@ export const useClassyModelSelectorStore = create<ClassyModelSelectorState>(
     selectedProviders: {},
     pageModels: {},
     accounts: [],
+    accountsLoaded: false,
     selectedAccountId: null,
+    lastAccountByModel: {},
 
     registerPageModels: (page, models) =>
       set((state) => ({ pageModels: { ...state.pageModels, [page]: models } })),
 
     setSelectedModel: (page, model) =>
       set((state) => {
-        const accountProvider = accountProviderOf(state);
-        const provider = chooseProviderForModel(
+        const { account, provider } = chooseAccountForModel(
           model,
-          accountProvider ?? state.selectedProviders[page]?.[model.id],
+          state.accounts,
+          state.selectedAccountId,
+          state.lastAccountByModel,
         );
-        const draft = withModel(state, page, model, provider);
-        return provider ? withAccountFor(state, draft, provider) : draft;
+        let draft = withModel(state, page, model, provider);
+        if (account) {
+          draft = { ...draft, selectedAccountId: account.id };
+        } else if (provider) {
+          draft = withAccountFor(state, draft, provider);
+        }
+        return remember(draft, page);
       }),
 
     setSelectedProvider: (page, modelId, provider) =>
       set((state) => {
         const draft = withProvider(state, page, modelId, provider);
         const isPageSelection = state.selectedModels[page]?.id === modelId;
-        return isPageSelection ? withAccountFor(state, draft, provider) : draft;
+        return isPageSelection ? remember(withAccountFor(state, draft, provider), page) : draft;
       }),
 
     selectProvider: (page, provider) =>
@@ -82,11 +99,11 @@ export const useClassyModelSelectorStore = create<ClassyModelSelectorState>(
             ? current
             : chooseModelForProvider(provider, state.pageModels[page] ?? []);
         if (!model) return {}; // The provider offers nothing on this page.
-        return withAccountFor(state, withModel(state, page, model, provider), provider);
+        return remember(withAccountFor(state, withModel(state, page, model, provider), provider), page);
       }),
 
     setAccounts: (accounts) => {
-      set({ accounts });
+      set({ accounts, accountsLoaded: true });
       const { selectedAccountId } = get();
       const stillExists = accounts.some((a) => a.id === selectedAccountId);
       if (accounts.length === 0) {
@@ -109,10 +126,13 @@ export const useClassyModelSelectorStore = create<ClassyModelSelectorState>(
             ? current
             : chooseModelForProvider(provider, state.pageModels[page] ?? []);
           if (!model) continue; // Nothing on this page works with the provider; leave it.
-          draft = withModel(draft, page, model, provider);
+          draft = remember(withModel(draft, page, model, provider), page);
         }
         return draft;
       }),
+
+    setLastAccountByModel: (entries) =>
+      set((state) => ({ lastAccountByModel: { ...state.lastAccountByModel, ...entries } })),
   })
 );
 
@@ -122,11 +142,18 @@ const pick = (state: Draft): Draft => ({
   selectedModels: state.selectedModels,
   selectedProviders: state.selectedProviders,
   selectedAccountId: state.selectedAccountId,
+  lastAccountByModel: state.lastAccountByModel,
 });
 
-const accountProviderOf = (state: ClassyModelSelectorState): GenerationProvider | undefined => {
-  const account = state.accounts.find((a) => a.id === state.selectedAccountId);
-  return account ? providerForService(account.service) : undefined;
+// Record that the page's (final) model was used with the (final) account.
+const remember = (draft: Draft, page: ModelPage): Draft => {
+  const model = draft.selectedModels[page];
+  if (!model || !draft.selectedAccountId) return draft;
+  if (draft.lastAccountByModel[model.id] === draft.selectedAccountId) return draft;
+  return {
+    ...draft,
+    lastAccountByModel: { ...draft.lastAccountByModel, [model.id]: draft.selectedAccountId },
+  };
 };
 
 const withProvider = (state: Draft, page: ModelPage, modelId: string, provider: GenerationProvider): Draft => ({

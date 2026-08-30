@@ -157,6 +157,7 @@ async fn enqueue_via_artcraft(
     model: Some(tauri_image_model_to_generation_model(tauri_model)),
     provider: GenerationSource::Artcraft,
     provider_job_id: Some(payload.inference_job_token.to_string()),
+    is_batch_generation: request.batch_size.unwrap_or(1) > 1,
     maybe_queue_status_url: None,
     maybe_queue_response_url: None,
     maybe_prompt_token: None,
@@ -233,7 +234,7 @@ async fn enqueue_via_fal(
     GenerateError::from(err)
   })?;
 
-  build_fal_task_enqueue_success(tauri_model, response)
+  build_fal_task_enqueue_success(tauri_model, response, request.batch_size.unwrap_or(1) > 1)
 }
 
 async fn resolve_fal_image_inputs(
@@ -263,6 +264,7 @@ async fn resolve_fal_image_inputs(
 fn build_fal_task_enqueue_success(
   tauri_model: TauriImageModel,
   response: GenerateImageResponse,
+  is_batch_generation: bool,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let fal_payload = response
       .get_fal_payload()
@@ -278,6 +280,7 @@ fn build_fal_task_enqueue_success(
     model: Some(tauri_image_model_to_generation_model(tauri_model)),
     provider: GenerationSource::Fal,
     provider_job_id: Some(provider_job_id),
+    is_batch_generation,
     maybe_queue_status_url: fal_payload.maybe_status_url,
     maybe_queue_response_url: fal_payload.maybe_response_url,
     maybe_prompt_token: None,
@@ -404,6 +407,8 @@ async fn enqueue_via_midjourney(
     // pollers query), not the `MidjourneyCookies` credential service.
     provider: GenerationSource::Midjourney,
     provider_job_id: Some(payload.job_id),
+    // NB: Midjourney always produces a 2x2 grid.
+    is_batch_generation: true,
     maybe_queue_status_url: None,
     maybe_queue_response_url: None,
     maybe_prompt_token: None,
@@ -631,6 +636,8 @@ fn grok_enqueue_success(tauri_model: TauriImageModel, request_id: String) -> Tas
     // queries), not the `GrokCookies` credential service.
     provider: GenerationSource::Grok,
     provider_job_id: Some(request_id),
+    // NB: Grok's imagine websocket returns two images per prompt.
+    is_batch_generation: true,
     maybe_queue_status_url: None,
     maybe_queue_response_url: None,
     maybe_prompt_token: None,

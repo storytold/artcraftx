@@ -24,6 +24,8 @@ export interface TaskQueueItem {
   model_type?: TaskModelType;
   provider?: GenerationProvider;
   provider_job_id?: string;
+  // Whether the job produces more than one file.
+  is_batch_generation: boolean;
   completed_item?: TaskQueueCompletedItem;
   failure_reason?: TaskQueueFailureReason;
   created_at: Date;
@@ -35,6 +37,10 @@ export interface TaskQueueCompletedItem {
   primary_media_file: MediaFileData;
   media_file_class?: TaskMediaFileClass;
   maybe_batch_token?: string;
+  // If the results were downloaded: the directory and the first (or only)
+  // file, as absolute paths recorded at completion time.
+  maybe_download_directory?: string;
+  maybe_first_downloaded_file?: string;
 }
 
 export interface MediaFileData {
@@ -72,6 +78,7 @@ export const GetTaskQueue = async (): Promise<GetTaskQueueResponse> => {
       model_type: task.model_type,
       provider: task.provider,
       provider_job_id: task.provider_job_id,
+      is_batch_generation: task.is_batch_generation,
       completed_item: completed_item,
       failure_reason: task.failure_reason,
       created_at: new Date(task.created_at),

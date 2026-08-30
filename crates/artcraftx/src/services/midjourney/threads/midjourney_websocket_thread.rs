@@ -7,6 +7,7 @@ use crate::services::midjourney::threads::midjourney_long_polling_thread::{
 };
 use crate::services::midjourney::utils::midjourney_browser_profile::midjourney_browser_profile;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
+use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
 use crate::database::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
@@ -42,6 +43,7 @@ const RESCAN_INTERVAL_MS: u64 = 3_000;
 pub async fn midjourney_websocket_thread(
   app_handle: AppHandle,
   app_data_root: AppDataRoot,
+  app_preferences: AppPreferencesManager,
   task_database: TaskDatabase,
   mj_session: MidjourneyLiveSession,
   storyteller_creds_manager: StorytellerCredentialManager,
@@ -50,6 +52,7 @@ pub async fn midjourney_websocket_thread(
     let res = run_once(
       &app_handle,
       &app_data_root,
+      &app_preferences,
       &task_database,
       &mj_session,
       &storyteller_creds_manager,
@@ -69,6 +72,7 @@ pub async fn midjourney_websocket_thread(
 async fn run_once(
   app_handle: &AppHandle,
   app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   mj_session: &MidjourneyLiveSession,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -78,10 +82,8 @@ async fn run_once(
     None => return sleep_not_ready().await,
   };
 
-  let storyteller_creds = match storyteller_creds_manager.get_credentials()? {
-    Some(creds) => creds,
-    None => return sleep_not_ready().await,
-  };
+  // Optional: without an ArtCraft session, results are still saved locally.
+  let maybe_storyteller_creds = storyteller_creds_manager.get_credentials()?;
 
   // Resolves and caches user_id + websocket_token in the session.
   let user_id = match resolve_user_id(mj_session, &cookie_header).await {
@@ -112,7 +114,15 @@ async fn run_once(
     }
   };
 
-  drive_websocket(app_handle, app_data_root, task_database, mj_session, &storyteller_creds, websocket).await
+  drive_websocket(
+    app_handle,
+    app_data_root,
+    app_preferences,
+    task_database,
+    mj_session,
+    maybe_storyteller_creds.as_ref(),
+    websocket,
+  ).await
 }
 
 /// Subscribe to pending jobs and finalize them as `completed` frames arrive,
@@ -120,9 +130,10 @@ async fn run_once(
 async fn drive_websocket(
   app_handle: &AppHandle,
   app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   mj_session: &MidjourneyLiveSession,
-  storyteller_creds: &StorytellerCredentialSet,
+  maybe_storyteller_creds: Option<&StorytellerCredentialSet>,
   websocket: MidjourneyWebSocket,
 ) -> AnyhowResult<()> {
   let image_downloader = ImageDownloaderClient::create(Some(midjourney_browser_profile()))?;
@@ -161,8 +172,9 @@ async fn drive_websocket(
               let result = finalize_midjourney_job(FinalizeMidjourneyJobArgs {
                 app_handle,
                 app_data_root,
+                app_preferences,
                 task_database,
-                storyteller_creds,
+                maybe_storyteller_creds,
                 image_downloader: &image_downloader,
                 midjourney_job_id: job_id,
                 local_task: &local_task,

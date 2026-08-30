@@ -50,17 +50,7 @@ pub async fn notify_frontend_of_completion(
   task: &Task,
   completion: &CompletionData,
 ) {
-  // Fire the generic generation-complete event (for the task queue UI).
-  let generation_action = task_type_to_generation_action(task.task_type);
-  let generation_model = task.model_type.and_then(task_model_type_to_generation_model);
-  let generation_service = to_generation_service_provider(task.provider);
-
-  let complete_event = GenerationCompleteEvent {
-    action: Some(generation_action),
-    service: generation_service,
-    model: generation_model,
-  };
-  complete_event.send_infallible(app);
+  notify_generation_complete(app, task);
 
   // Fire the typed frontend notification (for the specific page/component that initiated the job).
   let result = match task.task_type {
@@ -86,6 +76,21 @@ pub async fn notify_frontend_of_completion(
   if let Err(err) = result {
     error!("[ThirdPartyEvents] Failed to send frontend notification for task {}: {:?}", task.id.as_str(), err);
   }
+}
+
+/// Fire the generic generation-complete event (for the task queue UI). Use
+/// this alone when a task completed without anything uploaded to ArtCraft.
+pub fn notify_generation_complete(app: &AppHandle, task: &Task) {
+  let generation_action = task_type_to_generation_action(task.task_type);
+  let generation_model = task.model_type.and_then(task_model_type_to_generation_model);
+  let generation_service = to_generation_service_provider(task.provider);
+
+  let complete_event = GenerationCompleteEvent {
+    action: Some(generation_action),
+    service: generation_service,
+    model: generation_model,
+  };
+  complete_event.send_infallible(app);
 }
 
 // ── Per-type handlers ──

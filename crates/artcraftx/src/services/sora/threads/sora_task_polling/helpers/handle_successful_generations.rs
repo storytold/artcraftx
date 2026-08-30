@@ -1,33 +1,28 @@
-use artcraft_client::utils::api_host::ApiHost;
-use crate::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
-use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
+use crate::services::sora::threads::sora_task_polling::helpers::download_extension::DownloadExtension;
+use crate::services::sora::threads::sora_task_polling::helpers::generation_type::GenerationType;
+use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use crate::state::database::task_database::TaskDatabase;
-use crate::services::sora::threads::sora_task_polling::helpers::download_extension::DownloadExtension;
-use crate::services::sora::threads::sora_task_polling::helpers::generation_type::GenerationType;
-use crate::services::sora::threads::sora_task_polling::helpers::upload_generation_to_backend::{upload_generation_to_backend, UploadGenerationToBackendArgs};
-use artcraft_client::api_defs::prompts::create_prompt::CreatePromptRequest;
-use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
-use core_types::enums::generation_source::GenerationSource;
+use crate::threads::task_completion::complete_task_with_local_files::{complete_task_with_local_files, CompleteTaskArgs};
+use crate::threads::task_completion::upload_results_to_artcraft::CompletionPrompt;
+use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::enums::common::generation::common_model_type::CommonModelType;
-use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
+use core_types::enums::generation_source::GenerationSource;
 use errors::AnyhowResult;
-use uuid_utils::uuid::generate_random_uuid;
 use log::{error, info, warn};
 use openai_sora_client::requests::common::task_id::TaskId;
 use sqlite_database::queries::task::Task;
-use sqlite_database::queries::update::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
+use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
-use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
-use artcraft_client::endpoints::prompts::create_prompt::create_prompt;
 use tauri::AppHandle;
 use url_utils::download_extension::extract_download_extension_from_url::extract_download_extension_from_url_str;
+
+/// Download filename slug when the task has no model type recorded.
+const SORA_FALLBACK_MODEL_SLUG: &str = "sora";
 
 pub struct SuccessfulGeneration {
   pub prompt: Option<String>,
@@ -40,20 +35,23 @@ pub struct GenerationItem {
   pub url: String,
 }
 
+/// For every succeeded Sora generation we have a local task for: fetch its
+/// files, then hand them to the shared completion routine.
 pub async fn handle_classic_successful_generations(
   app_handle: &AppHandle,
   app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
-  storyteller_creds: &StorytellerCredentialSet,
+  maybe_storyteller_creds: Option<&StorytellerCredentialSet>,
   succeeded_tasks_by_id: &HashMap<TaskId, SuccessfulGeneration>,
   sqlite_database_by_sora_task_id: &HashMap<String, Task>,
   recommended_download_extension: DownloadExtension,
 ) -> AnyhowResult<()> {
 
   for (task_id, generation) in succeeded_tasks_by_id.iter() {
-    if !sqlite_database_by_sora_task_id.contains_key(task_id.as_str()) {
+    let Some(local_task) = sqlite_database_by_sora_task_id.get(task_id.as_str()) else {
       continue; // Task is irrelevant - previously completed, generated elsewhere, etc.
-    }
+    };
 
     info!("Task succeeded: {:?}", task_id);
 
@@ -67,104 +65,36 @@ pub async fn handle_classic_successful_generations(
       },
     };
 
-    let prompt_request = CreatePromptRequest {
-      uuid_idempotency_token: generate_random_uuid(),
-      positive_prompt: generation.prompt.clone(),
-      negative_prompt: None,
-      model_type: Some(generation.model_type),
-      generation_provider: Some(GenerationSource::Sora),
-      maybe_generation_mode: None,
-      maybe_aspect_ratio: None,
-      maybe_resolution: None,
-      maybe_batch_count: None,
-      maybe_generate_audio: None,
-      maybe_duration_seconds: None,
+    let media_class = match generation_type {
+      GenerationType::Image => TaskMediaFileClass::Image,
+      GenerationType::Video => TaskMediaFileClass::Video,
     };
 
-    let prompt_response = create_prompt(
-      &ApiHost::Storyteller,
-      Some(&storyteller_creds),
-      prompt_request
-    ).await?;
-
-    info!("Created prompt: {:?}", &prompt_response.prompt_token);
-
-    let mut maybe_primary_media_file_token = None;
-
-    for (_i, item) in generation.items.iter().enumerate() {
+    let mut local_files = Vec::with_capacity(generation.items.len());
+    for item in generation.items.iter() {
       info!("Downloading generated file...");
-      let download_path = download_generation_item(item, &app_data_root, recommended_download_extension).await?;
-
-      info!("Uploading to backend...");
-
-      let media_token = upload_generation_to_backend(UploadGenerationToBackendArgs {
-        storyteller_api_host: &ApiHost::Storyteller,
-        storyteller_creds: &storyteller_creds,
-        upload_path: download_path,
-        maybe_prompt_token: Some(&prompt_response.prompt_token),
-        maybe_batch_token: None, // TODO: This should be added soon.
-        generation_type,
-      }).await?;
-
-      if maybe_primary_media_file_token.is_none() {
-        maybe_primary_media_file_token = Some(media_token.clone());
-      }
+      local_files.push(download_generation_item(item, app_data_root, recommended_download_extension).await?);
     }
 
-    // Clear from SQLite task database.
-    if let Some(local_task) = sqlite_database_by_sora_task_id.get(task_id.as_str()) {
-      info!("Marking local task as succeeded: {:?}", local_task.id);
+    let result = complete_task_with_local_files(CompleteTaskArgs {
+      app_handle,
+      app_data_root,
+      app_preferences,
+      task_database,
+      maybe_storyteller_creds,
+      task: local_task,
+      generation_provider: GenerationSource::Sora,
+      media_class,
+      prompt: CompletionPrompt::Create {
+        model_type: generation.model_type,
+        maybe_prompt: generation.prompt.clone(),
+      },
+      fallback_model_slug: SORA_FALLBACK_MODEL_SLUG,
+      local_files: &local_files,
+    }).await;
 
-      let generation_class = match generation_type {
-        GenerationType::Image => TaskMediaFileClass::Image,
-        GenerationType::Video => TaskMediaFileClass::Video,
-      };
-
-      let mut maybe_cdn_url = None;
-      let mut maybe_thumbnail_url_template = None;
-
-      if let Some(media_file_token) = maybe_primary_media_file_token.as_ref() {
-        info!("Looking up file to grab CDN and thumbnail URLs: {:?} ...", media_file_token);
-
-        let lookup_result = get_media_file(
-          &ApiHost::Storyteller,
-          media_file_token,
-        ).await;
-        match lookup_result {
-          Ok(response) => {
-            maybe_cdn_url = Some(response.media_file.media_links.cdn_url.to_string());
-            maybe_thumbnail_url_template = media_links_to_thumbnail_template(&response.media_file.media_links)
-                .map(|s| s.to_string());
-          }
-          Err(err) => {
-            error!("Failed to look up media file after upload: {:?} (failing open)", err);
-          }
-        }
-      }
-
-      let updated = update_successful_task_status_with_metadata(UpdateSuccessfulTaskArgs {
-        db: task_database.get_connection(),
-        task_id: &local_task.id,
-        maybe_batch_token: None, // TODO: Support when we have batches of items.
-        maybe_primary_media_file_token: maybe_primary_media_file_token.as_ref(),
-        maybe_primary_media_file_class: Some(generation_class),
-        maybe_primary_media_file_thumbnail_url_template: maybe_thumbnail_url_template.as_deref(),
-        maybe_primary_media_file_cdn_url: maybe_cdn_url.as_deref(),
-      }).await?;
-
-      if updated {
-        // If anything breaks with queries, don't spam events.
-        let event = GenerationCompleteEvent {
-          action: Some(match generation_type {
-            GenerationType::Image => GenerationAction::GenerateImage,
-            GenerationType::Video => GenerationAction::GenerateVideo,
-          }),
-          service: GenerationServiceProvider::Sora,
-          model: None,
-        };
-
-        event.send_infallible(&app_handle);
-      }
+    if let Err(err) = result {
+      error!("Failed to complete Sora task {}: {:?}", local_task.id.as_str(), err);
     }
   }
 
@@ -184,7 +114,7 @@ async fn download_generation_item(
   let extension = extract_download_extension_from_url_str(&generation.url)
       .map(|ext| ext.as_extension_without_period())
       .unwrap_or_else(|| recommended_download_extension.as_extension_without_period());
-  
+
   let tempdir = app_data_root.temp_dir().path();
   let download_filename = format!("{}.{}", generation.item_id, extension);
   let download_path = tempdir.join(download_filename);

@@ -16,6 +16,8 @@ pub struct TaskEnqueueSuccess {
   pub model: Option<GenerationModel>,
   pub provider: GenerationSource,
   pub provider_job_id: Option<String>,
+  /// Whether the job produces more than one file.
+  pub is_batch_generation: bool,
   pub maybe_queue_status_url: Option<String>,
   pub maybe_queue_response_url: Option<String>,
   pub maybe_prompt_token: Option<PromptToken>,
@@ -144,6 +146,7 @@ impl TaskEnqueueSuccess{
       model_type,
       provider: self.provider,
       provider_job_id: self.provider_job_id.as_deref(),
+      is_batch_generation: self.is_batch_generation,
       queue_status_url: self.maybe_queue_status_url.as_deref(),
       queue_response_url: self.maybe_queue_response_url.as_deref(),
       prompt_token: self.maybe_prompt_token.as_ref(),

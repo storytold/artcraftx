@@ -15,6 +15,8 @@ pub struct CreateTaskArgs<'a> {
   pub model_type: Option<TaskModelType>,
   pub provider: GenerationSource,
   pub provider_job_id: Option<&'a str>,
+  /// Whether the job produces more than one file.
+  pub is_batch_generation: bool,
   pub queue_status_url: Option<&'a str>,
   pub queue_response_url: Option<&'a str>,
   pub prompt_token: Option<&'a PromptToken>,
@@ -45,6 +47,7 @@ pub async fn create_task(
       model_type,
       provider,
       provider_job_id,
+      is_batch_generation,
       queue_status_url,
       queue_response_url,
       prompt_token,
@@ -52,7 +55,7 @@ pub async fn create_task(
       frontend_subscriber_id,
       frontend_subscriber_payload
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   "#,
       task_id_temp,
       status_temp,
@@ -60,6 +63,7 @@ pub async fn create_task(
       model_type_temp,
       provider_temp,
       args.provider_job_id,
+      args.is_batch_generation,
       args.queue_status_url,
       args.queue_response_url,
       prompt_token_temp,

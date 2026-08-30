@@ -1,14 +1,10 @@
-use artcraft_client::utils::api_host::ApiHost;
-use crate::events::basic_sendable_event_trait::BasicSendableEvent;
-use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
-use crate::events::generation_events::generation_complete_event::GenerationCompleteEvent;
+use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use crate::state::database::task_database::TaskDatabase;
 use crate::database::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
-use artcraft_client::api_defs::utils::media_links_to_thumbnail_template::media_links_to_thumbnail_template;
 use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use errors::AnyhowResult;
@@ -16,17 +12,14 @@ use uuid_utils::uuid::generate_random_uuid;
 use log::{error, info};
 use sqlite_database::queries::read::list_tasks_by_provider_and_status::{list_tasks_by_provider_and_status, ListTasksByProviderAndStatusArgs, TaskList};
 use sqlite_database::queries::task::Task;
-use sqlite_database::queries::update::update_successful_task_status_with_metadata::{update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use std::time::Duration;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
-use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
-use artcraft_client::endpoints::media_files::legacy_upload_media_file_from_file::{legacy_upload_media_file_from_file, LegacyUploadMediaFileFromFileArgs};
-use artcraft_client::error::api_error::ApiError;
-use artcraft_client::error::storyteller_error::StorytellerError;
+use crate::threads::task_completion::complete_task_with_local_files::{complete_task_with_local_files, CompleteTaskArgs};
+use crate::threads::task_completion::upload_results_to_artcraft::CompletionPrompt;
 use tauri::AppHandle;
 use worldlabs_consumer_client::api::api_types::world_id::WorldObjectId;
 use worldlabs_consumer_client::api::requests::worlds::poll_world_status::{poll_world_status, PollWorldStatusArgs};
@@ -34,9 +27,13 @@ use worldlabs_consumer_client::credentials::world_labs_bearer_token::WorldLabsBe
 use worldlabs_consumer_client::credentials::world_labs_cookies::WorldLabsCookies;
 use worldlabs_consumer_client::credentials::worldlabs_refresh_token::WorldLabsRefreshToken;
 
+/// Download filename slug when the task has no model type recorded.
+const MARBLE_FALLBACK_MODEL_SLUG: &str = "marble";
+
 pub async fn worldlabs_marble_task_polling(
   app_handle: AppHandle,
   app_data_root: AppDataRoot,
+  app_preferences: AppPreferencesManager,
   task_database: TaskDatabase,
   creds: WorldlabsCredentialManager,
   storyteller_creds_manager: StorytellerCredentialManager,
@@ -45,6 +42,7 @@ pub async fn worldlabs_marble_task_polling(
     let res = polling_loop(
       &app_handle,
       &app_data_root,
+      &app_preferences,
       &task_database,
       &creds,
       &storyteller_creds_manager,
@@ -60,6 +58,7 @@ pub async fn worldlabs_marble_task_polling(
 async fn polling_loop(
   app_handle: &AppHandle,
   app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   worldlabs_creds: &WorldlabsCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
@@ -70,15 +69,8 @@ async fn polling_loop(
       continue;
     }
 
-    // TODO: Graceful wait, fix this long function body
-    let storyteller_creds = match storyteller_creds_manager.get_credentials()? {
-      Some(creds) => creds,
-      None => {
-        error!("No Storyteller credentials found. Cannot proceed with WorldLabs polling.");
-        tokio::time::sleep(Duration::from_millis(5_000)).await;
-        continue;
-      }
-    };
+    // Optional: without an ArtCraft session, results are still saved locally.
+    let maybe_storyteller_creds = storyteller_creds_manager.get_credentials()?;
 
     let world_labs_cookies = match worldlabs_creds.maybe_copy_typed_cookies()? {
       Some(cookies) => cookies,
@@ -113,14 +105,15 @@ async fn polling_loop(
       task_statuses: &TASK_DATABASE_PENDING_STATUSES,
     }).await?;
 
-    poll_grok_tasks(
+    poll_worldlabs_tasks(
       app_handle,
       app_data_root,
+      app_preferences,
       task_database,
       &world_labs_cookies,
       &world_labs_bearer,
       &world_labs_refresh,
-      &storyteller_creds,
+      maybe_storyteller_creds.as_ref(),
       local_tasks,
     ).await?;
 
@@ -128,14 +121,15 @@ async fn polling_loop(
   }
 }
 
-async fn poll_grok_tasks(
+async fn poll_worldlabs_tasks(
   app_handle: &AppHandle,
   app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   world_labs_cookies: &WorldLabsCookies,
   world_labs_bearer: &WorldLabsBearerToken,
   _world_labs_refresh: &WorldLabsRefreshToken,
-  storyteller_creds: &StorytellerCredentialSet,
+  maybe_storyteller_creds: Option<&StorytellerCredentialSet>,
   local_tasks: TaskList,
 ) -> AnyhowResult<()> {
   let local_tasks = local_tasks.tasks;
@@ -180,14 +174,19 @@ async fn poll_grok_tasks(
       }
     };
 
-    upload_spz_splat(
-      &app_handle,
+    let result = complete_spz_splat(
+      app_handle,
       app_data_root,
+      app_preferences,
       task_database,
-      &storyteller_creds,
-      &local_task,
+      maybe_storyteller_creds,
+      local_task,
       &spz_url,
-    ).await?;
+    ).await;
+
+    if let Err(err) = result {
+      error!("Failed to complete WorldLabs task {}: {:?}", local_task.id.as_str(), err);
+    }
   }
 
   tokio::time::sleep(Duration::from_millis(5_000)).await;
@@ -195,130 +194,34 @@ async fn poll_grok_tasks(
   Ok(())
 }
 
-async fn upload_spz_splat(
+/// Download the finished splat to the temp dir, then hand it to the shared
+/// completion routine.
+async fn complete_spz_splat(
   app_handle: &AppHandle,
   app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
-  storyteller_creds: &StorytellerCredentialSet,
+  maybe_storyteller_creds: Option<&StorytellerCredentialSet>,
   local_task: &Task,
   spz_url: &str,
-) -> AnyhowResult<()> {
-
-  let mut maybe_primary_media_file_token = None;
-
+) -> AnyhowResult<bool> {
   info!("Downloading generated spz splat ...");
 
-  let spz_download_filename = download_spz(spz_url, app_data_root).await?;
+  let download_path = download_spz(spz_url, app_data_root).await?;
 
-  let mut wait_delay = 0;
-
-  loop {
-    info!("Uploading to backend...");
-
-    // TODO: media_files.origin_category
-    // TODO: media_files.maybe_prompt_token
-    // TODO: media_files.maybe_generation_provider
-    // TODO: media_files.maybe_origin_model_type
-    // TODO: media_files.maybe_origin_model_token (sref?)
-    // TODO: media_files.maybe_batch_token
-    // TODO: media_files.is_user_upload
-
-    // TODO: batch_generations.token
-    // TODO: batch_generations.entity_type
-    // TODO: batch_generations.entity_token
-
-    let result = legacy_upload_media_file_from_file(LegacyUploadMediaFileFromFileArgs {
-      api_host: &ApiHost::Storyteller,
-      maybe_creds: Some(&storyteller_creds),
-      path: &spz_download_filename,
-      maybe_generation_provider: Some(GenerationSource::WorldLabs),
-    }).await;
-
-    match result {
-      Ok(result) => {
-        info!("Successfully uploaded to backend: {:?}", result.media_file_token);
-        if maybe_primary_media_file_token.is_none() {
-          maybe_primary_media_file_token = Some(result.media_file_token);
-        }
-        break;
-      },
-      Err(StorytellerError::Api(ApiError::TooManyRequests(_))) => {
-        error!("Too many requests, retrying upload after delay...");
-        // If we hit a rate limit, we can retry after a short delay.
-        wait_delay += 10;
-        if wait_delay > 60 {
-          wait_delay = 60;
-        }
-        tokio::time::sleep(Duration::from_secs(wait_delay)).await;
-        continue; // Retry the upload.
-      }
-      Err(err) => {
-        error!("Failed to upload to backend: {:?}", err);
-        return Err(err.into())
-      },
-    }
-  } // End loop
-
-  let mut maybe_cdn_url = None;
-  let mut maybe_thumbnail_url_template = None;
-
-  if let Some(media_file_token) = maybe_primary_media_file_token.as_ref() {
-    info!("Looking up file to grab CDN and thumbnail URLs: {:?} ...", media_file_token);
-
-    let lookup_result = get_media_file(
-      &ApiHost::Storyteller,
-      media_file_token,
-    ).await;
-    match lookup_result {
-      Ok(response) => {
-        maybe_cdn_url = Some(response.media_file.media_links.cdn_url.to_string());
-        maybe_thumbnail_url_template = media_links_to_thumbnail_template(&response.media_file.media_links)
-            .map(|s| s.to_string());
-      }
-      Err(err) => {
-        error!("Failed to look up media file after upload: {:?} (failing open)", err);
-      }
-    }
-  }
-
-  let updated = update_successful_task_status_with_metadata(UpdateSuccessfulTaskArgs {
-    db: task_database.get_connection(),
-    task_id: &local_task.id,
-    maybe_batch_token: None,
-    maybe_primary_media_file_token: maybe_primary_media_file_token.as_ref(),
-    maybe_primary_media_file_class: Some(TaskMediaFileClass::Splat),
-    maybe_primary_media_file_thumbnail_url_template: maybe_thumbnail_url_template.as_deref(),
-    maybe_primary_media_file_cdn_url: maybe_cdn_url.as_deref(),
-  }).await?;
-
-  if !updated {
-    return Ok(()); // If anything breaks with queries, don't spam events.
-  }
-
-  let event = GenerationCompleteEvent {
-    //media_file_token: result.media_file_token,
-    action: Some(GenerationAction::GenerateGaussian),
-    service: GenerationServiceProvider::WorldLabs,
-    model: None,
-  };
-
-  if let Err(err) = event.send(&app_handle) {
-    error!("Failed to send GenerationCompleteEvent: {:?}", err); // Fail open
-  }
-
-  //let result = maybe_handle_text_to_image_complete_event(
-  //  app_handle,
-  //  app_env_configs,
-  //  Some(storyteller_creds),
-  //  local_task,
-  //  &batch_token,
-  //).await;
-
-  //if let Err(err) = result {
-  //  error!("Failed to send text-to-image complete event: {:?}", err);
-  //}
-
-  Ok(())
+  complete_task_with_local_files(CompleteTaskArgs {
+    app_handle,
+    app_data_root,
+    app_preferences,
+    task_database,
+    maybe_storyteller_creds,
+    task: local_task,
+    generation_provider: GenerationSource::WorldLabs,
+    media_class: TaskMediaFileClass::Splat,
+    prompt: CompletionPrompt::None,
+    fallback_model_slug: MARBLE_FALLBACK_MODEL_SLUG,
+    local_files: &[download_path],
+  }).await
 }
 
 async fn download_spz(

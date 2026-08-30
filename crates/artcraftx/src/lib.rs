@@ -23,6 +23,8 @@ use crate::commands::credentials::list_credentials_command::list_credentials_com
 use crate::commands::credentials::open_web_login_command::open_web_login_command;
 use crate::commands::credentials::refresh_grok_statsig_command::refresh_grok_statsig_command;
 use crate::commands::service::app_preferences::get_app_preferences_command::get_app_preferences_command;
+use crate::commands::service::promptbox::get_promptbox_state_command::get_promptbox_state_command;
+use crate::commands::service::promptbox::update_promptbox_state_command::update_promptbox_state_command;
 use crate::commands::service::app_preferences::load_custom_sound_command::load_custom_sound_command;
 use crate::commands::service::app_preferences::update_app_preference_command::update_app_preferences_command;
 use crate::commands::service::app_preferences::update_prompt_preference_command::update_prompt_preference_command;
@@ -54,6 +56,7 @@ use crate::commands::task_queue::tasks_nuke_all_command::tasks_nuke_all_command;
 use crate::lifecycle::startup::handle_tauri_startup::handle_tauri_startup;
 use crate::lifecycle::startup::setup_main_window::setup_main_window;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
+use crate::state::promptbox::promptbox_state_manager::PromptboxStateManager;
 use crate::state::runtime::artcraft_platform_info::ArtcraftPlatformInfo;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
@@ -87,6 +90,7 @@ pub fn run() {
 
   println!("Loading app preferences...");
   let app_preferences = AppPreferencesManager::load_or_default(&app_data_root);
+  let promptbox_state = PromptboxStateManager::load_or_default(&app_data_root);
   let app_preferences_2 = app_preferences.clone();
   
 
@@ -184,6 +188,7 @@ pub fn run() {
     })
     .manage(app_data_root)
     .manage(app_preferences)
+    .manage(promptbox_state)
     .manage(artcraft_platform_info)
     .manage(artcraft_usage_tracker)
     .manage(grok_creds_manager)
@@ -228,6 +233,7 @@ pub fn run() {
     generate_video_command,
     get_app_info_command,
     get_app_preferences_command,
+    get_promptbox_state_command,
     get_task_queue_command,
     load_custom_sound_command,
     load_without_cors_command,
@@ -236,6 +242,7 @@ pub fn run() {
     tasks_nuke_all_command,
     update_app_preferences_command,
     update_prompt_preference_command,
+    update_promptbox_state_command,
     update_sound_preference_command,
   ]);
 

@@ -1,3 +1,4 @@
+use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
@@ -14,6 +15,7 @@ pub fn spawn_sora_task_polling_thread(
   sora_credential_manager: &SoraCredentialManager,
   storyteller_creds_manager: &StorytellerCredentialManager,
   sora_task_queue: &SoraTaskQueue,
+  app_preferences: &AppPreferencesManager,
 ) -> AnyhowResult<()> {
 
   tauri::async_runtime::spawn(sora_task_polling_thread(
@@ -23,6 +25,7 @@ pub fn spawn_sora_task_polling_thread(
     sora_credential_manager.clone(),
     storyteller_creds_manager.clone(),
     sora_task_queue.clone(),
+    app_preferences.clone(),
   ));
 
   Ok(())

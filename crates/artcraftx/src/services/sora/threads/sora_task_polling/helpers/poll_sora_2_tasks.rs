@@ -1,3 +1,4 @@
+use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
@@ -24,6 +25,7 @@ pub async fn poll_sora_2_tasks(
   storyteller_creds_manager: &StorytellerCredentialManager,
   sora_task_queue: &SoraTaskQueue,
   app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
   local_sqlite_database_by_sora_task_id: &HashMap<String, Task>,
 ) -> AnyhowResult<()> {
 
@@ -40,7 +42,8 @@ pub async fn poll_sora_2_tasks(
   let mut sora_succeeded_drafts_by_id = HashMap::new();
   let mut sora_failed_drafts_by_id = HashMap::new();
 
-  let storyteller_creds = storyteller_creds_manager.get_credentials_required()?;
+  // Optional: without an ArtCraft session, results are still saved locally.
+  let maybe_storyteller_creds = storyteller_creds_manager.get_credentials()?;
 
   for draft in drafts.into_iter() {
     match draft {
@@ -80,8 +83,9 @@ pub async fn poll_sora_2_tasks(
   handle_classic_successful_generations(
     &app_handle,
     &app_data_root,
+    &app_preferences,
     &task_database,
-    &storyteller_creds,
+    maybe_storyteller_creds.as_ref(),
     &sora_succeeded_drafts_by_id,
     &local_sqlite_database_by_sora_task_id,
     DownloadExtension::Mp4,

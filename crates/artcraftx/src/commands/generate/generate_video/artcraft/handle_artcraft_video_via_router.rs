@@ -81,6 +81,7 @@ pub async fn handle_artcraft_video_via_router(
     model: Some(generation_model),
     provider: GenerationSource::Artcraft,
     provider_job_id: Some(job_id),
+    is_batch_generation: request.video_batch_count.unwrap_or(1) > 1,
     maybe_queue_status_url: None,
     maybe_prompt_token: None,
     maybe_queue_response_url: None,

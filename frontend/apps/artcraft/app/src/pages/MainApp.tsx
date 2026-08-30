@@ -29,6 +29,7 @@ import {
   useGenerationFailedEvent,
   useTextToImageGenerationCompleteEvent,
 } from "@storyteller/tauri-events";
+import { usePromptboxStatePersistence } from "~/state/usePromptboxStatePersistence";
 
 import { useBackgroundLoadingMedia } from "~/hooks/useBackgroundLoadingMedia";
 import { CredentialErrorModal } from "~/components/CredentialErrorModal/CredentialErrorModal";
@@ -57,6 +58,8 @@ export const MainApp = () => {
   // completions are surfaced no matter which tab the user is on.
   // Keep the app-preferences cache (Enter-to-generate, sounds, ...) in sync.
   useAppPreferencesSync();
+  // Remember each prompt box's account / model / options across restarts.
+  usePromptboxStatePersistence();
 
   useGenerationEnqueueSuccessEvent();
   useGenerationEnqueueFailureEvent();

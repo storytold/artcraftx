@@ -1,3 +1,4 @@
+use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
 use crate::database::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
@@ -21,15 +22,17 @@ pub async fn sora_task_polling_thread(
   sora_creds_manager: SoraCredentialManager,
   storyteller_creds_manager: StorytellerCredentialManager,
   sora_task_queue: SoraTaskQueue,
+  app_preferences: AppPreferencesManager,
 ) -> ! {
   loop {
     let res = local_task_polling_loop(
       &app_handle,
       &task_database,
-      &sora_creds_manager, 
-      &storyteller_creds_manager, 
+      &sora_creds_manager,
+      &storyteller_creds_manager,
       &sora_task_queue,
       &app_data_root,
+      &app_preferences,
     ).await;
     if let Err(err) = res {
       error!("An error occurred: {:?}", err);
@@ -45,6 +48,7 @@ async fn local_task_polling_loop(
   storyteller_creds_manager: &StorytellerCredentialManager,
   sora_task_queue: &SoraTaskQueue,
   app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
 ) -> AnyhowResult<()> {
   loop {
     let local_sqlite_database = list_tasks_by_provider_and_status(ListTasksByProviderAndStatusArgs {
@@ -82,6 +86,7 @@ async fn local_task_polling_loop(
       &storyteller_creds_manager,
       &sora_task_queue,
       &app_data_root,
+      &app_preferences,
       &local_sqlite_database_by_sora_task_id,
     ).await?;
 
@@ -95,6 +100,7 @@ async fn local_task_polling_loop(
       &storyteller_creds_manager,
       &sora_task_queue,
       &app_data_root,
+      &app_preferences,
       &local_sqlite_database_by_sora_task_id,
     ).await?;
 

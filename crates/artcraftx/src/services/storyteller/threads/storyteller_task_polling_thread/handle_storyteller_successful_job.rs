@@ -7,6 +7,8 @@ use crate::state::database::task_database::TaskDatabase;
 use crate::state::app_preferences::settings::preferred_download_filename::{model_slug_from_model_type_str, DownloadFilenameParts};
 use chrono::Local;
 use crate::utils::download::download_url_to_download_dir_via_temp::download_url_to_download_dir_via_temp;
+use crate::utils::download::record_task_download_locations::record_task_download_locations;
+use std::path::PathBuf;
 use crate::utils::enum_conversion::generation_source::to_generation_service_provider;
 use crate::utils::enum_conversion::task_type::to_generation_action;
 use super::events::maybe_handle_frontend_caller_notification::maybe_handle_frontend_caller_notification;
@@ -73,7 +75,8 @@ pub async fn handle_successful_job(
     return Ok(()); // If anything breaks with queries, don't spam events.
   }
 
-  download_all_files(app_data_root, app_preferences, job, task, &media_files).await;
+  let downloaded = download_all_files(app_data_root, app_preferences, job, task, &media_files).await;
+  record_task_download_locations(task_database, &task.id, &downloaded).await;
 
   send_additional_success_events(app_handle, job, task, &media_files).await;
 
@@ -96,19 +99,21 @@ pub async fn handle_successful_job(
 /// Download every file the job produced into the user's configured download
 /// directory (temp dir first, then moved into place), named per the user's
 /// preferred filename convention. Fails open per file so one bad download
-/// doesn't lose the rest.
+/// doesn't lose the rest. Returns the files' paths (in job order), including
+/// ones that were already there from an earlier run.
 async fn download_all_files(
   app_data_root: &AppDataRoot,
   app_preferences: &AppPreferencesManager,
   job: &JobStatusPayload,
   task: &Task,
   media_files: &[JobMediaFileInfo],
-) {
+) -> Vec<PathBuf> {
+  let mut downloaded = Vec::new();
   let app_prefs = match app_preferences.get() {
     Ok(prefs) => prefs,
     Err(err) => {
       error!("Can't read app preferences; skipping downloads for job {}: {:?}", job.job_token.as_str(), err);
-      return;
+      return downloaded;
     }
   };
 
@@ -150,15 +155,18 @@ async fn download_all_files(
     match download_url_to_download_dir_via_temp(cdn_url, Some(&filename), app_data_root, &app_prefs).await {
       Ok(path) => {
         info!("Downloaded job {} file to {:?}", job.job_token.as_str(), path);
+        downloaded.push(path);
       }
       Err(ArtcraftXError::CannotDownloadFilePathAlreadyExists { path }) => {
         info!("Job {} file already downloaded: {:?}", job.job_token.as_str(), path);
+        downloaded.push(path);
       }
       Err(err) => {
         error!("Failed to download job {} file {}: {:?}", job.job_token.as_str(), cdn_url, err);
       }
     }
   }
+  downloaded
 }
 
 /// Fetch every media file the job produced. Fails open with an empty list
