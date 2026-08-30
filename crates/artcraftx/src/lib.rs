@@ -42,6 +42,7 @@ use crate::commands::generate::models::video::list_video_models_command::list_vi
 use crate::commands::download::download_directory_reveal_command::download_directory_reveal_command;
 use crate::commands::download::download_media_file_command::download_media_file_command;
 use crate::commands::download::download_url_command::download_url_command;
+use crate::commands::download::open_local_file_command::open_local_file_command;
 use crate::commands::generate::generate_audio::generate_audio_command::generate_audio_command;
 use crate::commands::generate::generate_image::generate_image_command::generate_image_command;
 use crate::commands::generate::generate_mesh::generate_mesh_command::generate_mesh_command;
@@ -211,6 +212,7 @@ pub fn run() {
     edit_api_credential_command,
     edit_web_credential_command,
     list_credentials_command,
+    open_local_file_command,
     open_web_login_command,
     refresh_grok_statsig_command,
     download_directory_reveal_command,

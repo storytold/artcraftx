@@ -6,8 +6,10 @@ import {
   Check,
   CircleAlert,
   Copy,
+  FolderOpen,
   ListChecks,
   LoaderCircle,
+  SquareArrowOutUpRight,
   Trash2,
   TriangleAlert,
   X,
@@ -24,7 +26,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   GetTaskQueue,
   MarkTaskAsDismissed,
+  OpenLocalFile,
+  RevealLocalFile,
   TasksNukeAll,
+  getFileManagerName,
+  localFileBasename,
 } from "@storyteller/tauri-api";
 import type { TaskQueueItem } from "@storyteller/tauri-api";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
@@ -77,6 +83,10 @@ type CompletedTask = {
   mediaFileClass?: TaskMediaFileClass;
   batchImageToken?: string;
   prompt?: string;
+  // Where the results were saved, if they were (absolute paths recorded at
+  // completion time, so they survive later download-directory changes).
+  downloadedFilePath?: string;
+  downloadDirectory?: string;
 };
 
 type FailedTask = {
@@ -296,6 +306,68 @@ const InProgressCard = ({
   );
 };
 
+const FILE_MANAGER_NAME = getFileManagerName();
+
+const openLocalFile = async (path: string) => {
+  try {
+    await OpenLocalFile(path);
+  } catch (err) {
+    console.warn("TaskQueue: could not open file", path, err);
+  }
+};
+
+const revealLocalFile = async (path: string) => {
+  try {
+    await RevealLocalFile(path);
+  } catch (err) {
+    console.warn("TaskQueue: could not reveal file", path, err);
+  }
+};
+
+/** "Open" + "Reveal in Finder" buttons for a task's downloaded file. */
+const LocalFileButtons = ({ path }: { path: string }) => (
+  <>
+    <Tooltip
+      content="Open file"
+      position="bottom"
+      strategy="fixed"
+      className="text-xs"
+      zIndex={50}
+      delay={300}
+    >
+      <button
+        className="flex h-6 w-6 items-center justify-center rounded-full text-base-fg/60 hover:bg-ui-controls"
+        aria-label="Open file"
+        onClick={(e) => {
+          e.stopPropagation();
+          openLocalFile(path);
+        }}
+      >
+        <SquareArrowOutUpRight size="1em" />
+      </button>
+    </Tooltip>
+    <Tooltip
+      content={`Reveal in ${FILE_MANAGER_NAME}`}
+      position="bottom"
+      strategy="fixed"
+      className="text-xs"
+      zIndex={50}
+      delay={300}
+    >
+      <button
+        className="flex h-6 w-6 items-center justify-center rounded-full text-base-fg/60 hover:bg-ui-controls"
+        aria-label={`Reveal in ${FILE_MANAGER_NAME}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          revealLocalFile(path);
+        }}
+      >
+        <FolderOpen size="1em" />
+      </button>
+    </Tooltip>
+  </>
+);
+
 const CompletedCard = ({
   task,
   onClick,
@@ -312,7 +384,20 @@ const CompletedCard = ({
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : -1}
     >
-      <div className="h-[86px] w-[86px] shrink-0 overflow-hidden rounded bg-ui-controls">
+      <div
+        className="h-[86px] w-[86px] shrink-0 overflow-hidden rounded bg-ui-controls"
+        title={task.downloadedFilePath ? "Open file" : undefined}
+        onClick={
+          task.downloadedFilePath
+            ? (e) => {
+                // Clicking the file itself opens it natively; the rest of
+                // the card still opens the in-app lightbox.
+                e.stopPropagation();
+                openLocalFile(task.downloadedFilePath!);
+              }
+            : undefined
+        }
+      >
         {task.thumbnailUrl ? (
           <img
             src={task.thumbnailUrl}
@@ -348,9 +433,32 @@ const CompletedCard = ({
             {task.completedAt.toISOString()}
           </div>
         )}
+        {task.downloadedFilePath && (
+          <Tooltip
+            content={task.downloadedFilePath}
+            position="bottom"
+            strategy="fixed"
+            className="max-w-[320px] break-all text-xs"
+            zIndex={50}
+            delay={400}
+          >
+            <button
+              className="block max-w-full truncate text-left text-[11px] text-base-fg/50 hover:text-base-fg/90 hover:underline"
+              onClick={(e) => {
+                e.stopPropagation();
+                revealLocalFile(task.downloadedFilePath!);
+              }}
+            >
+              {localFileBasename(task.downloadedFilePath)}
+            </button>
+          </Tooltip>
+        )}
         {task.prompt && <PromptLine prompt={task.prompt} />}
       </div>
       <div className="ml-auto flex shrink-0 items-center gap-1">
+        {task.downloadedFilePath && (
+          <LocalFileButtons path={task.downloadedFilePath} />
+        )}
         {task.prompt && <CopyPromptButton prompt={task.prompt} />}
         {onDismiss && (
           <button
@@ -770,6 +878,8 @@ export const TaskQueue = () => {
               })(),
               mediaFileClass: t.completed_item?.media_file_class,
               batchImageToken: t.completed_item?.maybe_batch_token,
+              downloadedFilePath: t.completed_item?.maybe_first_downloaded_file,
+              downloadDirectory: t.completed_item?.maybe_download_directory,
               completedAt: t.completed_at,
               updatedAt: t.updated_at,
             };
