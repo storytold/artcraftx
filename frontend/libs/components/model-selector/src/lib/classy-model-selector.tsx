@@ -8,7 +8,7 @@ import { ModelPage } from "./model-pages";
 import { Provider } from "@storyteller/tauri-api";
 import { getProviderDisplayName, getProviderIcon } from "./provider-icons";
 import { Model } from "@storyteller/model-list";
-import { CircleCheck, ChevronUp } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import { GenerationProvider } from "@storyteller/api-enums";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { defaultModelForPage } from "./defaultModelForPage";
@@ -23,7 +23,6 @@ interface ClassyModelSelectorProps {
   showIconsInList?: boolean;
   triggerLabel?: string;
   providersByModel?: Partial<Record<string, Provider[]>>;
-  providerTooltipDelayMs?: number;
   maxListHeight?: number | string;
   /**
    * "floating": the original standalone selector (large two-line trigger with
@@ -34,11 +33,10 @@ interface ClassyModelSelectorProps {
    */
   variant?: "floating" | "embedded";
   /**
-   * Whether models that support multiple providers expose the provider-picker
-   * submenu (hover panel) and the per-row provider icon chips. Defaults to
-   * true. Pages locked to a single provider (e.g. PageDraw) pass false to show
-   * only the model name — the default provider is still resolved into the
-   * store so downstream generation calls keep working.
+   * Whether each row shows the icon of the provider the model will run on
+   * (its last-used provider, else its default). Defaults to true. Pages
+   * locked to a single provider (e.g. PageDraw) pass false to show only the
+   * model name. Changing the provider itself is the account picker's job.
    */
   showProviderSelection?: boolean;
 }
@@ -54,79 +52,10 @@ const isSameModel = (a: Model | undefined, b: Model | undefined): boolean =>
 
 const DEFAULT_PROVIDER_OPTIONS: GenerationProvider[] = [GenerationProvider.Artcraft];
 
-function ProviderTooltipContent({
-  page,
-  modelId,
-  model,
-  modelLabel,
-  allowedProviders,
-  onFinished,
-}: {
-  page: ModelPage;
-  modelId?: string;
-  model?: Model;
-  modelLabel?: string;
-  allowedProviders: GenerationProvider[];
-  onFinished?: () => void;
-}) {
-  const { setSelectedModel, setSelectedProvider } =
-    useClassyModelSelectorStore();
-  const selectedProvider = useSelectedProviderForModel(page, modelId);
-
-  // Initialize provider for this model if missing
-  useEffect(() => {
-    if (!modelId) return;
-    if (!selectedProvider && allowedProviders.length > 0) {
-      setSelectedProvider(page, modelId, allowedProviders[0]);
-    }
-  }, [page, modelId, selectedProvider, allowedProviders, setSelectedProvider]);
-
-  if (!modelId) return null as any;
-
-  return (
-    <div className="flex flex-col gap-1">
-      <div className="mb-1 mt-0.5 px-1.5 text-sm font-normal text-base-fg opacity-70">
-        Select Provider
-      </div>
-      <div className="flex flex-col gap-0">
-        {allowedProviders.map((p) => (
-          <button
-            key={p}
-            onClick={() => {
-              if (model) {
-                setSelectedModel(page, model);
-              }
-              setSelectedProvider(page, modelId, p);
-              onFinished?.();
-            }}
-            type="button"
-            className={`group flex cursor-pointer items-center justify-between rounded-lg px-2 py-2 transition-all ${
-              selectedProvider === p
-                ? "bg-ui-controls/70 border-l-4 border-primary"
-                : "hover:bg-ui-controls/50"
-            }`}
-          >
-            <span className="flex items-center gap-2 text-sm text-base-fg">
-              <span className="text-lg">{getProviderIcon(p)}</span>
-              {getProviderDisplayName(p)}
-            </span>
-            {selectedProvider === p && (
-              <span className="text-primary text-xl font-bold bg-white rounded-full p-0 h-4 w-4 flex items-center justify-center">
-                <CircleCheck size="1em" />
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export function ClassyModelSelector({
   items,
   page,
   providersByModel,
-  providerTooltipDelayMs = 300,
   maxListHeight = "60vh",
   variant = "floating",
   showProviderSelection = true,
@@ -203,63 +132,34 @@ export function ClassyModelSelector({
         const modelId = item.model?.id;
         const allowedProviders = item.model?.getProviders() || DEFAULT_PROVIDER_OPTIONS;
 
-        // When provider selection is hidden, treat every model as
-        // single-provider so the submenu and provider chips never render.
-        const hasMultipleProviders =
-          showProviderSelection && allowedProviders.length >= 2;
+        // The provider this model will run on: its last-used provider, else
+        // its default. Shown as an icon; the account picker changes it.
+        const rowProvider = modelId ? selectedProvidersByModel[modelId] ?? allowedProviders[0] : undefined;
+        const isSelected = isSameModel(item.model as Model | undefined, selectedModel);
+        const providerChip = (className: string) =>
+          showProviderSelection && rowProvider ? (
+            <div className={className}>
+              <span className="text-base-fg/70 group-hover:text-base-fg/90 text-lg">
+                {getProviderIcon(rowProvider)}
+              </span>
+            </div>
+          ) : undefined;
 
         return {
           ...item,
-          selected: isSameModel(item.model as Model | undefined, selectedModel),
-          hoverTooltip: hasMultipleProviders
-            ? (close: () => void) => (
-                <ProviderTooltipContent
-                  page={page}
-                  modelId={modelId}
-                  model={item.model as Model | undefined}
-                  modelLabel={item.label}
-                  allowedProviders={allowedProviders}
-                  onFinished={close}
-                />
-              )
+          selected: isSelected,
+          trailing: !isSelected
+            ? providerChip("mr-1 rounded-md p-1.5 bg-ui-controls/60 group-hover:bg-ui-controls/80 transition-colors")
             : undefined,
-          tooltipDelayMs: providerTooltipDelayMs,
-          trailing:
-            !isSameModel(item.model as Model | undefined, selectedModel) && hasMultipleProviders
-              ? (() => {
-                  const prov = modelId
-                    ? selectedProvidersByModel[modelId]
-                    : undefined;
-                  const iconProvider = prov ?? allowedProviders[0];
-                  return iconProvider ? (
-                    <div className="mr-1 rounded-md p-1.5 bg-ui-controls/60 group-hover:bg-ui-controls/80 transition-colors">
-                      <span className="text-base-fg/70 group-hover:text-base-fg/90 text-lg">
-                        {getProviderIcon(iconProvider)}
-                      </span>
-                    </div>
-                  ) : undefined;
-                })()
-              : undefined,
-          selectedRight:
-            isSameModel(item.model as Model | undefined, selectedModel) &&
-            selectedProvider &&
-            hasMultipleProviders ? (
-              <div className="mr-1 rounded-md p-1.5 bg-primary/60 group-hover:bg-primary/80 transition-colors">
-                <span className="text-base-fg/70 group-hover:text-base-fg/90 text-lg">
-                  {getProviderIcon(selectedProvider)}
-                </span>
-              </div>
-            ) : undefined,
+          selectedRight: isSelected
+            ? providerChip("mr-1 rounded-md p-1.5 bg-primary/60 group-hover:bg-primary/80 transition-colors")
+            : undefined,
         } as PopoverItem;
       }),
     [
       items,
       selectedModel,
-      selectedProvider,
       selectedProvidersByModel,
-      page,
-      providersByModel,
-      providerTooltipDelayMs,
       showProviderSelection,
     ],
   );
