@@ -45,6 +45,10 @@ interface ClassyModelSelectorProps {
 
 // Model instances are rebuilt when the backend listing hydrates, so compare by
 // tauriId rather than object identity.
+// Stable empty map for pages with no provider selections yet (see the selector
+// in ClassyModelSelector).
+const NO_SELECTED_PROVIDERS: Readonly<Record<string, GenerationProvider>> = Object.freeze({});
+
 const isSameModel = (a: Model | undefined, b: Model | undefined): boolean =>
   a !== undefined && b !== undefined && a.tauriId === b.tauriId;
 
@@ -136,7 +140,9 @@ export function ClassyModelSelector({
   const selectedModel = selectedModels[page] || defaultModelForPage(itemModels, page);
   const selectedProvider = useSelectedProviderForModel(page, selectedModel?.id);
   const selectedProvidersByModel = useClassyModelSelectorStore(
-    (s) => s.selectedProviders[page] ?? {},
+    // NB: the fallback must be a stable reference — a fresh `{}` per render
+    // makes useSyncExternalStore see a new snapshot every time and loop.
+    (s) => s.selectedProviders[page] ?? NO_SELECTED_PROVIDERS,
   );
 
   // Make sure a model is selected for other components to listen to. The
