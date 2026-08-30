@@ -117,8 +117,8 @@ impl AppPreferences {
 mod tests {
   use super::*;
   use crate::state::app_preferences::settings::app_sound_file::AppSoundFile;
-  use crate::state::downloads::preferred_download_directory::PreferredDownloadDirectory;
-  use crate::state::downloads::preferred_download_filename::PreferredDownloadFilename;
+  use crate::state::app_preferences::settings::preferred_download_directory::PreferredDownloadDirectory;
+  use crate::state::app_preferences::settings::preferred_download_filename::PreferredDownloadFilename;
 
   #[test]
   fn defaults_serialize_to_nested_toml() {

@@ -1,8 +1,8 @@
-use crate::state::artcraft_usage_tracker::artcraft_usage_tracker_data::ArtcraftUsageTrackerData;
+use crate::state::usage_tracker::artcraft_usage_tracker_data::ArtcraftUsageTrackerData;
 use std::sync::{Arc, RwLock};
 use log::error;
 use crate::error::artcraftx_error::ArtcraftXError;
-use crate::state::artcraft_usage_tracker::artcraft_usage_type::{ArtcraftUsagePage, ArtcraftUsageType};
+use crate::state::usage_tracker::artcraft_usage_type::{ArtcraftUsagePage, ArtcraftUsageType};
 
 /// Track generation volume so we know which areas to focus efforts on.
 /// But also note: https://en.wikipedia.org/wiki/Survivorship_bias

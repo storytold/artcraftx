@@ -81,8 +81,8 @@ impl Display for SystemDownloadDirectory {
 
 #[cfg(test)]
 mod tests {
-  use crate::state::downloads::preferred_download_directory::PreferredDownloadDirectory;
-  use crate::state::downloads::preferred_download_directory::SystemDownloadDirectory;
+  use crate::state::app_preferences::settings::preferred_download_directory::PreferredDownloadDirectory;
+  use crate::state::app_preferences::settings::preferred_download_directory::SystemDownloadDirectory;
 
 
   mod json {

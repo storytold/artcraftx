@@ -1,8 +1,8 @@
 use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::app_preferences::settings::app_sound_file::{optional_sound, AppSoundFile};
-use crate::state::downloads::preferred_download_directory::PreferredDownloadDirectory;
-use crate::state::downloads::preferred_download_filename::PreferredDownloadFilename;
+use crate::state::app_preferences::settings::preferred_download_directory::PreferredDownloadDirectory;
+use crate::state::app_preferences::settings::preferred_download_filename::PreferredDownloadFilename;
 use anyhow::anyhow;
 use errors::AnyhowResult;
 use log::{error, info};

@@ -6,7 +6,7 @@ use crate::services::storyteller::state::storyteller_credential_manager::Storyte
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
-use crate::state::downloads::preferred_download_filename::DownloadFilenameParts;
+use crate::state::app_preferences::settings::preferred_download_filename::DownloadFilenameParts;
 use crate::threads::third_party_task_polling_thread::events::notify_frontend_of_completion::{
   notify_frontend_of_completion, CompletionData,
 };

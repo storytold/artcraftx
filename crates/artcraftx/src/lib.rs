@@ -61,7 +61,7 @@ use crate::services::worldlabs::state::worldlabs_bearer_bridge::WorldlabsBearerB
 use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
 use log::error;
 
-use crate::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
+use crate::state::usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
 use tauri_plugin_dialog;
 use tauri_plugin_http;
 

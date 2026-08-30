@@ -1,7 +1,7 @@
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::runtime::artcraft_platform_info::ArtcraftPlatformInfo;
-use crate::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
+use crate::state::usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
 use crate::state::database::task_database::TaskDatabase;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::services::storyteller::threads::storyteller_activity_thread::storyteller_activity_thread;

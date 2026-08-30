@@ -4,7 +4,7 @@ use crate::error::artcraftx_error::ArtcraftXError;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
-use crate::state::downloads::preferred_download_filename::{model_slug_from_model_type_str, DownloadFilenameParts};
+use crate::state::app_preferences::settings::preferred_download_filename::{model_slug_from_model_type_str, DownloadFilenameParts};
 use chrono::Local;
 use crate::utils::download::download_url_to_download_dir_via_temp::download_url_to_download_dir_via_temp;
 use crate::utils::enum_conversion::generation_source::to_generation_service_provider;

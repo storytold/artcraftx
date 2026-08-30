@@ -1,5 +1,5 @@
-use crate::state::downloads::preferred_download_directory::{PreferredDownloadDirectory, SystemDownloadDirectory};
-use crate::state::downloads::preferred_download_filename::PreferredDownloadFilename;
+use crate::state::app_preferences::settings::preferred_download_directory::{PreferredDownloadDirectory, SystemDownloadDirectory};
+use crate::state::app_preferences::settings::preferred_download_filename::PreferredDownloadFilename;
 use serde_derive::{Deserialize, Serialize};
 
 /// Where downloaded files go and what they're called.

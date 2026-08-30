@@ -3,8 +3,8 @@
 
 use crate::state::app_preferences::app_preferences::AppPreferences;
 use crate::state::app_preferences::settings::app_sound_file::AppSoundFile;
-use crate::state::downloads::preferred_download_directory::PreferredDownloadDirectory;
-use crate::state::downloads::preferred_download_filename::PreferredDownloadFilename;
+use crate::state::app_preferences::settings::preferred_download_directory::PreferredDownloadDirectory;
+use crate::state::app_preferences::settings::preferred_download_filename::PreferredDownloadFilename;
 use errors::AnyhowResult;
 use log::warn;
 use serde_derive::Deserialize;
