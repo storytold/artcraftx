@@ -136,10 +136,12 @@ export function ClassyModelSelector({
         // its default. Shown as an icon; the account picker changes it.
         const rowProvider = modelId ? selectedProvidersByModel[modelId] ?? allowedProviders[0] : undefined;
         const isSelected = isSameModel(item.model as Model | undefined, selectedModel);
+        // Kept quiet: no chip background, low opacity, a touch brighter on
+        // hover and for the selected row.
         const providerChip = (className: string) =>
           showProviderSelection && rowProvider ? (
-            <div className={className}>
-              <span className="text-base-fg/70 group-hover:text-base-fg/90 text-lg">
+            <div className={`mr-1 p-1.5 transition-opacity ${className}`}>
+              <span className="text-base-fg text-base">
                 {getProviderIcon(rowProvider)}
               </span>
             </div>
@@ -149,10 +151,10 @@ export function ClassyModelSelector({
           ...item,
           selected: isSelected,
           trailing: !isSelected
-            ? providerChip("mr-1 rounded-md p-1.5 bg-ui-controls/60 group-hover:bg-ui-controls/80 transition-colors")
+            ? providerChip("opacity-35 group-hover:opacity-60")
             : undefined,
           selectedRight: isSelected
-            ? providerChip("mr-1 rounded-md p-1.5 bg-primary/60 group-hover:bg-primary/80 transition-colors")
+            ? providerChip("opacity-55 group-hover:opacity-75")
             : undefined,
         } as PopoverItem;
       }),
