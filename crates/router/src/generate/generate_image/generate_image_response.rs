@@ -44,12 +44,13 @@ pub struct MidjourneyImageResponsePayload {
   pub job_id: String,
 }
 
-/// Response from the first-party (cookie-session) Grok Imagine provider. Grok's
-/// imagine websocket returns finished images directly — there is no job id to
-/// poll — so this carries the image URLs.
+/// Response from the first-party (cookie-session) Grok Imagine provider. The
+/// prompt was sent on the account's imagine websocket; every resulting frame
+/// (progress, finished images, errors) carries this request id, which the
+/// caller's polling thread keys results on.
 #[derive(Clone, Debug)]
 pub struct GrokImageResponsePayload {
-  pub image_urls: Vec<String>,
+  pub request_id: String,
 }
 
 #[derive(Clone, Debug)]

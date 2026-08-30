@@ -70,6 +70,7 @@ fn provider_to_generation_provider(provider: RouterProvider) -> GenerationSource
   match provider {
     RouterProvider::Artcraft => GenerationSource::Artcraft,
     RouterProvider::Fal => GenerationSource::Fal,
+    RouterProvider::Grok => GenerationSource::Grok,
     RouterProvider::Midjourney => GenerationSource::Midjourney,
     // Unused providers -> ArtCraft
     RouterProvider::Seedance2Pro => GenerationSource::Artcraft ,

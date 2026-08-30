@@ -5,7 +5,7 @@ use strum::EnumIter;
 /// This is a comprehensive list of common aspect ratios you can specify when enqueuing a generation.
 /// Not every model will support every aspect ratio.
 /// In the case a model doesn't support the aspect ratio, gracefully pick the nearest option.
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(test, derive(EnumIter))]
 #[serde(rename_all = "snake_case")]
 pub enum RouterAspectRatio {

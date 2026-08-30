@@ -10,8 +10,7 @@ use crate::state::artcraft_usage_tracker::artcraft_usage_tracker::ArtcraftUsageT
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
-use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;
-use crate::services::grok::threads::grok_image_websocket_thread::grok_image_websocket_thread::grok_image_websocket_thread;
+use crate::services::grok::state::grok_websockets::GrokWebsockets;
 use crate::services::grok::threads::grok_video_task_polling::grok_video_task_polling_thread::grok_video_task_polling_thread;
 use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveSession;
 use crate::services::midjourney::threads::midjourney_long_polling_thread::midjourney_long_polling_thread;
@@ -37,7 +36,7 @@ pub async fn handle_tauri_startup(
   sora_task_queue: SoraTaskQueue,
   midjourney_live_session: MidjourneyLiveSession,
   grok_creds_manager: GrokCredentialManager,
-  grok_image_prompt_queue: GrokImagePromptQueue,
+  grok_websockets: GrokWebsockets,
   _worldlabs_bearer_bridge: WorldlabsBearerBridge,
   worldlabs_creds_manager: WorldlabsCredentialManager,
 ) -> AnyhowResult<()> {
@@ -82,15 +81,6 @@ pub async fn handle_tauri_startup(
     storyteller_creds_manager.clone(),
   ));
 
-  tauri::async_runtime::spawn(grok_image_websocket_thread(
-    app.clone(),
-    root.clone(),
-    task_database.clone(),
-    grok_creds_manager.clone(),
-    grok_image_prompt_queue.clone(),
-    storyteller_creds_manager.clone(),
-  ));
-
   tauri::async_runtime::spawn(midjourney_websocket_thread(
     app.clone(),
     root.clone(),
@@ -118,8 +108,10 @@ pub async fn handle_tauri_startup(
   tauri::async_runtime::spawn(third_party_task_polling_thread(
     app.clone(),
     root.clone(),
+    app_preferences.clone(),
     task_database.clone(),
     storyteller_creds_manager.clone(),
+    grok_websockets.clone(),
   ));
 
   spawn_discord_presence_thread()?;

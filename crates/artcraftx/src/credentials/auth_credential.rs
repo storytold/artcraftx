@@ -105,13 +105,20 @@ mod tests {
   #[test]
   fn cookie_credential_with_grok_data_round_trips() {
     use crate::credentials::cookie_credential::CookieCredential;
-    use crate::credentials::cookie_credential_grok_extra_pieces::CookieCredentialGrokExtraPieces;
+    use crate::credentials::cookie_credential_grok_extra_pieces::{CookieCredentialGrokExtraPieces, GrokStatsigCapture};
     use chrono::Utc;
     use cookie_store_wrapper::cookie_store::CookieStore;
     use grok_consumer_statsig::StatsigMaterial;
     use reqwest::Url;
 
     let material = StatsigMaterial::from_seed_b64("7LKU1SbbPgGmlkhdNLb4ltpqrlenNVC2KnvBRD5ly/VV9ueQboie/eZABqiclvh1");
+    let capture = GrokStatsigCapture {
+      material: material.clone(),
+      statsig_id: "XbHvyYh7hmNc+8sVAGnrpcuHN/MK+mgN63cmnBljOJaoCKu6zTPVw6C7HVv1wculKCNmYVum+L1h0IjFmtyZD/C53M+ZXg".to_string(),
+      method: "POST".to_string(),
+      path: "/rest/app-chat/conversations/new".to_string(),
+      captured_at: Utc::now(),
+    };
 
     let mut cookies = CookieStore::empty();
     cookies.insert_named("sso", "token-value", &Url::parse("https://grok.com/").unwrap());
@@ -119,7 +126,7 @@ mod tests {
     let now = Utc::now();
     let mut cookie = CookieCredential::new(cookies);
     cookie.updated_at = Some(now);
-    cookie.grok_data = Some(CookieCredentialGrokExtraPieces::fresh(material.clone(), now, 30));
+    cookie.grok_data = Some(CookieCredentialGrokExtraPieces::fresh(capture.clone(), now));
 
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("grok_cookies.toml");
@@ -138,6 +145,11 @@ mod tests {
     assert_eq!(loaded_grok.statsig_material.as_ref(), Some(&material));
     assert!(loaded_grok.statsig_fetched_at.is_some());
     assert!(loaded_grok.statsig_refresh_at.is_some());
+    let latest = loaded_grok.latest_statsig.as_ref().expect("latest statsig persisted");
+    assert_eq!(latest.statsig_id, capture.statsig_id);
+    assert_eq!(latest.method, "POST");
+    assert_eq!(latest.path, "/rest/app-chat/conversations/new");
+    assert_eq!(loaded_grok.latest_statsig_if_fresh(now), Some(capture.statsig_id.as_str()));
     assert!(loaded.cookies().unwrap().cookies.has_cookie("sso"));
   }
 

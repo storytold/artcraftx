@@ -22,8 +22,12 @@ pub enum TauriImageModel {
   FluxPro11,
   #[serde(rename = "flux_pro_11_ultra", alias = "flux_pro_1p1_ultra")]
   FluxPro11Ultra,
+  // First-party (cookie-session) Grok Imagine, fast ("speed") tier.
   #[serde(rename = "grok_image", alias = "grok_imagine_image")]
   GrokImage,
+  // First-party (cookie-session) Grok Imagine, quality ("pro") tier.
+  #[serde(rename = "grok_imagine_image_q")]
+  GrokImagineImageQuality,
   #[serde(rename = "recraft_3")]
   Recraft3,
   #[serde(rename = "gpt_image_1")]

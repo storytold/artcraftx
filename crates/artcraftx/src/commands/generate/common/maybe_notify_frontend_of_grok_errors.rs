@@ -1,4 +1,4 @@
-use crate::commands::generate::generate_error::{GenerateError, ProviderFailureReason};
+use crate::commands::generate::generate_error::{GenerateError, MissingCredentialsReason, ProviderFailureReason};
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::generation_events::common::{GenerationAction, GenerationServiceProvider};
 use crate::events::generation_events::generation_enqueue_failure_event::GenerationEnqueueFailureEvent;
@@ -13,6 +13,14 @@ pub async fn maybe_notify_frontend_of_grok_errors(
   match error {
     GenerateError::ProviderFailure(ProviderFailureReason::GrokError(error)) => {
       grok_error(app, error);
+    }
+    GenerateError::MissingCredentials(MissingCredentialsReason::NeedsGrokCredentials) => {
+      GenerationEnqueueFailureEvent {
+        action: GenerationAction::GenerateImage,
+        service: GenerationServiceProvider::Grok,
+        model: None,
+        reason: Some("Please log into Grok (Settings → Accounts) to use Grok Imagine.".to_string()),
+      }.send_infallible(app);
     }
     _ => {
       // Do nothing for other types of errors

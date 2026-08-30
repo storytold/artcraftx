@@ -3,7 +3,7 @@ use router::api::router_image_model::RouterImageModel;
 use crate::commands::generate::generate_image::tauri_image_model::TauriImageModel;
 
 /// Map TauriImageModel to the artcraft_router's RouterImageModel.
-/// Returns None for models not supported by the router (Grok, Recraft, etc.).
+/// Returns None for models not supported by the router (Recraft, etc.).
 pub fn tauri_image_model_to_router_model(model: TauriImageModel) -> Option<RouterImageModel> {
   match model {
     TauriImageModel::Flux1Dev => Some(RouterImageModel::Flux1Dev), // Text-to-Image
@@ -27,8 +27,10 @@ pub fn tauri_image_model_to_router_model(model: TauriImageModel) -> Option<Route
     TauriImageModel::Midjourney7 => Some(RouterImageModel::Midjourney7),
     TauriImageModel::Midjourney7Niji => Some(RouterImageModel::Midjourney7Niji),
     TauriImageModel::Midjourney8 => Some(RouterImageModel::Midjourney8),
+    // First-party (cookie-session) Grok Imagine
+    TauriImageModel::GrokImage => Some(RouterImageModel::GrokImagineImage),
+    TauriImageModel::GrokImagineImageQuality => Some(RouterImageModel::GrokImagineImageQuality),
     // Not accounted for yet
-    TauriImageModel::GrokImage => None,
     TauriImageModel::Recraft3 => None,
     TauriImageModel::FluxProKontextMax => None,
     TauriImageModel::FluxDevJuggernaut => None,

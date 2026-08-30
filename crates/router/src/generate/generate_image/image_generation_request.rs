@@ -73,6 +73,8 @@ use crate::generate::generate_image::providers::fal::seedream_4p5::cost::FalSeed
 use crate::generate::generate_image::providers::fal::seedream_4p5::request::FalSeedream4p5RequestState;
 use crate::generate::generate_image::providers::fal::seedream_5_lite::cost::FalSeedream5LiteCostState;
 use crate::generate::generate_image::providers::fal::seedream_5_lite::request::FalSeedream5LiteRequestState;
+use crate::generate::generate_image::providers::grok::grok_imagine_image::cost::GrokImagineImageCostState;
+use crate::generate::generate_image::providers::grok::grok_imagine_image::request::GrokImagineImageRequestState;
 use crate::generate::generate_image::providers::kinovi::midjourney_7::cost::KinoviMidjourney7CostState;
 use crate::generate::generate_image::providers::kinovi::midjourney_7::request::KinoviMidjourney7RequestState;
 use crate::generate::generate_image::providers::kinovi::midjourney_7_niji::cost::KinoviMidjourney7NijiCostState;
@@ -133,6 +135,9 @@ pub enum ImageGenerationRequest {
 
   // ── First-party (cookie-session) Midjourney provider ──
   MidjourneyMidjourney8(MidjourneyMidjourney8RequestState),
+
+  // ── First-party (cookie-session) Grok Imagine provider ──
+  GrokImagineImage(GrokImagineImageRequestState),
 }
 
 impl ImageGenerationRequest {
@@ -181,6 +186,8 @@ impl ImageGenerationRequest {
       Self::KinoviSeedream5p0Pro(_) => RouterProvider::Seedance2Pro,
 
       Self::MidjourneyMidjourney8(_) => RouterProvider::Midjourney,
+
+      Self::GrokImagineImage(_) => RouterProvider::Grok,
     }
   }
 
@@ -271,6 +278,8 @@ impl ImageGenerationRequest {
       Self::KinoviSeedream5p0Pro(request) => Ok(KinoviSeedream5p0ProCostState::from_request(request).estimate_cost()),
 
       Self::MidjourneyMidjourney8(request) => Ok(MidjourneyMidjourney8CostState::from_request(request).estimate_cost()),
+
+      Self::GrokImagineImage(request) => Ok(GrokImagineImageCostState::from_request(request).estimate_cost()),
     }
   }
 
@@ -452,6 +461,13 @@ impl ImageGenerationRequest {
         let midjourney_client = client.get_midjourney_client_ref()
           .map_err(ArtcraftRouterError::Client)?;
         request.send(midjourney_client).await
+      }
+
+      // ── First-party (cookie-session) Grok Imagine ──
+      Self::GrokImagineImage(request) => {
+        let grok_client = client.get_grok_client_ref()
+          .map_err(ArtcraftRouterError::Client)?;
+        request.send(grok_client).await
       }
     }
   }

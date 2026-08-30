@@ -47,6 +47,7 @@ use crate::generate::generate_image::providers::kinovi::midjourney_7::build::bui
 use crate::generate::generate_image::providers::kinovi::midjourney_7_niji::build::build_kinovi_midjourney_7_niji;
 use crate::generate::generate_image::providers::kinovi::midjourney_8::build::build_kinovi_midjourney_8;
 use crate::generate::generate_image::providers::kinovi::seedream_5p0_pro::build::build_kinovi_seedream_5p0_pro;
+use crate::generate::generate_image::providers::grok::grok_imagine_image::build::build_grok_imagine_image;
 use crate::generate::generate_image::providers::midjourney::midjourney_8::build::build_midjourney_midjourney_8;
 
 #[derive(Clone, Debug)]
@@ -156,6 +157,10 @@ impl GenerateImageRequestBuilder {
 
       // First-party (cookie-session) Midjourney.
       (RouterProvider::Midjourney, RouterImageModel::Midjourney8) => build_midjourney_midjourney_8(self),
+
+      // First-party (cookie-session) Grok Imagine. Fast vs quality ("pro") mode.
+      (RouterProvider::Grok, RouterImageModel::GrokImagineImage) => build_grok_imagine_image(self, false),
+      (RouterProvider::Grok, RouterImageModel::GrokImagineImageQuality) => build_grok_imagine_image(self, true),
 
       _ => self.unsupported_provider_and_model(),
     }

@@ -51,7 +51,7 @@ use crate::state::app_preferences::app_preferences_manager::load_app_preferences
 use crate::state::runtime::artcraft_platform_info::ArtcraftPlatformInfo;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::grok::state::grok_credential_manager::GrokCredentialManager;
-use crate::services::grok::state::grok_image_prompt_queue::GrokImagePromptQueue;
+use crate::services::grok::state::grok_websockets::GrokWebsockets;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveSession;
 use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
@@ -110,8 +110,10 @@ pub fn run() {
   let grok_creds_manager = GrokCredentialManager::initialize_from_disk_infallible(&app_data_root);
   let grok_creds_manager_2 = grok_creds_manager.clone();
 
-  let grok_prompt_queue = GrokImagePromptQueue::new();
-  let grok_prompt_queue_2 = grok_prompt_queue.clone();
+  // One live Grok imagine websocket per account, shared by the enqueue command
+  // and the third-party task polling thread.
+  let grok_websockets = GrokWebsockets::new();
+  let grok_websockets_2 = grok_websockets.clone();
 
   let worldlabs_creds_manager = WorldlabsCredentialManager::initialize_from_disk_infallible(&app_data_root);
   let worldlabs_creds_manager_2 = worldlabs_creds_manager.clone();
@@ -161,7 +163,7 @@ pub fn run() {
           sora_tasks,
           midjourney_live_session_2,
           grok_creds_manager_2,
-          grok_prompt_queue_2,
+          grok_websockets_2,
           worldlabs_bearer_bridge_2,
           worldlabs_creds_manager_2,
         ).await;
@@ -179,7 +181,7 @@ pub fn run() {
     .manage(artcraft_platform_info)
     .manage(artcraft_usage_tracker)
     .manage(grok_creds_manager)
-    .manage(grok_prompt_queue)
+    .manage(grok_websockets)
     .manage(midjourney_creds_manager)
     .manage(midjourney_live_session)
     .manage(sora_creds_manager)

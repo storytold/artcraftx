@@ -1,9 +1,14 @@
+use crate::services::grok::state::grok_websockets::GrokWebsockets;
+use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
 use crate::threads::third_party_task_polling_thread::handlers::fal::poll_fal_tasks::poll_fal_tasks;
+use crate::threads::third_party_task_polling_thread::handlers::grok::grok_image_collector::GrokImageCollector;
+use crate::threads::third_party_task_polling_thread::handlers::grok::poll_grok_image_tasks::poll_grok_image_tasks;
 use crate::database::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use core_types::enums::generation_source::GenerationSource;
+use sqlite_identifiers::enums::task_type::TaskType;
 use log::{error, info, warn};
 use sqlite_database::queries::read::list_non_artcraft_pending_tasks::{
   list_non_artcraft_pending_tasks, ListNonArtcraftPendingTasksArgs,
@@ -20,17 +25,24 @@ const SLEEP_ON_ERROR: Duration = Duration::from_secs(30);
 pub async fn third_party_task_polling_thread(
   app_handle: AppHandle,
   app_data_root: AppDataRoot,
+  app_preferences: AppPreferencesManager,
   task_database: TaskDatabase,
   storyteller_creds_manager: StorytellerCredentialManager,
+  grok_websockets: GrokWebsockets,
 ) -> ! {
   let mut has_ever_seen_third_party_jobs = false;
+  // Grok streams a prompt's images one frame at a time; accumulate across iterations.
+  let mut grok_image_collector = GrokImageCollector::new();
 
   loop {
     let result = poll_iteration(
       &app_handle,
       &app_data_root,
+      &app_preferences,
       &task_database,
       &storyteller_creds_manager,
+      &grok_websockets,
+      &mut grok_image_collector,
       &mut has_ever_seen_third_party_jobs,
     ).await;
 
@@ -44,8 +56,11 @@ pub async fn third_party_task_polling_thread(
 async fn poll_iteration(
   app_handle: &AppHandle,
   app_data_root: &AppDataRoot,
+  app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
+  grok_websockets: &GrokWebsockets,
+  grok_image_collector: &mut GrokImageCollector,
   has_ever_seen_third_party_jobs: &mut bool,
 ) -> Result<(), PollError> {
   let task_list = list_non_artcraft_pending_tasks(ListNonArtcraftPendingTasksArgs {
@@ -71,23 +86,44 @@ async fn poll_iteration(
     .filter(|t| t.provider == GenerationSource::Fal)
     .collect();
 
-  let non_fal_tasks: Vec<&Task> = tasks.iter()
-    .filter(|t| t.provider != GenerationSource::Fal)
+  // First-party Grok Imagine images (websocket results; see handlers/grok).
+  let grok_image_tasks: Vec<&Task> = tasks.iter()
+    .filter(|t| t.provider == GenerationSource::Grok && t.task_type == TaskType::ImageGeneration)
     .collect();
 
-  if !non_fal_tasks.is_empty() {
-    for task in &non_fal_tasks {
-      warn!(
-        "[ThirdPartyPolling] Skipping non-FAL task: id={}, provider={:?}, type={:?}",
-        task.id.as_str(),
-        task.provider,
-        task.task_type,
-      );
-    }
+  let unhandled_tasks: Vec<&Task> = tasks.iter()
+    .filter(|t| t.provider != GenerationSource::Fal)
+    .filter(|t| !(t.provider == GenerationSource::Grok && t.task_type == TaskType::ImageGeneration))
+    .collect();
+
+  for task in &unhandled_tasks {
+    warn!(
+      "[ThirdPartyPolling] Skipping unhandled task: id={}, provider={:?}, type={:?}",
+      task.id.as_str(),
+      task.provider,
+      task.task_type,
+    );
+  }
+
+  if !grok_image_tasks.is_empty() {
+    info!("[ThirdPartyPolling] {} Grok image job(s) pending", grok_image_tasks.len());
+    poll_grok_image_tasks(
+      app_handle,
+      app_data_root,
+      app_preferences,
+      task_database,
+      storyteller_creds_manager,
+      grok_websockets,
+      grok_image_collector,
+      &grok_image_tasks,
+    ).await;
   }
 
   if fal_tasks.is_empty() {
-    tokio::time::sleep(SLEEP_THIRD_PARTY_JOBS_SEEN).await;
+    // NB: the Grok poll already listened on its sockets for a couple of seconds.
+    if grok_image_tasks.is_empty() {
+      tokio::time::sleep(SLEEP_THIRD_PARTY_JOBS_SEEN).await;
+    }
     return Ok(());
   }
 

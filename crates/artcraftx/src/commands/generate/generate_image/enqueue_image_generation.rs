@@ -1,26 +1,31 @@
 use artcraft_client::utils::api_host::ApiHost;
+use chrono::Utc;
 use core_types::enums::generation_source::GenerationSource;
-use log::{info, warn};
+use log::{error, info, warn};
 use midjourney_client::recipes::get_user_info::{get_user_info, GetUserInfoArgs};
 use router::api::image_list_ref::ImageListRef;
+use router::api::router_image_model::RouterImageModel;
 use router::api::router_provider::RouterProvider;
 use router::client::generation_mode_mismatch_strategy::GenerationModeMismatchStrategy;
 use router::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 use router::client::router_artcraft_client::RouterArtcraftClient;
 use router::client::router_client::RouterClient;
 use router::client::router_fal_client::RouterFalClient;
+use router::client::router_grok_client::RouterGrokClient;
 use router::client::router_midjourney_client::RouterMidjourneyClient;
 use router::generate::generate_image::generate_image_request_builder::GenerateImageRequestBuilder;
 use router::generate::generate_image::generate_image_response::GenerateImageResponse;
 use router::generate::generate_image::image_generation_draft_or_request::ImageGenerationDraftOrRequest;
+use router::errors::artcraft_router_error::ArtcraftRouterError;
 use router::generate::generate_image::image_generation_request::ImageGenerationRequest;
+use grok_consumer_client::endpoint_bindings::generate_image_websocket::grok_generate_image_websocket::GrokImageWebsocket;
 use sqlite_identifiers::enums::task_type::TaskType;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::commands::generate::common::generation_credential::{
   credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential,
 };
-use crate::commands::generate::generate_error::GenerateError;
+use crate::commands::generate::generate_error::{BadInputReason, GenerateError};
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;
 use crate::commands::generate::generate_image::tauri_image_model::TauriImageModel;
 use crate::commands::generate::generate_image::utils::convert_enums_to_router::{
@@ -34,10 +39,14 @@ use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_generation_model::tauri_image_model_to_generation_model;
 use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_router_model::tauri_image_model_to_router_model;
 use crate::credentials::auth_credential::AuthCredential;
+use crate::credentials::find_service_credentials::find_first_credential_for_service;
+use crate::services::grok::state::grok_websockets::GrokWebsockets;
+use crate::services::grok::util::refresh_grok_statsig::{refresh_grok_statsig_blocking, GrokStatsigRefreshOutcome};
 use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveSession;
 use crate::services::midjourney::utils::extract_midjourney_user_id_from_cookies::extract_midjourney_user_id_from_cookie_header;
 use crate::services::midjourney::utils::midjourney_browser_profile::midjourney_browser_profile;
 use crate::state::data_dir::app_data_root::AppDataRoot;
+use tauri::AppHandle;
 use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_service;
 
 /// Credential-driven image generation: resolve the stored credential named by
@@ -46,10 +55,13 @@ use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_servi
 /// per-provider "handler" layer.
 pub async fn enqueue_image_generation(
   request: &TauriGenerateImageRequest,
+  app: &AppHandle,
   app_data_root: &AppDataRoot,
   mj_session: &MidjourneyLiveSession,
+  grok_websockets: &GrokWebsockets,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let credential = resolve_generation_credential(request.credential_id.as_deref(), app_data_root)?;
+  let credential = maybe_reroute_grok_model_to_grok_credential(request, credential, app_data_root)?;
 
   info!(
     "enqueue_image_generation: credential={} service={}",
@@ -71,6 +83,10 @@ pub async fn enqueue_image_generation(
 
     GenerationSource::MidjourneyCookies | GenerationSource::Midjourney => {
       enqueue_via_midjourney(request, &credential, mj_session).await
+    }
+
+    GenerationSource::GrokCookies | GenerationSource::Grok => {
+      enqueue_via_grok(request, app, app_data_root, &credential, grok_websockets).await
     }
 
     other => Err(credential_not_usable(
@@ -392,6 +408,233 @@ async fn enqueue_via_midjourney(
     maybe_queue_response_url: None,
     maybe_prompt_token: None,
   })
+}
+
+// ── Grok Imagine (first-party, cookie-session) ──
+
+/// Grok Imagine models only run on the user's own Grok session. If the picker
+/// still has another account selected, quietly use the first stored Grok
+/// account instead; without one, ask the user to log into Grok.
+fn maybe_reroute_grok_model_to_grok_credential(
+  request: &TauriGenerateImageRequest,
+  credential: AuthCredential,
+  app_data_root: &AppDataRoot,
+) -> Result<AuthCredential, GenerateError> {
+  if !is_grok_imagine_model(request.model) || is_grok_service(credential.service) {
+    return Ok(credential);
+  }
+
+  match find_first_credential_for_service(app_data_root, GenerationSource::GrokCookies) {
+    Some(grok_credential) => {
+      info!(
+        "Grok Imagine selected with a {} account; using Grok credential {} instead",
+        credential.service,
+        grok_credential.id.as_str(),
+      );
+      Ok(grok_credential)
+    }
+    None => {
+      warn!("Grok Imagine selected but no Grok credential is stored");
+      Err(GenerateError::needs_grok_credentials())
+    }
+  }
+}
+
+fn is_grok_imagine_model(model: Option<TauriImageModel>) -> bool {
+  matches!(model, Some(TauriImageModel::GrokImage | TauriImageModel::GrokImagineImageQuality))
+}
+
+fn is_grok_service(service: GenerationSource) -> bool {
+  matches!(service, GenerationSource::GrokCookies | GenerationSource::Grok)
+}
+
+/// Enqueue via the router's first-party Grok Imagine provider.
+///
+/// Sends the prompt on the account's live imagine websocket (shared via
+/// [`GrokWebsockets`]) and returns Grok's request id as the task's
+/// `provider_job_id`; the third-party task polling thread collects the images
+/// off the same socket later.
+///
+/// Statsig policy: use the credential file's latest statsig as long as it
+/// isn't expired (refresh first if it is). If the enqueue fails, warn, force a
+/// refresh (and reconnect the socket), and retry once; if that also fails the
+/// error goes back to the frontend as a flashed message.
+async fn enqueue_via_grok(
+  request: &TauriGenerateImageRequest,
+  app: &AppHandle,
+  app_data_root: &AppDataRoot,
+  credential: &AuthCredential,
+  grok_websockets: &GrokWebsockets,
+) -> Result<TaskEnqueueSuccess, GenerateError> {
+  let tauri_model = request.model.ok_or(GenerateError::no_model_specified())?;
+
+  let router_model = match tauri_model {
+    TauriImageModel::GrokImage => RouterImageModel::GrokImagineImage,
+    TauriImageModel::GrokImagineImageQuality => RouterImageModel::GrokImagineImageQuality,
+    other => {
+      return Err(GenerateError::NotYetImplemented(format!(
+        "Model {:?} is not supported for a Grok account",
+        other
+      )));
+    }
+  };
+
+  let cookie_header = credential
+      .cookies()
+      .map(|cookie| cookie.cookie_header())
+      .ok_or_else(|| credential_not_usable(credential, "the Grok credential has no cookies"))?;
+
+  let prompt = request.prompt.clone().unwrap_or_default().trim().to_string();
+  if prompt.is_empty() {
+    return Err(GenerateError::BadInput(BadInputReason::WrongImageArguments(
+      "Grok Imagine needs a text prompt".to_string(),
+    )));
+  }
+
+  let router_request = GenerateImageRequestBuilder {
+    model: router_model,
+    provider: RouterProvider::Grok,
+    prompt: Some(prompt),
+    image_inputs: None,
+    resolution: request.resolution.map(convert_resolution),
+    aspect_ratio: request.aspect_ratio.map(convert_aspect_ratio),
+    quality: request.quality.map(convert_quality),
+    image_batch_count: request.batch_size.map(|n| n as u16),
+    horizontal_angle: request.adjust_horizontal_angle,
+    vertical_angle: request.adjust_vertical_angle,
+    zoom: request.adjust_zoom,
+    request_mismatch_mitigation_strategy: RequestMismatchMitigationStrategy::PayMoreUpgrade,
+    generation_mode_mismatch_strategy: Some(GenerationModeMismatchStrategy::GenerateAnyway),
+    idempotency_token: None,
+  };
+
+  let generation_request = build_direct_request(router_request, "Grok")?;
+
+  let websocket = grok_websockets
+      .get_or_connect(&credential.id, &cookie_header)
+      .await
+      .map_err(|err| {
+        error!("Could not open the Grok image websocket for credential {}: {:?}", credential.id.as_str(), err);
+        GenerateError::ProviderRejected(format!("Couldn't connect to Grok: {}", err))
+      })?;
+
+  // Attempt 1: stored statsig if fresh, else refresh first.
+  ensure_grok_statsig_fresh(app, app_data_root, credential).await;
+
+  let first_error = match dispatch_grok_once(app_data_root, credential, &cookie_header, &websocket, &generation_request, 1).await {
+    Ok(request_id) => return Ok(grok_enqueue_success(tauri_model, request_id)),
+    Err(err) => err,
+  };
+
+  // Attempt 2: the failure may be a stale statsig/session — force a refresh,
+  // reconnect the socket, and retry once.
+  warn!(
+    "Grok enqueue attempt 1 failed ({}); checking whether a new statsig/secret is needed and refreshing.",
+    first_error,
+  );
+  match refresh_grok_statsig_blocking(app, app_data_root, true).await {
+    Ok(outcome) => info!("Grok statsig refresh outcome: {:?}", outcome),
+    Err(err) => warn!("Grok statsig refresh failed: {:?}", err),
+  }
+  if let Err(err) = websocket.reconnect().await {
+    warn!("Grok image websocket reconnect failed before retry: {}", err);
+  }
+
+  match dispatch_grok_once(app_data_root, credential, &cookie_header, &websocket, &generation_request, 2).await {
+    Ok(request_id) => Ok(grok_enqueue_success(tauri_model, request_id)),
+    Err(second_error) => {
+      error!(
+        "Grok enqueue failed after statsig refresh + retry (attempt 1: {}; attempt 2: {})",
+        first_error, second_error,
+      );
+      Err(GenerateError::ProviderRejected(format!(
+        "Grok image generation couldn't be started, even after refreshing your Grok session: {}",
+        second_error,
+      )))
+    }
+  }
+}
+
+/// Use the credential file's latest statsig as long as it isn't expired; if it
+/// is, fire off a refresh first and wait for it.
+async fn ensure_grok_statsig_fresh(app: &AppHandle, app_data_root: &AppDataRoot, credential: &AuthCredential) {
+  if fresh_grok_statsig(credential).is_some() {
+    info!("Grok enqueue: using the stored statsig (not expired).");
+    return;
+  }
+
+  warn!("Grok enqueue: stored statsig is missing or expired; refreshing before dispatch.");
+  match refresh_grok_statsig_blocking(app, app_data_root, false).await {
+    Ok(GrokStatsigRefreshOutcome::Refreshed) => info!("Grok enqueue: statsig refreshed."),
+    Ok(outcome) => warn!("Grok enqueue: statsig refresh outcome {:?}; dispatching anyway.", outcome),
+    Err(err) => warn!("Grok enqueue: statsig refresh failed ({:?}); dispatching anyway.", err),
+  }
+}
+
+/// One send through the router, with the statsig re-read from disk so a
+/// refresh between attempts is picked up. Returns Grok's request id.
+async fn dispatch_grok_once(
+  app_data_root: &AppDataRoot,
+  credential: &AuthCredential,
+  cookie_header: &str,
+  websocket: &GrokImageWebsocket,
+  generation_request: &ImageGenerationRequest,
+  attempt: u32,
+) -> Result<String, String> {
+  // Re-read the credential file: a refresh may have just updated the statsig.
+  let maybe_statsig = app_data_root
+      .credentials_dir()
+      .find_credential_by_id(credential.id.as_str())
+      .ok()
+      .flatten()
+      .as_ref()
+      .and_then(fresh_grok_statsig);
+
+  info!(
+    "Grok enqueue: dispatch attempt {} (credential={}, cookie_header_len={}, has_statsig={})",
+    attempt, credential.id.as_str(), cookie_header.len(), maybe_statsig.is_some(),
+  );
+
+  let client = RouterClient::Grok(RouterGrokClient::new(cookie_header.to_string(), maybe_statsig, websocket.clone()));
+
+  let response = generation_request.send_request(&client).await.map_err(|err| {
+    warn!("Grok enqueue: router dispatch attempt {} failed: {:?}", attempt, err);
+    match &err {
+      ArtcraftRouterError::Provider(provider_error) => provider_error.to_string(),
+      other => format!("{other:?}"),
+    }
+  })?;
+
+  let payload = response
+      .get_grok_payload()
+      .ok_or_else(|| "the router returned a non-Grok response".to_string())?;
+
+  info!("Grok enqueue: prompt sent, request_id={}", payload.request_id);
+  Ok(payload.request_id)
+}
+
+/// The credential file's latest statsig, if it hasn't expired.
+fn fresh_grok_statsig(credential: &AuthCredential) -> Option<String> {
+  credential
+      .cookies()?
+      .grok_data
+      .as_ref()?
+      .latest_statsig_if_fresh(Utc::now())
+      .map(|statsig| statsig.to_string())
+}
+
+fn grok_enqueue_success(tauri_model: TauriImageModel, request_id: String) -> TaskEnqueueSuccess {
+  TaskEnqueueSuccess {
+    task_type: TaskType::ImageGeneration,
+    model: Some(tauri_image_model_to_generation_model(tauri_model)),
+    // NB: the task uses the bare `Grok` provider (what the polling thread
+    // queries), not the `GrokCookies` credential service.
+    provider: GenerationSource::Grok,
+    provider_job_id: Some(request_id),
+    maybe_queue_status_url: None,
+    maybe_queue_response_url: None,
+    maybe_prompt_token: None,
+  }
 }
 
 // ── Shared ──

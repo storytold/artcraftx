@@ -9,6 +9,7 @@ pub fn tauri_image_model_to_generation_model(model: TauriImageModel) -> Generati
     TauriImageModel::FluxPro11 => GenerationModel::FluxPro11,
     TauriImageModel::FluxPro11Ultra => GenerationModel::FluxPro11Ultra,
     TauriImageModel::GrokImage => GenerationModel::GrokImage,
+    TauriImageModel::GrokImagineImageQuality => GenerationModel::GrokImage, // NB: no tier-specific task model yet
     TauriImageModel::Recraft3 => GenerationModel::Flux1Dev, // Fallback
     TauriImageModel::GptImage1 => GenerationModel::GptImage1,
     TauriImageModel::GptImage1p5 => GenerationModel::GptImage1p5,

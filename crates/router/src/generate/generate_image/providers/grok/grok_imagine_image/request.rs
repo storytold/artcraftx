@@ -1,7 +1,5 @@
-use grok_consumer_client::endpoint_bindings::generate_image_websocket::grok_generate_image_websocket::GrokImageWebsocket;
 use grok_consumer_client::endpoint_bindings::generate_image_websocket::messages::websocket_client_message::{FastAspectRatio, QualityAspectRatio};
 use grok_consumer_client::prompt_flags::PromptFlags;
-use std::time::Duration;
 
 use crate::api::router_aspect_ratio::RouterAspectRatio;
 use crate::client::router_grok_client::RouterGrokClient;
@@ -10,10 +8,6 @@ use crate::errors::provider_error::ProviderError;
 use crate::generate::generate_image::generate_image_response::{
   GenerateImageResponse, GrokImageResponsePayload,
 };
-
-/// Grok's imagine websocket delivers finished images synchronously; wait up to
-/// this long for them to arrive.
-const IMAGE_TIMEOUT: Duration = Duration::from_secs(120);
 
 /// A ready-to-send first-party Grok Imagine image request. Fast vs quality
 /// ("pro") is `enable_pro`; the two modes support slightly different aspect
@@ -26,20 +20,17 @@ pub struct GrokImagineImageRequestState {
 }
 
 impl GrokImagineImageRequestState {
-  /// Open the imagine websocket, submit the prompt, and wait for the finished
-  /// image URLs. This blocks for the whole generation — call it off a
-  /// user-facing thread (e.g. the background fulfillment worker).
+  /// Send the prompt on the client's imagine websocket and return the prompt's
+  /// request id right away. Finished images arrive later on the same socket,
+  /// tagged with that id — the caller's polling thread collects them.
   pub async fn send(
     &self,
     client: &RouterGrokClient,
   ) -> Result<GenerateImageResponse, ArtcraftRouterError> {
-    let websocket = GrokImageWebsocket::connect(&client.cookie_header)
-        .await
-        .map_err(|err| grok_err("connect", err))?;
-
+    let websocket = &client.image_websocket;
     let flags = PromptFlags::default();
 
-    if self.enable_pro {
+    let request_id = if self.enable_pro {
       websocket
           .send_quality_image_prompt_with_retry(&self.prompt, quality_aspect(self.aspect_ratio), &flags)
           .await
@@ -48,21 +39,11 @@ impl GrokImagineImageRequestState {
           .send_fast_image_prompt_with_retry(&self.prompt, fast_aspect(self.aspect_ratio), &flags)
           .await
     }
-    .map_err(|err| grok_err("send", err))?;
+    .map_err(|err| grok_err("send prompt", err))?;
 
-    let images = websocket
-        .collect_images(IMAGE_TIMEOUT)
-        .await
-        .map_err(|err| grok_err("collect", err))?;
-
-    let image_urls: Vec<String> = images.into_iter().map(|image| image.url).collect();
-    if image_urls.is_empty() {
-      return Err(ArtcraftRouterError::Provider(ProviderError::Grok(
-        "Grok returned no images".to_string(),
-      )));
-    }
-
-    Ok(GenerateImageResponse::Grok(GrokImageResponsePayload { image_urls }))
+    Ok(GenerateImageResponse::Grok(GrokImageResponsePayload {
+      request_id: request_id.to_string(),
+    }))
   }
 }
 

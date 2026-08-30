@@ -1,2 +1,1 @@
 pub mod grok_video_task_polling;
-pub mod grok_image_websocket_thread;

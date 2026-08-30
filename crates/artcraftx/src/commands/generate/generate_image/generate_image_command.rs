@@ -5,6 +5,7 @@ use crate::commands::generate::generate_image::enqueue_image_generation::enqueue
 use crate::commands::generate::generate_image::tauri_generate_image_request::{
   TauriGenerateImageErrorType, TauriGenerateImageRequest, TauriGenerateImageResponse,
 };
+use crate::services::grok::state::grok_websockets::GrokWebsockets;
 use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveSession;
 use crate::commands::utils::response::failure_response_wrapper::{CommandErrorResponseWrapper, CommandErrorStatus};
 use crate::commands::utils::response::shorthand::Response;
@@ -23,6 +24,7 @@ pub async fn generate_image_command(
   app_data_root: State<'_, AppDataRoot>,
   task_database: State<'_, TaskDatabase>,
   midjourney_live_session: State<'_, MidjourneyLiveSession>,
+  grok_websockets: State<'_, GrokWebsockets>,
 ) -> Response<TauriGenerateImageResponse, TauriGenerateImageErrorType, ()> {
 
   info!("generate_image_command called, request: {:?}", request);
@@ -31,8 +33,10 @@ pub async fn generate_image_command(
   // and we invoke the router for that credential's service.
   let result = enqueue_image_generation(
     &request,
+    &app,
     &app_data_root,
     &midjourney_live_session,
+    &grok_websockets,
   ).await;
 
   match result {

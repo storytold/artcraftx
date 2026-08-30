@@ -9,6 +9,60 @@ import { CommonQuality } from "../classes/properties/CommonQuality.js";
 // TODO: Some of the model configs, such as generation counts, are authoritatively controlled in `legacy/Models.ts`
 
 export const IMAGE_MODELS: ImageModel[] = [
+  // First-party Grok Imagine (runs on the user's own grok.com session; see
+  // `enqueue_image_generation.rs`). Fast ("speed") tier.
+  new ImageModel({
+    id: "grok_imagine_image",
+    tauriId: "grok_imagine_image",
+    fullName: "Grok Imagine",
+    category: "image",
+    creator: ModelCreator.Grok,
+    providers: [GenerationProvider.Grok],
+    selectorName: "Grok Imagine",
+    selectorDescription: "Fast image generation on your Grok account",
+    selectorBadges: ["10 sec."],
+    // NB: Grok's imagine websocket returns two images per prompt.
+    maxGenerationCount: 2,
+    defaultGenerationCount: 2,
+    predefinedGenerationCounts: [2],
+    canChangeAspectRatio: true,
+    aspectRatios: [
+      CommonAspectRatio.Square,
+      CommonAspectRatio.WideThreeByTwo,
+      CommonAspectRatio.WideSixteenByNine,
+      CommonAspectRatio.TallTwoByThree,
+      CommonAspectRatio.TallNineBySixteen,
+    ],
+    progressBarTime: 15000,
+    maxPromptLength: 4096,
+  }),
+  // First-party Grok Imagine, quality ("pro") tier.
+  new ImageModel({
+    id: "grok_imagine_image_q",
+    tauriId: "grok_imagine_image_q",
+    fullName: "Grok Imagine (Quality)",
+    category: "image",
+    creator: ModelCreator.Grok,
+    providers: [GenerationProvider.Grok],
+    selectorName: "Grok Imagine Quality",
+    selectorDescription: "Higher quality on your Grok account",
+    selectorBadges: ["30 sec."],
+    maxGenerationCount: 2,
+    defaultGenerationCount: 2,
+    predefinedGenerationCounts: [2],
+    canChangeAspectRatio: true,
+    aspectRatios: [
+      CommonAspectRatio.Square,
+      CommonAspectRatio.WideThreeByTwo,
+      CommonAspectRatio.WideFourByThree,
+      CommonAspectRatio.WideSixteenByNine,
+      CommonAspectRatio.WideTwentyOneByNine,
+      CommonAspectRatio.TallTwoByThree,
+      CommonAspectRatio.TallNineBySixteen,
+    ],
+    progressBarTime: 40000,
+    maxPromptLength: 4096,
+  }),
   new ImageModel({
     id: "midjourney_8",
     tauriId: "midjourney_8",

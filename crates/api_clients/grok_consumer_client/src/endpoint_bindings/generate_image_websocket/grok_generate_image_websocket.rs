@@ -49,6 +49,25 @@ pub struct CompletedImage {
   pub enriched_prompt: String,
 }
 
+/// One thing the imagine websocket told us while polling: a finished image,
+/// or an error frame (e.g. out of quota) for a prompt.
+#[derive(Clone, Debug)]
+pub enum ImageWebsocketEvent {
+  /// A finished (100%) image with a download URL.
+  Completed(CompletedImage),
+  /// Grok rejected or aborted a prompt. `request_id` is `None` when the frame
+  /// didn't say which prompt it concerns.
+  Failed {
+    request_id: Option<RequestId>,
+    /// User-facing message from the frame, if any.
+    message: Option<String>,
+    /// Grok's error code from the frame, if any.
+    err_code: Option<String>,
+    /// The raw frame, for logs.
+    raw_frame: String,
+  },
+}
+
 /// A live connection to Grok's "imagine" image websocket.
 ///
 /// Cheap to clone and safe to share across tasks — the socket lives behind an
@@ -91,13 +110,17 @@ impl GrokImageWebsocket {
   /// Send a **fast** ("speed") image prompt. Fast mode supports the
   /// [`FastAspectRatio`] set. `flags` appends any `--` long args (e.g.
   /// `--mode`) to the prompt; pass `&PromptFlags::default()` for none.
+  ///
+  /// Returns the prompt's request id, which every resulting frame carries.
   pub async fn send_fast_image_prompt(
     &self,
     prompt: &str,
     aspect_ratio: FastAspectRatio,
     flags: &PromptFlags,
-  ) -> Result<(), GrokError> {
-    self.send_json(&WebsocketClientMessage::new_fast_image_prompt(prompt, aspect_ratio, flags)).await
+  ) -> Result<RequestId, GrokError> {
+    let message = WebsocketClientMessage::new_fast_image_prompt(prompt, aspect_ratio, flags);
+    self.send_json(&message).await?;
+    Ok(message.request_id())
   }
 
   /// [`send_fast_image_prompt`], reconnecting and retrying if the send fails
@@ -109,7 +132,7 @@ impl GrokImageWebsocket {
     prompt: &str,
     aspect_ratio: FastAspectRatio,
     flags: &PromptFlags,
-  ) -> Result<(), GrokError> {
+  ) -> Result<RequestId, GrokError> {
     self.send_with_retry(WebsocketClientMessage::new_fast_image_prompt(prompt, aspect_ratio, flags)).await
   }
 
@@ -120,8 +143,10 @@ impl GrokImageWebsocket {
     prompt: &str,
     aspect_ratio: QualityAspectRatio,
     flags: &PromptFlags,
-  ) -> Result<(), GrokError> {
-    self.send_json(&WebsocketClientMessage::new_quality_image_prompt(prompt, aspect_ratio, flags)).await
+  ) -> Result<RequestId, GrokError> {
+    let message = WebsocketClientMessage::new_quality_image_prompt(prompt, aspect_ratio, flags);
+    self.send_json(&message).await?;
+    Ok(message.request_id())
   }
 
   /// [`send_quality_image_prompt`], reconnecting and retrying if the send
@@ -133,17 +158,17 @@ impl GrokImageWebsocket {
     prompt: &str,
     aspect_ratio: QualityAspectRatio,
     flags: &PromptFlags,
-  ) -> Result<(), GrokError> {
+  ) -> Result<RequestId, GrokError> {
     self.send_with_retry(WebsocketClientMessage::new_quality_image_prompt(prompt, aspect_ratio, flags)).await
   }
 
   /// Send a prepared message, reconnecting and retrying on failure.
-  async fn send_with_retry(&self, message: WebsocketClientMessage) -> Result<(), GrokError> {
+  async fn send_with_retry(&self, message: WebsocketClientMessage) -> Result<RequestId, GrokError> {
     let mut last_error = None;
 
     for attempt in 1..=SEND_ATTEMPTS {
       match self.send_json(&message).await {
-        Ok(()) => return Ok(()),
+        Ok(()) => return Ok(message.request_id()),
         Err(err) => {
           warn!("Grok image prompt send failed (attempt {attempt}/{SEND_ATTEMPTS}): {err}");
           last_error = Some(err);
@@ -175,6 +200,48 @@ impl GrokImageWebsocket {
       Some(text) => Ok(Some(WebsocketServerMessage::from_json_str(&text)?)),
       None => Ok(None),
     }
+  }
+
+  /// Drain whatever the socket has to say for up to `budget`, returning the
+  /// finished images and error frames seen (in order). Never blocks past the
+  /// budget, so a polling thread can share one socket across many prompts and
+  /// key each event on its request id. Progress / session / blob frames are
+  /// skipped.
+  ///
+  /// Unlike [`collect_images`], an error frame is returned as an event rather
+  /// than failing the call, since it concerns one prompt, not the socket.
+  ///
+  /// [`collect_images`]: Self::collect_images
+  pub async fn poll_events(&self, budget: Duration) -> Result<Vec<ImageWebsocketEvent>, GrokError> {
+    let deadline = Instant::now() + budget;
+    let mut events = Vec::new();
+
+    while Instant::now() < deadline {
+      let remaining = deadline.saturating_duration_since(Instant::now()).min(RECEIVE_POLL_INTERVAL);
+      let Some(text) = self.next_text(remaining).await? else {
+        continue;
+      };
+
+      let Ok(message) = WebsocketServerMessage::from_json_str(&text) else {
+        continue;
+      };
+
+      match &message {
+        WebsocketServerMessage::Error(error) => events.push(ImageWebsocketEvent::Failed {
+          request_id: error.request_id.clone().map(RequestId),
+          message: error.err_msg.clone(),
+          err_code: error.err_code.clone(),
+          raw_frame: text,
+        }),
+        _ => {
+          if let Some(image) = completed_image(&message) {
+            events.push(ImageWebsocketEvent::Completed(image));
+          }
+        }
+      }
+    }
+
+    Ok(events)
   }
 
   /// Wait for [`DEFAULT_IMAGE_COUNT`] completed images or until `timeout`.

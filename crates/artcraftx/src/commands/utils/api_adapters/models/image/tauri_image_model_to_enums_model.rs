@@ -28,7 +28,8 @@ pub fn tauri_image_model_to_enums_model(model: TauriImageModel) -> Option<Common
     TauriImageModel::Midjourney7Niji => Some(CommonImageModel::Midjourney7Niji),
     TauriImageModel::Midjourney8 => Some(CommonImageModel::Midjourney8),
     // Not accounted for yet
-    TauriImageModel::GrokImage => None,
+    TauriImageModel::GrokImage => Some(CommonImageModel::GrokImagineImage),
+    TauriImageModel::GrokImagineImageQuality => Some(CommonImageModel::GrokImagineImageQuality),
     TauriImageModel::Recraft3 => None,
     TauriImageModel::FluxProKontextMax => None,
     TauriImageModel::FluxDevJuggernaut => None,

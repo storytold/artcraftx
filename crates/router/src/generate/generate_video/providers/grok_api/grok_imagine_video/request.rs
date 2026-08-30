@@ -27,7 +27,7 @@ impl GrokApiGrokImagineVideoRequestState {
       request: self.request.clone(),
     })
       .await
-      .map_err(|err| ArtcraftRouterError::Provider(ProviderError::Grok(err)))?;
+      .map_err(|err| ArtcraftRouterError::Provider(ProviderError::GrokApi(err)))?;
 
     Ok(GenerateVideoResponse::Grok(GrokVideoResponsePayload {
       request_id: response.request_id,

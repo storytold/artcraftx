@@ -1,3 +1,4 @@
+use crate::datatypes::api::request_id::RequestId;
 use crate::prompt_flags::PromptFlags;
 use chrono::Utc;
 use serde::Serialize;
@@ -153,6 +154,16 @@ impl WebsocketClientMessage {
   /// `external/requests/sites/grok.com/2026-08-23-imagine/13_image_high_quality_websocket.har.json`).
   pub fn new_quality_image_prompt(prompt: &str, aspect_ratio: QualityAspectRatio, flags: &PromptFlags) -> Self {
     Self::new_image_prompt(prompt, aspect_ratio.as_grok_str(), true, flags)
+  }
+
+  /// The generated `requestId` of this prompt. Grok tags every progress /
+  /// image / error frame for the prompt with it, so callers key results on it.
+  pub fn request_id(&self) -> RequestId {
+    RequestId(
+      self.item.content.first()
+          .map(|content| content.request_id.clone())
+          .unwrap_or_default(),
+    )
   }
 
   fn new_image_prompt(prompt: &str, aspect_ratio: &str, enable_pro: bool, flags: &PromptFlags) -> Self {

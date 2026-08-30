@@ -13,7 +13,8 @@ pub enum ProviderError {
   Storyteller(StorytellerError),
   Fal(FalErrorPlus),
   GmiCloud(GmiCloudError),
-  Grok(GrokError),
+  /// API-key (xAI) Grok client failed.
+  GrokApi(GrokError),
   Midjourney(MidjourneyError),
   /// First-party (cookie-session) Grok Imagine failed (websocket/POST).
   Grok(String),
@@ -35,7 +36,7 @@ impl Display for ProviderError {
       Self::Storyteller(e) => write!(f, "Storyteller provider error: {}", e),
       Self::Fal(e) => write!(f, "Fal provider error: {}", e),
       Self::GmiCloud(e) => write!(f, "GmiCloud provider error: {}", e),
-      Self::Grok(e) => write!(f, "Grok provider error: {}", e),
+      Self::GrokApi(e) => write!(f, "Grok API provider error: {}", e),
       Self::Midjourney(e) => write!(f, "Midjourney provider error: {}", e),
       Self::Grok(detail) => write!(f, "Grok provider error: {}", detail),
       Self::MidjourneySubscriptionRequired(detail) => write!(f, "Midjourney subscription required: {}", detail),
@@ -66,7 +67,7 @@ impl From<GmiCloudError> for ProviderError {
 
 impl From<GrokError> for ProviderError {
   fn from(error: GrokError) -> Self {
-    Self::Grok(error)
+    Self::GrokApi(error)
   }
 }
 

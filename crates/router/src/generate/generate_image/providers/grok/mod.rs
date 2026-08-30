@@ -1,6 +1,7 @@
 //! First-party (cookie-session) Grok Imagine image generation.
 //!
-//! Drives the user's own grok.com "imagine" websocket via captured cookies
-//! (see `RouterGrokClient`), returning the finished image URLs directly (there
-//! is no job id to poll). Fast vs quality ("pro") is a flag on the request.
+//! Sends prompts on the user's own grok.com "imagine" websocket (the app owns
+//! the socket; see `RouterGrokClient`). Sending returns the prompt's request
+//! id immediately; finished images arrive later on the same socket, keyed by
+//! that id. Fast vs quality ("pro") is a flag on the request.
 pub mod grok_imagine_image;

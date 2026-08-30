@@ -258,6 +258,7 @@ impl From<ArtcraftRouterError> for GenerateError {
           | ProviderError::MidjourneySubmitRejected(_) => BillingProvider::Midjourney,
           ProviderError::Storyteller(_) => BillingProvider::Artcraft,
           ProviderError::GmiCloud(_) => BillingProvider::Artcraft,
+          ProviderError::GrokApi(_) => BillingProvider::Artcraft,
           ProviderError::Grok(_) => BillingProvider::Artcraft,
           ProviderError::WorldLabs(_) => BillingProvider::Artcraft,
         };
@@ -266,7 +267,9 @@ impl From<ArtcraftRouterError> for GenerateError {
       ArtcraftRouterError::Provider(ProviderError::Storyteller(e)) => Self::ProviderFailure(ProviderFailureReason::StorytellerError(e)),
       ArtcraftRouterError::Provider(ProviderError::Fal(_)) => Self::FalNoLongerSupported,
       ArtcraftRouterError::Provider(ProviderError::GmiCloud(_)) => Self::ArtcraftRouterNotYetSupportedProvider("gmicloud"),
-      ArtcraftRouterError::Provider(ProviderError::Grok(_)) => Self::ArtcraftRouterNotYetSupportedProvider("grok_api"),
+      ArtcraftRouterError::Provider(ProviderError::GrokApi(_)) => Self::ArtcraftRouterNotYetSupportedProvider("grok_api"),
+      // First-party (cookie-session) Grok Imagine websocket/POST failure. The string carries the raw detail.
+      ArtcraftRouterError::Provider(ProviderError::Grok(message)) => Self::ProviderRejected(message),
       ArtcraftRouterError::Provider(ProviderError::Seedance2Pro(_)) => Self::ArtcraftRouterNotYetSupportedProvider("seedance2pro"),
       ArtcraftRouterError::Provider(ProviderError::Midjourney(e)) => Self::ProviderFailure(ProviderFailureReason::MidjourneyError(e)),
       ArtcraftRouterError::Provider(ProviderError::MidjourneySubscriptionRequired(message)) => Self::ProviderRejected(message),
