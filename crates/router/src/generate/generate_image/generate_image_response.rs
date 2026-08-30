@@ -44,10 +44,19 @@ pub struct MidjourneyImageResponsePayload {
   pub job_id: String,
 }
 
+/// Response from the first-party (cookie-session) Grok Imagine provider. Grok's
+/// imagine websocket returns finished images directly — there is no job id to
+/// poll — so this carries the image URLs.
+#[derive(Clone, Debug)]
+pub struct GrokImageResponsePayload {
+  pub image_urls: Vec<String>,
+}
+
 #[derive(Clone, Debug)]
 pub enum GenerateImageResponse {
   Artcraft(ArtcraftImageResponsePayload),
   Fal(FalImageResponsePayload),
+  Grok(GrokImageResponsePayload),
   Midjourney(MidjourneyImageResponsePayload),
   Seedance2Pro(Seedance2proImageResponsePayload),
 }
@@ -63,6 +72,13 @@ impl GenerateImageResponse {
   pub fn get_fal_payload(&self) -> Option<FalImageResponsePayload> {
     match self {
       Self::Fal(p) => Some(p.clone()),
+      _ => None,
+    }
+  }
+
+  pub fn get_grok_payload(&self) -> Option<GrokImageResponsePayload> {
+    match self {
+      Self::Grok(p) => Some(p.clone()),
       _ => None,
     }
   }

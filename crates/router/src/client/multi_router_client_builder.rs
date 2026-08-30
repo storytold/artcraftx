@@ -3,6 +3,7 @@ use crate::client::router_artcraft_client::RouterArtcraftClient;
 use crate::client::router_fal_client::RouterFalClient;
 use crate::client::router_gmicloud_client::RouterGmiCloudClient;
 use crate::client::router_grok_api_client::RouterGrokApiClient;
+use crate::client::router_grok_client::RouterGrokClient;
 use crate::client::router_midjourney_client::RouterMidjourneyClient;
 use crate::client::router_seedance2pro_client::RouterSeedance2ProClient;
 use crate::client::router_worldlabs_client::RouterWorldLabsClient;
@@ -12,6 +13,7 @@ pub struct MultiRouterClientBuilder {
   fal_client: Option<RouterFalClient>,
   gmicloud_client: Option<RouterGmiCloudClient>,
   grok_api_client: Option<RouterGrokApiClient>,
+  grok_client: Option<RouterGrokClient>,
   midjourney_client: Option<RouterMidjourneyClient>,
   seedance2pro_client: Option<RouterSeedance2ProClient>,
   worldlabs_client: Option<RouterWorldLabsClient>,
@@ -24,6 +26,7 @@ impl MultiRouterClientBuilder {
       fal_client: None,
       gmicloud_client: None,
       grok_api_client: None,
+      grok_client: None,
       midjourney_client: None,
       seedance2pro_client: None,
       worldlabs_client: None,
@@ -50,6 +53,11 @@ impl MultiRouterClientBuilder {
     self
   }
 
+  pub fn set_grok_client(mut self, client: RouterGrokClient) -> Self {
+    self.grok_client = Some(client);
+    self
+  }
+
   pub fn set_midjourney_client(mut self, client: RouterMidjourneyClient) -> Self {
     self.midjourney_client = Some(client);
     self
@@ -71,6 +79,7 @@ impl MultiRouterClientBuilder {
       fal_client: self.fal_client,
       gmicloud_client: self.gmicloud_client,
       grok_api_client: self.grok_api_client,
+      grok_client: self.grok_client,
       midjourney_client: self.midjourney_client,
       seedance2pro_client: self.seedance2pro_client,
       worldlabs_client: self.worldlabs_client,
