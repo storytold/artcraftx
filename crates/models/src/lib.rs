@@ -11,6 +11,8 @@
 //!   (what inputs/options a model accepts) and desktop presentation (picker
 //!   copy, badges, which providers can run it, which pages show it), and the
 //!   built-in tables of every model.
+//! - [`providers`]: which providers (services) offer which models, with room
+//!   for per-provider overrides.
 //!
 //! The Tauri list commands serve these tables to the frontend verbatim, so
 //! the wire format is the serde form of the structs in [`configs`]. Enum
@@ -19,3 +21,4 @@
 
 pub mod configs;
 pub mod enums;
+pub mod providers;

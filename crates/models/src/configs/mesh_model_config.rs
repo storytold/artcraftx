@@ -1,6 +1,5 @@
 use crate::enums::common_mesh_output_type::CommonMeshOutputType;
 use crate::enums::common_polygon_type::CommonPolygonType;
-use crate::enums::generation_provider::GenerationProvider;
 use crate::enums::mesh_model::MeshModel;
 use crate::enums::model_creator::ModelCreator;
 use crate::enums::model_tag::ModelTag;
@@ -21,7 +20,6 @@ pub struct MeshModelConfig {
   pub extra_info: Option<String>,
   pub selector_badges: Vec<String>,
   pub tags: Vec<ModelTag>,
-  pub providers: Vec<GenerationProvider>,
   pub progress_bar_ms: u32,
 
   // ── Capabilities ──
@@ -54,7 +52,6 @@ impl Default for MeshModelConfig {
       extra_info: None,
       selector_badges: Vec::new(),
       tags: Vec::new(),
-      providers: vec![GenerationProvider::Artcraft],
       progress_bar_ms: 120_000,
       text_prompt_supported: false,
       text_prompt_max_length: Some(3000),

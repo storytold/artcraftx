@@ -11,9 +11,9 @@ import {
   videoResolutionLabel,
 } from "./fromListingCommon.js";
 
-// Build a VideoModel from the backend's config. The model id doubles as the
-// frontend id and the Tauri id.
-export const videoModelFromListing = (m: VideoModelListing): VideoModel => {
+// Build a VideoModel from the backend's config and the providers offering it
+// (first = default). The model id doubles as the frontend id and the Tauri id.
+export const videoModelFromListing = (m: VideoModelListing, providers: string[]): VideoModel => {
   const aspectRatios = aspectRatiosFromListing(m.aspect_ratio_options);
   // Modern models pick a CommonAspectRatio; the first-party Grok / Sora paths
   // keep their coarse landscape/portrait/square picker.
@@ -31,7 +31,7 @@ export const videoModelFromListing = (m: VideoModelListing): VideoModel => {
     selectorDescription: m.selector_description,
     selectorBadges: m.selector_badges,
     tags: tagsFromListing(m.tags),
-    providers: providersFromListing(m.providers),
+    providers: providersFromListing(providers),
     progressBarTime: m.progress_bar_ms,
     maxPromptLength: promptMaxLengthFromListing(m.text_prompt_max_length),
     supportsSystemPrompt: m.supports_system_prompt,

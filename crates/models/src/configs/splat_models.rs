@@ -1,7 +1,6 @@
 //! The built-in Gaussian splat ("world") model table. Picker order = table order.
 
 use crate::configs::splat_model_config::SplatModelConfig;
-use crate::enums::generation_provider::GenerationProvider;
 use crate::enums::model_creator::ModelCreator;
 use crate::enums::splat_model::SplatModel;
 use once_cell::sync::Lazy;
@@ -55,7 +54,6 @@ fn marble(model: SplatModel, full_name: &str, description: &str, badge: &str, pr
     selector_name: full_name.to_string(),
     selector_description: description.to_string(),
     selector_badges: vec![badge.to_string()],
-    providers: vec![GenerationProvider::Artcraft, GenerationProvider::WorldLabs],
     progress_bar_ms,
     text_prompt_supported: true,
     image_references_supported: true,

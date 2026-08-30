@@ -4,7 +4,6 @@ use crate::configs::image_model_config::ImageModelConfig;
 use crate::enums::common_aspect_ratio::CommonAspectRatio;
 use crate::enums::common_quality::CommonQuality;
 use crate::enums::common_resolution::CommonResolution;
-use crate::enums::generation_provider::GenerationProvider;
 use crate::enums::image_model::ImageModel;
 use crate::enums::model_creator::ModelCreator;
 use crate::enums::model_tag::ModelTag;
@@ -111,7 +110,6 @@ fn google_models() -> Vec<ImageModelConfig> {
       selector_description: "Powerful instructive editing".to_string(),
       selector_badges: strings(&["30 sec."]),
       tags: vec![ModelTag::InstructiveEdit],
-      providers: vec![GenerationProvider::Artcraft, GenerationProvider::Fal],
       progress_bar_ms: 25_000,
       can_edit_images: true,
       text_prompt_max_length: None,
@@ -134,7 +132,6 @@ fn google_models() -> Vec<ImageModelConfig> {
       selector_description: "Fast instructive editing".to_string(),
       selector_badges: strings(&["25 sec."]),
       tags: vec![ModelTag::InstructiveEdit],
-      providers: vec![GenerationProvider::Artcraft, GenerationProvider::Fal],
       progress_bar_ms: 25_000,
       can_edit_images: true,
       text_prompt_max_length: None,
@@ -239,7 +236,6 @@ fn openai_models() -> Vec<ImageModelConfig> {
       selector_description: "Slow, but super smart".to_string(),
       selector_badges: strings(&["60 sec."]),
       tags: vec![ModelTag::InstructiveEdit],
-      providers: vec![GenerationProvider::Artcraft, GenerationProvider::Sora],
       progress_bar_ms: 60_000,
       can_edit_images: true,
       text_prompt_max_length: None,
@@ -457,7 +453,6 @@ fn black_forest_labs_models() -> Vec<ImageModelConfig> {
       selector_name: "Flux 1 Dev".to_string(),
       selector_description: "Fast, but lower quality".to_string(),
       selector_badges: strings(&["10 sec."]),
-      providers: vec![GenerationProvider::Artcraft, GenerationProvider::Fal],
       progress_bar_ms: 10_000,
       text_prompt_max_length: Some(4000),
       image_refs_supported: true,
@@ -475,7 +470,6 @@ fn black_forest_labs_models() -> Vec<ImageModelConfig> {
       selector_name: "Flux 1 Schnell".to_string(),
       selector_description: "Fastest image gen, but lowest quality".to_string(),
       selector_badges: strings(&["10 sec."]),
-      providers: vec![GenerationProvider::Artcraft, GenerationProvider::Fal],
       progress_bar_ms: 10_000,
       text_prompt_max_length: Some(4000),
       image_refs_supported: true,
@@ -492,14 +486,13 @@ fn black_forest_labs_models() -> Vec<ImageModelConfig> {
 // ── Midjourney ──
 
 fn midjourney_models() -> Vec<ImageModelConfig> {
-  let midjourney = |model: ImageModel, full_name: &str, description: &str, providers: Vec<GenerationProvider>| ImageModelConfig {
+  let midjourney = |model: ImageModel, full_name: &str, description: &str| ImageModelConfig {
     model,
     model_creator: ModelCreator::Midjourney,
     full_name: full_name.to_string(),
     selector_name: full_name.to_string(),
     selector_description: description.to_string(),
     selector_badges: strings(&["45 sec."]),
-    providers,
     progress_bar_ms: 45_000,
     text_prompt_max_length: Some(6000),
     image_refs_supported: true,
@@ -515,24 +508,9 @@ fn midjourney_models() -> Vec<ImageModelConfig> {
   };
 
   vec![
-    midjourney(
-      ImageModel::Midjourney8,
-      "Midjourney v8",
-      "Stunning style and quality",
-      vec![GenerationProvider::Artcraft, GenerationProvider::Midjourney],
-    ),
-    midjourney(
-      ImageModel::Midjourney7,
-      "Midjourney v7",
-      "Stunning style and quality",
-      vec![GenerationProvider::Artcraft],
-    ),
-    midjourney(
-      ImageModel::Midjourney7Niji,
-      "Midjourney v7 Niji",
-      "Anime style",
-      vec![GenerationProvider::Artcraft],
-    ),
+    midjourney(ImageModel::Midjourney8, "Midjourney v8", "Stunning style and quality"),
+    midjourney(ImageModel::Midjourney7, "Midjourney v7", "Stunning style and quality"),
+    midjourney(ImageModel::Midjourney7Niji, "Midjourney v7 Niji", "Anime style"),
   ]
 }
 
@@ -547,7 +525,6 @@ fn grok_models() -> Vec<ImageModelConfig> {
       selector_name: "Grok Imagine".to_string(),
       selector_description: "Fast image generation on your Grok account".to_string(),
       selector_badges: strings(&["10 sec."]),
-      providers: vec![GenerationProvider::Grok],
       progress_bar_ms: 15_000,
       text_prompt_max_length: Some(4096),
       aspect_ratio_options: vec![
@@ -572,7 +549,6 @@ fn grok_models() -> Vec<ImageModelConfig> {
       selector_name: "Grok Imagine Quality".to_string(),
       selector_description: "Higher quality on your Grok account".to_string(),
       selector_badges: strings(&["30 sec."]),
-      providers: vec![GenerationProvider::Grok],
       progress_bar_ms: 40_000,
       text_prompt_max_length: Some(4096),
       aspect_ratio_options: vec![
@@ -712,7 +688,6 @@ mod tests {
   fn defaults_are_within_their_options() {
     for config in IMAGE_MODELS.iter() {
       assert!(!config.full_name.is_empty() && !config.selector_name.is_empty(), "{:?} needs names", config.model);
-      assert!(!config.providers.is_empty(), "{:?} needs a provider", config.model);
       assert!(config.batch_size_min <= config.batch_size_default && config.batch_size_default <= config.batch_size_max, "{:?} batch sizes", config.model);
       if let Some(default) = config.aspect_ratio_default {
         assert!(config.aspect_ratio_options.contains(&default), "{:?} aspect default not offered", config.model);
@@ -731,7 +706,6 @@ mod tests {
     let json = serde_json::to_value(image_model_config(ImageModel::FluxPro11)).unwrap();
     assert_eq!(json["model"], "flux_pro_1p1");
     assert_eq!(json["model_creator"], "black_forest_labs");
-    assert_eq!(json["providers"], serde_json::json!(["artcraft"]));
     assert_eq!(json["aspect_ratio_default"], "square");
     // Unlimited prompt length is simply absent.
     let nb = serde_json::to_value(image_model_config(ImageModel::NanoBananaPro)).unwrap();

@@ -8,7 +8,7 @@ import {
 import { AudioLines } from "lucide-react";
 import { PromptShell, useComposerTasks } from "~/components/PromptShell";
 import { AccountSelector } from "~/components/account-selector/AccountSelector";
-import { useAccountSelectorStore } from "~/components/account-selector/accountSelectorStore";
+import { useSelectedAccountId } from "@storyteller/ui-model-selector";
 
 // The whole page is the composer: no feed, no gallery — results are written
 // straight to disk and the PromptShell shows the progress bar + receipt.
@@ -27,7 +27,7 @@ const CreateAudio = () => {
       models[0],
     [models, selectedModelId],
   );
-  const selectedAccountId = useAccountSelectorStore((s) => s.selectedAccountId);
+  const selectedAccountId = useSelectedAccountId();
   const audioCredits = useAudioCostEstimate({
     model: selectedModel?.model ?? "",
     audioReferenceCount: referenceAudios.length,

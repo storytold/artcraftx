@@ -224,7 +224,6 @@ mod tests {
     }
     for config in MESH_MODELS.iter() {
       assert!(!config.full_name.is_empty() && !config.selector_name.is_empty(), "{:?} needs names", config.model);
-      assert!(!config.providers.is_empty(), "{:?} needs a provider", config.model);
     }
   }
 }

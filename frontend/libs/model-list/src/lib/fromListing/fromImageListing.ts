@@ -13,9 +13,9 @@ import {
   tagsFromListing,
 } from "./fromListingCommon.js";
 
-// Build an ImageModel from the backend's config. The model id doubles as the
-// frontend id and the Tauri id.
-export const imageModelFromListing = (m: ImageModelListing): ImageModel => {
+// Build an ImageModel from the backend's config and the providers offering it
+// (first = default). The model id doubles as the frontend id and the Tauri id.
+export const imageModelFromListing = (m: ImageModelListing, providers: string[]): ImageModel => {
   const aspectRatios = aspectRatiosFromListing(m.aspect_ratio_options);
   const resolutions = resolutionsFromListing(m.resolution_options);
   return new ImageModel({
@@ -28,7 +28,7 @@ export const imageModelFromListing = (m: ImageModelListing): ImageModel => {
     selectorDescription: m.selector_description,
     selectorBadges: m.selector_badges,
     tags: tagsFromListing(m.tags),
-    providers: providersFromListing(m.providers),
+    providers: providersFromListing(providers),
     progressBarTime: m.progress_bar_ms,
     maxPromptLength: promptMaxLengthFromListing(m.text_prompt_max_length),
     maxGenerationCount: m.batch_size_max,

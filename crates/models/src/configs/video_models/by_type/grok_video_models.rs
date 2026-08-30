@@ -1,7 +1,6 @@
 use crate::configs::video_model_config::VideoModelConfig;
 use crate::configs::video_models::strings;
 use crate::enums::common_resolution::CommonResolution;
-use crate::enums::generation_provider::GenerationProvider;
 use crate::enums::legacy_video_size::LegacyVideoSize;
 use crate::enums::model_creator::ModelCreator;
 use crate::enums::video_model::VideoModel;
@@ -18,7 +17,6 @@ pub fn grok_video_models() -> Vec<VideoModelConfig> {
       selector_name: "Grok Video".to_string(),
       selector_description: "Fastest video model".to_string(),
       selector_badges: strings(&["20 sec."]),
-      providers: vec![GenerationProvider::Grok],
       progress_bar_ms: 50_000,
       text_prompt_max_length: Some(4096),
       starting_keyframe_supported: true,

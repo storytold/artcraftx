@@ -14,7 +14,7 @@ import { GenerationProvider } from "@storyteller/api-enums";
 import { Image as ImageIcon } from "lucide-react";
 import { PromptShell, useComposerTasks } from "~/components/PromptShell";
 import { AccountSelector } from "~/components/account-selector/AccountSelector";
-import { useAccountSelectorStore } from "~/components/account-selector/accountSelectorStore";
+import { useSelectedAccountId } from "@storyteller/ui-model-selector";
 
 const PAGE_ID: ModelPage = ModelPage.TextToImage;
 
@@ -28,7 +28,7 @@ interface TextToImageProps {
 const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
   const textToImageModelList = useTextToImagePageModelList();
   const startBatch = useTextToImageStore((s) => s.startBatch);
-  const selectedAccountId = useAccountSelectorStore((s) => s.selectedAccountId);
+  const selectedAccountId = useSelectedAccountId();
 
   const selectedImageModel: ImageModel | undefined =
     useSelectedImageModel(PAGE_ID);

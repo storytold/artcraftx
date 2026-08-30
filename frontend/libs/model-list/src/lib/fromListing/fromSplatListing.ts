@@ -7,7 +7,7 @@ import {
   tagsFromListing,
 } from "./fromListingCommon.js";
 
-export const splatModelFromListing = (m: SplatModelListing): SplatModel =>
+export const splatModelFromListing = (m: SplatModelListing, providers: string[]): SplatModel =>
   new SplatModel({
     id: m.model,
     tauriId: m.model,
@@ -18,7 +18,7 @@ export const splatModelFromListing = (m: SplatModelListing): SplatModel =>
     selectorDescription: m.selector_description,
     selectorBadges: m.selector_badges,
     tags: tagsFromListing(m.tags),
-    providers: providersFromListing(m.providers),
+    providers: providersFromListing(providers),
     progressBarTime: m.progress_bar_ms,
     maxPromptLength: promptMaxLengthFromListing(m.text_prompt_max_length),
   });

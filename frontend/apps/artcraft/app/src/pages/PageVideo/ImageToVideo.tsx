@@ -25,7 +25,7 @@ import { GenerationProvider } from "@storyteller/api-enums";
 import { Clapperboard } from "lucide-react";
 import { PromptShell, useComposerTasks } from "~/components/PromptShell";
 import { AccountSelector } from "~/components/account-selector/AccountSelector";
-import { useAccountSelectorStore } from "~/components/account-selector/accountSelectorStore";
+import { useSelectedAccountId } from "@storyteller/ui-model-selector";
 
 const PAGE_ID: ModelPage = ModelPage.ImageToVideo;
 
@@ -39,7 +39,7 @@ interface ImageToVideoProps {
 const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
   const imageToVideoModelList = useImageToVideoPageModelList();
   const startBatch = useImageToVideoStore((s) => s.startBatch);
-  const selectedAccountId = useAccountSelectorStore((s) => s.selectedAccountId);
+  const selectedAccountId = useSelectedAccountId();
   const completeBatch = useImageToVideoStore((s) => s.completeBatch);
 
   const selectedVideoModel: VideoModel | undefined =

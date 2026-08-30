@@ -132,11 +132,18 @@ export function ClassyModelSelector({
   showProviderSelection = true,
   ...popoverProps
 }: ClassyModelSelectorProps) {
-  const { selectedModels, setSelectedModel, setSelectedProvider } =
+  const { selectedModels, setSelectedModel, setSelectedProvider, registerPageModels } =
     useClassyModelSelectorStore();
-  const itemModels: Model[] = items
-    .map(item => item.model)
-    .filter(model => model !== undefined);
+  const itemModels: Model[] = useMemo(
+    () => items.map((item) => item.model).filter((model): model is Model => model !== undefined),
+    [items],
+  );
+
+  // Let the store know what this page offers, so switching provider/account
+  // can swap to a model that works there.
+  useEffect(() => {
+    registerPageModels(page, itemModels);
+  }, [itemModels, page, registerPageModels]);
   const selectedModel = selectedModels[page] || defaultModelForPage(itemModels, page);
   const selectedProvider = useSelectedProviderForModel(page, selectedModel?.id);
   const selectedProvidersByModel = useClassyModelSelectorStore(

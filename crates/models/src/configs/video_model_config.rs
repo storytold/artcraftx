@@ -2,7 +2,6 @@ use crate::enums::common_aspect_ratio::CommonAspectRatio;
 use crate::enums::common_bitrate::CommonBitrate;
 use crate::enums::common_quality::CommonQuality;
 use crate::enums::common_resolution::CommonResolution;
-use crate::enums::generation_provider::GenerationProvider;
 use crate::enums::legacy_video_size::LegacyVideoSize;
 use crate::enums::model_creator::ModelCreator;
 use crate::enums::model_tag::ModelTag;
@@ -24,9 +23,6 @@ pub struct VideoModelConfig {
   pub extra_info: Option<String>,
   pub selector_badges: Vec<String>,
   pub tags: Vec<ModelTag>,
-  /// Which services can run this model from the desktop app. The first is
-  /// the default.
-  pub providers: Vec<GenerationProvider>,
   pub progress_bar_ms: u32,
   /// Whether the prompt box offers the system-prompt toggle.
   pub supports_system_prompt: bool,
@@ -110,7 +106,6 @@ impl Default for VideoModelConfig {
       extra_info: None,
       selector_badges: Vec::new(),
       tags: Vec::new(),
-      providers: vec![GenerationProvider::Artcraft],
       progress_bar_ms: 100_000,
       supports_system_prompt: true,
       text_to_video_supported: true,

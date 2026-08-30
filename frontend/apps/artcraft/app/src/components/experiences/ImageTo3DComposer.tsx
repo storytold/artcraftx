@@ -16,7 +16,7 @@ import {
 } from "@storyteller/ui-model-selector";
 import { PromptShell, useComposerTasks } from "~/components/PromptShell";
 import { AccountSelector } from "~/components/account-selector/AccountSelector";
-import { useAccountSelectorStore } from "~/components/account-selector/accountSelectorStore";
+import { useSelectedAccountId } from "@storyteller/ui-model-selector";
 
 // Minimal image→3D composer in the marketing-site style: reference tray +
 // optional prompt + generate. Replaces the old ImageTo3DExperience page UI
@@ -65,7 +65,7 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
 
   const [images, setImages] = useState<TrayImage[]>([]);
   const [prompt, setPrompt] = useState("");
-  const selectedAccountId = useAccountSelectorStore((s) => s.selectedAccountId);
+  const selectedAccountId = useSelectedAccountId();
   const [isGenerating, setIsGenerating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 

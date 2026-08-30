@@ -1,5 +1,4 @@
 use crate::enums::audio_model::AudioModel;
-use crate::enums::generation_provider::GenerationProvider;
 use crate::enums::model_creator::ModelCreator;
 use crate::enums::model_tag::ModelTag;
 use serde_derive::Serialize;
@@ -19,7 +18,6 @@ pub struct AudioModelConfig {
   pub extra_info: Option<String>,
   pub selector_badges: Vec<String>,
   pub tags: Vec<ModelTag>,
-  pub providers: Vec<GenerationProvider>,
   pub progress_bar_ms: u32,
 
   // ── Capabilities ──
@@ -59,7 +57,6 @@ impl Default for AudioModelConfig {
       extra_info: None,
       selector_badges: Vec::new(),
       tags: Vec::new(),
-      providers: vec![GenerationProvider::Artcraft],
       progress_bar_ms: 120_000,
       text_prompt_supported: true,
       text_prompt_max_length: Some(3000),

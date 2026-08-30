@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { ImageModelListing } from "@storyteller/model-list";
+import { ImageModelListing, ListingProviderOffering } from "@storyteller/model-list";
 import { CommandResult } from "../../../common/CommandStatus";
 
 export interface ListImageModelsSuccess extends CommandResult {
@@ -9,6 +9,8 @@ export interface ListImageModelsSuccess extends CommandResult {
 export interface ListImageModelsPayload {
   // Every image model in picker order, including disabled ones (`is_disabled`).
   models: ImageModelListing[];
+  // Which providers offer which of those models (first listing = default).
+  providers: ListingProviderOffering<ImageModelListing>[];
 }
 
 // List every image model the app knows about (`list_image_models_command`, served from the

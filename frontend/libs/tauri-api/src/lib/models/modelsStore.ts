@@ -4,7 +4,8 @@
 // there is no built-in frontend list. Until `loadModelsFromBackend()` resolves
 // (called once on boot), the lists are empty and `loaded` is false. Disabled
 // models are kept out of the picker lists but registered for lookups (task
-// history, icons) via `registerLoadedModels`.
+// history, icons) via `registerLoadedModels`. Each model's `providers` come
+// from the listing's provider offerings (a model offered by nobody has none).
 
 import { create } from "zustand";
 import {
@@ -16,6 +17,7 @@ import {
   VideoModel,
   imageModelFromListing,
   object3DModelFromListing,
+  providersByModelFromOfferings,
   registerLoadedModels,
   splatModelFromListing,
   videoModelFromListing,
@@ -64,7 +66,8 @@ export const useModelsStore = create<ModelsStoreState>((set, get) => ({
     const allModels: Model[] = [];
 
     if (image.status === "fulfilled") {
-      const built = image.value.payload.models.map(imageModelFromListing);
+      const providers = providersByModelFromOfferings(image.value.payload.providers);
+      const built = image.value.payload.models.map((m) => imageModelFromListing(m, providers.get(m.model) ?? []));
       allModels.push(...built);
       next.imageModels = enabledOnly(image.value.payload.models, built);
     } else {
@@ -72,7 +75,8 @@ export const useModelsStore = create<ModelsStoreState>((set, get) => ({
     }
 
     if (video.status === "fulfilled") {
-      const built = video.value.payload.models.map(videoModelFromListing);
+      const providers = providersByModelFromOfferings(video.value.payload.providers);
+      const built = video.value.payload.models.map((m) => videoModelFromListing(m, providers.get(m.model) ?? []));
       allModels.push(...built);
       next.videoModels = enabledOnly(video.value.payload.models, built);
     } else {
@@ -80,7 +84,8 @@ export const useModelsStore = create<ModelsStoreState>((set, get) => ({
     }
 
     if (splat.status === "fulfilled") {
-      const built = splat.value.payload.models.map(splatModelFromListing);
+      const providers = providersByModelFromOfferings(splat.value.payload.providers);
+      const built = splat.value.payload.models.map((m) => splatModelFromListing(m, providers.get(m.model) ?? []));
       allModels.push(...built);
       next.splatModels = enabledOnly(splat.value.payload.models, built);
     } else {
@@ -88,7 +93,8 @@ export const useModelsStore = create<ModelsStoreState>((set, get) => ({
     }
 
     if (mesh.status === "fulfilled") {
-      const built = mesh.value.payload.models.map(object3DModelFromListing);
+      const providers = providersByModelFromOfferings(mesh.value.payload.providers);
+      const built = mesh.value.payload.models.map((m) => object3DModelFromListing(m, providers.get(m.model) ?? []));
       allModels.push(...built);
       next.object3DModels = enabledOnly(mesh.value.payload.models, built);
     } else {

@@ -55,7 +55,6 @@ mod tests {
   fn defaults_are_within_their_options() {
     for config in VIDEO_MODELS.iter() {
       assert!(!config.full_name.is_empty() && !config.selector_name.is_empty(), "{:?} needs names", config.model);
-      assert!(!config.providers.is_empty(), "{:?} needs a provider", config.model);
       assert!(
         config.aspect_ratio_options.is_empty() || config.legacy_size_options.is_empty(),
         "{:?} must use either aspect ratios or legacy sizes, not both", config.model,
@@ -82,7 +81,6 @@ mod tests {
   fn serializes_with_string_ids() {
     let json = serde_json::to_value(video_model_config(VideoModel::GrokImagineVideo)).unwrap();
     assert_eq!(json["model"], "grok_imagine_video");
-    assert_eq!(json["providers"], serde_json::json!(["grok"]));
     assert_eq!(json["legacy_size_options"], serde_json::json!(["landscape", "portrait", "square"]));
   }
 }

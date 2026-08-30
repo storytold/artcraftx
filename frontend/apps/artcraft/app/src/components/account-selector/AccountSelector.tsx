@@ -9,11 +9,12 @@ import {
   getServiceMeta,
   listCredentials,
 } from "@storyteller/ui-settings-modal";
-import { useAccountSelectorStore } from "./accountSelectorStore";
+import { useClassyModelSelectorStore, useSelectedAccountId } from "@storyteller/ui-model-selector";
 
 /**
  * Toolbar account picker: lists every stored credential (API keys and
- * website/ArtCraft logins) and remembers the pick in a shared store. Rendered
+ * website/ArtCraft logins) and records the pick in the shared selection
+ * store, which keeps each page's model/provider compatible with it. Rendered
  * to the left of the model selector on each generation page.
  *
  * Fetches the credential list on every mount for now — caching and cache
@@ -21,12 +22,9 @@ import { useAccountSelectorStore } from "./accountSelectorStore";
  */
 export const AccountSelector = () => {
   const [credentials, setCredentials] = useState<CredentialPayload[]>([]);
-  const selectedAccountId = useAccountSelectorStore(
-    (state) => state.selectedAccountId
-  );
-  const setSelectedAccountId = useAccountSelectorStore(
-    (state) => state.setSelectedAccountId
-  );
+  const selectedAccountId = useSelectedAccountId();
+  const setSelectedAccountId = useClassyModelSelectorStore((s) => s.setSelectedAccountId);
+  const setAccounts = useClassyModelSelectorStore((s) => s.setAccounts);
 
   const refresh = useCallback(async () => {
     try {
@@ -45,20 +43,11 @@ export const AccountSelector = () => {
     await refresh();
   });
 
-  // Keep the selection valid: default to the first account, and re-point (or
-  // clear) when the selected credential is deleted.
+  // Hand the accounts to the selection store; it defaults to the first one
+  // and re-points (or clears) when the selected credential is deleted.
   useEffect(() => {
-    if (credentials.length === 0) {
-      if (selectedAccountId !== null) setSelectedAccountId(null);
-      return;
-    }
-    const selectionExists = credentials.some(
-      (credential) => credential.id === selectedAccountId
-    );
-    if (!selectionExists) {
-      setSelectedAccountId(credentials[0].id);
-    }
-  }, [credentials, selectedAccountId, setSelectedAccountId]);
+    setAccounts(credentials.map((c) => ({ id: c.id, service: c.service })));
+  }, [credentials, setAccounts]);
 
   const items: PopoverItem[] =
     credentials.length > 0

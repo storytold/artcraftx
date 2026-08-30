@@ -7,7 +7,7 @@ import {
   tagsFromListing,
 } from "./fromListingCommon.js";
 
-export const object3DModelFromListing = (m: MeshModelListing): Object3DModel =>
+export const object3DModelFromListing = (m: MeshModelListing, providers: string[]): Object3DModel =>
   new Object3DModel({
     id: m.model,
     tauriId: m.model,
@@ -18,7 +18,7 @@ export const object3DModelFromListing = (m: MeshModelListing): Object3DModel =>
     selectorDescription: m.selector_description,
     selectorBadges: m.selector_badges,
     tags: tagsFromListing(m.tags),
-    providers: providersFromListing(m.providers),
+    providers: providersFromListing(providers),
     progressBarTime: m.progress_bar_ms,
     maxPromptLength: promptMaxLengthFromListing(m.text_prompt_max_length),
   });

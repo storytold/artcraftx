@@ -1,7 +1,6 @@
 use crate::enums::common_aspect_ratio::CommonAspectRatio;
 use crate::enums::common_quality::CommonQuality;
 use crate::enums::common_resolution::CommonResolution;
-use crate::enums::generation_provider::GenerationProvider;
 use crate::enums::image_model::ImageModel;
 use crate::enums::model_creator::ModelCreator;
 use crate::enums::model_tag::ModelTag;
@@ -27,9 +26,6 @@ pub struct ImageModelConfig {
   /// Small labels next to the name (e.g. "10 sec.").
   pub selector_badges: Vec<String>,
   pub tags: Vec<ModelTag>,
-  /// Which services can run this model from the desktop app. The first is
-  /// the default.
-  pub providers: Vec<GenerationProvider>,
   /// How long the fake progress bar takes to reach 100% (UI-only).
   pub progress_bar_ms: u32,
 
@@ -90,7 +86,6 @@ impl Default for ImageModelConfig {
       extra_info: None,
       selector_badges: Vec::new(),
       tags: Vec::new(),
-      providers: vec![GenerationProvider::Artcraft],
       progress_bar_ms: 20_000,
       can_text_to_image: true,
       can_edit_images: false,

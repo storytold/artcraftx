@@ -21,6 +21,34 @@ export type ListingBitrate = string;
 // `models::enums::LegacyVideoSize`
 export type ListingLegacyVideoSize = "landscape" | "portrait" | "square";
 
+// `models::providers::OfferedModel` — one model as offered by one provider.
+export interface ListingOfferedModel<Config = unknown> {
+  model: string;
+  // This provider's replacement config, when it differs from the base one.
+  overrides?: Config;
+}
+
+// `models::providers::ProviderOffering` — the models one provider offers.
+export interface ListingProviderOffering<Config = unknown> {
+  provider: ListingProvider;
+  models: ListingOfferedModel<Config>[];
+}
+
+// model id -> providers offering it, in offering order (first = default).
+export const providersByModelFromOfferings = (
+  offerings: ListingProviderOffering[],
+): Map<string, ListingProvider[]> => {
+  const byModel = new Map<string, ListingProvider[]>();
+  for (const offering of offerings) {
+    for (const offered of offering.models) {
+      const list = byModel.get(offered.model) ?? [];
+      if (!list.includes(offering.provider)) list.push(offering.provider);
+      byModel.set(offered.model, list);
+    }
+  }
+  return byModel;
+};
+
 // Fields every modality's config carries.
 export interface ListingModelBase {
   model: string;
@@ -31,7 +59,7 @@ export interface ListingModelBase {
   extra_info?: string;
   selector_badges: string[];
   tags: ListingTag[];
-  providers: ListingProvider[];
+  // (Which providers offer the model lives in the listing's `providers`.)
   progress_bar_ms: number;
   // Absent = no limit.
   text_prompt_max_length?: number;
