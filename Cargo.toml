@@ -25,6 +25,9 @@ members = [
   # Highest-level shared types: enums and identifiers used across the workspace
   "crates/core_types",
 
+  # Every generation model (image, video, mesh, splat, audio) and its capabilities
+  "crates/models",
+
   # Shared libraries
   "crates/lib/browser_emulation",
   "crates/lib/build_metadata",
@@ -100,6 +103,7 @@ grok_consumer_client = { path = "crates/api_clients/grok_consumer_client" }
 grok_consumer_statsig = { path = "crates/api_clients/grok_consumer_statsig" }
 http_headers = { path = "crates/lib/http_headers" }
 core_types = { path = "crates/core_types" }
+models = { path = "crates/models" }
 images = { path = "crates/lib/files/images" }
 jwt_light = { path = "crates/lib/jwt_light" }
 memory_store = { path = "crates/lib/caching/memory_store" }

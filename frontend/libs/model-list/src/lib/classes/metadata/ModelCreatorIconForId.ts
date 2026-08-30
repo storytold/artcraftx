@@ -3,10 +3,10 @@ import {
   getCreatorIconPath,
   getServicesBasePath,
 } from "./ModelCreatorIcons.js";
-import { ALL_MODELS_LIST } from "../../lists/AllModels.js";
+import { findLoadedModel } from "../../registry/loadedModels.js";
 
-// Fallback prefix → creator map for model ids that aren't in ALL_MODELS_LIST
-// (legacy / API-only ids). Shared with the model-list loader's creator guess.
+// Fallback prefix → creator map for model ids the backend hasn't served
+// (legacy / retired ids in task history).
 export const MODEL_ID_PREFIX_CREATORS: Array<[string, ModelCreator]> = [
   ["flux", ModelCreator.BlackForestLabs],
   ["nano_banana", ModelCreator.Google],
@@ -25,7 +25,7 @@ export const MODEL_ID_PREFIX_CREATORS: Array<[string, ModelCreator]> = [
   // Beeble SwitchX (background change) has no provider icon — use the ArtCraft
   // mark since it's surfaced as an ArtCraft feature.
   ["switch_x", ModelCreator.ArtCraft],
-  // 3D mesh / splat models (not in ALL_MODELS_LIST).
+  // 3D mesh / splat models.
   ["hunyuan", ModelCreator.Tencent],
   ["marble", ModelCreator.WorldLabs],
 ];
@@ -45,9 +45,7 @@ const MODEL_ID_PREFIX_ICON_FILES: Array<[string, string]> = [
  * Falls back to a prefix match, then to the generic icon.
  */
 export const getCreatorIconPathForModelId = (modelId: string): string => {
-  const model = ALL_MODELS_LIST.find(
-    (m) => m.id === modelId || m.tauriId === modelId,
-  );
+  const model = findLoadedModel(modelId);
   if (model) return getCreatorIconPath(model.creator);
   const base = getServicesBasePath();
   for (const [prefix, file] of MODEL_ID_PREFIX_ICON_FILES) {

@@ -6,13 +6,12 @@ import { twMerge } from "tailwind-merge";
 import { MediaUploadApi } from "@storyteller/api";
 import { GenerateIconButton } from "@storyteller/ui-button";
 import { useCostBreakdownModalStore } from "@storyteller/ui-pricing-modal";
-import { GenerateMesh, GenerateSplat } from "@storyteller/tauri-api";
-import { SPLAT_MODELS } from "@storyteller/model-list";
+import { GenerateMesh, GenerateSplat, useSplatModels } from "@storyteller/tauri-api";
 import {
   ClassyModelSelector,
-  IMAGE_TO_3D_OBJECT_PAGE_MODEL_LIST,
-  IMAGE_TO_3D_WORLD_PAGE_MODEL_LIST,
   ModelPage,
+  useImageTo3dObjectPageModelList,
+  useImageTo3dWorldPageModelList,
   useSelectedModel,
 } from "@storyteller/ui-model-selector";
 import { PromptShell, useComposerTasks } from "~/components/PromptShell";
@@ -53,6 +52,10 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
 
   const selectedModel = useSelectedModel(pageId);
   const selectedObjectModelId = selectedModel?.id ?? DEFAULT_OBJECT_MODEL_ID;
+  const worldModelList = useImageTo3dWorldPageModelList();
+  const objectModelList = useImageTo3dObjectPageModelList();
+  // Fallback when nothing is selected yet (lists load from the backend).
+  const defaultSplatModel = useSplatModels()[0];
 
   const { busy, completed } = useComposerTasks(isWorld ? "splat" : "mesh");
 
@@ -140,8 +143,8 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
         refImageUrls: images.map((img) => img.preview).filter(Boolean),
         modelType: isWorld
           ? (selectedModel as any)?.tauriId ||
-            (SPLAT_MODELS[0] as any)?.tauriId ||
-            String(selectedModel ?? SPLAT_MODELS[0])
+            defaultSplatModel?.tauriId ||
+            String(selectedModel ?? defaultSplatModel)
           : (selectedModel as any)?.tauriId || selectedObjectModelId,
         timestamp: Date.now(),
       });
@@ -151,7 +154,7 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
             credential_id: selectedAccountId ?? undefined,
             model:
               (selectedModel as any)?.tauriId ??
-              (SPLAT_MODELS[0] as any)?.tauriId,
+              defaultSplatModel?.tauriId,
             prompt: prompt.trim() || undefined,
             reference_image_media_tokens: readyTokens,
             frontend_caller: "splat_page",
@@ -287,11 +290,7 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
             <AccountSelector />
             <ClassyModelSelector
               variant="embedded"
-              items={
-                isWorld
-                  ? IMAGE_TO_3D_WORLD_PAGE_MODEL_LIST
-                  : IMAGE_TO_3D_OBJECT_PAGE_MODEL_LIST
-              }
+              items={isWorld ? worldModelList : objectModelList}
               page={pageId}
             />
           </div>

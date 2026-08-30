@@ -36,7 +36,7 @@ import {
 import { Button } from "@storyteller/ui-button";
 import {
   getProviderDisplayName,
-  ALL_MODELS_LIST,
+  findLoadedModel,
   getModelDisplayName,
 } from "@storyteller/model-list";
 import { CloseButton } from "@storyteller/ui-close-button";
@@ -687,11 +687,7 @@ export const TaskQueue = () => {
             const isVideo = taskTypeStr.includes("video");
             let duration = taskDurationRef.current.get(t.id);
             if (!duration) {
-              const actualModel = t.model_type
-                ? ALL_MODELS_LIST.find(
-                    (m) => m.tauriId === t.model_type || m.id === t.model_type,
-                  )
-                : undefined;
+              const actualModel = findLoadedModel(t.model_type);
               duration =
                 actualModel?.progressBarTime ??
                 (isVideo

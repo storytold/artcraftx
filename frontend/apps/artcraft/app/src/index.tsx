@@ -133,9 +133,8 @@ const GlobalSettingsManager = ({ env }: { env: Record<string, string> }) => {
     SoundManager.install();
   }, []);
 
-  // Reconcile the model dropdowns against the backend omni listing once on boot.
-  // The store is already seeded with the static overlay, so a failure here is a
-  // no-op (the UI keeps the overlay models).
+  // Load every model list from the Rust `models` crate once on boot. The
+  // pickers are empty until this resolves.
   useEffect(() => {
     void useModelsStore.getState().loadModelsFromBackend();
   }, []);

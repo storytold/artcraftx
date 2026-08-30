@@ -1,95 +1,25 @@
-//! Tauri command: list available image models.
-//!
-//! Maps the API-client response into command-specific types (see `response_types`),
-//! retries the request up to `MAX_ATTEMPTS` times, and caches successful responses
-//! in-memory for `CACHE_TTL`.
+//! Tauri command: list every image model, with capabilities and presentation.
+//! Served from the built-in `models` crate table.
 
-use std::sync::RwLock;
-use std::time::{Duration, Instant};
+use log::info;
+use models::configs::image_model_config::ImageModelConfig;
+use models::configs::image_models::IMAGE_MODELS;
+use serde_derive::Serialize;
 
-use log::{debug, warn};
-use once_cell::sync::Lazy;
-
-use artcraft_client::endpoints::omni_gen::models::image::omni_gen_list_image_models::{omni_gen_list_image_models, OmniGenListImageModelsArgs, OmniGenImageModelsResponse};
-use artcraft_client::utils::api_host::ApiHost;
-
-use crate::commands::generate::models::image::response_types::ListImageModelsResponse;
 use crate::commands::utils::response::shorthand::ResponseOrErrorMessage;
+use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 
-const MAX_ATTEMPTS: u32 = 3;
-const RETRY_BACKOFF: Duration = Duration::from_millis(250);
-const CACHE_TTL: Duration = Duration::from_secs(60);
-
-struct CacheEntry {
-  response: ListImageModelsResponse,
-  loaded_at: Instant,
+#[derive(Clone, Debug, Serialize)]
+pub struct ListImageModelsResponse {
+  /// Every model, in picker order. Includes disabled models (`is_disabled`),
+  /// which the frontend hides but keeps addressable.
+  pub models: Vec<ImageModelConfig>,
 }
 
-static CACHE: Lazy<RwLock<Option<CacheEntry>>> = Lazy::new(|| RwLock::new(None));
-
+impl SerializeMarker for ListImageModelsResponse {}
 
 #[tauri::command]
-pub async fn list_image_models_command(
-) -> ResponseOrErrorMessage<ListImageModelsResponse> {
-  if let Some(cached) = cached_response() {
-    debug!("list_image_models_command: serving cached response");
-    return Ok(cached.into());
-  }
-
-  match fetch_with_retry(&ApiHost::Storyteller).await {
-    Ok(api_response) => {
-      let response: ListImageModelsResponse = api_response.into();
-      store_response(response.clone());
-      Ok(response.into())
-    }
-    Err(error_message) => {
-      warn!("list_image_models_command failed after {} attempts: {}", MAX_ATTEMPTS, error_message);
-      if let Some(stale) = any_cached_response() {
-        warn!("list_image_models_command: refresh failed; serving stale cached response");
-        return Ok(stale.into());
-      }
-      Err(error_message.into())
-    }
-  }
-}
-
-fn cached_response() -> Option<ListImageModelsResponse> {
-  let guard = CACHE.read().ok()?;
-  let entry = guard.as_ref()?;
-  if entry.loaded_at.elapsed() < CACHE_TTL {
-    Some(entry.response.clone())
-  } else {
-    None
-  }
-}
-
-/// The cached response regardless of age. Used as a fallback so that a failed
-/// refresh still returns the last-known-good data instead of an error.
-fn any_cached_response() -> Option<ListImageModelsResponse> {
-  let guard = CACHE.read().ok()?;
-  guard.as_ref().map(|entry| entry.response.clone())
-}
-
-fn store_response(response: ListImageModelsResponse) {
-  if let Ok(mut guard) = CACHE.write() {
-    *guard = Some(CacheEntry { response, loaded_at: Instant::now() });
-  }
-}
-
-/// Fetch the models list, retrying up to `MAX_ATTEMPTS` times on failure.
-async fn fetch_with_retry(api_host: &ApiHost) -> Result<OmniGenImageModelsResponse, String> {
-  let mut last_error = "unknown error".to_string();
-  for attempt in 1..=MAX_ATTEMPTS {
-    match omni_gen_list_image_models(OmniGenListImageModelsArgs { api_host, maybe_creds: None, provider: None }).await {
-      Ok(response) => return Ok(response),
-      Err(err) => {
-        last_error = err.to_string();
-        warn!("list_image_models attempt {}/{} failed: {}", attempt, MAX_ATTEMPTS, last_error);
-        if attempt < MAX_ATTEMPTS {
-          tokio::time::sleep(RETRY_BACKOFF).await;
-        }
-      }
-    }
-  }
-  Err(last_error)
+pub async fn list_image_models_command() -> ResponseOrErrorMessage<ListImageModelsResponse> {
+  info!("list_image_models_command called");
+  Ok(ListImageModelsResponse { models: IMAGE_MODELS.clone() }.into())
 }

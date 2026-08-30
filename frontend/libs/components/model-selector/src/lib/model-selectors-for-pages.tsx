@@ -5,12 +5,17 @@ import {
   getCreatorIcon,
   Model,
   ImageModel,
+  Object3DModel,
+  SplatModel,
   VideoModel,
-  SPLAT_MODELS,
-  OBJECT_3D_MODELS,
 } from "@storyteller/model-list";
 import { ModelTag } from "@storyteller/model-list";
-import { useImageModels, useVideoModels } from "@storyteller/tauri-api";
+import {
+  useImageModels,
+  useObject3DModels,
+  useSplatModels,
+  useVideoModels,
+} from "@storyteller/tauri-api";
 
 export type ModelList = Omit<PopoverItem, "selected">[];
 
@@ -39,12 +44,11 @@ const cubeIcon = <Box className="h-4 w-4" />;
 /**
  * Per-page model subsetting. These pages show a slice of the full model set
  * based on model CAPABILITY FLAGS (canTextToImage, canEditImages, canEditAngles,
- * the InstructiveEdit tag, etc.). Those flags do not exist in the storyteller-web
- * omni backend, so this subsetting is maintained here in the frontend overlay.
+ * the InstructiveEdit tag, etc.), all of which the Rust `models` crate serves.
  *
  * Each builder is a pure function over a model list. React components consume
- * them through the `use*PageModelList` hooks, which run them against the live,
- * backend-reconciled list from `useModelsStore`.
+ * them through the `use*PageModelList` hooks, which run them against the
+ * backend-loaded lists from `useModelsStore`.
  */
 
 export const buildTextToImagePageList = (imageModels: ImageModel[]): ModelList =>
@@ -91,24 +95,15 @@ export const buildImageToVideoPageList = (videoModels: VideoModel[]): ModelList 
     filmIcon,
   );
 
-// ---------------------------------------------------------------------------
-// Static constants for the 3D pages. Splat/3D-object models are not served by
-// the omni backend, so these stay overlay-driven (no hook counterparts).
-// ---------------------------------------------------------------------------
+export const buildImageTo3dWorldPageList = (splatModels: SplatModel[]): ModelList =>
+  buildItems(splatModels, cubeIcon);
 
-export const IMAGE_TO_3D_WORLD_PAGE_MODEL_LIST: ModelList = buildItems(
-  SPLAT_MODELS as Model[],
-  cubeIcon,
-);
-
-export const IMAGE_TO_3D_OBJECT_PAGE_MODEL_LIST: ModelList = buildItems(
-  OBJECT_3D_MODELS as Model[],
-  cubeIcon,
-);
+export const buildImageTo3dObjectPageList = (object3DModels: Object3DModel[]): ModelList =>
+  buildItems(object3DModels, cubeIcon);
 
 // ---------------------------------------------------------------------------
-// Live, backend-reconciled hooks. Use these in React components; they fall back
-// to the overlay until `loadModelsFromBackend()` completes at app startup.
+// Live hooks. Use these in React components; the lists are empty until
+// `loadModelsFromBackend()` completes at app startup.
 // ---------------------------------------------------------------------------
 
 export const useTextToImagePageModelList = (): ModelList => {
@@ -139,4 +134,14 @@ export const useAnglesPageModelList = (): ModelList => {
 export const useImageToVideoPageModelList = (): ModelList => {
   const videoModels = useVideoModels();
   return useMemo(() => buildImageToVideoPageList(videoModels), [videoModels]);
+};
+
+export const useImageTo3dWorldPageModelList = (): ModelList => {
+  const splatModels = useSplatModels();
+  return useMemo(() => buildImageTo3dWorldPageList(splatModels), [splatModels]);
+};
+
+export const useImageTo3dObjectPageModelList = (): ModelList => {
+  const object3DModels = useObject3DModels();
+  return useMemo(() => buildImageTo3dObjectPageList(object3DModels), [object3DModels]);
 };

@@ -32,7 +32,10 @@ use crate::commands::cost_estimate::estimate_image_cost_command::estimate_image_
 use crate::commands::cost_estimate::estimate_mesh_cost_command::estimate_mesh_cost_command;
 use crate::commands::cost_estimate::estimate_splat_cost_command::estimate_splat_cost_command;
 use crate::commands::cost_estimate::estimate_video_cost_command::estimate_video_cost_command;
+use crate::commands::generate::models::audio::list_audio_models_command::list_audio_models_command;
 use crate::commands::generate::models::image::list_image_models_command::list_image_models_command;
+use crate::commands::generate::models::mesh::list_mesh_models_command::list_mesh_models_command;
+use crate::commands::generate::models::splat::list_splat_models_command::list_splat_models_command;
 use crate::commands::generate::models::video::list_video_models_command::list_video_models_command;
 use crate::commands::download::download_directory_reveal_command::download_directory_reveal_command;
 use crate::commands::download::download_media_file_command::download_media_file_command;
@@ -213,7 +216,10 @@ pub fn run() {
     estimate_mesh_cost_command,
     estimate_splat_cost_command,
     estimate_video_cost_command,
+    list_audio_models_command,
     list_image_models_command,
+    list_mesh_models_command,
+    list_splat_models_command,
     list_video_models_command,
     generate_audio_command,
     generate_image_command,

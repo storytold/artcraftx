@@ -139,13 +139,17 @@ export function ClassyModelSelector({
     (s) => s.selectedProviders[page] ?? {},
   );
 
-  // For the first mount, make sure the selected model is set for other components to listen
+  // Make sure a model is selected for other components to listen to. The
+  // lists load from the backend asynchronously, so this re-runs as items
+  // arrive and picks the page default once there is something to pick.
   useEffect(() => {
-    // Initialize selected model if not set
-    if (!selectedModels[page] && items[0]) {
-      setSelectedModel(page, defaultModelForPage(itemModels, page));
+    if (selectedModels[page]) return;
+    const fallback = defaultModelForPage(itemModels, page);
+    if (fallback) {
+      setSelectedModel(page, fallback);
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, page]);
 
   // The backend listing hydrates asynchronously and rebuilds the model
   // instances with API capabilities. Swap a stale selected instance for the

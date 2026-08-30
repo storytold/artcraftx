@@ -17,7 +17,7 @@ import {
   useStage3dPageModelList,
   useImageEditorPageModelList,
   useAnglesPageModelList,
-  IMAGE_TO_3D_WORLD_PAGE_MODEL_LIST,
+  useImageTo3dWorldPageModelList,
 } from "@storyteller/ui-model-selector";
 import {
   usePrompt2DStore,
@@ -84,6 +84,7 @@ export function CostBreakdownModal({ activeTabId }: CostBreakdownModalProps) {
   const stage3dList = useStage3dPageModelList();
   const imageEditorList = useImageEditorPageModelList();
   const anglesList = useAnglesPageModelList();
+  const imageTo3dWorldList = useImageTo3dWorldPageModelList();
 
   // Get the selected model for the active page
   const selectedModelFromStore = useSelectedModel(activePage);
@@ -102,7 +103,7 @@ export function CostBreakdownModal({ activeTabId }: CostBreakdownModalProps) {
       case ModelPage.ImageEditor:
         return modelsFromList(imageEditorList);
       case ModelPage.ImageTo3DWorld:
-        return modelsFromList(IMAGE_TO_3D_WORLD_PAGE_MODEL_LIST);
+        return modelsFromList(imageTo3dWorldList);
       case ModelPage.Angles:
         return modelsFromList(anglesList);
       default:
@@ -116,6 +117,7 @@ export function CostBreakdownModal({ activeTabId }: CostBreakdownModalProps) {
     stage3dList,
     imageEditorList,
     anglesList,
+    imageTo3dWorldList,
   ]);
   const selectedModel =
     selectedModelFromStore ?? defaultModelForPage(modelsForPage, activePage);

@@ -1,81 +1,122 @@
 // Shared model store: the single source of truth for the model dropdowns.
 //
-// Seeded synchronously from the frontend OVERLAY (`IMAGE_MODELS` / `VIDEO_MODELS`
-// in `@storyteller/model-list`) so the UI is never empty. On app boot,
-// `loadModelsFromBackend()` fetches the authoritative omni listing via the Tauri
-// commands and rebuilds the lists FROM that response (membership + order come
-// from the backend; the overlay only enriches UI metadata; backend models with
-// no overlay entry are built minimally so NEW models appear). If the fetch fails
-// the store keeps the overlay.
+// Everything comes from the Rust `models` crate via the Tauri list commands —
+// there is no built-in frontend list. Until `loadModelsFromBackend()` resolves
+// (called once on boot), the lists are empty and `loaded` is false. Disabled
+// models are kept out of the picker lists but registered for lookups (task
+// history, icons) via `registerLoadedModels`.
 
 import { create } from "zustand";
 import {
+  AudioModelListing,
   ImageModel,
+  Model,
+  Object3DModel,
+  SplatModel,
   VideoModel,
-  IMAGE_MODELS,
-  VIDEO_MODELS,
-  buildImageModelsFromListing,
-  buildVideoModelsFromListing,
+  imageModelFromListing,
+  object3DModelFromListing,
+  registerLoadedModels,
+  splatModelFromListing,
+  videoModelFromListing,
 } from "@storyteller/model-list";
+import { ListAudioModels } from "../generate/models/audio/ListAudioModels.js";
 import { ListImageModels } from "../generate/models/image/ListImageModels.js";
+import { ListMeshModels } from "../generate/models/mesh/ListMeshModels.js";
+import { ListSplatModels } from "../generate/models/splat/ListSplatModels.js";
 import { ListVideoModels } from "../generate/models/video/ListVideoModels.js";
 
 export interface ModelsStoreState {
   imageModels: ImageModel[];
   videoModels: VideoModel[];
-  // True once a backend reconciliation has completed at least once.
+  splatModels: SplatModel[];
+  object3DModels: Object3DModel[];
+  // Audio has no frontend class yet; the raw listing is exposed as-is.
+  audioModels: AudioModelListing[];
+  // True once the backend has been loaded at least once.
   loaded: boolean;
   isLoading: boolean;
   loadModelsFromBackend: () => Promise<void>;
 }
 
 export const useModelsStore = create<ModelsStoreState>((set, get) => ({
-  imageModels: IMAGE_MODELS,
-  videoModels: VIDEO_MODELS,
+  imageModels: [],
+  videoModels: [],
+  splatModels: [],
+  object3DModels: [],
+  audioModels: [],
   loaded: false,
   isLoading: false,
   loadModelsFromBackend: async () => {
     if (get().isLoading) return;
-    console.log("[models] loadModelsFromBackend() — calling Tauri commands…");
     set({ isLoading: true });
 
-    const [imageResult, videoResult] = await Promise.allSettled([
+    const [image, video, splat, mesh, audio] = await Promise.allSettled([
       ListImageModels(),
       ListVideoModels(),
+      ListSplatModels(),
+      ListMeshModels(),
+      ListAudioModels(),
     ]);
 
     const next: Partial<ModelsStoreState> = { isLoading: false, loaded: true };
+    // Everything served, disabled included, for lookups by id.
+    const allModels: Model[] = [];
 
-    if (imageResult.status === "fulfilled") {
-      const { models, providers } = imageResult.value.payload;
-      const offered = providers.flatMap((p) => p.models.map((pm) => pm.model));
-      const built = buildImageModelsFromListing(IMAGE_MODELS, models, offered);
-      next.imageModels = built;
-      console.log(
-        `[models] image: backend returned ${models.length} → ${built.length} models shown`,
-        built.map((m) => m.tauriId),
-      );
+    if (image.status === "fulfilled") {
+      const built = image.value.payload.models.map(imageModelFromListing);
+      allModels.push(...built);
+      next.imageModels = enabledOnly(image.value.payload.models, built);
     } else {
-      console.error("[models] failed to load image models from backend:", imageResult.reason);
+      console.error("[models] failed to load image models:", image.reason);
     }
 
-    if (videoResult.status === "fulfilled") {
-      const { models, providers } = videoResult.value.payload;
-      const offered = providers.flatMap((p) => p.models.map((pm) => pm.model));
-      const built = buildVideoModelsFromListing(VIDEO_MODELS, models, offered);
-      next.videoModels = built;
-      console.log(
-        `[models] video: backend returned ${models.length} → ${built.length} models shown`,
-        built.map((m) => m.tauriId),
-      );
+    if (video.status === "fulfilled") {
+      const built = video.value.payload.models.map(videoModelFromListing);
+      allModels.push(...built);
+      next.videoModels = enabledOnly(video.value.payload.models, built);
     } else {
-      console.error("[models] failed to load video models from backend:", videoResult.reason);
+      console.error("[models] failed to load video models:", video.reason);
     }
 
+    if (splat.status === "fulfilled") {
+      const built = splat.value.payload.models.map(splatModelFromListing);
+      allModels.push(...built);
+      next.splatModels = enabledOnly(splat.value.payload.models, built);
+    } else {
+      console.error("[models] failed to load splat models:", splat.reason);
+    }
+
+    if (mesh.status === "fulfilled") {
+      const built = mesh.value.payload.models.map(object3DModelFromListing);
+      allModels.push(...built);
+      next.object3DModels = enabledOnly(mesh.value.payload.models, built);
+    } else {
+      console.error("[models] failed to load mesh models:", mesh.reason);
+    }
+
+    if (audio.status === "fulfilled") {
+      next.audioModels = audio.value.payload.models.filter((m) => !m.is_disabled);
+    } else {
+      console.error("[models] failed to load audio models:", audio.reason);
+    }
+
+    registerLoadedModels(allModels);
+    console.log(
+      `[models] loaded ${allModels.length} models from the backend`,
+      allModels.map((m) => m.tauriId),
+    );
     set(next);
   },
 }));
 
+// Keep the picker lists to enabled models; `built[i]` corresponds to `listings[i]`.
+const enabledOnly = <T>(listings: { is_disabled: boolean }[], built: T[]): T[] =>
+  built.filter((_, i) => !listings[i].is_disabled);
+
 // Hook selectors for React consumers.
 export const useImageModels = (): ImageModel[] => useModelsStore((s) => s.imageModels);
 export const useVideoModels = (): VideoModel[] => useModelsStore((s) => s.videoModels);
+export const useSplatModels = (): SplatModel[] => useModelsStore((s) => s.splatModels);
+export const useObject3DModels = (): Object3DModel[] => useModelsStore((s) => s.object3DModels);
+export const useAudioModels = (): AudioModelListing[] => useModelsStore((s) => s.audioModels);

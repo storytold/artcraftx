@@ -45,6 +45,7 @@ openai_sora_client.workspace = true
 primitives.workspace = true
 sqlite_database.workspace = true
 core_types.workspace = true
+models.workspace = true
 sqlite_identifiers.workspace = true
 url_utils.workspace = true
 web_base64.workspace = true
