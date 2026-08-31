@@ -15,6 +15,7 @@ use crate::types::enqueue_jobs_response::EnqueueJobsResponse;
 use crate::types::image_batch_size::ImageBatchSize;
 use crate::types::image_dimensions::ImageDimensions;
 use crate::types::image_resolution::ImageResolution;
+use crate::types::media_input::MediaInput;
 use crate::types::nano_banana_aspect_ratio::NanoBananaAspectRatio;
 use serde::Serialize;
 
@@ -80,8 +81,12 @@ pub struct NanoBananaProRequest {
   /// How many images to generate (1–4). Each costs credits.
   pub batch_size: ImageBatchSize,
 
-  /// Reference image URLs (image-to-image). Empty for text-to-image.
-  pub input_images: Vec<String>,
+  /// Reference images (image-to-image), uploaded first via
+  /// `endpoints::media` / `HiggsfieldSession::upload_reference_media`.
+  /// Empty for text-to-image. Sent as `input_images` (this endpoint
+  /// predates the role-tagged `medias` list). One reference raised the
+  /// price from 150 to 200 credits at 1k.
+  pub reference_images: Vec<MediaInput>,
 
   /// Spend from the plan's "unlimited" pool instead of credits, if the plan
   /// has one.
@@ -100,10 +105,16 @@ impl NanoBananaProRequest {
       aspect_ratio,
       resolution,
       batch_size: ImageBatchSize::One,
-      input_images: Vec::new(),
+      reference_images: Vec::new(),
       use_unlim: false,
       maybe_dimensions: None,
     }
+  }
+
+  /// Add reference images (image-to-image).
+  pub fn with_reference_images(mut self, reference_images: Vec<MediaInput>) -> Self {
+    self.reference_images = reference_images;
+    self
   }
 
   fn validate(&self) -> Result<(), HiggsfieldClientError> {
@@ -123,31 +134,32 @@ impl NanoBananaProRequest {
           self.aspect_ratio.as_str(), self.resolution.as_str(),
         )))
   }
+
+  fn to_body(&self) -> Result<NanoBananaProRequestBody, HiggsfieldClientError> {
+    let dimensions = self.dimensions()?;
+    Ok(NanoBananaProRequestBody {
+      params: NanoBananaProParams {
+        prompt: self.prompt.clone(),
+        aspect_ratio: self.aspect_ratio,
+        resolution: self.resolution,
+        batch_size: self.batch_size,
+        is_storyboard: false,
+        is_zoom_control: false,
+        use_unlim: self.use_unlim,
+        width: dimensions.width,
+        height: dimensions.height,
+        input_images: self.reference_images.clone(),
+      },
+      use_unlim: self.use_unlim,
+    })
+  }
 }
 
 /// Enqueue the job. The response's job ids are what to poll (see
 /// `endpoints::jobs`).
 pub async fn nano_banana_pro(args: NanoBananaProArgs<'_>) -> Result<EnqueueJobsResponse, HiggsfieldError> {
-  let request = args.request;
-  request.validate()?;
-  let dimensions = request.dimensions()?;
-
-  let body = NanoBananaProRequestBody {
-    params: NanoBananaProParams {
-      prompt: request.prompt,
-      aspect_ratio: request.aspect_ratio,
-      resolution: request.resolution,
-      batch_size: request.batch_size,
-      is_storyboard: false,
-      is_zoom_control: false,
-      use_unlim: request.use_unlim,
-      width: dimensions.width,
-      height: dimensions.height,
-      input_images: request.input_images,
-    },
-    use_unlim: request.use_unlim,
-  };
-
+  args.request.validate()?;
+  let body = args.request.to_body()?;
   send_json_request(HttpMethod::Post, PATH, args.auth, args.host, Some(&body)).await
 }
 
@@ -170,12 +182,13 @@ struct NanoBananaProParams {
   use_unlim: bool,
   width: u32,
   height: u32,
-  input_images: Vec<String>,
+  input_images: Vec<MediaInput>,
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::types::media_input::MediaInput;
   use serde_json::{json, Value};
 
   // ── Option sets ──
@@ -199,25 +212,23 @@ mod tests {
   fn wire_body_matches_captured_request() {
     // Captured from the web app: 3:4 at 1k, one image.
     let request = NanoBananaProRequest::text_to_image("a dinosaur on a skateboard", NanoBananaProAspectRatio::Portrait3x4, NanoBananaProResolution::OneK);
-    let dimensions = request.dimensions().unwrap();
-    let body = NanoBananaProRequestBody {
-      params: NanoBananaProParams {
-        prompt: request.prompt,
-        aspect_ratio: request.aspect_ratio,
-        resolution: request.resolution,
-        batch_size: request.batch_size,
-        is_storyboard: false,
-        is_zoom_control: false,
-        use_unlim: false,
-        width: dimensions.width,
-        height: dimensions.height,
-        input_images: vec![],
-      },
-      use_unlim: false,
-    };
-
-    let actual: Value = serde_json::to_value(&body).unwrap();
+    let actual: Value = serde_json::to_value(request.to_body().unwrap()).unwrap();
     let expected: Value = serde_json::from_str(r#"{"params":{"prompt":"a dinosaur on a skateboard","aspect_ratio":"3:4","resolution":"1k","batch_size":1,"is_storyboard":false,"is_zoom_control":false,"use_unlim":false,"width":896,"height":1200,"input_images":[]},"use_unlim":false}"#).unwrap();
+    assert_eq!(actual, expected);
+  }
+
+  #[test]
+  fn wire_body_with_reference_image_matches_captured_request() {
+    // Captured from the web app 2026-08-31 (ids scrubbed): one uploaded
+    // reference goes out as a bare descriptor in `input_images`. The web app
+    // sent 1376x768 for 16:9@1k; this client's derivation is asserted.
+    let request = NanoBananaProRequest::text_to_image("a corgi on a bike", NanoBananaProAspectRatio::Landscape16x9, NanoBananaProResolution::OneK)
+        .with_reference_images(vec![MediaInput::uploaded("00000000-0000-4000-8000-0000000000aa", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000aa.png")]);
+    let actual: Value = serde_json::to_value(request.to_body().unwrap()).unwrap();
+    let dimensions = request.dimensions().unwrap();
+    let expected_json = r#"{"params":{"prompt":"a corgi on a bike","input_images":[{"id":"00000000-0000-4000-8000-0000000000aa","type":"media_input","url":"https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000aa.png"}],"aspect_ratio":"16:9","resolution":"1k","batch_size":1,"is_storyboard":false,"is_zoom_control":false,"use_unlim":false,"width":W,"height":H},"use_unlim":false}"#
+        .replace("\"width\":W", &format!("\"width\":{}", dimensions.width)).replace("\"height\":H", &format!("\"height\":{}", dimensions.height));
+    let expected: Value = serde_json::from_str(&expected_json).unwrap();
     assert_eq!(actual, expected);
   }
 

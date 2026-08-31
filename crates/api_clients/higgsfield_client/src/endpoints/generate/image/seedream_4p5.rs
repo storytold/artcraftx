@@ -15,6 +15,7 @@ use crate::types::enqueue_jobs_response::EnqueueJobsResponse;
 use crate::types::image_batch_size::ImageBatchSize;
 use crate::types::image_quality::ImageQuality;
 use crate::types::image_seed::ImageSeed;
+use crate::types::media_input::MediaInput;
 use crate::types::seedream_aspect_ratio::SeedreamAspectRatio;
 use serde::Serialize;
 
@@ -87,8 +88,16 @@ pub struct Seedream4p5Request {
   /// How many images to generate (1–4). Each costs credits.
   pub batch_size: ImageBatchSize,
 
-  /// Reference image URLs (image-to-image). Empty for text-to-image.
-  pub input_images: Vec<String>,
+  /// Reference images (image-to-image), uploaded first via
+  /// `endpoints::media` / `HiggsfieldSession::upload_reference_media`.
+  /// Empty for text-to-image. Sent as `input_images` (this endpoint
+  /// predates the role-tagged `medias` list).
+  ///
+  /// NB: with a reference the web app sends the reference's pixel size as
+  /// `width`/`height` instead of the placeholder; the server derives the
+  /// real output size from `quality` either way, so this client keeps the
+  /// placeholder.
+  pub reference_images: Vec<MediaInput>,
 
   /// Pin the generation seed; `None` sends a fresh random one, as the web
   /// app does.
@@ -108,10 +117,16 @@ impl Seedream4p5Request {
       aspect_ratio,
       resolution,
       batch_size: ImageBatchSize::One,
-      input_images: Vec::new(),
+      reference_images: Vec::new(),
       maybe_seed: None,
       use_unlim: false,
     }
+  }
+
+  /// Add reference images (image-to-image).
+  pub fn with_reference_images(mut self, reference_images: Vec<MediaInput>) -> Self {
+    self.reference_images = reference_images;
+    self
   }
 
   fn validate(&self) -> Result<(), HiggsfieldClientError> {
@@ -133,7 +148,7 @@ impl Seedream4p5Request {
         model: MODEL,
         width: PLACEHOLDER_WIDTH,
         height: PLACEHOLDER_HEIGHT,
-        input_images: self.input_images.clone(),
+        input_images: self.reference_images.clone(),
       },
       use_unlim: self.use_unlim,
     }
@@ -167,12 +182,13 @@ struct Seedream4p5Params {
   model: &'static str,
   width: u32,
   height: u32,
-  input_images: Vec<String>,
+  input_images: Vec<MediaInput>,
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::types::media_input::MediaInput;
   use crate::types::job_set_type::JobSetType;
   use serde_json::Value;
 
@@ -199,6 +215,19 @@ mod tests {
       let expected: Value = serde_json::from_str(expected).unwrap();
       assert_eq!(actual, expected, "{}", resolution.label());
     }
+  }
+
+  #[test]
+  fn wire_body_with_reference_image_matches_captured_request() {
+    // Captured from the web app 2026-08-31 (ids scrubbed): bare descriptors
+    // in `input_images`. The web app sent the reference's 640x640 as
+    // width/height; this client keeps the placeholder.
+    let mut request = Seedream4p5Request::text_to_image("a corgi on a bike", SeedreamAspectRatio::Portrait3x4, Seedream4p5Resolution::FourK)
+        .with_reference_images(vec![MediaInput::uploaded("00000000-0000-4000-8000-0000000000aa", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000aa.png")]);
+    request.maybe_seed = Some(ImageSeed::new(275906));
+    let actual: Value = serde_json::to_value(request.to_body()).unwrap();
+    let expected: Value = serde_json::from_str(r#"{"params":{"prompt":"a corgi on a bike","aspect_ratio":"3:4","quality":"high","batch_size":1,"use_unlim":false,"seed":275906,"model":"seedream_v4_5","width":1024,"height":1024,"input_images":[{"id":"00000000-0000-4000-8000-0000000000aa","type":"media_input","url":"https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000aa.png"}]},"use_unlim":false}"#).unwrap();
+    assert_eq!(actual, expected);
   }
 
   #[test]

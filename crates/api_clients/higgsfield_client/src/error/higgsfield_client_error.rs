@@ -1,4 +1,4 @@
-use crate::types::ids::JobId;
+use crate::types::ids::{JobId, MediaId};
 use crate::types::job_status::JobStatus;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
@@ -47,12 +47,21 @@ pub enum HiggsfieldClientError {
   JobFailed {
     job_id: JobId,
     status: JobStatus,
+    /// The server's `meta.fail_reason`, when it gave one.
+    maybe_reason: Option<String>,
   },
 
   /// Waiting for a job: it didn't finish within the timeout.
   JobTimedOut {
     job_id: JobId,
     last_status: JobStatus,
+    waited: Duration,
+  },
+
+  /// Waiting for an upload's IP check: it didn't finish within the timeout
+  /// (or was never requested — confirm with `force_ip_check`).
+  MediaIpCheckTimedOut {
+    media_id: MediaId,
     waited: Duration,
   },
 }
@@ -73,9 +82,14 @@ impl Display for HiggsfieldClientError {
       Self::WreqRequestBuild(err) => write!(f, "Failed to build the HTTP request: {}", err),
       Self::RequestSerialization(err) => write!(f, "Failed to serialize the request body to JSON: {}", err),
       Self::JobNotFound(job_id) => write!(f, "Job {} is unknown to the server.", job_id),
-      Self::JobFailed { job_id, status } => write!(f, "Job {} ended in state {}.", job_id, status),
+      Self::JobFailed { job_id, status, maybe_reason } => match maybe_reason {
+        Some(reason) => write!(f, "Job {} ended in state {}: {}", job_id, status, reason),
+        None => write!(f, "Job {} ended in state {}.", job_id, status),
+      },
       Self::JobTimedOut { job_id, last_status, waited } =>
         write!(f, "Job {} did not finish within {}s (last status: {}).", job_id, waited.as_secs(), last_status),
+      Self::MediaIpCheckTimedOut { media_id, waited } =>
+        write!(f, "Media {} IP check did not finish within {}s (was it requested with force_ip_check?).", media_id, waited.as_secs()),
     }
   }
 }

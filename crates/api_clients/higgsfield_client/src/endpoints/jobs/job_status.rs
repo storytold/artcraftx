@@ -50,6 +50,11 @@ pub struct JobStatusResponse {
   #[serde(default)]
   pub result: Option<Value>,
 
+  /// Server-side notes; a failed job's `fail_reason` lives here (see
+  /// [`Self::fail_reason`]).
+  #[serde(default)]
+  pub meta: serde_json::Map<String, Value>,
+
   /// Whether the IP (intellectual property) check has run.
   #[serde(default)]
   pub ip_check_finished: Option<bool>,
@@ -90,6 +95,12 @@ pub struct JobStatusResponse {
 }
 
 impl JobStatusResponse {
+  /// Why a `failed` job failed, when the server says (e.g. "Input audio
+  /// duration is not supported. Please try a shorter audio.").
+  pub fn fail_reason(&self) -> Option<&str> {
+    self.meta.get("fail_reason").and_then(Value::as_str)
+  }
+
   /// The full-resolution output URL, once the job completed.
   pub fn result_url(&self) -> Option<&str> {
     self.results.as_ref().map(|results| results.raw.url.as_str())
@@ -119,6 +130,17 @@ pub async fn job_status(args: JobStatusArgs<'_>) -> Result<JobStatusResponse, Hi
 #[cfg(test)]
 mod tests {
   use super::*;
+
+  #[test]
+  fn failed_job_exposes_its_reason() {
+    // Live 2026-08-31 (ids scrubbed): a Seedance job rejected for its audio reference.
+    let json = r#"{"board_ids":[],"cluster_hash":"65b161afd05ea0a6f0de6b28848b60aa","created_at":1788160267.405772,"folder_ids":[],"id":"00000000-0000-0000-0000-00000000ffff","ip_check_finished":false,"ip_detected":null,"is_favourite":false,"is_viewed":false,"job_set_client_meta":null,"job_set_id":"00000000-0000-0000-0000-00000000bbbb","job_set_parent_id":null,"job_set_type":"seedance_2_0_mini","meta":{"fail_reason":"Input audio duration is not supported. Please try a shorter audio."},"published_at":null,"representation":null,"result":null,"results":null,"status":"failed","trace_id":"00000000-0000-0000-0000-00000000ffff","user_id":"user_TESTUSER0000000000000000000","params":{"aspect_ratio":"1:1","duration":4,"medias":[{"data":{"id":"00000000-0000-4000-8000-0000000000cc","type":"video_input","url":"https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000cc.mp4"},"role":"video"},{"data":{"id":"00000000-0000-4000-8000-0000000000dd","type":"audio_input","url":"https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000dd.wav"},"role":"audio"}],"prompt":"p","resolution":"480p","width":480,"height":480}}"#;
+    let job: JobStatusResponse = serde_json::from_str(json).unwrap();
+    assert_eq!(job.status, JobStatus::Failed);
+    assert_eq!(job.fail_reason(), Some("Input audio duration is not supported. Please try a shorter audio."));
+    assert_eq!(job.params.medias[0].data.kind, crate::types::media_input::MediaInputKind::VideoInput);
+    assert_eq!(job.params.medias[1].data.kind, crate::types::media_input::MediaInputKind::AudioInput);
+  }
   use crate::types::image_quality::ImageQuality;
   use crate::types::image_aspect_ratio::ImageAspectRatio;
   use crate::types::job_media::JobMediaType;

@@ -2,6 +2,8 @@ use crate::types::image_quality::ImageQuality;
 use crate::types::image_aspect_ratio::ImageAspectRatio;
 use crate::types::image_resolution::ImageResolution;
 use crate::types::image_seed::ImageSeed;
+use crate::types::media_input::MediaInput;
+use crate::types::media_reference::MediaReference;
 use crate::types::thinking_level::ThinkingLevel;
 use crate::types::video_bitrate_mode::VideoBitrateMode;
 use crate::types::video_mode::VideoMode;
@@ -69,6 +71,17 @@ pub struct JobParams {
   #[serde(default)]
   pub model: Option<String>,
 
+  // ── References ──
+
+  /// Reference media with roles (most models). Empty for text-only jobs.
+  #[serde(default)]
+  pub medias: Vec<MediaReference>,
+
+  /// Reference images on the two models that use this older field instead
+  /// of `medias` (Nano Banana Pro, Seedream 4.5).
+  #[serde(default)]
+  pub input_images: Vec<MediaInput>,
+
   /// Everything not typed above, keyed by field name.
   #[serde(flatten)]
   pub extra: serde_json::Map<String, Value>,
@@ -77,6 +90,7 @@ pub struct JobParams {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::types::media_role::MediaRole;
 
   #[test]
   fn nano_banana_params_parse() {
@@ -88,7 +102,25 @@ mod tests {
     assert_eq!((params.width, params.height), (Some(864), Some(1184)));
     assert_eq!(params.batch_size, Some(1));
     assert!(params.quality.is_none());
-    assert!(params.extra.contains_key("input_images"));
+    assert!(params.input_images.is_empty());
+    assert!(!params.extra.contains_key("input_images"));
+  }
+
+  #[test]
+  fn reference_media_parse_with_roles() {
+    let json = r#"{"width":854,"height":480,"prompt":"p","medias":[{"role":"start_image","data":{"id":"00000000-0000-4000-8000-000000000001","type":"media_input","url":"https://cdn.example.com/user_x/00000000-0000-4000-8000-000000000001.png"}}],"duration":1,"resolution":"480p","aspect_ratio":"auto"}"#;
+    let params: JobParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.medias.len(), 1);
+    assert_eq!(params.medias[0].role, MediaRole::StartImage);
+    assert_eq!(params.medias[0].data.id.as_str(), "00000000-0000-4000-8000-000000000001");
+    assert!(!params.extra.contains_key("medias"));
+  }
+
+  #[test]
+  fn input_images_parse() {
+    let json = r#"{"width":1344,"height":768,"aspect_ratio":"16:9","resolution":"1k","batch_size":1,"input_images":[{"id":"00000000-0000-4000-8000-000000000002","type":"media_input","url":"https://cdn.example.com/user_x/00000000-0000-4000-8000-000000000002.png"}],"input_image":null,"application":null,"surface":null,"prompt":"a corgi on a bike"}"#;
+    let params: JobParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.input_images, vec![MediaInput::uploaded("00000000-0000-4000-8000-000000000002", "https://cdn.example.com/user_x/00000000-0000-4000-8000-000000000002.png")]);
   }
 
   #[test]

@@ -13,6 +13,8 @@ use crate::error::higgsfield_client_error::HiggsfieldClientError;
 use crate::error::higgsfield_error::HiggsfieldError;
 use crate::types::enqueue_jobs_response::EnqueueJobsResponse;
 use crate::types::image_aspect_ratio::ImageAspectRatio;
+use crate::types::media_reference::{validate_media_roles, MediaReference};
+use crate::types::media_role::MediaRole;
 use crate::types::image_batch_size::ImageBatchSize;
 use crate::types::video_aspect_ratio::SeedanceVideoAspectRatio;
 use crate::types::video_bitrate_mode::VideoBitrateMode;
@@ -90,9 +92,11 @@ pub struct Seedance2p0Request {
   /// The quality mode; the web app sends `std`.
   pub mode: VideoMode,
 
-  /// Reference media ids/URLs as the web app sends them. Empty for
-  /// text-to-video.
-  pub medias: Vec<String>,
+  /// Reference media (frames, reference images / clips / audio), uploaded
+  /// first via `endpoints::media` / `HiggsfieldSession::upload_reference_media`
+  /// and tagged with a role. The web app's "Upload media" takes images, video and audio (video / audio roles from its bundle; only image roles have been sent live). Roles this
+  /// model takes: [`Self::MEDIA_ROLES`]. Empty for text-to-video.
+  pub medias: Vec<MediaReference>,
 
   /// Spend from the plan's "unlimited" pool instead of credits, if the plan
   /// has one.
@@ -106,6 +110,9 @@ pub struct Seedance2p0Request {
 impl Seedance2p0Request {
   /// The web app's duration slider range.
   pub const DURATION: VideoDurationRange = VideoDurationRange::new(4, 15);
+
+  /// The media roles this model accepts.
+  pub const MEDIA_ROLES: &'static [MediaRole] = &[MediaRole::Image, MediaRole::StartImage, MediaRole::EndImage, MediaRole::Video, MediaRole::Audio];
 
   /// A text-to-video request with the web app's defaults (1 clip, audio on,
   /// high bitrate, `std` mode, credits).
@@ -129,7 +136,15 @@ impl Seedance2p0Request {
     if self.prompt.trim().is_empty() {
       return Err(HiggsfieldClientError::InvalidRequest("prompt is empty".to_string()));
     }
+    validate_media_roles(&self.medias, Self::MEDIA_ROLES, "Seedance 2.0")?;
     Self::DURATION.validate(self.duration)
+  }
+
+  /// Add one reference (see [`MediaReference`]'s constructors:
+  /// `start_frame`, `end_frame`, `image`, `video`, `audio`).
+  pub fn with_media(mut self, reference: MediaReference) -> Self {
+    self.medias.push(reference);
+    self
   }
 
   /// `Auto` with no reference media goes out as `16:9`, as observed from
@@ -202,12 +217,13 @@ struct Seedance2p0Params {
   generate_audio: bool,
   bitrate_mode: VideoBitrateMode,
   prompt: String,
-  medias: Vec<String>,
+  medias: Vec<MediaReference>,
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::types::media_input::MediaInput;
   use crate::endpoints::generate::video::test_fixtures::enqueue_response;
   use crate::types::job_set_type::JobSetType;
   use serde_json::Value;
@@ -233,8 +249,33 @@ mod tests {
   #[test]
   fn auto_stays_auto_with_reference_media() {
     let mut request = Seedance2p0Request::text_to_video("p", SeedanceVideoAspectRatio::Auto, Seedance2p0Resolution::P480, VideoDurationSeconds::new(4));
-    request.medias = vec!["media_123".to_string()];
+    request.medias = vec![MediaReference::image(MediaInput::uploaded("00000000-0000-4000-8000-000000000001", "https://cdn.example.com/user_x/00000000-0000-4000-8000-000000000001.png"))];
     assert_eq!(request.wire_aspect_ratio(), ImageAspectRatio::Auto);
+  }
+
+  #[test]
+  fn reference_media_serialize_with_roles() {
+    // Not browser-captured for this model (its upload picker is gated by a
+    // media-upload agreement); the shape and roles come from the web app's
+    // bundle and match the other models' captured bodies.
+    let request = Seedance2p0Request::text_to_video("p", SeedanceVideoAspectRatio::Landscape16x9, Seedance2p0Resolution::P480, VideoDurationSeconds::new(4))
+        .with_media(MediaReference::image(MediaInput::uploaded("00000000-0000-4000-8000-0000000000aa", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000aa.png")))
+        .with_media(MediaReference::audio(MediaInput::uploaded("00000000-0000-4000-8000-0000000000b2", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b2.png")));
+    let body: Value = serde_json::to_value(request.to_body().unwrap()).unwrap();
+    let medias = body["params"]["medias"].as_array().unwrap();
+    assert_eq!(medias.len(), 2);
+    assert_eq!(medias[0]["role"], "image");
+    assert_eq!(medias[0]["data"], serde_json::from_str::<Value>(r#"{"id":"00000000-0000-4000-8000-0000000000aa","type":"media_input","url":"https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000aa.png"}"#).unwrap());
+    assert_eq!(medias[1]["role"], "audio");
+  }
+
+  #[test]
+  fn media_roles() {
+    assert_eq!(Seedance2p0Request::MEDIA_ROLES, &[MediaRole::Image, MediaRole::StartImage, MediaRole::EndImage, MediaRole::Video, MediaRole::Audio]);
+    let base = || Seedance2p0Request::text_to_video("p", SeedanceVideoAspectRatio::Landscape16x9, Seedance2p0Resolution::P480, VideoDurationSeconds::new(4));
+    assert!(base().with_media(MediaReference::start_frame(MediaInput::uploaded("00000000-0000-4000-8000-0000000000b1", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b1.png"))).with_media(MediaReference::end_frame(MediaInput::uploaded("00000000-0000-4000-8000-0000000000b2", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b2.png"))).validate().is_ok());
+    let two_starts = base().with_media(MediaReference::start_frame(MediaInput::uploaded("00000000-0000-4000-8000-0000000000b1", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b1.png"))).with_media(MediaReference::start_frame(MediaInput::uploaded("00000000-0000-4000-8000-0000000000b2", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b2.png")));
+    assert!(matches!(two_starts.validate(), Err(HiggsfieldClientError::InvalidRequest(_))));
   }
 
   #[test]

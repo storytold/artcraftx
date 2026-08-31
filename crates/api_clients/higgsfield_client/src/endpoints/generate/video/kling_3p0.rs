@@ -12,6 +12,8 @@ use crate::credentials::higgsfield_auth::HiggsfieldAuth;
 use crate::error::higgsfield_client_error::HiggsfieldClientError;
 use crate::error::higgsfield_error::HiggsfieldError;
 use crate::types::enqueue_jobs_response::EnqueueJobsResponse;
+use crate::types::media_reference::{validate_media_roles, MediaReference};
+use crate::types::media_role::MediaRole;
 use crate::types::video_aspect_ratio::KlingAspectRatio;
 use crate::types::video_dimensions::VideoDimensions;
 use crate::types::video_duration::{VideoDurationRange, VideoDurationSeconds};
@@ -100,9 +102,11 @@ pub struct Kling3p0Request {
   /// Kling "elements" (consistent characters/objects) to include.
   pub kling_element_ids: Vec<String>,
 
-  /// Reference media ids/URLs as the web app sends them. Empty for
-  /// text-to-video.
-  pub medias: Vec<String>,
+  /// Reference media (frames, reference images / clips / audio), uploaded
+  /// first via `endpoints::media` / `HiggsfieldSession::upload_reference_media`
+  /// and tagged with a role. The web app offers start + end frames (no free references; consistent subjects go through `kling_element_ids`). With a frame set the web app hides the aspect menu and sends the frame's aspect (e.g. `1:1`, 720×720); set `aspect_ratio` / `maybe_dimensions` to match your frame. Roles this
+  /// model takes: [`Self::MEDIA_ROLES`]. Empty for text-to-video.
+  pub medias: Vec<MediaReference>,
 
   /// Spend from the plan's "unlimited" pool instead of credits, if the plan
   /// has one.
@@ -116,6 +120,9 @@ pub struct Kling3p0Request {
 impl Kling3p0Request {
   /// The web app's duration slider range.
   pub const DURATION: VideoDurationRange = VideoDurationRange::new(3, 15);
+
+  /// The media roles this model accepts.
+  pub const MEDIA_ROLES: &'static [MediaRole] = &[MediaRole::StartImage, MediaRole::EndImage];
 
   /// A text-to-video request with the web app's defaults (enhance on, sound
   /// on, credits).
@@ -138,7 +145,15 @@ impl Kling3p0Request {
     if self.prompt.trim().is_empty() {
       return Err(HiggsfieldClientError::InvalidRequest("prompt is empty".to_string()));
     }
+    validate_media_roles(&self.medias, Self::MEDIA_ROLES, "Kling 3.0")?;
     Self::DURATION.validate(self.duration)
+  }
+
+  /// Add one reference (see [`MediaReference`]'s constructors:
+  /// `start_frame`, `end_frame`, `image`, `video`, `audio`).
+  pub fn with_media(mut self, reference: MediaReference) -> Self {
+    self.medias.push(reference);
+    self
   }
 
   fn dimensions(&self) -> Result<VideoDimensions, HiggsfieldClientError> {
@@ -200,7 +215,7 @@ struct Kling3p0Params {
   multi_shots: bool,
   multi_shot_mode: &'static str,
   kling_element_ids: Vec<String>,
-  medias: Vec<String>,
+  medias: Vec<MediaReference>,
   width: u32,
   height: u32,
 }
@@ -208,6 +223,7 @@ struct Kling3p0Params {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::types::media_input::MediaInput;
   use crate::endpoints::generate::video::test_fixtures::enqueue_response;
   use crate::types::job_set_type::JobSetType;
   use serde_json::Value;
@@ -237,6 +253,26 @@ mod tests {
     assert_eq!(body["params"]["sound"], "off");
     assert_eq!(body["params"]["mode"], "pro");
     assert_eq!((body["params"]["width"].as_u64(), body["params"]["height"].as_u64()), (Some(1080), Some(1920)));
+  }
+
+  #[test]
+  fn wire_body_with_start_and_end_frames_matches_captured_request() {
+    // Captured from the web app 2026-08-31 (ids scrubbed): with square
+    // frames the web app sent `1:1` and 720x720 at 720p.
+    let request = Kling3p0Request::text_to_video("a shiba inu skateboarding down a hill", KlingAspectRatio::Square1x1, Kling3p0Resolution::P720, VideoDurationSeconds::new(3))
+        .with_media(MediaReference::start_frame(MediaInput::uploaded("00000000-0000-4000-8000-0000000000b1", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b1.png")))
+        .with_media(MediaReference::end_frame(MediaInput::uploaded("00000000-0000-4000-8000-0000000000b2", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b2.png")));
+    let actual: Value = serde_json::to_value(request.to_body().unwrap()).unwrap();
+    let expected: Value = serde_json::from_str(r#"{"params":{"prompt":"a shiba inu skateboarding down a hill","enhance_prompt":true,"aspect_ratio":"1:1","mode":"std","sound":"on","duration":3,"multi_shots":false,"multi_shot_mode":"auto","kling_element_ids":[],"medias":[{"role":"start_image","data":{"id":"00000000-0000-4000-8000-0000000000b1","type":"media_input","url":"https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b1.png"}},{"role":"end_image","data":{"id":"00000000-0000-4000-8000-0000000000b2","type":"media_input","url":"https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b2.png"}}],"width":720,"height":720},"use_unlim":false,"use_free_gens":false}"#).unwrap();
+    assert_eq!(actual, expected);
+  }
+
+  #[test]
+  fn media_roles() {
+    assert_eq!(Kling3p0Request::MEDIA_ROLES, &[MediaRole::StartImage, MediaRole::EndImage]);
+    let base = || Kling3p0Request::text_to_video("p", KlingAspectRatio::Landscape16x9, Kling3p0Resolution::P720, VideoDurationSeconds::new(3));
+    let reference = base().with_media(MediaReference::image(MediaInput::uploaded("00000000-0000-4000-8000-0000000000aa", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000aa.png")));
+    assert!(matches!(reference.validate(), Err(HiggsfieldClientError::InvalidRequest(_))));
   }
 
   #[test]

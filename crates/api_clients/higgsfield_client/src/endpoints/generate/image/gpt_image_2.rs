@@ -16,6 +16,8 @@ use crate::types::image_aspect_ratio::ImageAspectRatio;
 use crate::types::image_batch_size::ImageBatchSize;
 use crate::types::image_dimensions::ImageDimensions;
 use crate::types::image_resolution::ImageResolution;
+use crate::types::media_input::MediaInput;
+use crate::types::media_reference::MediaReference;
 use crate::types::string_enum::string_enum;
 use serde::Serialize;
 
@@ -207,8 +209,15 @@ pub struct GptImage2Request {
   /// How many images to generate (1–4). Each costs credits.
   pub batch_size: ImageBatchSize,
 
-  /// Reference media URLs (image-to-image). Empty for text-to-image.
-  pub medias: Vec<String>,
+  /// Reference images (image-to-image), uploaded first via
+  /// `endpoints::media` / `HiggsfieldSession::upload_reference_media`.
+  /// Empty for text-to-image. Sent as `medias` with role `image`.
+  ///
+  /// The web app refuses references under 300px on a side for this model
+  /// ("Image is too small"). With a reference and `Auto` aspect it sends
+  /// the reference's pixel size as `width`/`height`; this client keeps its
+  /// derived size (or `maybe_dimensions`).
+  pub reference_images: Vec<MediaInput>,
 
   pub sub_model: GptImage2SubModel,
 
@@ -235,11 +244,17 @@ impl GptImage2Request {
       quality,
       resolution,
       batch_size: ImageBatchSize::One,
-      medias: Vec::new(),
+      reference_images: Vec::new(),
       sub_model: GptImage2SubModel::default(),
       use_unlim: false,
       maybe_dimensions: None,
     }
+  }
+
+  /// Add reference images (image-to-image).
+  pub fn with_reference_images(mut self, reference_images: Vec<MediaInput>) -> Self {
+    self.reference_images = reference_images;
+    self
   }
 
   fn validate(&self) -> Result<(), HiggsfieldClientError> {
@@ -259,31 +274,32 @@ impl GptImage2Request {
           self.aspect_ratio.as_str(), self.resolution.as_str(),
         )))
   }
+
+  fn to_body(&self) -> Result<GptImage2RequestBody, HiggsfieldClientError> {
+    let dimensions = self.dimensions()?;
+    Ok(GptImage2RequestBody {
+      params: GptImage2Params {
+        prompt: self.prompt.clone(),
+        aspect_ratio: self.aspect_ratio,
+        quality: self.quality,
+        resolution: self.resolution,
+        sub_model: self.sub_model.clone(),
+        batch_size: self.batch_size,
+        model: MODEL,
+        width: dimensions.width,
+        height: dimensions.height,
+        medias: self.reference_images.iter().cloned().map(MediaReference::image).collect(),
+      },
+      use_unlim: self.use_unlim,
+    })
+  }
 }
 
 /// Enqueue the job. The response's job ids are what to poll (see
 /// `endpoints::jobs`).
 pub async fn gpt_image_2(args: GptImage2Args<'_>) -> Result<EnqueueJobsResponse, HiggsfieldError> {
-  let request = args.request;
-  request.validate()?;
-  let dimensions = request.dimensions()?;
-
-  let body = GptImage2RequestBody {
-    params: GptImage2Params {
-      prompt: request.prompt,
-      aspect_ratio: request.aspect_ratio,
-      quality: request.quality,
-      resolution: request.resolution,
-      sub_model: request.sub_model,
-      batch_size: request.batch_size,
-      model: MODEL,
-      width: dimensions.width,
-      height: dimensions.height,
-      medias: request.medias,
-    },
-    use_unlim: request.use_unlim,
-  };
-
+  args.request.validate()?;
+  let body = args.request.to_body()?;
   send_json_request(HttpMethod::Post, PATH, args.auth, args.host, Some(&body)).await
 }
 
@@ -306,7 +322,7 @@ struct GptImage2Params {
   model: &'static str,
   width: u32,
   height: u32,
-  medias: Vec<String>,
+  medias: Vec<MediaReference>,
 }
 
 #[cfg(test)]
@@ -343,25 +359,24 @@ mod tests {
   fn wire_body_matches_captured_request() {
     // Captured from the web app: 9:16 at 2k, high quality, one image.
     let request = GptImage2Request::text_to_image("a corgi on a bike", GptImage2AspectRatio::Portrait9x16, GptImage2Quality::High, GptImage2Resolution::TwoK);
-    let dimensions = request.dimensions().unwrap();
-    let body = GptImage2RequestBody {
-      params: GptImage2Params {
-        prompt: request.prompt,
-        aspect_ratio: request.aspect_ratio,
-        quality: request.quality,
-        resolution: request.resolution,
-        sub_model: request.sub_model,
-        batch_size: request.batch_size,
-        model: MODEL,
-        width: dimensions.width,
-        height: dimensions.height,
-        medias: vec![],
-      },
-      use_unlim: false,
-    };
-
-    let actual: Value = serde_json::to_value(&body).unwrap();
+    let actual: Value = serde_json::to_value(request.to_body().unwrap()).unwrap();
     let expected: Value = serde_json::from_str(r#"{"params":{"prompt":"a corgi on a bike","aspect_ratio":"9:16","quality":"high","resolution":"2k","sub_model":"videotape-alpha","batch_size":1,"model":"gpt_image_2","width":1152,"height":2048,"medias":[]},"use_unlim":false}"#).unwrap();
+    assert_eq!(actual, expected);
+  }
+
+  #[test]
+  fn wire_body_with_reference_image_matches_captured_request() {
+    // Captured from the web app 2026-08-31 (ids scrubbed): Auto aspect, low
+    // quality, 4k, one reference as `medias[].role = "image"`. The web app
+    // sent the reference's own 640x640 as width/height; this client sends
+    // its derived Auto size (or `maybe_dimensions`).
+    let request = GptImage2Request::text_to_image("a corgi on a bike", GptImage2AspectRatio::Auto, GptImage2Quality::Low, GptImage2Resolution::FourK)
+        .with_reference_images(vec![MediaInput::uploaded("00000000-0000-4000-8000-0000000000aa", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000aa.png")]);
+    let actual: Value = serde_json::to_value(request.to_body().unwrap()).unwrap();
+    let dimensions = request.dimensions().unwrap();
+    let expected_json = r#"{"params":{"prompt":"a corgi on a bike","aspect_ratio":"auto","quality":"low","resolution":"4k","sub_model":"videotape-alpha","batch_size":1,"model":"gpt_image_2","width":W,"height":H,"medias":[{"role":"image","data":{"id":"00000000-0000-4000-8000-0000000000aa","type":"media_input","url":"https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000aa.png"}}]},"use_unlim":false}"#
+        .replace("\"width\":W", &format!("\"width\":{}", dimensions.width)).replace("\"height\":H", &format!("\"height\":{}", dimensions.height));
+    let expected: Value = serde_json::from_str(&expected_json).unwrap();
     assert_eq!(actual, expected);
   }
 

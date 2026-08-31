@@ -67,6 +67,13 @@ string_id! {
   UserId
 }
 
+string_id! {
+  /// An uploaded reference file (image, video or audio), as returned by the
+  /// media upload endpoints and referenced from generation requests.
+  /// UUID-shaped.
+  MediaId
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;

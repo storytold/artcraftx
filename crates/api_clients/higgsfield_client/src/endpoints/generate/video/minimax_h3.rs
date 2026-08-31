@@ -13,6 +13,8 @@ use crate::error::higgsfield_client_error::HiggsfieldClientError;
 use crate::error::higgsfield_error::HiggsfieldError;
 use crate::types::enqueue_jobs_response::EnqueueJobsResponse;
 use crate::types::image_aspect_ratio::ImageAspectRatio;
+use crate::types::media_reference::{validate_media_roles, MediaReference};
+use crate::types::media_role::MediaRole;
 use crate::types::video_dimensions::VideoDimensions;
 use crate::types::video_duration::{VideoDurationRange, VideoDurationSeconds};
 use crate::types::video_resolution::VideoResolution;
@@ -38,9 +40,11 @@ pub struct MinimaxH3Request {
   /// Clip length; see [`Self::DURATION`].
   pub duration: VideoDurationSeconds,
 
-  /// Reference media ids/URLs as the web app sends them. Empty for
-  /// text-to-video.
-  pub medias: Vec<String>,
+  /// Reference media (frames, reference images / clips / audio), uploaded
+  /// first via `endpoints::media` / `HiggsfieldSession::upload_reference_media`
+  /// and tagged with a role. The web app offers start + end frames, or references ("up to 9 images and elements, 3 videos, and 3 audio files"). Roles this
+  /// model takes: [`Self::MEDIA_ROLES`]. Empty for text-to-video.
+  pub medias: Vec<MediaReference>,
 
   /// Spend from the plan's "unlimited" pool instead of credits, if the plan
   /// has one.
@@ -54,6 +58,10 @@ pub struct MinimaxH3Request {
 impl MinimaxH3Request {
   /// The web app's duration slider range.
   pub const DURATION: VideoDurationRange = VideoDurationRange::new(5, 15);
+
+  /// The media roles this model accepts. `video` / `audio` are
+  /// from the web app's bundle; only image roles have been sent live.
+  pub const MEDIA_ROLES: &'static [MediaRole] = &[MediaRole::StartImage, MediaRole::EndImage, MediaRole::Image, MediaRole::Video, MediaRole::Audio];
 
   /// A text-to-video request with the web app's defaults (credits).
   pub fn text_to_video(prompt: impl Into<String>, duration: VideoDurationSeconds) -> Self {
@@ -70,7 +78,15 @@ impl MinimaxH3Request {
     if self.prompt.trim().is_empty() {
       return Err(HiggsfieldClientError::InvalidRequest("prompt is empty".to_string()));
     }
+    validate_media_roles(&self.medias, Self::MEDIA_ROLES, "MiniMax H3")?;
     Self::DURATION.validate(self.duration)
+  }
+
+  /// Add one reference (see [`MediaReference`]'s constructors:
+  /// `start_frame`, `end_frame`, `image`, `video`, `audio`).
+  pub fn with_media(mut self, reference: MediaReference) -> Self {
+    self.medias.push(reference);
+    self
   }
 
   fn to_body(&self) -> MinimaxH3RequestBody {
@@ -116,12 +132,13 @@ struct MinimaxH3Params {
   resolution: VideoResolution,
   width: u32,
   height: u32,
-  medias: Vec<String>,
+  medias: Vec<MediaReference>,
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::types::media_input::MediaInput;
   use crate::endpoints::generate::video::test_fixtures::enqueue_response;
   use crate::types::job_set_type::JobSetType;
   use serde_json::Value;
@@ -134,6 +151,28 @@ mod tests {
     let actual: Value = serde_json::to_value(request.to_body()).unwrap();
     let expected: Value = serde_json::from_str(r#"{"params":{"prompt":"a shiba inu skateboarding down a hill","duration":5,"aspect_ratio":"auto","resolution":"2K","width":2560,"height":1440,"medias":[]},"use_unlim":false}"#).unwrap();
     assert_eq!(actual, expected);
+  }
+
+  #[test]
+  fn wire_body_with_start_and_end_frames_matches_captured_request() {
+    // Captured from the web app 2026-08-31 (ids scrubbed): with square
+    // frames the web app sent 2048x2048; pass `maybe_dimensions` to match.
+    let mut request = MinimaxH3Request::text_to_video("a shiba inu skateboarding down a hill", VideoDurationSeconds::new(5))
+        .with_media(MediaReference::start_frame(MediaInput::uploaded("00000000-0000-4000-8000-0000000000b1", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b1.png")))
+        .with_media(MediaReference::end_frame(MediaInput::uploaded("00000000-0000-4000-8000-0000000000b2", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b2.png")));
+    request.maybe_dimensions = Some(VideoDimensions::new(2048, 2048));
+    let actual: Value = serde_json::to_value(request.to_body()).unwrap();
+    let expected: Value = serde_json::from_str(r#"{"params":{"prompt":"a shiba inu skateboarding down a hill","duration":5,"aspect_ratio":"auto","resolution":"2K","width":2048,"height":2048,"medias":[{"role":"start_image","data":{"id":"00000000-0000-4000-8000-0000000000b1","type":"media_input","url":"https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b1.png"}},{"role":"end_image","data":{"id":"00000000-0000-4000-8000-0000000000b2","type":"media_input","url":"https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b2.png"}}]},"use_unlim":false}"#).unwrap();
+    assert_eq!(actual, expected);
+  }
+
+  #[test]
+  fn media_roles() {
+    assert_eq!(MinimaxH3Request::MEDIA_ROLES, &[MediaRole::StartImage, MediaRole::EndImage, MediaRole::Image, MediaRole::Video, MediaRole::Audio]);
+    let base = || MinimaxH3Request::text_to_video("p", VideoDurationSeconds::new(5));
+    assert!(base().with_media(MediaReference::video(MediaInput::uploaded("00000000-0000-4000-8000-0000000000aa", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000aa.png"))).with_media(MediaReference::audio(MediaInput::uploaded("00000000-0000-4000-8000-0000000000b2", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b2.png"))).validate().is_ok());
+    let two_ends = base().with_media(MediaReference::end_frame(MediaInput::uploaded("00000000-0000-4000-8000-0000000000b1", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b1.png"))).with_media(MediaReference::end_frame(MediaInput::uploaded("00000000-0000-4000-8000-0000000000b2", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000b2.png")));
+    assert!(matches!(two_ends.validate(), Err(HiggsfieldClientError::InvalidRequest(_))));
   }
 
   #[test]

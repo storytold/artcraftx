@@ -41,7 +41,7 @@ pub async fn poll_job_to_completion(session: &HiggsfieldSession, job_id: &JobId)
 
       println!("\n===== GET /fnf/jobs/{job_id} (final) =====\n{:#?}", job);
       println!("result_url = {:?}", job.result_url());
-      anyhow::ensure!(job.status.is_success(), "job {job_id} ended in state {}", job.status);
+      anyhow::ensure!(job.status.is_success(), "job {job_id} ended in state {} (reason: {:?})", job.status, job.fail_reason());
       return Ok(job);
     }
 
@@ -85,7 +85,7 @@ pub async fn poll_jobs_to_completion(session: &HiggsfieldSession, job_ids: &[Job
           "\n===== GET /fnf/jobs/{job_id} (final) =====\nstatus={} type={} size={:?}x{:?} quality={:?} thinking={:?} seed={:?}\nresult_url = {:?}",
           job.status, job.job_set_type, job.params.width, job.params.height, job.params.quality, job.params.thinking, job.params.seed, job.result_url(),
         );
-        anyhow::ensure!(job.status.is_success(), "job {job_id} ended in state {}", job.status);
+        anyhow::ensure!(job.status.is_success(), "job {job_id} ended in state {} (reason: {:?})", job.status, job.fail_reason());
         jobs.push(job);
       }
       return Ok(jobs);

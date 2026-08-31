@@ -13,6 +13,8 @@ use crate::error::higgsfield_error::HiggsfieldError;
 use crate::types::enqueue_jobs_response::EnqueueJobsResponse;
 use crate::types::image_batch_size::ImageBatchSize;
 use crate::types::image_seed::ImageSeed;
+use crate::types::media_input::MediaInput;
+use crate::types::media_reference::MediaReference;
 use crate::types::seedream_aspect_ratio::SeedreamAspectRatio;
 use serde::Serialize;
 
@@ -66,6 +68,12 @@ pub struct Seedream5p0ProRequest {
   /// How many images to generate (1–4). Each costs credits.
   pub batch_size: ImageBatchSize,
 
+  /// Reference images (image-to-image), uploaded first via
+  /// `endpoints::media` / `HiggsfieldSession::upload_reference_media`.
+  /// Empty for text-to-image (then `medias` is omitted, as the web app
+  /// does). Sent as `medias` with role `image`.
+  pub reference_images: Vec<MediaInput>,
+
   /// Pin the generation seed; `None` sends a fresh random one, as the web
   /// app does.
   pub maybe_seed: Option<ImageSeed>,
@@ -84,9 +92,16 @@ impl Seedream5p0ProRequest {
       aspect_ratio,
       resolution,
       batch_size: ImageBatchSize::One,
+      reference_images: Vec::new(),
       maybe_seed: None,
       use_unlim: false,
     }
+  }
+
+  /// Add reference images (image-to-image).
+  pub fn with_reference_images(mut self, reference_images: Vec<MediaInput>) -> Self {
+    self.reference_images = reference_images;
+    self
   }
 
   fn validate(&self) -> Result<(), HiggsfieldClientError> {
@@ -104,6 +119,7 @@ impl Seedream5p0ProRequest {
         resolution: self.resolution,
         batch_size: self.batch_size,
         use_unlim: self.use_unlim,
+        medias: self.reference_images.iter().cloned().map(MediaReference::image).collect(),
         seed: self.maybe_seed.unwrap_or_else(ImageSeed::random),
       },
       use_unlim: self.use_unlim,
@@ -134,12 +150,15 @@ struct Seedream5p0ProParams {
   resolution: Seedream5p0ProResolution,
   batch_size: ImageBatchSize,
   use_unlim: bool,
+  #[serde(skip_serializing_if = "Vec::is_empty")]
+  medias: Vec<MediaReference>,
   seed: ImageSeed,
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::types::media_input::MediaInput;
   use crate::types::job_set_type::JobSetType;
   use serde_json::Value;
 
@@ -177,6 +196,17 @@ mod tests {
     let body: Value = serde_json::to_value(request.to_body()).unwrap();
     let seed = body["params"]["seed"].as_u64().unwrap();
     assert!(seed < 1_000_000);
+  }
+
+  #[test]
+  fn wire_body_with_reference_image_matches_captured_request() {
+    // Captured from the web app 2026-08-31 (ids scrubbed).
+    let mut request = Seedream5p0ProRequest::text_to_image("a corgi on a bike", SeedreamAspectRatio::Portrait3x4, Seedream5p0ProResolution::OnePointFiveK)
+        .with_reference_images(vec![MediaInput::uploaded("00000000-0000-4000-8000-0000000000aa", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000aa.png")]);
+    request.maybe_seed = Some(ImageSeed::new(192164));
+    let actual: Value = serde_json::to_value(request.to_body()).unwrap();
+    let expected: Value = serde_json::from_str(r#"{"params":{"prompt":"a corgi on a bike","aspect_ratio":"3:4","resolution":"1.5k","batch_size":1,"use_unlim":false,"medias":[{"role":"image","data":{"id":"00000000-0000-4000-8000-0000000000aa","type":"media_input","url":"https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000aa.png"}}],"seed":192164},"use_unlim":false}"#).unwrap();
+    assert_eq!(actual, expected);
   }
 
   #[test]

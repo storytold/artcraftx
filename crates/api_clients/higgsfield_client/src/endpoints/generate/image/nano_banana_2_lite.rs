@@ -15,6 +15,8 @@ use crate::types::enqueue_jobs_response::EnqueueJobsResponse;
 use crate::types::image_batch_size::ImageBatchSize;
 use crate::types::image_dimensions::ImageDimensions;
 use crate::types::image_resolution::ImageResolution;
+use crate::types::media_input::MediaInput;
+use crate::types::media_reference::MediaReference;
 use crate::types::nano_banana_aspect_ratio::NanoBananaAspectRatio;
 use crate::types::thinking_level::ThinkingLevel;
 use serde::Serialize;
@@ -72,6 +74,12 @@ pub struct NanoBanana2LiteRequest {
   /// How many images to generate (1–4). Each costs credits.
   pub batch_size: ImageBatchSize,
 
+  /// Reference images (image-to-image), uploaded first via
+  /// `endpoints::media` / `HiggsfieldSession::upload_reference_media`.
+  /// Empty for text-to-image (then `medias` is omitted, as the web app
+  /// does). Sent as `medias` with role `image`.
+  pub reference_images: Vec<MediaInput>,
+
   /// Spend from the plan's "unlimited" pool instead of credits, if the plan
   /// has one.
   pub use_unlim: bool,
@@ -89,9 +97,16 @@ impl NanoBanana2LiteRequest {
       aspect_ratio,
       quality,
       batch_size: ImageBatchSize::One,
+      reference_images: Vec::new(),
       use_unlim: false,
       maybe_dimensions: None,
     }
+  }
+
+  /// Add reference images (image-to-image).
+  pub fn with_reference_images(mut self, reference_images: Vec<MediaInput>) -> Self {
+    self.reference_images = reference_images;
+    self
   }
 
   fn validate(&self) -> Result<(), HiggsfieldClientError> {
@@ -116,6 +131,7 @@ impl NanoBanana2LiteRequest {
     Ok(NanoBanana2LiteRequestBody {
       params: NanoBanana2LiteParams {
         prompt: self.prompt.clone(),
+        medias: self.reference_images.iter().cloned().map(MediaReference::image).collect(),
         aspect_ratio: self.aspect_ratio,
         resolution: RESOLUTION,
         thinking: self.quality.to_thinking_level(),
@@ -149,6 +165,8 @@ struct NanoBanana2LiteRequestBody {
 #[derive(Serialize)]
 struct NanoBanana2LiteParams {
   prompt: String,
+  #[serde(skip_serializing_if = "Vec::is_empty")]
+  medias: Vec<MediaReference>,
   aspect_ratio: NanoBananaAspectRatio,
   resolution: ImageResolution,
   thinking: ThinkingLevel,
@@ -160,6 +178,7 @@ struct NanoBanana2LiteParams {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::types::media_input::MediaInput;
   use crate::types::job_set_type::JobSetType;
   use serde_json::Value;
 
@@ -192,6 +211,16 @@ mod tests {
       NanoBanana2LiteRequest::text_to_image("p", ratio, NanoBanana2LiteQuality::High).dimensions()
           .unwrap_or_else(|err| panic!("{}: {err}", ratio.as_str()));
     }
+  }
+
+  #[test]
+  fn wire_body_with_reference_image_matches_captured_request() {
+    // Captured from the web app 2026-08-31 (ids scrubbed).
+    let request = NanoBanana2LiteRequest::text_to_image("a corgi on a bike", NanoBananaAspectRatio::Portrait3x4, NanoBanana2LiteQuality::High)
+        .with_reference_images(vec![MediaInput::uploaded("00000000-0000-4000-8000-0000000000aa", "https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000aa.png")]);
+    let actual: Value = serde_json::to_value(request.to_body().unwrap()).unwrap();
+    let expected: Value = serde_json::from_str(r#"{"params":{"prompt":"a corgi on a bike","medias":[{"role":"image","data":{"id":"00000000-0000-4000-8000-0000000000aa","type":"media_input","url":"https://cdn.example.com/user_TESTUSER0000000000000000000/00000000-0000-4000-8000-0000000000aa.png"}}],"aspect_ratio":"3:4","resolution":"1k","thinking":"HIGH","batch_size":1,"width":896,"height":1200},"use_unlim":false}"#).unwrap();
+    assert_eq!(actual, expected);
   }
 
   #[test]

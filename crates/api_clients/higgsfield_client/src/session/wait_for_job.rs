@@ -54,7 +54,8 @@ impl HiggsfieldSession {
       if status.is_terminal() {
         let job = self.job_status(job_id).await?;
         if !job.status.is_success() {
-          return Err(HiggsfieldClientError::JobFailed { job_id: job_id.clone(), status: job.status }.into());
+          let maybe_reason = job.fail_reason().map(str::to_string);
+          return Err(HiggsfieldClientError::JobFailed { job_id: job_id.clone(), status: job.status, maybe_reason }.into());
         }
         return Ok(job);
       }
