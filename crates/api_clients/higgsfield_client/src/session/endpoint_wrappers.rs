@@ -2,7 +2,12 @@
 //! fresh bearer token and retries once on `401`.
 
 use crate::endpoints::generate::image::gpt_image_2::{gpt_image_2, GptImage2Args, GptImage2Request};
+use crate::endpoints::generate::image::nano_banana_2::{nano_banana_2, NanoBanana2Args, NanoBanana2Request};
+use crate::endpoints::generate::image::nano_banana_2_lite::{nano_banana_2_lite, NanoBanana2LiteArgs, NanoBanana2LiteRequest};
 use crate::endpoints::generate::image::nano_banana_pro::{nano_banana_pro, NanoBananaProArgs, NanoBananaProRequest};
+use crate::endpoints::generate::image::seedream_4p5::{seedream_4p5, Seedream4p5Args, Seedream4p5Request};
+use crate::endpoints::generate::image::seedream_5p0_lite::{seedream_5p0_lite, Seedream5p0LiteArgs, Seedream5p0LiteRequest};
+use crate::endpoints::generate::image::seedream_5p0_pro::{seedream_5p0_pro, Seedream5p0ProArgs, Seedream5p0ProRequest};
 use crate::endpoints::jobs::job_status::{job_status, JobStatusArgs, JobStatusRequest, JobStatusResponse};
 use crate::endpoints::jobs::job_status_batch::{job_status_batch, JobStatusBatchArgs, JobStatusBatchRequest, JobStatusBatchResponse};
 use crate::endpoints::user::user_data::{user_data, UserDataArgs, UserDataRequest, UserDataResponse};
@@ -18,6 +23,46 @@ impl HiggsfieldSession {
     self.with_auth(|auth| {
       let request = request.clone();
       async move { nano_banana_pro(NanoBananaProArgs { request, auth: &auth, host: self.api_host() }).await }
+    }).await
+  }
+
+  /// Enqueue a Nano Banana 2 image job.
+  pub async fn nano_banana_2(&self, request: NanoBanana2Request) -> Result<EnqueueJobsResponse, HiggsfieldError> {
+    self.with_auth(|auth| {
+      let request = request.clone();
+      async move { nano_banana_2(NanoBanana2Args { request, auth: &auth, host: self.api_host() }).await }
+    }).await
+  }
+
+  /// Enqueue a Nano Banana 2 Lite image job.
+  pub async fn nano_banana_2_lite(&self, request: NanoBanana2LiteRequest) -> Result<EnqueueJobsResponse, HiggsfieldError> {
+    self.with_auth(|auth| {
+      let request = request.clone();
+      async move { nano_banana_2_lite(NanoBanana2LiteArgs { request, auth: &auth, host: self.api_host() }).await }
+    }).await
+  }
+
+  /// Enqueue a Seedream 5.0 Pro image job.
+  pub async fn seedream_5p0_pro(&self, request: Seedream5p0ProRequest) -> Result<EnqueueJobsResponse, HiggsfieldError> {
+    self.with_auth(|auth| {
+      let request = request.clone();
+      async move { seedream_5p0_pro(Seedream5p0ProArgs { request, auth: &auth, host: self.api_host() }).await }
+    }).await
+  }
+
+  /// Enqueue a Seedream 5.0 lite image job.
+  pub async fn seedream_5p0_lite(&self, request: Seedream5p0LiteRequest) -> Result<EnqueueJobsResponse, HiggsfieldError> {
+    self.with_auth(|auth| {
+      let request = request.clone();
+      async move { seedream_5p0_lite(Seedream5p0LiteArgs { request, auth: &auth, host: self.api_host() }).await }
+    }).await
+  }
+
+  /// Enqueue a Seedream 4.5 image job.
+  pub async fn seedream_4p5(&self, request: Seedream4p5Request) -> Result<EnqueueJobsResponse, HiggsfieldError> {
+    self.with_auth(|auth| {
+      let request = request.clone();
+      async move { seedream_4p5(Seedream4p5Args { request, auth: &auth, host: self.api_host() }).await }
     }).await
   }
 
@@ -89,6 +134,23 @@ mod tests {
 
     let request = GptImage2Request::text_to_image("", GptImage2AspectRatio::Square1x1, GptImage2Quality::Low, GptImage2Resolution::OneK);
     let err = session.gpt_image_2(request).await.unwrap_err();
+    assert!(matches!(err, HiggsfieldError::Client(HiggsfieldClientError::InvalidRequest(_))));
+
+    use crate::endpoints::generate::image::nano_banana_2::NanoBanana2Resolution;
+    use crate::endpoints::generate::image::nano_banana_2_lite::NanoBanana2LiteQuality;
+    use crate::endpoints::generate::image::seedream_4p5::Seedream4p5Resolution;
+    use crate::endpoints::generate::image::seedream_5p0_lite::Seedream5p0LiteResolution;
+    use crate::endpoints::generate::image::seedream_5p0_pro::Seedream5p0ProResolution;
+    use crate::types::seedream_aspect_ratio::SeedreamAspectRatio;
+    let err = session.nano_banana_2(NanoBanana2Request::text_to_image("", NanoBananaProAspectRatio::Square1x1, NanoBanana2Resolution::OneK)).await.unwrap_err();
+    assert!(matches!(err, HiggsfieldError::Client(HiggsfieldClientError::InvalidRequest(_))));
+    let err = session.nano_banana_2_lite(NanoBanana2LiteRequest::text_to_image("", NanoBananaProAspectRatio::Square1x1, NanoBanana2LiteQuality::High)).await.unwrap_err();
+    assert!(matches!(err, HiggsfieldError::Client(HiggsfieldClientError::InvalidRequest(_))));
+    let err = session.seedream_5p0_pro(Seedream5p0ProRequest::text_to_image("", SeedreamAspectRatio::Square1x1, Seedream5p0ProResolution::OneK)).await.unwrap_err();
+    assert!(matches!(err, HiggsfieldError::Client(HiggsfieldClientError::InvalidRequest(_))));
+    let err = session.seedream_5p0_lite(Seedream5p0LiteRequest::text_to_image("", SeedreamAspectRatio::Square1x1, Seedream5p0LiteResolution::TwoK)).await.unwrap_err();
+    assert!(matches!(err, HiggsfieldError::Client(HiggsfieldClientError::InvalidRequest(_))));
+    let err = session.seedream_4p5(Seedream4p5Request::text_to_image("", SeedreamAspectRatio::Square1x1, Seedream4p5Resolution::TwoK)).await.unwrap_err();
     assert!(matches!(err, HiggsfieldError::Client(HiggsfieldClientError::InvalidRequest(_))));
 
     let err = session.job_status_batch(&[]).await.unwrap_err();

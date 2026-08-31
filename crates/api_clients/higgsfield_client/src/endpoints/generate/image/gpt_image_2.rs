@@ -11,7 +11,7 @@ use crate::credentials::higgsfield_auth::HiggsfieldAuth;
 use crate::error::higgsfield_client_error::HiggsfieldClientError;
 use crate::error::higgsfield_error::HiggsfieldError;
 use crate::types::enqueue_jobs_response::EnqueueJobsResponse;
-use crate::types::gpt_image_quality::GptImageQuality;
+use crate::types::image_quality::ImageQuality;
 use crate::types::image_aspect_ratio::ImageAspectRatio;
 use crate::types::image_batch_size::ImageBatchSize;
 use crate::types::image_dimensions::ImageDimensions;
@@ -113,11 +113,11 @@ impl GptImage2Quality {
     [Self::Low, Self::Medium, Self::High]
   }
 
-  pub fn to_gpt_image_quality(self) -> GptImageQuality {
+  pub fn to_image_quality(self) -> ImageQuality {
     match self {
-      Self::Low => GptImageQuality::Low,
-      Self::Medium => GptImageQuality::Medium,
-      Self::High => GptImageQuality::High,
+      Self::Low => ImageQuality::Low,
+      Self::Medium => ImageQuality::Medium,
+      Self::High => ImageQuality::High,
     }
   }
 
@@ -330,7 +330,7 @@ mod tests {
     let qualities: Vec<&str> = GptImage2Quality::all().iter().map(|q| q.as_str()).collect();
     assert_eq!(qualities, ["low", "medium", "high"]);
     for quality in GptImage2Quality::all() {
-      assert_eq!(quality.to_gpt_image_quality().as_str(), quality.as_str());
+      assert_eq!(quality.to_image_quality().as_str(), quality.as_str());
     }
 
     let resolutions: Vec<(&str, u32)> = GptImage2Resolution::all().iter().map(|r| (r.as_str(), r.labeled_pixels())).collect();

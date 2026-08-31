@@ -119,7 +119,7 @@ pub async fn job_status(args: JobStatusArgs<'_>) -> Result<JobStatusResponse, Hi
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::types::gpt_image_quality::GptImageQuality;
+  use crate::types::image_quality::ImageQuality;
   use crate::types::image_aspect_ratio::ImageAspectRatio;
   use crate::types::job_media::JobMediaType;
 
@@ -170,7 +170,7 @@ mod tests {
   fn in_progress_gpt_image_parses() {
     let response: JobStatusResponse = serde_json::from_str(GPT_IMAGE_IN_PROGRESS).unwrap();
     assert_eq!(response.job_set_type, JobSetType::GptImage2);
-    assert_eq!(response.params.quality, Some(GptImageQuality::High));
+    assert_eq!(response.params.quality, Some(ImageQuality::High));
     assert_eq!(response.cluster_hash.as_deref(), Some("d8cd56aedaaaeedac3a5ed262f5eed0e"));
   }
 

@@ -27,6 +27,7 @@ jwt_light.workspace = true
 # External
 chrono.workspace = true
 log.workspace = true
+rand.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 tokio = { version = "1", features = ["sync", "time"] }

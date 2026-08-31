@@ -1,6 +1,8 @@
-use crate::types::gpt_image_quality::GptImageQuality;
+use crate::types::image_quality::ImageQuality;
 use crate::types::image_aspect_ratio::ImageAspectRatio;
 use crate::types::image_resolution::ImageResolution;
+use crate::types::image_seed::ImageSeed;
+use crate::types::thinking_level::ThinkingLevel;
 use serde::Deserialize;
 use serde_json::Value;
 
@@ -31,9 +33,17 @@ pub struct JobParams {
   #[serde(default)]
   pub batch_size: Option<u32>,
 
-  /// GPT Image only.
+  /// GPT Image (low/medium/high) and Seedream lite / 4.5 (basic/high/ultra).
   #[serde(default)]
-  pub quality: Option<GptImageQuality>,
+  pub quality: Option<ImageQuality>,
+
+  /// Seedream models only.
+  #[serde(default)]
+  pub seed: Option<ImageSeed>,
+
+  /// Nano Banana 2 Lite only.
+  #[serde(default)]
+  pub thinking: Option<ThinkingLevel>,
 
   /// GPT Image only: the sub-model actually used (e.g. `videotape-alpha`).
   #[serde(default)]
@@ -62,10 +72,27 @@ mod tests {
   }
 
   #[test]
+  fn seedream_lite_params_parse() {
+    let json = r#"{"prompt":"a corgi on a bike","medias":[],"batch_size":1,"aspect_ratio":"3:4","width":1728,"height":2304,"quality":"basic","seed":12745,"reference_elements":[]}"#;
+    let params: JobParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.quality, Some(ImageQuality::Basic));
+    assert_eq!(params.seed, Some(ImageSeed::new(12745)));
+    assert!(params.resolution.is_none());
+  }
+
+  #[test]
+  fn nano_banana_2_lite_params_parse() {
+    let json = r#"{"width":864,"height":1184,"aspect_ratio":"3:4","batch_size":1,"thinking":"MINIMAL","is_inpaint":false,"prompt":"a corgi on a bike","medias":[],"reference_elements":[]}"#;
+    let params: JobParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.thinking, Some(ThinkingLevel::Minimal));
+    assert_eq!(params.extra.get("is_inpaint"), Some(&Value::Bool(false)));
+  }
+
+  #[test]
   fn gpt_image_params_parse() {
     let json = r#"{"width":1152,"height":2048,"prompt":"a corgi on a bike","medias":[],"aspect_ratio":"9:16","quality":"high","resolution":"2k","model":"videotape-alpha","remove_bg":false,"reference_elements":[]}"#;
     let params: JobParams = serde_json::from_str(json).unwrap();
-    assert_eq!(params.quality, Some(GptImageQuality::High));
+    assert_eq!(params.quality, Some(ImageQuality::High));
     assert_eq!(params.model.as_deref(), Some("videotape-alpha"));
     assert_eq!(params.extra.get("remove_bg"), Some(&Value::Bool(false)));
   }
