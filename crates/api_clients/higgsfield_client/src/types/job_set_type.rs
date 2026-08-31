@@ -13,6 +13,13 @@ string_enum! {
     SeedreamV5Pro => "seedream_v5_pro",
     SeedreamV5Lite => "seedream_v5_lite",
     SeedreamV4p5 => "seedream_v4_5",
+    // ── Video ──
+    Seedance2p5 => "seedance_2_5",
+    Seedance2p0 => "seedance_2_0",
+    Seedance2p0Mini => "seedance_2_0_mini",
+    MinimaxH3 => "minimax_h3",
+    Kling3p0 => "kling3_0",
+    GrokVideoV15 => "grok_video_v15",
   }
 }
 
@@ -29,5 +36,7 @@ mod tests {
     assert_eq!(parsed, JobSetType::Other("seedance_2".to_string()));
     assert_eq!(JobSetType::from_str_lossy("seedream_v4_5"), JobSetType::SeedreamV4p5);
     assert_eq!(JobSetType::from_str_lossy("nano_banana_flash"), JobSetType::NanoBananaFlash);
+    assert_eq!(JobSetType::from_str_lossy("kling3_0"), JobSetType::Kling3p0);
+    assert_eq!(JobSetType::from_str_lossy("grok_video_v15"), JobSetType::GrokVideoV15);
   }
 }

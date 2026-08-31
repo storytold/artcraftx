@@ -3,6 +3,8 @@ use crate::types::image_aspect_ratio::ImageAspectRatio;
 use crate::types::image_resolution::ImageResolution;
 use crate::types::image_seed::ImageSeed;
 use crate::types::thinking_level::ThinkingLevel;
+use crate::types::video_bitrate_mode::VideoBitrateMode;
+use crate::types::video_mode::VideoMode;
 use serde::Deserialize;
 use serde_json::Value;
 
@@ -45,6 +47,24 @@ pub struct JobParams {
   #[serde(default)]
   pub thinking: Option<ThinkingLevel>,
 
+  // ── Video ──
+
+  /// Clip length in whole seconds.
+  #[serde(default)]
+  pub duration: Option<u32>,
+
+  /// Seedance: whether a soundtrack was generated.
+  #[serde(default)]
+  pub generate_audio: Option<bool>,
+
+  /// Seedance 2.x: output bitrate tier.
+  #[serde(default)]
+  pub bitrate_mode: Option<VideoBitrateMode>,
+
+  /// Seedance 2.0 / Kling: the quality mode (`std` / `pro` / `4k`).
+  #[serde(default)]
+  pub mode: Option<VideoMode>,
+
   /// GPT Image only: the sub-model actually used (e.g. `videotape-alpha`).
   #[serde(default)]
   pub model: Option<String>,
@@ -86,6 +106,25 @@ mod tests {
     let params: JobParams = serde_json::from_str(json).unwrap();
     assert_eq!(params.thinking, Some(ThinkingLevel::Minimal));
     assert_eq!(params.extra.get("is_inpaint"), Some(&Value::Bool(false)));
+  }
+
+  #[test]
+  fn seedance_video_params_parse() {
+    let json = r#"{"width":854,"height":480,"prompt":"a shiba inu skateboarding down a hill","genre":"auto","medias":[],"duration":4,"resolution":"480p","aspect_ratio":"16:9","generate_audio":true,"multi_shots":false,"multi_shot_mode":"custom","multi_prompt":[],"speedramp":"auto","reference_elements":[],"prompt_language":"en","model":"default","extension_mode":null,"bitrate_mode":"high"}"#;
+    let params: JobParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.duration, Some(4));
+    assert_eq!(params.generate_audio, Some(true));
+    assert_eq!(params.bitrate_mode, Some(VideoBitrateMode::High));
+    assert_eq!(params.resolution, Some(ImageResolution::Other("480p".to_string())));
+    assert_eq!(params.extra.get("speedramp"), Some(&Value::String("auto".to_string())));
+  }
+
+  #[test]
+  fn kling_video_params_parse() {
+    let json = r#"{"width":1280,"height":720,"prompt":"p","medias":[],"duration":3,"aspect_ratio":"16:9","multi_shots":false,"multi_prompt":[],"sound":"on","cfg_scale":0.5,"mode":"std","kling_elements":[],"kling_element_ids":[],"multi_shot_mode":"auto","reference_elements":[],"enhance_prompt":true}"#;
+    let params: JobParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.mode, Some(VideoMode::Std));
+    assert_eq!(params.duration, Some(3));
   }
 
   #[test]

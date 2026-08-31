@@ -17,6 +17,10 @@ pub struct JobMedia {
 
   /// A CDN URL. Observed hosts are CloudFront; treat as time-limited.
   pub url: String,
+
+  /// Videos come with a poster frame (`.webp`); images don't.
+  #[serde(default)]
+  pub thumbnail_url: Option<String>,
 }
 
 /// A completed job's outputs: the full-resolution file plus a preview.
@@ -35,6 +39,18 @@ mod tests {
   use super::*;
 
   #[test]
+  fn video_results_carry_a_thumbnail() {
+    let json = r#"{
+      "raw": {"type": "video", "url": "https://cdn.example.com/user_x/hf_20260831_061007_job.mp4", "thumbnail_url": "https://cdn.example.com/user_x/hf_20260831_061007_job_thumbnail.webp"},
+      "min": {"type": "video", "url": "https://cdn.example.com/user_x/hf_20260831_061007_job.mp4", "thumbnail_url": "https://cdn.example.com/user_x/hf_20260831_061007_job_thumbnail.webp"}
+    }"#;
+    let results: JobResults = serde_json::from_str(json).unwrap();
+    assert_eq!(results.raw.media_type, JobMediaType::Video);
+    assert!(results.raw.url.ends_with(".mp4"));
+    assert!(results.raw.thumbnail_url.as_deref().unwrap().ends_with("_thumbnail.webp"));
+  }
+
+  #[test]
   fn results_parse() {
     let json = r#"{
       "raw": {"type": "image", "url": "https://cdn.example.com/user_x/hf_20260101_000000_job.png"},
@@ -44,5 +60,6 @@ mod tests {
     assert_eq!(results.raw.media_type, JobMediaType::Image);
     assert!(results.raw.url.ends_with(".png"));
     assert!(results.min.url.ends_with("_min.webp"));
+    assert!(results.raw.thumbnail_url.is_none());
   }
 }
