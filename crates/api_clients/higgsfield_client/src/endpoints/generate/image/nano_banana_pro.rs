@@ -2,6 +2,9 @@
 //!
 //! "Nano Banana Pro" is the web app's name for the pipeline the API calls
 //! `nano-banana-2` (job set type `nano_banana_2`).
+//!
+//! Option sets below were read off the web app's image generator on
+//! 2026-08-31: 11 aspect ratios (incl. Auto), 1K/2K/4K, 1–4 images.
 
 use crate::client::higgsfield_host::HiggsfieldHost;
 use crate::client::send_request::{send_json_request, HttpMethod};
@@ -10,15 +13,115 @@ use crate::error::higgsfield_client_error::HiggsfieldClientError;
 use crate::error::higgsfield_error::HiggsfieldError;
 use crate::types::enqueue_jobs_response::EnqueueJobsResponse;
 use crate::types::image_aspect_ratio::ImageAspectRatio;
+use crate::types::image_batch_size::ImageBatchSize;
 use crate::types::image_dimensions::ImageDimensions;
 use crate::types::image_resolution::ImageResolution;
 use serde::Serialize;
 
 const PATH: &str = "/fnf/jobs/nano-banana-2";
 
-/// Batch sizes the web app offers.
-const MIN_BATCH_SIZE: u32 = 1;
-const MAX_BATCH_SIZE: u32 = 4;
+/// The aspect ratios the web app offers for Nano Banana Pro, in its menu
+/// order.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum NanoBananaProAspectRatio {
+  /// Let the model pick (meant for reference-image workflows).
+  Auto,
+  Square1x1,
+  Portrait3x4,
+  Landscape4x3,
+  Portrait2x3,
+  Landscape3x2,
+  Portrait9x16,
+  Landscape16x9,
+  Landscape5x4,
+  Portrait4x5,
+  Landscape21x9,
+}
+
+impl NanoBananaProAspectRatio {
+  pub fn all() -> [Self; 11] {
+    [
+      Self::Auto, Self::Square1x1, Self::Portrait3x4, Self::Landscape4x3, Self::Portrait2x3, Self::Landscape3x2,
+      Self::Portrait9x16, Self::Landscape16x9, Self::Landscape5x4, Self::Portrait4x5, Self::Landscape21x9,
+    ]
+  }
+
+  /// The wire vocabulary value.
+  pub fn to_image_aspect_ratio(self) -> ImageAspectRatio {
+    match self {
+      Self::Auto => ImageAspectRatio::Auto,
+      Self::Square1x1 => ImageAspectRatio::Square1x1,
+      Self::Portrait3x4 => ImageAspectRatio::Portrait3x4,
+      Self::Landscape4x3 => ImageAspectRatio::Landscape4x3,
+      Self::Portrait2x3 => ImageAspectRatio::Portrait2x3,
+      Self::Landscape3x2 => ImageAspectRatio::Landscape3x2,
+      Self::Portrait9x16 => ImageAspectRatio::Portrait9x16,
+      Self::Landscape16x9 => ImageAspectRatio::Landscape16x9,
+      Self::Landscape5x4 => ImageAspectRatio::Landscape5x4,
+      Self::Portrait4x5 => ImageAspectRatio::Portrait4x5,
+      Self::Landscape21x9 => ImageAspectRatio::Landscape21x9,
+    }
+  }
+
+  pub fn as_str(self) -> &'static str {
+    match self {
+      Self::Auto => "auto",
+      Self::Square1x1 => "1:1",
+      Self::Portrait3x4 => "3:4",
+      Self::Landscape4x3 => "4:3",
+      Self::Portrait2x3 => "2:3",
+      Self::Landscape3x2 => "3:2",
+      Self::Portrait9x16 => "9:16",
+      Self::Landscape16x9 => "16:9",
+      Self::Landscape5x4 => "5:4",
+      Self::Portrait4x5 => "4:5",
+      Self::Landscape21x9 => "21:9",
+    }
+  }
+}
+
+impl Serialize for NanoBananaProAspectRatio {
+  fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+    serializer.serialize_str(self.as_str())
+  }
+}
+
+/// The resolution tiers the web app offers for Nano Banana Pro.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Default)]
+pub enum NanoBananaProResolution {
+  #[default]
+  OneK,
+  TwoK,
+  FourK,
+}
+
+impl NanoBananaProResolution {
+  pub fn all() -> [Self; 3] {
+    [Self::OneK, Self::TwoK, Self::FourK]
+  }
+
+  pub fn to_image_resolution(self) -> ImageResolution {
+    match self {
+      Self::OneK => ImageResolution::OneK,
+      Self::TwoK => ImageResolution::TwoK,
+      Self::FourK => ImageResolution::FourK,
+    }
+  }
+
+  pub fn as_str(self) -> &'static str {
+    match self {
+      Self::OneK => "1k",
+      Self::TwoK => "2k",
+      Self::FourK => "4k",
+    }
+  }
+}
+
+impl Serialize for NanoBananaProResolution {
+  fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+    serializer.serialize_str(self.as_str())
+  }
+}
 
 pub struct NanoBananaProArgs<'a> {
   pub request: NanoBananaProRequest,
@@ -32,12 +135,12 @@ pub struct NanoBananaProArgs<'a> {
 pub struct NanoBananaProRequest {
   pub prompt: String,
 
-  pub aspect_ratio: ImageAspectRatio,
+  pub aspect_ratio: NanoBananaProAspectRatio,
 
-  pub resolution: ImageResolution,
+  pub resolution: NanoBananaProResolution,
 
   /// How many images to generate (1–4). Each costs credits.
-  pub batch_size: u32,
+  pub batch_size: ImageBatchSize,
 
   /// Reference image URLs (image-to-image). Empty for text-to-image.
   pub input_images: Vec<String>,
@@ -53,12 +156,12 @@ pub struct NanoBananaProRequest {
 
 impl NanoBananaProRequest {
   /// A text-to-image request with the web app's defaults (1 image, credits).
-  pub fn text_to_image(prompt: impl Into<String>, aspect_ratio: ImageAspectRatio, resolution: ImageResolution) -> Self {
+  pub fn text_to_image(prompt: impl Into<String>, aspect_ratio: NanoBananaProAspectRatio, resolution: NanoBananaProResolution) -> Self {
     Self {
       prompt: prompt.into(),
       aspect_ratio,
       resolution,
-      batch_size: 1,
+      batch_size: ImageBatchSize::One,
       input_images: Vec::new(),
       use_unlim: false,
       maybe_dimensions: None,
@@ -69,11 +172,6 @@ impl NanoBananaProRequest {
     if self.prompt.trim().is_empty() {
       return Err(HiggsfieldClientError::InvalidRequest("prompt is empty".to_string()));
     }
-    if !(MIN_BATCH_SIZE..=MAX_BATCH_SIZE).contains(&self.batch_size) {
-      return Err(HiggsfieldClientError::InvalidRequest(format!(
-        "batch_size must be between {MIN_BATCH_SIZE} and {MAX_BATCH_SIZE}, got {}", self.batch_size,
-      )));
-    }
     Ok(())
   }
 
@@ -81,10 +179,10 @@ impl NanoBananaProRequest {
     if let Some(dimensions) = self.maybe_dimensions {
       return Ok(dimensions);
     }
-    ImageDimensions::for_aspect_ratio(&self.aspect_ratio, &self.resolution)
+    ImageDimensions::for_aspect_ratio(&self.aspect_ratio.to_image_aspect_ratio(), &self.resolution.to_image_resolution())
         .ok_or_else(|| HiggsfieldClientError::InvalidRequest(format!(
           "can't derive dimensions for aspect ratio {} at {}; pass maybe_dimensions",
-          self.aspect_ratio, self.resolution,
+          self.aspect_ratio.as_str(), self.resolution.as_str(),
         )))
   }
 }
@@ -126,9 +224,9 @@ struct NanoBananaProRequestBody {
 #[derive(Serialize)]
 struct NanoBananaProParams {
   prompt: String,
-  aspect_ratio: ImageAspectRatio,
-  resolution: ImageResolution,
-  batch_size: u32,
+  aspect_ratio: NanoBananaProAspectRatio,
+  resolution: NanoBananaProResolution,
+  batch_size: ImageBatchSize,
   is_storyboard: bool,
   is_zoom_control: bool,
   use_unlim: bool,
@@ -142,12 +240,30 @@ mod tests {
   use super::*;
   use serde_json::{json, Value};
 
+  // ── Option sets ──
+
+  #[test]
+  fn aspect_ratios_match_the_web_app_menu() {
+    let wire: Vec<&str> = NanoBananaProAspectRatio::all().iter().map(|a| a.as_str()).collect();
+    assert_eq!(wire, ["auto", "1:1", "3:4", "4:3", "2:3", "3:2", "9:16", "16:9", "5:4", "4:5", "21:9"]);
+    for ratio in NanoBananaProAspectRatio::all() {
+      assert_eq!(ratio.to_image_aspect_ratio().as_str(), ratio.as_str());
+    }
+  }
+
+  #[test]
+  fn resolutions_match_the_web_app_menu() {
+    let wire: Vec<&str> = NanoBananaProResolution::all().iter().map(|r| r.as_str()).collect();
+    assert_eq!(wire, ["1k", "2k", "4k"]);
+    assert_eq!(NanoBananaProResolution::default(), NanoBananaProResolution::OneK);
+  }
+
   // ── Outbound shape ──
 
   #[test]
   fn wire_body_matches_captured_request() {
     // Captured from the web app: 3:4 at 1k, one image.
-    let request = NanoBananaProRequest::text_to_image("a dinosaur on a skateboard", ImageAspectRatio::Portrait3x4, ImageResolution::OneK);
+    let request = NanoBananaProRequest::text_to_image("a dinosaur on a skateboard", NanoBananaProAspectRatio::Portrait3x4, NanoBananaProResolution::OneK);
     let dimensions = request.dimensions().unwrap();
     let body = NanoBananaProRequestBody {
       params: NanoBananaProParams {
@@ -172,48 +288,44 @@ mod tests {
 
   #[test]
   fn wire_body_4k_landscape_matches_captured_request() {
-    let request = NanoBananaProRequest::text_to_image("a dinosaur on a skateboard", ImageAspectRatio::Landscape16x9, ImageResolution::FourK);
+    let request = NanoBananaProRequest::text_to_image("a dinosaur on a skateboard", NanoBananaProAspectRatio::Landscape16x9, NanoBananaProResolution::FourK);
     let dimensions = request.dimensions().unwrap();
     assert_eq!((dimensions.width, dimensions.height), (5504, 3072));
   }
 
   #[test]
+  fn every_option_combination_derives_dimensions() {
+    for ratio in NanoBananaProAspectRatio::all() {
+      for resolution in NanoBananaProResolution::all() {
+        let request = NanoBananaProRequest::text_to_image("p", ratio, resolution);
+        request.dimensions().unwrap_or_else(|err| panic!("{} @ {}: {err}", ratio.as_str(), resolution.as_str()));
+      }
+    }
+  }
+
+  #[test]
   fn explicit_dimensions_override_derived_ones() {
-    let mut request = NanoBananaProRequest::text_to_image("p", ImageAspectRatio::Square1x1, ImageResolution::OneK);
+    let mut request = NanoBananaProRequest::text_to_image("p", NanoBananaProAspectRatio::Square1x1, NanoBananaProResolution::OneK);
     request.maybe_dimensions = Some(ImageDimensions::new(1024, 1024));
     assert_eq!(request.dimensions().unwrap(), ImageDimensions::new(1024, 1024));
   }
 
   #[test]
   fn public_request_serializes_with_typed_enums() {
-    let request = NanoBananaProRequest::text_to_image("a cat", ImageAspectRatio::Landscape16x9, ImageResolution::TwoK);
+    let mut request = NanoBananaProRequest::text_to_image("a cat", NanoBananaProAspectRatio::Landscape16x9, NanoBananaProResolution::TwoK);
+    request.batch_size = ImageBatchSize::Four;
     let value = serde_json::to_value(&request).unwrap();
     assert_eq!(value["aspect_ratio"], json!("16:9"));
     assert_eq!(value["resolution"], json!("2k"));
-    assert_eq!(value["batch_size"], json!(1));
+    assert_eq!(value["batch_size"], json!(4));
   }
 
   // ── Validation ──
 
   #[test]
   fn empty_prompt_is_rejected() {
-    let request = NanoBananaProRequest::text_to_image("   ", ImageAspectRatio::Square1x1, ImageResolution::OneK);
+    let request = NanoBananaProRequest::text_to_image("   ", NanoBananaProAspectRatio::Square1x1, NanoBananaProResolution::OneK);
     assert!(matches!(request.validate(), Err(HiggsfieldClientError::InvalidRequest(_))));
-  }
-
-  #[test]
-  fn batch_size_out_of_range_is_rejected() {
-    for batch_size in [0, 5] {
-      let mut request = NanoBananaProRequest::text_to_image("p", ImageAspectRatio::Square1x1, ImageResolution::OneK);
-      request.batch_size = batch_size;
-      assert!(matches!(request.validate(), Err(HiggsfieldClientError::InvalidRequest(_))), "batch_size {batch_size}");
-    }
-  }
-
-  #[test]
-  fn unknown_aspect_ratio_without_dimensions_is_rejected() {
-    let request = NanoBananaProRequest::text_to_image("p", ImageAspectRatio::Other("wide".into()), ImageResolution::OneK);
-    assert!(matches!(request.dimensions(), Err(HiggsfieldClientError::InvalidRequest(_))));
   }
 
   #[tokio::test]
@@ -221,8 +333,7 @@ mod tests {
     // No network: an unroutable custom host would fail differently.
     let auth = HiggsfieldAuth::new("token");
     let host = HiggsfieldHost::Custom("http://127.0.0.1:9".to_string());
-    let mut request = NanoBananaProRequest::text_to_image("p", ImageAspectRatio::Square1x1, ImageResolution::OneK);
-    request.batch_size = 99;
+    let request = NanoBananaProRequest::text_to_image("", NanoBananaProAspectRatio::Square1x1, NanoBananaProResolution::OneK);
 
     let err = nano_banana_pro(NanoBananaProArgs { request, auth: &auth, host: &host }).await.unwrap_err();
     assert!(matches!(err, HiggsfieldError::Client(HiggsfieldClientError::InvalidRequest(_))));
@@ -239,6 +350,26 @@ mod tests {
 
   // ── Live (ignored: needs a real session and spends credits) ──
 
+  #[tokio::test]
+  #[ignore]
+  async fn live_enqueue_nano_banana_pro() -> anyhow::Result<()> {
+    use crate::test_utils::higgsfield_test_secrets::load_higgsfield_test_auth;
+    use crate::test_utils::setup_test_logging::setup_test_logging;
+    setup_test_logging();
+
+    let auth = load_higgsfield_test_auth().await?;
+    let response = nano_banana_pro(NanoBananaProArgs {
+      request: NanoBananaProRequest::text_to_image("a dinosaur on a skateboard", NanoBananaProAspectRatio::Portrait3x4, NanoBananaProResolution::OneK),
+      auth: &auth,
+      host: &HiggsfieldHost::Higgsfield,
+    }).await.map_err(|err| anyhow::anyhow!("{err}"))?;
+
+    println!("Enqueued job ids: {:?}", response.job_ids());
+    println!("Wallet: {:?}", response.wallet);
+    assert!(!response.job_ids().is_empty());
+    Ok(())
+  }
+
   /// Enqueues a Nano Banana Pro job off the desktop app's saved Higgsfield
   /// login (`~/Artcraft/artcraftx/credentials/higgsfield_cookies.toml`),
   /// prints the enqueue response, then follows the job through the status
@@ -254,7 +385,7 @@ mod tests {
     let session = load_higgsfield_session_from_app_credential()?;
     let auth = session.auth().await.map_err(|err| anyhow::anyhow!("minting a session token failed: {err}"))?;
 
-    let request = NanoBananaProRequest::text_to_image("a dinosaur on a skateboard", ImageAspectRatio::Portrait3x4, ImageResolution::OneK);
+    let request = NanoBananaProRequest::text_to_image("a dinosaur on a skateboard", NanoBananaProAspectRatio::Portrait3x4, NanoBananaProResolution::OneK);
     println!("\n===== request =====\n{:#?}", request);
 
     let response = nano_banana_pro(NanoBananaProArgs {
@@ -271,26 +402,6 @@ mod tests {
 
     let job = poll_job_to_completion(&session, &job_ids[0]).await?;
     assert!(job.result_url().is_some(), "completed job should have a result url");
-    Ok(())
-  }
-
-  #[tokio::test]
-  #[ignore]
-  async fn live_enqueue_nano_banana_pro() -> anyhow::Result<()> {
-    use crate::test_utils::higgsfield_test_secrets::load_higgsfield_test_auth;
-    use crate::test_utils::setup_test_logging::setup_test_logging;
-    setup_test_logging();
-
-    let auth = load_higgsfield_test_auth().await?;
-    let response = nano_banana_pro(NanoBananaProArgs {
-      request: NanoBananaProRequest::text_to_image("a dinosaur on a skateboard", ImageAspectRatio::Portrait3x4, ImageResolution::OneK),
-      auth: &auth,
-      host: &HiggsfieldHost::Higgsfield,
-    }).await.map_err(|err| anyhow::anyhow!("{err}"))?;
-
-    println!("Enqueued job ids: {:?}", response.job_ids());
-    println!("Wallet: {:?}", response.wallet);
-    assert!(!response.job_ids().is_empty());
     Ok(())
   }
 }

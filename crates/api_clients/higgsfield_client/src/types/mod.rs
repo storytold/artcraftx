@@ -8,6 +8,7 @@ pub mod enqueue_jobs_response;
 pub mod gpt_image_quality;
 pub mod ids;
 pub mod image_aspect_ratio;
+pub mod image_batch_size;
 pub mod image_dimensions;
 pub mod image_resolution;
 pub mod job_media;

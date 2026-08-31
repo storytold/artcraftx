@@ -66,9 +66,8 @@ mod tests {
   use crate::client::clerk_host::ClerkHost;
   use crate::client::higgsfield_host::HiggsfieldHost;
   use crate::error::higgsfield_client_error::HiggsfieldClientError;
-  use crate::types::gpt_image_quality::GptImageQuality;
-  use crate::types::image_aspect_ratio::ImageAspectRatio;
-  use crate::types::image_resolution::ImageResolution;
+  use crate::endpoints::generate::image::gpt_image_2::{GptImage2AspectRatio, GptImage2Quality, GptImage2Resolution};
+  use crate::endpoints::generate::image::nano_banana_pro::{NanoBananaProAspectRatio, NanoBananaProResolution};
 
   /// A session that can't reach anything, but has a fresh seed token so the
   /// wrappers get past auth and into request validation.
@@ -84,12 +83,11 @@ mod tests {
   async fn wrappers_apply_request_validation() {
     let session = offline_session();
 
-    let mut request = NanoBananaProRequest::text_to_image("p", ImageAspectRatio::Square1x1, ImageResolution::OneK);
-    request.batch_size = 0;
+    let request = NanoBananaProRequest::text_to_image("", NanoBananaProAspectRatio::Square1x1, NanoBananaProResolution::OneK);
     let err = session.nano_banana_pro(request).await.unwrap_err();
     assert!(matches!(err, HiggsfieldError::Client(HiggsfieldClientError::InvalidRequest(_))));
 
-    let request = GptImage2Request::text_to_image("", ImageAspectRatio::Square1x1, GptImageQuality::Low, ImageResolution::OneK);
+    let request = GptImage2Request::text_to_image("", GptImage2AspectRatio::Square1x1, GptImage2Quality::Low, GptImage2Resolution::OneK);
     let err = session.gpt_image_2(request).await.unwrap_err();
     assert!(matches!(err, HiggsfieldError::Client(HiggsfieldClientError::InvalidRequest(_))));
 
@@ -123,7 +121,7 @@ mod tests {
 
     let session = load_higgsfield_test_session()?;
     let enqueued = session.nano_banana_pro(
-      NanoBananaProRequest::text_to_image("a dinosaur on a skateboard", ImageAspectRatio::Portrait3x4, ImageResolution::OneK),
+      NanoBananaProRequest::text_to_image("a dinosaur on a skateboard", NanoBananaProAspectRatio::Portrait3x4, NanoBananaProResolution::OneK),
     ).await.map_err(|err| anyhow::anyhow!("{err}"))?;
 
     let job_id = enqueued.job_ids().into_iter().next().unwrap();

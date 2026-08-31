@@ -31,7 +31,7 @@ const DEFAULT_REFRESH_MARGIN_SECONDS: i64 = 15;
 ///
 /// ```ignore
 /// let session = HiggsfieldSession::from_cookies(HiggsfieldCookies::from_cookie_header(cookie_header));
-/// let enqueued = session.nano_banana_pro(NanoBananaProRequest::text_to_image("a cat", ImageAspectRatio::Square1x1, ImageResolution::OneK)).await?;
+/// let enqueued = session.nano_banana_pro(NanoBananaProRequest::text_to_image("a cat", NanoBananaProAspectRatio::Square1x1, NanoBananaProResolution::OneK)).await?;
 /// let job = session.wait_for_job(&enqueued.job_ids()[0], WaitForJobOptions::default()).await?;
 /// println!("{:?}", job.result_url());
 /// ```

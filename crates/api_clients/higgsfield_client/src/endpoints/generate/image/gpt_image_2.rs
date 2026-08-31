@@ -1,5 +1,9 @@
 //! POST `/fnf/jobs/v2/gpt_image_2` — enqueue a GPT Image 2 job (the web
 //! app's "GPT Image 2"; job set type `gpt_image_2`).
+//!
+//! Option sets below were read off the web app's image generator on
+//! 2026-08-31: 9 aspect ratios (incl. Auto), Low/Medium/High quality,
+//! 1K (1024px) / 2K (2048px) / 4K (4096px), 1–4 images.
 
 use crate::client::higgsfield_host::HiggsfieldHost;
 use crate::client::send_request::{send_json_request, HttpMethod};
@@ -9,19 +13,16 @@ use crate::error::higgsfield_error::HiggsfieldError;
 use crate::types::enqueue_jobs_response::EnqueueJobsResponse;
 use crate::types::gpt_image_quality::GptImageQuality;
 use crate::types::image_aspect_ratio::ImageAspectRatio;
+use crate::types::image_batch_size::ImageBatchSize;
 use crate::types::image_dimensions::ImageDimensions;
 use crate::types::image_resolution::ImageResolution;
-use serde::Serialize;
 use crate::types::string_enum::string_enum;
+use serde::Serialize;
 
 const PATH: &str = "/fnf/jobs/v2/gpt_image_2";
 
 /// The `model` field the web app sends on this endpoint.
 const MODEL: &str = "gpt_image_2";
-
-/// Batch sizes the web app offers.
-const MIN_BATCH_SIZE: u32 = 1;
-const MAX_BATCH_SIZE: u32 = 4;
 
 string_enum! {
   /// The backend variant behind GPT Image 2. The web app currently always
@@ -37,6 +38,154 @@ impl Default for GptImage2SubModel {
   }
 }
 
+/// The aspect ratios the web app offers for GPT Image 2, in its menu order.
+/// (No 4:5 / 5:4, unlike Nano Banana Pro.)
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum GptImage2AspectRatio {
+  /// Let the model pick (meant for reference-image workflows).
+  Auto,
+  Square1x1,
+  Landscape3x2,
+  Portrait2x3,
+  Landscape16x9,
+  Portrait9x16,
+  Landscape4x3,
+  Portrait3x4,
+  Landscape21x9,
+}
+
+impl GptImage2AspectRatio {
+  pub fn all() -> [Self; 9] {
+    [
+      Self::Auto, Self::Square1x1, Self::Landscape3x2, Self::Portrait2x3, Self::Landscape16x9,
+      Self::Portrait9x16, Self::Landscape4x3, Self::Portrait3x4, Self::Landscape21x9,
+    ]
+  }
+
+  /// The wire vocabulary value.
+  pub fn to_image_aspect_ratio(self) -> ImageAspectRatio {
+    match self {
+      Self::Auto => ImageAspectRatio::Auto,
+      Self::Square1x1 => ImageAspectRatio::Square1x1,
+      Self::Landscape3x2 => ImageAspectRatio::Landscape3x2,
+      Self::Portrait2x3 => ImageAspectRatio::Portrait2x3,
+      Self::Landscape16x9 => ImageAspectRatio::Landscape16x9,
+      Self::Portrait9x16 => ImageAspectRatio::Portrait9x16,
+      Self::Landscape4x3 => ImageAspectRatio::Landscape4x3,
+      Self::Portrait3x4 => ImageAspectRatio::Portrait3x4,
+      Self::Landscape21x9 => ImageAspectRatio::Landscape21x9,
+    }
+  }
+
+  pub fn as_str(self) -> &'static str {
+    match self {
+      Self::Auto => "auto",
+      Self::Square1x1 => "1:1",
+      Self::Landscape3x2 => "3:2",
+      Self::Portrait2x3 => "2:3",
+      Self::Landscape16x9 => "16:9",
+      Self::Portrait9x16 => "9:16",
+      Self::Landscape4x3 => "4:3",
+      Self::Portrait3x4 => "3:4",
+      Self::Landscape21x9 => "21:9",
+    }
+  }
+}
+
+impl Serialize for GptImage2AspectRatio {
+  fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+    serializer.serialize_str(self.as_str())
+  }
+}
+
+/// Quality tiers the web app offers for GPT Image 2 ("Fastest and
+/// cheapest" / "Balanced visuals" / "Best visual fidelity").
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Default)]
+pub enum GptImage2Quality {
+  Low,
+  #[default]
+  Medium,
+  High,
+}
+
+impl GptImage2Quality {
+  pub fn all() -> [Self; 3] {
+    [Self::Low, Self::Medium, Self::High]
+  }
+
+  pub fn to_gpt_image_quality(self) -> GptImageQuality {
+    match self {
+      Self::Low => GptImageQuality::Low,
+      Self::Medium => GptImageQuality::Medium,
+      Self::High => GptImageQuality::High,
+    }
+  }
+
+  pub fn as_str(self) -> &'static str {
+    match self {
+      Self::Low => "low",
+      Self::Medium => "medium",
+      Self::High => "high",
+    }
+  }
+}
+
+impl Serialize for GptImage2Quality {
+  fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+    serializer.serialize_str(self.as_str())
+  }
+}
+
+/// Resolution tiers the web app offers for GPT Image 2, with the pixel
+/// size it labels each with.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Default)]
+pub enum GptImage2Resolution {
+  /// 1024px
+  #[default]
+  OneK,
+  /// 2048px
+  TwoK,
+  /// 4096px
+  FourK,
+}
+
+impl GptImage2Resolution {
+  pub fn all() -> [Self; 3] {
+    [Self::OneK, Self::TwoK, Self::FourK]
+  }
+
+  /// The pixel size the web app's menu shows for the tier.
+  pub fn labeled_pixels(self) -> u32 {
+    match self {
+      Self::OneK => 1024,
+      Self::TwoK => 2048,
+      Self::FourK => 4096,
+    }
+  }
+
+  pub fn to_image_resolution(self) -> ImageResolution {
+    match self {
+      Self::OneK => ImageResolution::OneK,
+      Self::TwoK => ImageResolution::TwoK,
+      Self::FourK => ImageResolution::FourK,
+    }
+  }
+
+  pub fn as_str(self) -> &'static str {
+    match self {
+      Self::OneK => "1k",
+      Self::TwoK => "2k",
+      Self::FourK => "4k",
+    }
+  }
+}
+
+impl Serialize for GptImage2Resolution {
+  fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+    serializer.serialize_str(self.as_str())
+  }
+}
+
 pub struct GptImage2Args<'a> {
   pub request: GptImage2Request,
   pub auth: &'a HiggsfieldAuth,
@@ -49,14 +198,14 @@ pub struct GptImage2Args<'a> {
 pub struct GptImage2Request {
   pub prompt: String,
 
-  pub aspect_ratio: ImageAspectRatio,
+  pub aspect_ratio: GptImage2AspectRatio,
 
-  pub quality: GptImageQuality,
+  pub quality: GptImage2Quality,
 
-  pub resolution: ImageResolution,
+  pub resolution: GptImage2Resolution,
 
   /// How many images to generate (1–4). Each costs credits.
-  pub batch_size: u32,
+  pub batch_size: ImageBatchSize,
 
   /// Reference media URLs (image-to-image). Empty for text-to-image.
   pub medias: Vec<String>,
@@ -76,16 +225,16 @@ impl GptImage2Request {
   /// A text-to-image request with the web app's defaults (1 image, credits).
   pub fn text_to_image(
     prompt: impl Into<String>,
-    aspect_ratio: ImageAspectRatio,
-    quality: GptImageQuality,
-    resolution: ImageResolution,
+    aspect_ratio: GptImage2AspectRatio,
+    quality: GptImage2Quality,
+    resolution: GptImage2Resolution,
   ) -> Self {
     Self {
       prompt: prompt.into(),
       aspect_ratio,
       quality,
       resolution,
-      batch_size: 1,
+      batch_size: ImageBatchSize::One,
       medias: Vec::new(),
       sub_model: GptImage2SubModel::default(),
       use_unlim: false,
@@ -97,11 +246,6 @@ impl GptImage2Request {
     if self.prompt.trim().is_empty() {
       return Err(HiggsfieldClientError::InvalidRequest("prompt is empty".to_string()));
     }
-    if !(MIN_BATCH_SIZE..=MAX_BATCH_SIZE).contains(&self.batch_size) {
-      return Err(HiggsfieldClientError::InvalidRequest(format!(
-        "batch_size must be between {MIN_BATCH_SIZE} and {MAX_BATCH_SIZE}, got {}", self.batch_size,
-      )));
-    }
     Ok(())
   }
 
@@ -109,10 +253,10 @@ impl GptImage2Request {
     if let Some(dimensions) = self.maybe_dimensions {
       return Ok(dimensions);
     }
-    ImageDimensions::for_aspect_ratio(&self.aspect_ratio, &self.resolution)
+    ImageDimensions::for_aspect_ratio(&self.aspect_ratio.to_image_aspect_ratio(), &self.resolution.to_image_resolution())
         .ok_or_else(|| HiggsfieldClientError::InvalidRequest(format!(
           "can't derive dimensions for aspect ratio {} at {}; pass maybe_dimensions",
-          self.aspect_ratio, self.resolution,
+          self.aspect_ratio.as_str(), self.resolution.as_str(),
         )))
   }
 }
@@ -154,11 +298,11 @@ struct GptImage2RequestBody {
 #[derive(Serialize)]
 struct GptImage2Params {
   prompt: String,
-  aspect_ratio: ImageAspectRatio,
-  quality: GptImageQuality,
-  resolution: ImageResolution,
+  aspect_ratio: GptImage2AspectRatio,
+  quality: GptImage2Quality,
+  resolution: GptImage2Resolution,
   sub_model: GptImage2SubModel,
-  batch_size: u32,
+  batch_size: ImageBatchSize,
   model: &'static str,
   width: u32,
   height: u32,
@@ -170,12 +314,35 @@ mod tests {
   use super::*;
   use serde_json::{json, Value};
 
+  // ── Option sets ──
+
+  #[test]
+  fn aspect_ratios_match_the_web_app_menu() {
+    let wire: Vec<&str> = GptImage2AspectRatio::all().iter().map(|a| a.as_str()).collect();
+    assert_eq!(wire, ["auto", "1:1", "3:2", "2:3", "16:9", "9:16", "4:3", "3:4", "21:9"]);
+    for ratio in GptImage2AspectRatio::all() {
+      assert_eq!(ratio.to_image_aspect_ratio().as_str(), ratio.as_str());
+    }
+  }
+
+  #[test]
+  fn quality_and_resolution_match_the_web_app_menus() {
+    let qualities: Vec<&str> = GptImage2Quality::all().iter().map(|q| q.as_str()).collect();
+    assert_eq!(qualities, ["low", "medium", "high"]);
+    for quality in GptImage2Quality::all() {
+      assert_eq!(quality.to_gpt_image_quality().as_str(), quality.as_str());
+    }
+
+    let resolutions: Vec<(&str, u32)> = GptImage2Resolution::all().iter().map(|r| (r.as_str(), r.labeled_pixels())).collect();
+    assert_eq!(resolutions, [("1k", 1024), ("2k", 2048), ("4k", 4096)]);
+  }
+
   // ── Outbound shape ──
 
   #[test]
   fn wire_body_matches_captured_request() {
     // Captured from the web app: 9:16 at 2k, high quality, one image.
-    let request = GptImage2Request::text_to_image("a corgi on a bike", ImageAspectRatio::Portrait9x16, GptImageQuality::High, ImageResolution::TwoK);
+    let request = GptImage2Request::text_to_image("a corgi on a bike", GptImage2AspectRatio::Portrait9x16, GptImage2Quality::High, GptImage2Resolution::TwoK);
     let dimensions = request.dimensions().unwrap();
     let body = GptImage2RequestBody {
       params: GptImage2Params {
@@ -199,26 +366,31 @@ mod tests {
   }
 
   #[test]
+  fn every_option_combination_derives_dimensions() {
+    for ratio in GptImage2AspectRatio::all() {
+      for resolution in GptImage2Resolution::all() {
+        let request = GptImage2Request::text_to_image("p", ratio, GptImage2Quality::Low, resolution);
+        request.dimensions().unwrap_or_else(|err| panic!("{} @ {}: {err}", ratio.as_str(), resolution.as_str()));
+      }
+    }
+  }
+
+  #[test]
   fn public_request_serializes_with_typed_enums() {
-    let request = GptImage2Request::text_to_image("a cat", ImageAspectRatio::Square1x1, GptImageQuality::Medium, ImageResolution::OneK);
+    let mut request = GptImage2Request::text_to_image("a cat", GptImage2AspectRatio::Square1x1, GptImage2Quality::Medium, GptImage2Resolution::OneK);
+    request.batch_size = ImageBatchSize::Two;
     let value = serde_json::to_value(&request).unwrap();
     assert_eq!(value["quality"], json!("medium"));
     assert_eq!(value["sub_model"], json!("videotape-alpha"));
     assert_eq!(value["aspect_ratio"], json!("1:1"));
+    assert_eq!(value["batch_size"], json!(2));
   }
 
   // ── Validation ──
 
   #[test]
   fn empty_prompt_is_rejected() {
-    let request = GptImage2Request::text_to_image("", ImageAspectRatio::Square1x1, GptImageQuality::Low, ImageResolution::OneK);
-    assert!(matches!(request.validate(), Err(HiggsfieldClientError::InvalidRequest(_))));
-  }
-
-  #[test]
-  fn batch_size_out_of_range_is_rejected() {
-    let mut request = GptImage2Request::text_to_image("p", ImageAspectRatio::Square1x1, GptImageQuality::Low, ImageResolution::OneK);
-    request.batch_size = 0;
+    let request = GptImage2Request::text_to_image("", GptImage2AspectRatio::Square1x1, GptImage2Quality::Low, GptImage2Resolution::OneK);
     assert!(matches!(request.validate(), Err(HiggsfieldClientError::InvalidRequest(_))));
   }
 
@@ -226,7 +398,7 @@ mod tests {
   async fn invalid_request_fails_before_any_http() {
     let auth = HiggsfieldAuth::new("token");
     let host = HiggsfieldHost::Custom("http://127.0.0.1:9".to_string());
-    let request = GptImage2Request::text_to_image(" ", ImageAspectRatio::Square1x1, GptImageQuality::Low, ImageResolution::OneK);
+    let request = GptImage2Request::text_to_image(" ", GptImage2AspectRatio::Square1x1, GptImage2Quality::Low, GptImage2Resolution::OneK);
 
     let err = gpt_image_2(GptImage2Args { request, auth: &auth, host: &host }).await.unwrap_err();
     assert!(matches!(err, HiggsfieldError::Client(HiggsfieldClientError::InvalidRequest(_))));
@@ -244,6 +416,26 @@ mod tests {
 
   // ── Live (ignored: needs a real session and spends credits) ──
 
+  #[tokio::test]
+  #[ignore]
+  async fn live_enqueue_gpt_image_2() -> anyhow::Result<()> {
+    use crate::test_utils::higgsfield_test_secrets::load_higgsfield_test_auth;
+    use crate::test_utils::setup_test_logging::setup_test_logging;
+    setup_test_logging();
+
+    let auth = load_higgsfield_test_auth().await?;
+    let response = gpt_image_2(GptImage2Args {
+      request: GptImage2Request::text_to_image("a corgi on a bike", GptImage2AspectRatio::Portrait9x16, GptImage2Quality::High, GptImage2Resolution::TwoK),
+      auth: &auth,
+      host: &HiggsfieldHost::Higgsfield,
+    }).await.map_err(|err| anyhow::anyhow!("{err}"))?;
+
+    println!("Enqueued job ids: {:?}", response.job_ids());
+    println!("Wallet: {:?}", response.wallet);
+    assert!(!response.job_ids().is_empty());
+    Ok(())
+  }
+
   /// Enqueues a GPT Image 2 job off the desktop app's saved Higgsfield
   /// login (`~/Artcraft/artcraftx/credentials/higgsfield_cookies.toml`),
   /// prints the enqueue response, then follows the job through the status
@@ -259,7 +451,7 @@ mod tests {
     let session = load_higgsfield_session_from_app_credential()?;
     let auth = session.auth().await.map_err(|err| anyhow::anyhow!("minting a session token failed: {err}"))?;
 
-    let request = GptImage2Request::text_to_image("a corgi on a bike", ImageAspectRatio::Square1x1, GptImageQuality::Low, ImageResolution::OneK);
+    let request = GptImage2Request::text_to_image("a corgi on a bike", GptImage2AspectRatio::Square1x1, GptImage2Quality::Low, GptImage2Resolution::OneK);
     println!("\n===== request =====\n{:#?}", request);
 
     let response = gpt_image_2(GptImage2Args {
@@ -276,26 +468,6 @@ mod tests {
 
     let job = poll_job_to_completion(&session, &job_ids[0]).await?;
     assert!(job.result_url().is_some(), "completed job should have a result url");
-    Ok(())
-  }
-
-  #[tokio::test]
-  #[ignore]
-  async fn live_enqueue_gpt_image_2() -> anyhow::Result<()> {
-    use crate::test_utils::higgsfield_test_secrets::load_higgsfield_test_auth;
-    use crate::test_utils::setup_test_logging::setup_test_logging;
-    setup_test_logging();
-
-    let auth = load_higgsfield_test_auth().await?;
-    let response = gpt_image_2(GptImage2Args {
-      request: GptImage2Request::text_to_image("a corgi on a bike", ImageAspectRatio::Portrait9x16, GptImageQuality::High, ImageResolution::TwoK),
-      auth: &auth,
-      host: &HiggsfieldHost::Higgsfield,
-    }).await.map_err(|err| anyhow::anyhow!("{err}"))?;
-
-    println!("Enqueued job ids: {:?}", response.job_ids());
-    println!("Wallet: {:?}", response.wallet);
-    assert!(!response.job_ids().is_empty());
     Ok(())
   }
 }

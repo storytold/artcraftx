@@ -27,7 +27,8 @@ impl ImageDimensions {
   /// ratio, rounded down to a multiple of 64.
   ///
   /// Long sides observed in captured requests: 1k → 1200, 2k → 2048,
-  /// 4k → 5504. Returns `None` for an unparseable `Other` aspect ratio.
+  /// 4k → 5504. `Auto` is sent as a square. Returns `None` for an
+  /// unparseable `Other` aspect ratio or an unknown resolution.
   pub fn for_aspect_ratio(aspect_ratio: &ImageAspectRatio, resolution: &ImageResolution) -> Option<Self> {
     let long_side = match resolution {
       ImageResolution::OneK => 1200,
@@ -36,7 +37,12 @@ impl ImageDimensions {
       ImageResolution::Other(_) => return None,
     };
 
-    let ratio = aspect_ratio.ratio()?;
+    // "Auto" has no ratio of its own; the web app still has to send a size,
+    // so use a square at the tier's long side and let the server pick.
+    let ratio = match aspect_ratio {
+      ImageAspectRatio::Auto => 1.0,
+      other => other.ratio()?,
+    };
 
     // ratio = width / height. The long side goes to whichever is bigger.
     let short_side_exact = if ratio >= 1.0 {
@@ -82,6 +88,15 @@ mod tests {
   fn square_uses_long_side_for_both() {
     let dims = ImageDimensions::for_aspect_ratio(&ImageAspectRatio::Square1x1, &ImageResolution::TwoK).unwrap();
     assert_eq!(dims, ImageDimensions::new(2048, 2048));
+  }
+
+  #[test]
+  fn auto_is_sent_like_square() {
+    for resolution in [ImageResolution::OneK, ImageResolution::TwoK, ImageResolution::FourK] {
+      let auto = ImageDimensions::for_aspect_ratio(&ImageAspectRatio::Auto, &resolution).unwrap();
+      let square = ImageDimensions::for_aspect_ratio(&ImageAspectRatio::Square1x1, &resolution).unwrap();
+      assert_eq!(auto, square, "{}", resolution);
+    }
   }
 
   #[test]
