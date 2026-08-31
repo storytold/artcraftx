@@ -12,6 +12,7 @@ members = [
   "crates/api_clients/grok_api_client",
   "crates/api_clients/grok_consumer_client",
   "crates/api_clients/grok_consumer_statsig",
+  "crates/api_clients/higgsfield_client",
   "crates/api_clients/midjourney_client",
   "crates/api_clients/openai_sora_client",
   "crates/router",

@@ -6,6 +6,9 @@ use reqwest::Url;
 
 const DESTINATION_HOSTNAMES: &[&str] = &["higgsfield.ai", "www.higgsfield.ai"];
 
+/// Clerk's session JWT cookie, set on higgsfield.ai only while signed in.
+const CLERK_SESSION_COOKIE: &str = "__session";
+
 static WEBSITE_ENTRY_URL: Lazy<Url> = Lazy::new(|| {
   Url::parse("https://higgsfield.ai/").expect("URL should parse")
 });
@@ -29,5 +32,15 @@ impl LoginWindowSite for HiggsfieldLoginWindow {
 
   fn destination_hostnames(&self) -> &[&str] {
     DESTINATION_HOSTNAMES
+  }
+
+  // Higgsfield's auth is Clerk. The logged-OUT homepage already sets several
+  // large cookies (DataDome, analytics), so the size/count fallback fires
+  // before the user can sign in. Clerk only writes the `__session` JWT cookie
+  // on higgsfield.ai once a session is active, so that's the login signal.
+  // (`__client` on clerk.higgsfield.ai exists even signed out, and
+  // `__client_uat` is present as "0" when signed out — neither is usable.)
+  fn session_cookie_names(&self) -> &[&str] {
+    &[CLERK_SESSION_COOKIE]
   }
 }

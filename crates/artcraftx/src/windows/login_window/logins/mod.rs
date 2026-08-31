@@ -91,6 +91,14 @@ mod tests {
   }
 
   #[test]
+  fn higgsfield_waits_for_the_clerk_session_cookie() {
+    // Without a named session cookie the size/count fallback would fire on
+    // the logged-out homepage and close the window before login.
+    let site = login_site_for(LoginWebsite::Higgsfield);
+    assert_eq!(site.session_cookie_names(), &["__session"]);
+  }
+
+  #[test]
   fn midjourney_journey_has_no_login_page() {
     let plan = login_site_for(LoginWebsite::Midjourney).journey().plan();
     assert_eq!(plan.len(), 2);

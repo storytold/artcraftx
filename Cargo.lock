@@ -2807,6 +2807,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
+name = "higgsfield_client"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "base64 0.22.1",
+ "browser_emulation",
+ "chrono",
+ "env_logger",
+ "errors",
+ "jwt_light",
+ "log",
+ "serde",
+ "serde_json",
+ "tokio",
+ "workspace-build-acceleration",
+ "wreq",
+]
+
+[[package]]
 name = "hkdf"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
