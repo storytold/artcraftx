@@ -36,6 +36,8 @@ members = [
   "crates/lib/cloudflare_errors",
   "crates/lib/cloudflare_mitigation",
   "crates/lib/cookie_store_wrapper",
+  "crates/lib/datadome_errors",
+  "crates/lib/datadome_mitigation",
   "crates/lib/data/primitives",
   "crates/lib/data/web_base64",
   "crates/lib/errors",
@@ -92,6 +94,8 @@ artcraft_client = { path = "crates/api_clients/artcraft_client" }
 build_metadata = { path = "crates/lib/build_metadata" }
 cloudflare_errors = { path = "crates/lib/cloudflare_errors" }
 cloudflare_mitigation = { path = "crates/lib/cloudflare_mitigation" }
+datadome_errors = { path = "crates/lib/datadome_errors" }
+datadome_mitigation = { path = "crates/lib/datadome_mitigation" }
 browser_emulation = { path = "crates/lib/browser_emulation" }
 cookie_store_wrapper = { path = "crates/lib/cookie_store_wrapper" }
 errors = { path = "crates/lib/errors" }
@@ -101,6 +105,7 @@ filesys = { path = "crates/lib/files/filesys" }
 gmicloud_client = { path = "crates/api_clients/gmicloud_client" }
 grok_api_client = { path = "crates/api_clients/grok_api_client" }
 grok_consumer_client = { path = "crates/api_clients/grok_consumer_client" }
+higgsfield_client = { path = "crates/api_clients/higgsfield_client" }
 grok_consumer_statsig = { path = "crates/api_clients/grok_consumer_statsig" }
 http_headers = { path = "crates/lib/http_headers" }
 core_types = { path = "crates/core_types" }

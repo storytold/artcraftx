@@ -102,6 +102,40 @@ mod tests {
 
   // ── Live (ignored: needs a real session) ──
 
+  /// Drives the binding off the desktop app's saved Higgsfield login
+  /// (`~/Artcraft/artcraftx/credentials/higgsfield_cookies.toml`): mints a
+  /// Clerk token from the stored cookies, calls `/fnf/user/profile`, and
+  /// prints everything that came back.
+  #[tokio::test]
+  #[ignore]
+  async fn live_user_profile_from_app_credential() -> anyhow::Result<()> {
+    use crate::test_utils::higgsfield_credential_toml::load_higgsfield_session_from_app_credential;
+    use crate::test_utils::setup_test_logging::setup_test_logging;
+    setup_test_logging();
+
+    let session = load_higgsfield_session_from_app_credential()?;
+    let auth = session.auth().await.map_err(|err| anyhow::anyhow!("minting a session token failed: {err}"))?;
+    println!(
+      "Minted bearer token ({} chars); session {:?}; user-agent {:?}; datadome id present: {}",
+      auth.bearer_token.len(),
+      session.current_token().await.map(|t| t.session_id().to_string()),
+      session.maybe_user_agent(),
+      session.maybe_datadome_client_id().is_some(),
+    );
+
+    let response = user_profile(UserProfileArgs {
+      request: UserProfileRequest,
+      auth: &auth,
+      host: &HiggsfieldHost::Higgsfield,
+    }).await.map_err(|err| anyhow::anyhow!("{err}"))?;
+
+    println!("\n===== /fnf/user/profile =====\n{:#?}", response);
+
+    assert!(!response.username.is_empty(), "expected a username on the profile");
+    assert!(response.created_at.is_some(), "expected a created_at timestamp");
+    Ok(())
+  }
+
   #[tokio::test]
   #[ignore]
   async fn live_user_profile() -> anyhow::Result<()> {

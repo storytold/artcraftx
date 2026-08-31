@@ -230,6 +230,7 @@ dependencies = [
  "futures",
  "grok_consumer_client",
  "grok_consumer_statsig",
+ "higgsfield_client",
  "image",
  "images",
  "indexmap 2.13.0",
@@ -1074,6 +1075,7 @@ dependencies = [
 name = "cloudflare_errors"
 version = "0.0.1"
 dependencies = [
+ "log",
  "workspace-build-acceleration",
 ]
 
@@ -1081,6 +1083,8 @@ dependencies = [
 name = "cloudflare_mitigation"
 version = "0.0.1"
 dependencies = [
+ "browser_emulation",
+ "cloudflare_errors",
  "once_cell",
  "workspace-build-acceleration",
  "wreq",
@@ -1464,6 +1468,24 @@ name = "data-url"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c297a1c74b71ae29df00c3e22dd9534821d60eb9af5a0192823fa2acea70c2a"
+
+[[package]]
+name = "datadome_errors"
+version = "0.0.1"
+dependencies = [
+ "log",
+ "serde_json",
+ "workspace-build-acceleration",
+]
+
+[[package]]
+name = "datadome_mitigation"
+version = "0.0.1"
+dependencies = [
+ "browser_emulation",
+ "datadome_errors",
+ "workspace-build-acceleration",
+]
 
 [[package]]
 name = "dbus"
@@ -2814,6 +2836,10 @@ dependencies = [
  "base64 0.22.1",
  "browser_emulation",
  "chrono",
+ "cloudflare_errors",
+ "cloudflare_mitigation",
+ "datadome_errors",
+ "datadome_mitigation",
  "env_logger",
  "errors",
  "jwt_light",
@@ -2821,6 +2847,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
+ "toml 1.0.7+spec-1.1.0",
  "workspace-build-acceleration",
  "wreq",
 ]
