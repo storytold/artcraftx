@@ -12,7 +12,6 @@ import {
 } from "./credential-helpers";
 import { AddCredentialModal } from "./AddCredentialModal";
 import { ArtcraftLoginModal } from "./ArtcraftLoginModal";
-import { WebsiteLoginModal } from "./WebsiteLoginModal";
 import { EditCredentialModal } from "./EditCredentialModal";
 import { DeleteCredentialModal } from "./DeleteCredentialModal";
 
@@ -24,7 +23,6 @@ export const CredentialsManager = () => {
   const [credentials, setCredentials] = useState<CredentialPayload[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isWebsiteLoginOpen, setIsWebsiteLoginOpen] = useState(false);
   const [passwordLoginService, setPasswordLoginService] =
     useState<ServiceMeta | null>(null);
   const [editing, setEditing] = useState<CredentialPayload | null>(null);
@@ -95,20 +93,19 @@ export const CredentialsManager = () => {
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
         onAdded={refresh}
-        onChooseWebsiteLogin={() => {
+        onChooseArtcraftLogin={(service) => {
           setIsAddOpen(false);
-          setIsWebsiteLoginOpen(true);
+          setPasswordLoginService(service);
         }}
-      />
-      <WebsiteLoginModal
-        isOpen={isWebsiteLoginOpen}
-        onClose={() => setIsWebsiteLoginOpen(false)}
-        onChoosePasswordLogin={setPasswordLoginService}
       />
       <ArtcraftLoginModal
         service={passwordLoginService}
         onClose={() => setPasswordLoginService(null)}
         onLoggedIn={refresh}
+        onBack={() => {
+          setPasswordLoginService(null);
+          setIsAddOpen(true);
+        }}
       />
       <EditCredentialModal
         credential={editing}

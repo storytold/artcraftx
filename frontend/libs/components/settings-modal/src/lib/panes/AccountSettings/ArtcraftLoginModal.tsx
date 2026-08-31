@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Modal } from "@storyteller/ui-modal";
 import { Button } from "@storyteller/ui-button";
 import { Input } from "@storyteller/ui-input";
-import { User } from "lucide-react";
+import { ChevronLeft, User } from "lucide-react";
 import {
   ArtcraftLoginError,
   ServiceMeta,
@@ -15,6 +15,8 @@ interface ArtcraftLoginModalProps {
   service: ServiceMeta | null;
   onClose: () => void;
   onLoggedIn: () => void;
+  /** Return to the "Add credential" choice this login was opened from. */
+  onBack?: () => void;
 }
 
 /**
@@ -26,6 +28,7 @@ export const ArtcraftLoginModal = ({
   service,
   onClose,
   onLoggedIn,
+  onBack,
 }: ArtcraftLoginModalProps) => {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -76,10 +79,18 @@ export const ArtcraftLoginModal = ({
       onClose={onClose}
       title={`Log into ${service?.label ?? "ArtCraft"}`}
       titleIcon={User}
-      width="w-[440px]"
       showClose={true}
     >
       <div className="flex flex-col gap-4 p-1 text-base-fg">
+        {onBack && (
+          <button
+            className="-ml-1 flex w-fit items-center gap-0.5 text-sm text-base-fg/50 transition-colors hover:text-base-fg"
+            onClick={onBack}
+          >
+            <ChevronLeft size="1.1em" />
+            Back
+          </button>
+        )}
         <div className="flex items-center gap-2.5">
           <img
             src={getServiceLogoPath(service?.value ?? "artcraft")}
