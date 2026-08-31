@@ -117,6 +117,45 @@ mod tests {
 
   // ── Live (ignored: needs a real session and a real job id) ──
 
+  /// Drives the binding off the desktop app's saved Higgsfield login
+  /// (`~/Artcraft/artcraftx/credentials/higgsfield_cookies.toml`) against
+  /// the job ids in `external/credentials/higgsfield/job_ids.txt` — plus one
+  /// made-up id, to show the `missing` list working — printing the whole
+  /// response.
+  #[tokio::test]
+  #[ignore]
+  async fn live_job_status_batch_from_app_credential() -> anyhow::Result<()> {
+    use crate::test_utils::higgsfield_credential_toml::load_higgsfield_session_from_app_credential;
+    use crate::test_utils::higgsfield_test_secrets::load_higgsfield_test_job_ids;
+    use crate::test_utils::setup_test_logging::setup_test_logging;
+    setup_test_logging();
+
+    let session = load_higgsfield_session_from_app_credential()?;
+    let auth = session.auth().await.map_err(|err| anyhow::anyhow!("minting a session token failed: {err}"))?;
+
+    let unknown = JobId::new("00000000-0000-4000-8000-000000000000");
+    let mut ids = load_higgsfield_test_job_ids()?;
+    ids.push(unknown.clone());
+
+    let response = job_status_batch(JobStatusBatchArgs {
+      request: JobStatusBatchRequest { ids: ids.clone() },
+      auth: &auth,
+      host: &HiggsfieldHost::Higgsfield,
+    }).await.map_err(|err| anyhow::anyhow!("{err}"))?;
+
+    println!("\n===== /fnf/jobs/status-batch ({} ids) =====\n{:#?}", ids.len(), response);
+    for item in &response.items {
+      println!("{} => {} ({:?})", item.id, item.status, item.job_set_type);
+    }
+    println!("missing => {:?}", response.missing);
+
+    for job_id in load_higgsfield_test_job_ids()? {
+      let item = response.find(&job_id).unwrap_or_else(|| panic!("known job {job_id} absent from batch response"));
+      assert!(item.status.is_terminal(), "job {job_id} should be done by now, got {}", item.status);
+    }
+    Ok(())
+  }
+
   #[tokio::test]
   #[ignore]
   async fn live_job_status_batch() -> anyhow::Result<()> {

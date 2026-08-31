@@ -1,7 +1,7 @@
 //! Every endpoint as a [`HiggsfieldSession`] method: the session supplies a
 //! fresh bearer token and retries once on `401`.
 
-use crate::endpoints::generate::image::gpt_image_1::{gpt_image_1, GptImage1Args, GptImage1Request};
+use crate::endpoints::generate::image::gpt_image_2::{gpt_image_2, GptImage2Args, GptImage2Request};
 use crate::endpoints::generate::image::nano_banana_pro::{nano_banana_pro, NanoBananaProArgs, NanoBananaProRequest};
 use crate::endpoints::jobs::job_status::{job_status, JobStatusArgs, JobStatusRequest, JobStatusResponse};
 use crate::endpoints::jobs::job_status_batch::{job_status_batch, JobStatusBatchArgs, JobStatusBatchRequest, JobStatusBatchResponse};
@@ -22,10 +22,10 @@ impl HiggsfieldSession {
   }
 
   /// Enqueue a GPT Image job.
-  pub async fn gpt_image_1(&self, request: GptImage1Request) -> Result<EnqueueJobsResponse, HiggsfieldError> {
+  pub async fn gpt_image_2(&self, request: GptImage2Request) -> Result<EnqueueJobsResponse, HiggsfieldError> {
     self.with_auth(|auth| {
       let request = request.clone();
-      async move { gpt_image_1(GptImage1Args { request, auth: &auth, host: self.api_host() }).await }
+      async move { gpt_image_2(GptImage2Args { request, auth: &auth, host: self.api_host() }).await }
     }).await
   }
 
@@ -89,8 +89,8 @@ mod tests {
     let err = session.nano_banana_pro(request).await.unwrap_err();
     assert!(matches!(err, HiggsfieldError::Client(HiggsfieldClientError::InvalidRequest(_))));
 
-    let request = GptImage1Request::text_to_image("", ImageAspectRatio::Square1x1, GptImageQuality::Low, ImageResolution::OneK);
-    let err = session.gpt_image_1(request).await.unwrap_err();
+    let request = GptImage2Request::text_to_image("", ImageAspectRatio::Square1x1, GptImageQuality::Low, ImageResolution::OneK);
+    let err = session.gpt_image_2(request).await.unwrap_err();
     assert!(matches!(err, HiggsfieldError::Client(HiggsfieldClientError::InvalidRequest(_))));
 
     let err = session.job_status_batch(&[]).await.unwrap_err();

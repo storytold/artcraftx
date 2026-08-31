@@ -239,6 +239,41 @@ mod tests {
 
   // ── Live (ignored: needs a real session and spends credits) ──
 
+  /// Enqueues a Nano Banana Pro job off the desktop app's saved Higgsfield
+  /// login (`~/Artcraft/artcraftx/credentials/higgsfield_cookies.toml`),
+  /// prints the enqueue response, then follows the job through the status
+  /// endpoints until it completes. Cheapest settings (1 image, 1k).
+  #[tokio::test]
+  #[ignore]
+  async fn live_enqueue_nano_banana_pro_from_app_credential_and_poll() -> anyhow::Result<()> {
+    use crate::test_utils::higgsfield_credential_toml::load_higgsfield_session_from_app_credential;
+    use crate::test_utils::poll_job_to_completion::poll_job_to_completion;
+    use crate::test_utils::setup_test_logging::setup_test_logging;
+    setup_test_logging();
+
+    let session = load_higgsfield_session_from_app_credential()?;
+    let auth = session.auth().await.map_err(|err| anyhow::anyhow!("minting a session token failed: {err}"))?;
+
+    let request = NanoBananaProRequest::text_to_image("a dinosaur on a skateboard", ImageAspectRatio::Portrait3x4, ImageResolution::OneK);
+    println!("\n===== request =====\n{:#?}", request);
+
+    let response = nano_banana_pro(NanoBananaProArgs {
+      request,
+      auth: &auth,
+      host: &HiggsfieldHost::Higgsfield,
+    }).await.map_err(|err| anyhow::anyhow!("{err}"))?;
+
+    println!("\n===== POST /fnf/jobs/nano-banana-2 =====\n{:#?}", response);
+    let job_ids = response.job_ids();
+    println!("job ids: {:?}", job_ids);
+    assert_eq!(job_ids.len(), 1);
+    assert_eq!(response.first_job_set().unwrap().job_set_type, crate::types::job_set_type::JobSetType::NanoBanana2);
+
+    let job = poll_job_to_completion(&session, &job_ids[0]).await?;
+    assert!(job.result_url().is_some(), "completed job should have a result url");
+    Ok(())
+  }
+
   #[tokio::test]
   #[ignore]
   async fn live_enqueue_nano_banana_pro() -> anyhow::Result<()> {

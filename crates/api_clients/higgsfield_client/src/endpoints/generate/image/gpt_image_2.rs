@@ -1,8 +1,5 @@
-//! POST `/fnf/jobs/v2/gpt_image_2` — enqueue a GPT Image job.
-//!
-//! NB: our binding is named `gpt_image_1`; on the wire Higgsfield calls this
-//! pipeline `gpt_image_2` (path, `model` field, and job set type), and those
-//! strings are kept verbatim below.
+//! POST `/fnf/jobs/v2/gpt_image_2` — enqueue a GPT Image 2 job (the web
+//! app's "GPT Image 2"; job set type `gpt_image_2`).
 
 use crate::client::higgsfield_host::HiggsfieldHost;
 use crate::client::send_request::{send_json_request, HttpMethod};
@@ -27,29 +24,29 @@ const MIN_BATCH_SIZE: u32 = 1;
 const MAX_BATCH_SIZE: u32 = 4;
 
 string_enum! {
-  /// The backend variant behind GPT Image. The web app currently always
+  /// The backend variant behind GPT Image 2. The web app currently always
   /// sends `videotape-alpha`; it's echoed back as `params.model`.
-  GptImage1SubModel {
+  GptImage2SubModel {
     VideotapeAlpha => "videotape-alpha",
   }
 }
 
-impl Default for GptImage1SubModel {
+impl Default for GptImage2SubModel {
   fn default() -> Self {
     Self::VideotapeAlpha
   }
 }
 
-pub struct GptImage1Args<'a> {
-  pub request: GptImage1Request,
+pub struct GptImage2Args<'a> {
+  pub request: GptImage2Request,
   pub auth: &'a HiggsfieldAuth,
   pub host: &'a HiggsfieldHost,
 }
 
-/// The material part of a GPT Image request. Serializable so it can be
+/// The material part of a GPT Image 2 request. Serializable so it can be
 /// logged or persisted separately from the session.
 #[derive(Clone, Debug, Serialize)]
-pub struct GptImage1Request {
+pub struct GptImage2Request {
   pub prompt: String,
 
   pub aspect_ratio: ImageAspectRatio,
@@ -64,7 +61,7 @@ pub struct GptImage1Request {
   /// Reference media URLs (image-to-image). Empty for text-to-image.
   pub medias: Vec<String>,
 
-  pub sub_model: GptImage1SubModel,
+  pub sub_model: GptImage2SubModel,
 
   /// Spend from the plan's "unlimited" pool instead of credits, if the plan
   /// has one.
@@ -75,7 +72,7 @@ pub struct GptImage1Request {
   pub maybe_dimensions: Option<ImageDimensions>,
 }
 
-impl GptImage1Request {
+impl GptImage2Request {
   /// A text-to-image request with the web app's defaults (1 image, credits).
   pub fn text_to_image(
     prompt: impl Into<String>,
@@ -90,7 +87,7 @@ impl GptImage1Request {
       resolution,
       batch_size: 1,
       medias: Vec::new(),
-      sub_model: GptImage1SubModel::default(),
+      sub_model: GptImage2SubModel::default(),
       use_unlim: false,
       maybe_dimensions: None,
     }
@@ -122,13 +119,13 @@ impl GptImage1Request {
 
 /// Enqueue the job. The response's job ids are what to poll (see
 /// `endpoints::jobs`).
-pub async fn gpt_image_1(args: GptImage1Args<'_>) -> Result<EnqueueJobsResponse, HiggsfieldError> {
+pub async fn gpt_image_2(args: GptImage2Args<'_>) -> Result<EnqueueJobsResponse, HiggsfieldError> {
   let request = args.request;
   request.validate()?;
   let dimensions = request.dimensions()?;
 
-  let body = GptImage1RequestBody {
-    params: GptImage1Params {
+  let body = GptImage2RequestBody {
+    params: GptImage2Params {
       prompt: request.prompt,
       aspect_ratio: request.aspect_ratio,
       quality: request.quality,
@@ -149,18 +146,18 @@ pub async fn gpt_image_1(args: GptImage1Args<'_>) -> Result<EnqueueJobsResponse,
 // ── Wire format ──
 
 #[derive(Serialize)]
-struct GptImage1RequestBody {
-  params: GptImage1Params,
+struct GptImage2RequestBody {
+  params: GptImage2Params,
   use_unlim: bool,
 }
 
 #[derive(Serialize)]
-struct GptImage1Params {
+struct GptImage2Params {
   prompt: String,
   aspect_ratio: ImageAspectRatio,
   quality: GptImageQuality,
   resolution: ImageResolution,
-  sub_model: GptImage1SubModel,
+  sub_model: GptImage2SubModel,
   batch_size: u32,
   model: &'static str,
   width: u32,
@@ -178,10 +175,10 @@ mod tests {
   #[test]
   fn wire_body_matches_captured_request() {
     // Captured from the web app: 9:16 at 2k, high quality, one image.
-    let request = GptImage1Request::text_to_image("a corgi on a bike", ImageAspectRatio::Portrait9x16, GptImageQuality::High, ImageResolution::TwoK);
+    let request = GptImage2Request::text_to_image("a corgi on a bike", ImageAspectRatio::Portrait9x16, GptImageQuality::High, ImageResolution::TwoK);
     let dimensions = request.dimensions().unwrap();
-    let body = GptImage1RequestBody {
-      params: GptImage1Params {
+    let body = GptImage2RequestBody {
+      params: GptImage2Params {
         prompt: request.prompt,
         aspect_ratio: request.aspect_ratio,
         quality: request.quality,
@@ -203,7 +200,7 @@ mod tests {
 
   #[test]
   fn public_request_serializes_with_typed_enums() {
-    let request = GptImage1Request::text_to_image("a cat", ImageAspectRatio::Square1x1, GptImageQuality::Medium, ImageResolution::OneK);
+    let request = GptImage2Request::text_to_image("a cat", ImageAspectRatio::Square1x1, GptImageQuality::Medium, ImageResolution::OneK);
     let value = serde_json::to_value(&request).unwrap();
     assert_eq!(value["quality"], json!("medium"));
     assert_eq!(value["sub_model"], json!("videotape-alpha"));
@@ -214,13 +211,13 @@ mod tests {
 
   #[test]
   fn empty_prompt_is_rejected() {
-    let request = GptImage1Request::text_to_image("", ImageAspectRatio::Square1x1, GptImageQuality::Low, ImageResolution::OneK);
+    let request = GptImage2Request::text_to_image("", ImageAspectRatio::Square1x1, GptImageQuality::Low, ImageResolution::OneK);
     assert!(matches!(request.validate(), Err(HiggsfieldClientError::InvalidRequest(_))));
   }
 
   #[test]
   fn batch_size_out_of_range_is_rejected() {
-    let mut request = GptImage1Request::text_to_image("p", ImageAspectRatio::Square1x1, GptImageQuality::Low, ImageResolution::OneK);
+    let mut request = GptImage2Request::text_to_image("p", ImageAspectRatio::Square1x1, GptImageQuality::Low, ImageResolution::OneK);
     request.batch_size = 0;
     assert!(matches!(request.validate(), Err(HiggsfieldClientError::InvalidRequest(_))));
   }
@@ -229,9 +226,9 @@ mod tests {
   async fn invalid_request_fails_before_any_http() {
     let auth = HiggsfieldAuth::new("token");
     let host = HiggsfieldHost::Custom("http://127.0.0.1:9".to_string());
-    let request = GptImage1Request::text_to_image(" ", ImageAspectRatio::Square1x1, GptImageQuality::Low, ImageResolution::OneK);
+    let request = GptImage2Request::text_to_image(" ", ImageAspectRatio::Square1x1, GptImageQuality::Low, ImageResolution::OneK);
 
-    let err = gpt_image_1(GptImage1Args { request, auth: &auth, host: &host }).await.unwrap_err();
+    let err = gpt_image_2(GptImage2Args { request, auth: &auth, host: &host }).await.unwrap_err();
     assert!(matches!(err, HiggsfieldError::Client(HiggsfieldClientError::InvalidRequest(_))));
   }
 
@@ -247,16 +244,51 @@ mod tests {
 
   // ── Live (ignored: needs a real session and spends credits) ──
 
+  /// Enqueues a GPT Image 2 job off the desktop app's saved Higgsfield
+  /// login (`~/Artcraft/artcraftx/credentials/higgsfield_cookies.toml`),
+  /// prints the enqueue response, then follows the job through the status
+  /// endpoints until it completes. Cheapest settings (1 image, 1k, low).
   #[tokio::test]
   #[ignore]
-  async fn live_enqueue_gpt_image_1() -> anyhow::Result<()> {
+  async fn live_enqueue_gpt_image_2_from_app_credential_and_poll() -> anyhow::Result<()> {
+    use crate::test_utils::higgsfield_credential_toml::load_higgsfield_session_from_app_credential;
+    use crate::test_utils::poll_job_to_completion::poll_job_to_completion;
+    use crate::test_utils::setup_test_logging::setup_test_logging;
+    setup_test_logging();
+
+    let session = load_higgsfield_session_from_app_credential()?;
+    let auth = session.auth().await.map_err(|err| anyhow::anyhow!("minting a session token failed: {err}"))?;
+
+    let request = GptImage2Request::text_to_image("a corgi on a bike", ImageAspectRatio::Square1x1, GptImageQuality::Low, ImageResolution::OneK);
+    println!("\n===== request =====\n{:#?}", request);
+
+    let response = gpt_image_2(GptImage2Args {
+      request,
+      auth: &auth,
+      host: &HiggsfieldHost::Higgsfield,
+    }).await.map_err(|err| anyhow::anyhow!("{err}"))?;
+
+    println!("\n===== POST /fnf/jobs/v2/gpt_image_2 =====\n{:#?}", response);
+    let job_ids = response.job_ids();
+    println!("job ids: {:?}", job_ids);
+    assert_eq!(job_ids.len(), 1);
+    assert_eq!(response.first_job_set().unwrap().job_set_type, crate::types::job_set_type::JobSetType::GptImage2);
+
+    let job = poll_job_to_completion(&session, &job_ids[0]).await?;
+    assert!(job.result_url().is_some(), "completed job should have a result url");
+    Ok(())
+  }
+
+  #[tokio::test]
+  #[ignore]
+  async fn live_enqueue_gpt_image_2() -> anyhow::Result<()> {
     use crate::test_utils::higgsfield_test_secrets::load_higgsfield_test_auth;
     use crate::test_utils::setup_test_logging::setup_test_logging;
     setup_test_logging();
 
     let auth = load_higgsfield_test_auth().await?;
-    let response = gpt_image_1(GptImage1Args {
-      request: GptImage1Request::text_to_image("a corgi on a bike", ImageAspectRatio::Portrait9x16, GptImageQuality::High, ImageResolution::TwoK),
+    let response = gpt_image_2(GptImage2Args {
+      request: GptImage2Request::text_to_image("a corgi on a bike", ImageAspectRatio::Portrait9x16, GptImageQuality::High, ImageResolution::TwoK),
       auth: &auth,
       host: &HiggsfieldHost::Higgsfield,
     }).await.map_err(|err| anyhow::anyhow!("{err}"))?;

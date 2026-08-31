@@ -73,8 +73,8 @@ mod tests {
 
   #[test]
   fn ids_are_transparent_strings() {
-    let id = JobId::new("68297a3d-0628-4ecd-b651-b49aff47320d");
-    assert_eq!(serde_json::to_string(&id).unwrap(), "\"68297a3d-0628-4ecd-b651-b49aff47320d\"");
+    let id = JobId::new("11111111-2222-4333-8444-555555555555");
+    assert_eq!(serde_json::to_string(&id).unwrap(), "\"11111111-2222-4333-8444-555555555555\"");
     let parsed: JobId = serde_json::from_str("\"abc\"").unwrap();
     assert_eq!(parsed.as_str(), "abc");
     assert_eq!(parsed.to_string(), "abc");

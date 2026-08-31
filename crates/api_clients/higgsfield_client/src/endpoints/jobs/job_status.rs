@@ -191,6 +191,40 @@ mod tests {
 
   // ── Live (ignored: needs a real session and a real job id) ──
 
+  /// Drives the binding off the desktop app's saved Higgsfield login
+  /// (`~/Artcraft/artcraftx/credentials/higgsfield_cookies.toml`) against
+  /// the job ids in `external/credentials/higgsfield/job_ids.txt`, printing
+  /// each full record.
+  #[tokio::test]
+  #[ignore]
+  async fn live_job_status_from_app_credential() -> anyhow::Result<()> {
+    use crate::test_utils::higgsfield_credential_toml::load_higgsfield_session_from_app_credential;
+    use crate::test_utils::higgsfield_test_secrets::load_higgsfield_test_job_ids;
+    use crate::test_utils::setup_test_logging::setup_test_logging;
+    setup_test_logging();
+
+    let session = load_higgsfield_session_from_app_credential()?;
+    let auth = session.auth().await.map_err(|err| anyhow::anyhow!("minting a session token failed: {err}"))?;
+
+    for job_id in load_higgsfield_test_job_ids()? {
+      let response = job_status(JobStatusArgs {
+        request: JobStatusRequest { job_id: job_id.clone() },
+        auth: &auth,
+        host: &HiggsfieldHost::Higgsfield,
+      }).await.map_err(|err| anyhow::anyhow!("job {job_id}: {err}"))?;
+
+      println!("\n===== /fnf/jobs/{job_id} =====\n{:#?}", response);
+      println!("result_url = {:?}", response.result_url());
+
+      assert_eq!(response.id, job_id);
+      assert!(response.status.is_terminal(), "job {job_id} should be done by now, got {}", response.status);
+      if response.status.is_success() {
+        assert!(response.result_url().is_some(), "completed job {job_id} should have a result url");
+      }
+    }
+    Ok(())
+  }
+
   #[tokio::test]
   #[ignore]
   async fn live_job_status() -> anyhow::Result<()> {
