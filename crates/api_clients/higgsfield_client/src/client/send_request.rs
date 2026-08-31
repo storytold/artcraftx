@@ -1,0 +1,184 @@
+//! The one HTTP path every endpoint uses: build an emulated-browser client,
+//! attach the session headers, send, classify the status, and deserialize.
+
+use crate::client::clerk_host::ClerkHost;
+use crate::client::higgsfield_host::{HiggsfieldHost, WEB_ORIGIN};
+use crate::credentials::higgsfield_auth::HiggsfieldAuth;
+use crate::credentials::higgsfield_cookies::HiggsfieldCookies;
+use crate::error::classify_higgsfield_http_error::classify_higgsfield_http_error;
+use crate::error::higgsfield_api_error::HiggsfieldApiError;
+use crate::error::higgsfield_client_error::HiggsfieldClientError;
+use crate::error::higgsfield_error::HiggsfieldError;
+use browser_emulation::browser_profile::BrowserProfile;
+use log::{debug, info};
+use serde::Serialize;
+use serde::de::DeserializeOwned;
+use std::time::Duration;
+
+/// The browser identity presented to the gateway. The web app is Chrome on
+/// macOS, so match it.
+const BROWSER_PROFILE: BrowserProfile = BrowserProfile::Chrome145;
+
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+
+#[derive(Clone, Copy)]
+pub(crate) enum HttpMethod {
+  Get,
+  Post,
+}
+
+impl HttpMethod {
+  fn as_str(self) -> &'static str {
+    match self {
+      Self::Get => "GET",
+      Self::Post => "POST",
+    }
+  }
+}
+
+/// How a request proves who it is.
+pub(crate) enum RequestCredential<'a> {
+  /// The API gateway: `authorization: Bearer <jwt>` (+ optional cookies and
+  /// DataDome id).
+  Bearer(&'a HiggsfieldAuth),
+
+  /// Clerk's frontend API: just the browser cookies (`__client`).
+  Cookies(&'a HiggsfieldCookies),
+}
+
+pub(crate) enum RequestBody<'a, Body: Serialize> {
+  None,
+  Json(&'a Body),
+  Form(&'a Body),
+}
+
+/// Send a JSON request to the Higgsfield API gateway and parse a JSON
+/// response. `maybe_body` is serialized for POSTs; pass `None::<&()>` for
+/// GETs.
+pub(crate) async fn send_json_request<Response, Body>(
+  method: HttpMethod,
+  path: &str,
+  auth: &HiggsfieldAuth,
+  host: &HiggsfieldHost,
+  maybe_body: Option<&Body>,
+) -> Result<Response, HiggsfieldError>
+where
+  Response: DeserializeOwned,
+  Body: Serialize,
+{
+  auth.validate()?;
+  let body = match maybe_body {
+    Some(body) => RequestBody::Json(body),
+    None => RequestBody::None,
+  };
+  send_request(method, host.url(path), RequestCredential::Bearer(auth), body).await
+}
+
+/// Send a request to Clerk's frontend API (cookie-authenticated) and parse a
+/// JSON response.
+pub(crate) async fn send_clerk_request<Response, Body>(
+  method: HttpMethod,
+  path: &str,
+  cookies: &HiggsfieldCookies,
+  host: &ClerkHost,
+  body: RequestBody<'_, Body>,
+) -> Result<Response, HiggsfieldError>
+where
+  Response: DeserializeOwned,
+  Body: Serialize,
+{
+  cookies.validate()?;
+  send_request(method, host.url(path), RequestCredential::Cookies(cookies), body).await
+}
+
+async fn send_request<Response, Body>(
+  method: HttpMethod,
+  url: String,
+  credential: RequestCredential<'_>,
+  body: RequestBody<'_, Body>,
+) -> Result<Response, HiggsfieldError>
+where
+  Response: DeserializeOwned,
+  Body: Serialize,
+{
+  let client = BROWSER_PROFILE
+      .configure_client_builder(wreq::Client::builder())
+      .timeout(REQUEST_TIMEOUT)
+      .build()
+      .map_err(HiggsfieldClientError::WreqClientBuild)?;
+
+  let request_builder = match method {
+    HttpMethod::Get => client.get(&url),
+    HttpMethod::Post => client.post(&url),
+  };
+
+  // NB: Browser-identity headers (user-agent, sec-ch-ua*) come from the
+  // emulation on the client; only request-context headers are set here.
+  let mut request_builder = request_builder
+      .header("accept", "*/*")
+      .header("accept-language", "en")
+      .header("origin", WEB_ORIGIN)
+      .header("referer", format!("{WEB_ORIGIN}/"))
+      .header("cache-control", "no-cache")
+      .header("pragma", "no-cache")
+      .header("priority", "u=1, i")
+      .header("sec-fetch-dest", "empty")
+      .header("sec-fetch-mode", "cors")
+      .header("sec-fetch-site", "same-site");
+
+  match credential {
+    RequestCredential::Bearer(auth) => {
+      request_builder = request_builder.header("authorization", auth.bearer_header_value());
+      if let Some(cookie_header) = auth.maybe_cookie_header.as_deref() {
+        request_builder = request_builder.header("cookie", cookie_header);
+      }
+      if let Some(datadome_client_id) = auth.maybe_datadome_client_id.as_deref() {
+        request_builder = request_builder.header("x-datadome-clientid", datadome_client_id);
+      }
+    }
+    RequestCredential::Cookies(cookies) => {
+      request_builder = request_builder.header("cookie", cookies.as_header_value());
+    }
+  }
+
+  match body {
+    RequestBody::None => {}
+    RequestBody::Json(body) => {
+      let body_json = serde_json::to_string(body)
+          .map_err(HiggsfieldClientError::RequestSerialization)?;
+      debug!("Higgsfield request body: {}", body_json);
+      request_builder = request_builder
+          .header("content-type", "application/json")
+          .body(body_json);
+    }
+    RequestBody::Form(body) => {
+      request_builder = request_builder.form(body);
+    }
+  }
+
+  let request = request_builder
+      .build()
+      .map_err(HiggsfieldClientError::WreqRequestBuild)?;
+
+  info!("Higgsfield request: {} {}", method.as_str(), url);
+
+  let response = client.execute(request)
+      .await
+      .map_err(HiggsfieldApiError::from_transport_error)?;
+
+  let status = response.status();
+
+  let response_body = response.text()
+      .await
+      .map_err(HiggsfieldApiError::from_transport_error)?;
+
+  info!("Higgsfield response: status={} ({} bytes)", status, response_body.len());
+  debug!("Higgsfield response body: {}", response_body);
+
+  classify_higgsfield_http_error(status.as_u16(), Some(&response_body))?;
+
+  let parsed = serde_json::from_str::<Response>(&response_body)
+      .map_err(|err| HiggsfieldApiError::deserialization(err, &response_body))?;
+
+  Ok(parsed)
+}
