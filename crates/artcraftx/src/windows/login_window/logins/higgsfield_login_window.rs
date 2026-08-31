@@ -1,6 +1,7 @@
 use crate::credentials::login_website::LoginWebsite;
 use crate::windows::login_window::login_journey::LoginJourney;
 use crate::windows::login_window::login_window_trait::LoginWindowSite;
+use higgsfield_client::client::higgsfield_browser_profile::HIGGSFIELD_USER_AGENT;
 use once_cell::sync::Lazy;
 use reqwest::Url;
 
@@ -32,6 +33,15 @@ impl LoginWindowSite for HiggsfieldLoginWindow {
 
   fn destination_hostnames(&self) -> &[&str] {
     DESTINATION_HOSTNAMES
+  }
+
+  // The SAME User-Agent `higgsfield_client` replays the cookies under.
+  // Cloudflare's `cf_clearance` and DataDome's `datadome` cookies are bound
+  // to the UA (and checked against the browser fingerprint), so the webview
+  // that earns them and the client that spends them must match. The UA is
+  // also recorded on the credential so the client can follow it exactly.
+  fn user_agent(&self) -> Option<&'static str> {
+    Some(HIGGSFIELD_USER_AGENT)
   }
 
   // Higgsfield's auth is Clerk. The logged-OUT homepage already sets several

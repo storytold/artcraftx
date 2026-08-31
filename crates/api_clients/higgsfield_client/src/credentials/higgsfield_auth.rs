@@ -22,6 +22,12 @@ pub struct HiggsfieldAuth {
   /// The `x-datadome-clientid` header value from the browser session, if
   /// available.
   pub maybe_datadome_client_id: Option<String>,
+
+  /// The User-Agent of the browser that captured the cookies. Bot-protection
+  /// cookies (`cf_clearance`, `datadome`) are bound to it, so requests
+  /// replaying them present the same string. When `None`, the client's
+  /// pinned default is used.
+  pub maybe_user_agent: Option<String>,
 }
 
 impl HiggsfieldAuth {
@@ -30,6 +36,7 @@ impl HiggsfieldAuth {
       bearer_token: bearer_token.into().trim().to_string(),
       maybe_cookie_header: None,
       maybe_datadome_client_id: None,
+      maybe_user_agent: None,
     }
   }
 
@@ -40,6 +47,11 @@ impl HiggsfieldAuth {
 
   pub fn with_datadome_client_id(mut self, datadome_client_id: impl Into<String>) -> Self {
     self.maybe_datadome_client_id = Some(datadome_client_id.into().trim().to_string());
+    self
+  }
+
+  pub fn with_user_agent(mut self, user_agent: impl Into<String>) -> Self {
+    self.maybe_user_agent = Some(user_agent.into().trim().to_string());
     self
   }
 
@@ -68,6 +80,7 @@ impl std::fmt::Debug for HiggsfieldAuth {
         .field("bearer_token", &"<redacted>")
         .field("maybe_cookie_header", &self.maybe_cookie_header.as_ref().map(|_| "<redacted>"))
         .field("maybe_datadome_client_id", &self.maybe_datadome_client_id.as_ref().map(|_| "<redacted>"))
+        .field("maybe_user_agent", &self.maybe_user_agent)
         .finish()
   }
 }

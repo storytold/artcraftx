@@ -140,6 +140,7 @@ fn save_session_credential(
     updated_at: Some(now),
     failed_at: None,
     succeeded_at: Some(now),
+    user_agent: None,
     grok_data: None,
     cookies: CookieStore::from_cookie_header(
         &format!("session={}", signed_session), &cookie_origin),

@@ -18,6 +18,14 @@ pub struct CookieCredential {
   #[serde(default, skip_serializing_if = "Option::is_none")]
   pub succeeded_at: Option<DateTime<Utc>>,
 
+  /// The User-Agent of the browser that captured these cookies. Bot-protection
+  /// cookies (Cloudflare `cf_clearance`, DataDome `datadome`) are bound to
+  /// it, so HTTP clients replaying the cookies must present the same string.
+  /// Absent for hand-written files and captures from before this was
+  /// recorded; clients then fall back to their pinned per-site UA.
+  #[serde(default, skip_serializing_if = "Option::is_none")]
+  pub user_agent: Option<String>,
+
   /// Grok-only extras: the reusable statsig material and its refresh schedule.
   /// NB: a table, so it must stay after all scalar fields (before `cookies`).
   #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -35,6 +43,7 @@ impl CookieCredential {
       updated_at: None,
       failed_at: None,
       succeeded_at: None,
+      user_agent: None,
       grok_data: None,
       cookies,
     }

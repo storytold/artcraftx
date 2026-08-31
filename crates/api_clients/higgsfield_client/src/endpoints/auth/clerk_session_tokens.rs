@@ -14,6 +14,9 @@ use serde::{Deserialize, Serialize};
 pub struct ClerkSessionTokensArgs<'a> {
   pub request: ClerkSessionTokensRequest,
   pub cookies: &'a HiggsfieldCookies,
+  /// The User-Agent of the browser that captured the cookies (see
+  /// `HiggsfieldSession::with_user_agent`); `None` uses the pinned default.
+  pub maybe_user_agent: Option<&'a str>,
   pub host: &'a ClerkHost,
 }
 
@@ -43,6 +46,7 @@ pub async fn clerk_session_tokens(args: ClerkSessionTokensArgs<'_>) -> Result<Cl
     HttpMethod::Post,
     &path,
     args.cookies,
+    args.maybe_user_agent,
     args.host,
     RequestBody::Form(&form),
   ).await?;
@@ -116,6 +120,7 @@ mod tests {
     let err = clerk_session_tokens(ClerkSessionTokensArgs {
       request: ClerkSessionTokensRequest { session_id: "../evil".into(), maybe_organization_id: None },
       cookies: &cookies,
+      maybe_user_agent: None,
       host: &host,
     }).await.unwrap_err();
     assert!(matches!(err, HiggsfieldError::Client(HiggsfieldClientError::InvalidRequest(_))));
@@ -132,13 +137,14 @@ mod tests {
     setup_test_logging();
 
     let cookies = load_higgsfield_test_cookies()?;
-    let client = clerk_client(ClerkClientArgs { request: ClerkClientRequest, cookies: &cookies, host: &ClerkHost::Higgsfield })
+    let client = clerk_client(ClerkClientArgs { request: ClerkClientRequest, cookies: &cookies, maybe_user_agent: None, host: &ClerkHost::Higgsfield })
         .await.map_err(|err| anyhow::anyhow!("{err}"))?;
     let session_id = client.active_session().unwrap().id.clone();
 
     let token = clerk_session_tokens(ClerkSessionTokensArgs {
       request: ClerkSessionTokensRequest { session_id, maybe_organization_id: None },
       cookies: &cookies,
+      maybe_user_agent: None,
       host: &ClerkHost::Higgsfield,
     }).await.map_err(|err| anyhow::anyhow!("{err}"))?;
 

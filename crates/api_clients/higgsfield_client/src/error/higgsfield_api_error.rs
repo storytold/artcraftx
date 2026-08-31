@@ -1,3 +1,5 @@
+use cloudflare_errors::cloudflare_error::CloudflareError;
+use datadome_errors::datadome_error::DataDomeError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
@@ -34,12 +36,17 @@ pub enum HiggsfieldApiError {
     raw_http_body: String,
   },
 
-  /// 403 from DataDome's bot protection rather than from the API itself.
-  /// The session headers (cookies, `x-datadome-clientid`) need refreshing
-  /// from a real browser.
-  DataDomeBlocked {
-    raw_http_body: String,
-  },
+  /// Cloudflare's edge answered instead of the API: a bot challenge, a WAF
+  /// block, a rate limit, or an origin failure. See
+  /// [`CloudflareError`] for which, and `cloudflare_mitigation` for what to
+  /// do about it.
+  Cloudflare(CloudflareError),
+
+  /// DataDome's bot protection answered instead of the API: a CAPTCHA,
+  /// an interstitial, or a hard block. The session (cookies,
+  /// `x-datadome-clientid`, User-Agent) needs refreshing from a real
+  /// browser. See `datadome_mitigation`.
+  DataDome(DataDomeError),
 
   /// 404 — e.g. an unknown job id.
   NotFound {
@@ -108,8 +115,8 @@ impl Display for HiggsfieldApiError {
         write!(f, "Insufficient credits: {}{}", reason, fmt_raw_body(raw_http_body)),
       Self::Forbidden { reason, raw_http_body } =>
         write!(f, "Forbidden: {}{}", reason, fmt_raw_body(raw_http_body)),
-      Self::DataDomeBlocked { raw_http_body } =>
-        write!(f, "Blocked by DataDome bot protection{}", fmt_raw_body(raw_http_body)),
+      Self::Cloudflare(err) => write!(f, "{}", err),
+      Self::DataDome(err) => write!(f, "{}", err),
       Self::NotFound { raw_http_body } =>
         write!(f, "Not found{}", fmt_raw_body(raw_http_body)),
       Self::NoActiveSession { raw_http_body } =>
@@ -135,10 +142,24 @@ impl Display for HiggsfieldApiError {
 impl HiggsfieldApiError {
   /// Whether retrying the same request later is reasonable.
   pub fn is_retryable(&self) -> bool {
-    matches!(
-      self,
-      Self::RateLimited { .. } | Self::ServerError { .. } | Self::Timeout(_) | Self::Network(_),
-    )
+    match self {
+      Self::RateLimited { .. } | Self::ServerError { .. } | Self::Timeout(_) | Self::Network(_) => true,
+      Self::Cloudflare(err) => err.is_retryable(),
+      _ => false,
+    }
+  }
+
+  /// Bot protection (Cloudflare challenge / DataDome) refused this client:
+  /// the only fix is a fresh browser login that re-earns the protection
+  /// cookies. Distinct from an expired bearer token, which the session
+  /// re-mints on its own.
+  pub fn needs_browser_reauth(&self) -> bool {
+    match self {
+      Self::Cloudflare(err) => err.is_challenge(),
+      Self::DataDome(err) => err.is_challenge() || matches!(err, DataDomeError::Unclassified { .. }),
+      Self::NoActiveSession { .. } => true,
+      _ => false,
+    }
   }
 
   /// Build a [`HiggsfieldApiError::Deserialization`] that captures the raw

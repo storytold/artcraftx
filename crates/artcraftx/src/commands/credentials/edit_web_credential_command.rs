@@ -67,6 +67,9 @@ pub async fn edit_web_credential_command(
           updated_at: Some(Utc::now()),
           failed_at: existing_failed_at,
           succeeded_at: existing_succeeded_at,
+          // Hand-pasted cookies came from an unknown browser; drop the
+          // recorded UA rather than claim one that may no longer match.
+          user_agent: None,
           grok_data: existing_grok_data,
           cookies: new_cookies,
         });

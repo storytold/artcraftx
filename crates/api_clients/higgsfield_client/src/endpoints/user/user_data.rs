@@ -170,6 +170,38 @@ mod tests {
 
   // ── Live (ignored: needs a real session) ──
 
+  /// Drives the binding off the desktop app's saved Higgsfield login
+  /// (`~/Artcraft/artcraftx/credentials/higgsfield_cookies.toml`): mints a
+  /// Clerk token from the stored cookies, calls `/fnf/user`, and prints
+  /// everything that came back.
+  #[tokio::test]
+  #[ignore]
+  async fn live_user_data_from_app_credential() -> anyhow::Result<()> {
+    use crate::test_utils::higgsfield_credential_toml::load_higgsfield_session_from_app_credential;
+    use crate::test_utils::setup_test_logging::setup_test_logging;
+    setup_test_logging();
+
+    let session = load_higgsfield_session_from_app_credential()?;
+    let auth = session.auth().await.map_err(|err| anyhow::anyhow!("minting a session token failed: {err}"))?;
+    println!("Minted bearer token ({} chars); session {:?}", auth.bearer_token.len(), session.current_token().await.map(|t| t.session_id().to_string()));
+
+    let response = user_data(UserDataArgs {
+      request: UserDataRequest,
+      auth: &auth,
+      host: &HiggsfieldHost::Higgsfield,
+    }).await.map_err(|err| anyhow::anyhow!("{err}"))?;
+
+    println!("\n===== /fnf/user (typed) =====\n{:#?}", response);
+    println!("\n===== /fnf/user (extra, untyped) =====");
+    for (key, value) in &response.extra {
+      println!("{key} = {value}");
+    }
+
+    assert!(response.email.is_some(), "expected an email on the account");
+    assert!(response.workspace_id.is_some(), "expected a workspace id");
+    Ok(())
+  }
+
   #[tokio::test]
   #[ignore]
   async fn live_user_data() -> anyhow::Result<()> {

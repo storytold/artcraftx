@@ -1,4 +1,5 @@
 pub mod grok;
+pub mod higgsfield;
 pub mod midjourney;
 pub mod sora;
 pub mod storyteller;

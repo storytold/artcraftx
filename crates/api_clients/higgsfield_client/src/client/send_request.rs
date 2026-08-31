@@ -1,23 +1,21 @@
-//! The one HTTP path every endpoint uses: build an emulated-browser client,
-//! attach the session headers, send, classify the status, and deserialize.
+//! The one HTTP path every endpoint uses: build an emulated-browser client
+//! matching the capturing browser, attach the session headers, send, classify
+//! the status (bot protection first), and deserialize.
 
 use crate::client::clerk_host::ClerkHost;
+use crate::client::higgsfield_browser_profile::higgsfield_browser_profile;
 use crate::client::higgsfield_host::{HiggsfieldHost, WEB_ORIGIN};
 use crate::credentials::higgsfield_auth::HiggsfieldAuth;
 use crate::credentials::higgsfield_cookies::HiggsfieldCookies;
-use crate::error::classify_higgsfield_http_error::classify_higgsfield_http_error;
+use crate::error::classify_higgsfield_http_error::{classify_higgsfield_http_response, HttpResponseSignals};
 use crate::error::higgsfield_api_error::HiggsfieldApiError;
 use crate::error::higgsfield_client_error::HiggsfieldClientError;
 use crate::error::higgsfield_error::HiggsfieldError;
-use browser_emulation::browser_profile::BrowserProfile;
 use log::{debug, info};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use std::time::Duration;
-
-/// The browser identity presented to the gateway. The web app is Chrome on
-/// macOS, so match it.
-const BROWSER_PROFILE: BrowserProfile = BrowserProfile::Chrome145;
+use wreq::header::HeaderMap;
 
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 
@@ -43,7 +41,20 @@ pub(crate) enum RequestCredential<'a> {
   Bearer(&'a HiggsfieldAuth),
 
   /// Clerk's frontend API: just the browser cookies (`__client`).
-  Cookies(&'a HiggsfieldCookies),
+  Cookies {
+    cookies: &'a HiggsfieldCookies,
+    /// The capturing browser's UA, for the same reason as on the gateway.
+    maybe_user_agent: Option<&'a str>,
+  },
+}
+
+impl RequestCredential<'_> {
+  fn maybe_user_agent(&self) -> Option<&str> {
+    match self {
+      Self::Bearer(auth) => auth.maybe_user_agent.as_deref(),
+      Self::Cookies { maybe_user_agent, .. } => *maybe_user_agent,
+    }
+  }
 }
 
 pub(crate) enum RequestBody<'a, Body: Serialize> {
@@ -80,6 +91,7 @@ pub(crate) async fn send_clerk_request<Response, Body>(
   method: HttpMethod,
   path: &str,
   cookies: &HiggsfieldCookies,
+  maybe_user_agent: Option<&str>,
   host: &ClerkHost,
   body: RequestBody<'_, Body>,
 ) -> Result<Response, HiggsfieldError>
@@ -88,7 +100,7 @@ where
   Body: Serialize,
 {
   cookies.validate()?;
-  send_request(method, host.url(path), RequestCredential::Cookies(cookies), body).await
+  send_request(method, host.url(path), RequestCredential::Cookies { cookies, maybe_user_agent }, body).await
 }
 
 async fn send_request<Response, Body>(
@@ -101,7 +113,10 @@ where
   Response: DeserializeOwned,
   Body: Serialize,
 {
-  let client = BROWSER_PROFILE
+  // Present the browser that earned the cookies (or our pinned default).
+  let browser_profile = higgsfield_browser_profile(credential.maybe_user_agent());
+
+  let client = browser_profile
       .configure_client_builder(wreq::Client::builder())
       .timeout(REQUEST_TIMEOUT)
       .build()
@@ -126,7 +141,7 @@ where
       .header("sec-fetch-mode", "cors")
       .header("sec-fetch-site", "same-site");
 
-  match credential {
+  match &credential {
     RequestCredential::Bearer(auth) => {
       request_builder = request_builder.header("authorization", auth.bearer_header_value());
       if let Some(cookie_header) = auth.maybe_cookie_header.as_deref() {
@@ -136,7 +151,7 @@ where
         request_builder = request_builder.header("x-datadome-clientid", datadome_client_id);
       }
     }
-    RequestCredential::Cookies(cookies) => {
+    RequestCredential::Cookies { cookies, .. } => {
       request_builder = request_builder.header("cookie", cookies.as_header_value());
     }
   }
@@ -160,13 +175,14 @@ where
       .build()
       .map_err(HiggsfieldClientError::WreqRequestBuild)?;
 
-  info!("Higgsfield request: {} {}", method.as_str(), url);
+  info!("Higgsfield request: {} {} (browser: {})", method.as_str(), url, browser_profile.label());
 
   let response = client.execute(request)
       .await
       .map_err(HiggsfieldApiError::from_transport_error)?;
 
   let status = response.status();
+  let protection_headers = ProtectionHeaders::from_headers(response.headers());
 
   let response_body = response.text()
       .await
@@ -175,10 +191,42 @@ where
   info!("Higgsfield response: status={} ({} bytes)", status, response_body.len());
   debug!("Higgsfield response body: {}", response_body);
 
-  classify_higgsfield_http_error(status.as_u16(), Some(&response_body))?;
+  classify_higgsfield_http_response(&HttpResponseSignals {
+    status_code: status.as_u16(),
+    body: &response_body,
+    maybe_server_header: protection_headers.server.as_deref(),
+    maybe_cf_ray: protection_headers.cf_ray.as_deref(),
+    maybe_cf_mitigated: protection_headers.cf_mitigated.as_deref(),
+    maybe_x_datadome: protection_headers.x_datadome.as_deref(),
+    maybe_x_dd_b: protection_headers.x_dd_b.as_deref(),
+    context: &url,
+  })?;
 
   let parsed = serde_json::from_str::<Response>(&response_body)
       .map_err(|err| HiggsfieldApiError::deserialization(err, &response_body))?;
 
   Ok(parsed)
+}
+
+/// The response headers Cloudflare and DataDome use to announce themselves,
+/// copied out before the body is consumed.
+struct ProtectionHeaders {
+  server: Option<String>,
+  cf_ray: Option<String>,
+  cf_mitigated: Option<String>,
+  x_datadome: Option<String>,
+  x_dd_b: Option<String>,
+}
+
+impl ProtectionHeaders {
+  fn from_headers(headers: &HeaderMap) -> Self {
+    let get = |name: &str| headers.get(name).and_then(|value| value.to_str().ok()).map(|s| s.to_string());
+    Self {
+      server: get("server"),
+      cf_ray: get("cf-ray"),
+      cf_mitigated: get("cf-mitigated"),
+      x_datadome: get("x-datadome"),
+      x_dd_b: get("x-dd-b"),
+    }
+  }
 }

@@ -19,7 +19,7 @@ workspace-build-acceleration.workspace = true
 # (None)
 
 # External
-# (None)
+log.workspace = true
 
 [dev-dependencies]
 # (None)

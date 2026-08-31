@@ -2,6 +2,7 @@ use crate::credentials::login_website::LoginWebsite;
 use crate::windows::login_window::login_journey::LoginJourney;
 use crate::windows::login_window::login_window_trait::LoginWindowSite;
 use crate::windows::login_window::utils::grok_statsig_capture::grok_statsig_init_script;
+use grok_consumer_client::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
 use once_cell::sync::Lazy;
 use reqwest::Url;
 
@@ -39,6 +40,14 @@ impl LoginWindowSite for GrokLoginWindow {
 
   fn destination_hostnames(&self) -> &[&str] {
     DESTINATION_HOSTNAMES
+  }
+
+  // grok.com sits behind Cloudflare, whose `cf_clearance` cookie is bound to
+  // the User-Agent. `grok_consumer_client` sends every request (and the image
+  // websocket upgrade) as Firefox 143 on macOS, so the webview that earns the
+  // clearance must present the same UA.
+  fn user_agent(&self) -> Option<&'static str> {
+    Some(FIREFOX_143_MAC_USER_AGENT)
   }
 
   // NB: Grok's session rides in the xAI SSO cookies (`sso`/`sso-rw`), but rather

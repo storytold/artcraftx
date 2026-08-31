@@ -1,21 +1,63 @@
 use crate::error::higgsfield_api_error::HiggsfieldApiError;
 use crate::error::higgsfield_error::HiggsfieldError;
+use cloudflare_errors::classify_cloudflare_response::classify_cloudflare_response;
+use cloudflare_errors::cloudflare_response_signals::CloudflareResponseSignals;
+use datadome_errors::classify_datadome_response::classify_datadome_response;
+use datadome_errors::datadome_response_signals::DataDomeResponseSignals;
+
+/// Everything the transport knows about a response. Header fields are
+/// optional so the status + body shortcut still works.
+#[derive(Debug, Clone, Default)]
+pub struct HttpResponseSignals<'a> {
+  pub status_code: u16,
+  pub body: &'a str,
+  pub maybe_server_header: Option<&'a str>,
+  pub maybe_cf_ray: Option<&'a str>,
+  pub maybe_cf_mitigated: Option<&'a str>,
+  pub maybe_x_datadome: Option<&'a str>,
+  pub maybe_x_dd_b: Option<&'a str>,
+  /// What was being requested, for log lines (e.g. the URL).
+  pub context: &'a str,
+}
 
 /// Convert a non-2xx HTTP response into the most specific
-/// [`HiggsfieldError`] we can classify from the status code and body.
-/// Returns `Ok(())` for 2xx.
-pub fn classify_higgsfield_http_error(status_code: u16, maybe_body: Option<&str>) -> Result<(), HiggsfieldError> {
+/// [`HiggsfieldError`] we can classify. Returns `Ok(())` for 2xx.
+///
+/// Bot protection is checked first: a DataDome or Cloudflare answer is not
+/// an API error and must never be mistaken for one (a challenge page is a
+/// 403 too). Those are logged here, at the level the protection crate
+/// recommends, so every caller gets consistent logging for free.
+pub fn classify_higgsfield_http_response(signals: &HttpResponseSignals<'_>) -> Result<(), HiggsfieldError> {
+  let status_code = signals.status_code;
+  let body = signals.body;
+
   if (200..300).contains(&status_code) {
     return Ok(());
   }
 
-  let body = maybe_body.unwrap_or("");
+  let datadome_signals = DataDomeResponseSignals::new(status_code, body)
+      .with_x_datadome(signals.maybe_x_datadome)
+      .with_x_dd_b(signals.maybe_x_dd_b);
+  if let Some(err) = classify_datadome_response(&datadome_signals) {
+    err.log(signals.context);
+    return Err(HiggsfieldApiError::DataDome(err).into());
+  }
+
+  let cloudflare_signals = CloudflareResponseSignals::new(status_code, body)
+      .with_server_header(signals.maybe_server_header)
+      .with_cf_ray(signals.maybe_cf_ray)
+      .with_cf_mitigated(signals.maybe_cf_mitigated);
+  if let Some(err) = classify_cloudflare_response(&cloudflare_signals) {
+    err.log(signals.context);
+    return Err(HiggsfieldApiError::Cloudflare(err).into());
+  }
+
   let raw = || body.to_string();
   let reason = || extract_error_message(body).unwrap_or_else(|| body.to_string());
 
   // Content moderation and credit exhaustion can arrive under several 4xx
   // codes; classify by body first for those.
-  if status_code >= 400 && status_code < 500 {
+  if (400..500).contains(&status_code) {
     if body_indicates_moderation(body) {
       return Err(HiggsfieldApiError::ContentModerated { reason: reason(), raw_http_body: raw() }.into());
     }
@@ -27,7 +69,6 @@ pub fn classify_higgsfield_http_error(status_code: u16, maybe_body: Option<&str>
   let error = match status_code {
     400 => HiggsfieldApiError::BadRequest { reason: reason(), raw_http_body: raw() },
     401 => HiggsfieldApiError::Unauthorized { raw_http_body: raw() },
-    403 if body_indicates_datadome(body) => HiggsfieldApiError::DataDomeBlocked { raw_http_body: raw() },
     403 => HiggsfieldApiError::Forbidden { reason: reason(), raw_http_body: raw() },
     404 => HiggsfieldApiError::NotFound { raw_http_body: raw() },
     422 => HiggsfieldApiError::UnprocessableEntity { reason: reason(), raw_http_body: raw() },
@@ -37,6 +78,16 @@ pub fn classify_higgsfield_http_error(status_code: u16, maybe_body: Option<&str>
   };
 
   Err(error.into())
+}
+
+/// Status + body shortcut over [`classify_higgsfield_http_response`].
+pub fn classify_higgsfield_http_error(status_code: u16, maybe_body: Option<&str>) -> Result<(), HiggsfieldError> {
+  classify_higgsfield_http_response(&HttpResponseSignals {
+    status_code,
+    body: maybe_body.unwrap_or(""),
+    context: "higgsfield",
+    ..Default::default()
+  })
 }
 
 /// The gateway is FastAPI-flavored: errors usually look like
@@ -97,16 +148,11 @@ fn body_indicates_insufficient_credits(body: &str) -> bool {
     && (lower.contains("insufficient") || lower.contains("not enough") || lower.contains("enough"))
 }
 
-/// DataDome's challenge response is a JSON body with a `url` to its captcha
-/// page plus an `x-datadome` header; matching the body is what we have here.
-fn body_indicates_datadome(body: &str) -> bool {
-  let lower = body.to_lowercase();
-  lower.contains("datadome") || lower.contains("captcha-delivery.com")
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
+  use cloudflare_errors::cloudflare_error::CloudflareError;
+  use datadome_errors::datadome_error::DataDomeError;
 
   // ── Success ──
 
@@ -116,13 +162,78 @@ mod tests {
     assert!(classify_higgsfield_http_error(201, Some("{}")).is_ok());
   }
 
+  // ── Bot protection ──
+
+  #[test]
+  fn datadome_captcha_is_first_class() {
+    let body = r#"{"url":"https://geo.captcha-delivery.com/captcha/?initialCid=abc&hash=def&cid=x&t=fe","cid":"x"}"#;
+    let err = classify_higgsfield_http_error(403, Some(body)).unwrap_err();
+    assert!(matches!(err, HiggsfieldError::Api(HiggsfieldApiError::DataDome(DataDomeError::CaptchaChallenge { .. }))));
+    assert!(err.needs_browser_reauth());
+    assert!(err.is_auth_failure());
+    assert!(!err.is_token_rejected());
+    assert!(!err.is_retryable());
+  }
+
+  #[test]
+  fn datadome_hard_block_is_not_reauthable() {
+    let body = r#"{"url":"https://geo.captcha-delivery.com/captcha/?cid=x&t=bv","cid":"x"}"#;
+    let err = classify_higgsfield_http_error(403, Some(body)).unwrap_err();
+    assert!(matches!(err, HiggsfieldError::Api(HiggsfieldApiError::DataDome(DataDomeError::Blocked { .. }))));
+    assert!(!err.needs_browser_reauth());
+  }
+
+  #[test]
+  fn cloudflare_challenge_is_first_class() {
+    let body = "<!DOCTYPE html><title>Just a moment...</title><div id=\"challenge-error-text\"></div>";
+    let err = classify_higgsfield_http_error(403, Some(body)).unwrap_err();
+    assert!(matches!(err, HiggsfieldError::Api(HiggsfieldApiError::Cloudflare(CloudflareError::ChallengeInterstitial403))));
+    assert!(err.needs_browser_reauth());
+    assert!(!err.is_retryable());
+  }
+
+  #[test]
+  fn cloudflare_challenge_by_header_beats_an_opaque_body() {
+    let err = classify_higgsfield_http_response(&HttpResponseSignals {
+      status_code: 403,
+      body: "",
+      maybe_cf_mitigated: Some("challenge"),
+      context: "test",
+      ..Default::default()
+    }).unwrap_err();
+    assert!(matches!(err, HiggsfieldError::Api(HiggsfieldApiError::Cloudflare(CloudflareError::ChallengeInterstitial403))));
+  }
+
+  #[test]
+  fn cloudflare_origin_failure_is_retryable() {
+    let err = classify_higgsfield_http_response(&HttpResponseSignals {
+      status_code: 502,
+      body: "",
+      maybe_server_header: Some("cloudflare"),
+      maybe_cf_ray: Some("8abc-SJC"),
+      context: "test",
+      ..Default::default()
+    }).unwrap_err();
+    assert!(matches!(err, HiggsfieldError::Api(HiggsfieldApiError::Cloudflare(CloudflareError::BadGateway502))));
+    assert!(err.is_retryable());
+    assert!(!err.needs_browser_reauth());
+  }
+
+  #[test]
+  fn an_origin_502_without_cloudflare_markers_is_a_server_error() {
+    let err = classify_higgsfield_http_error(502, Some(r#"{"detail":"upstream"}"#)).unwrap_err();
+    assert!(matches!(err, HiggsfieldError::Api(HiggsfieldApiError::ServerError { status_code: 502, .. })));
+  }
+
   // ── Direct status mappings ──
 
   #[test]
   fn unauthorized_401() {
     let err = classify_higgsfield_http_error(401, Some(r#"{"detail":"Not authenticated"}"#)).unwrap_err();
     assert!(matches!(err, HiggsfieldError::Api(HiggsfieldApiError::Unauthorized { .. })));
+    assert!(err.is_token_rejected());
     assert!(err.is_auth_failure());
+    assert!(!err.needs_browser_reauth());
     assert!(!err.is_retryable());
   }
 
@@ -139,13 +250,6 @@ mod tests {
       HiggsfieldError::Api(HiggsfieldApiError::Forbidden { reason, .. }) => assert_eq!(reason, "Account suspended"),
       other => panic!("expected Forbidden, got {:?}", other),
     }
-  }
-
-  #[test]
-  fn datadome_403_is_bot_block() {
-    let body = r#"{"url":"https://geo.captcha-delivery.com/captcha/?initialCid=abc&hash=def","cid":"x"}"#;
-    let err = classify_higgsfield_http_error(403, Some(body)).unwrap_err();
-    assert!(matches!(err, HiggsfieldError::Api(HiggsfieldApiError::DataDomeBlocked { .. })));
   }
 
   #[test]
@@ -235,14 +339,8 @@ mod tests {
 
   #[test]
   fn nested_error_message_is_extracted() {
-    assert_eq!(
-      extract_error_message(r#"{"error":{"message":"boom"}}"#).as_deref(),
-      Some("boom"),
-    );
-    assert_eq!(
-      extract_error_message(r#"{"message":"plain"}"#).as_deref(),
-      Some("plain"),
-    );
+    assert_eq!(extract_error_message(r#"{"error":{"message":"boom"}}"#).as_deref(), Some("boom"));
+    assert_eq!(extract_error_message(r#"{"message":"plain"}"#).as_deref(), Some("plain"));
     assert_eq!(extract_error_message("[]"), None);
   }
 }

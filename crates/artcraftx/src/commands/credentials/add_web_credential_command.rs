@@ -21,6 +21,9 @@ pub struct WebCredentialSave {
   pub maybe_user_info: Option<CredentialUserInfo>,
   /// Preemptively captured statsig (Grok only; `None` for other sites).
   pub maybe_statsig: Option<GrokStatsigCapture>,
+  /// The User-Agent the capturing webview presented, when the site pins one.
+  /// Bot-protection cookies are bound to it; see `CookieCredential::user_agent`.
+  pub maybe_user_agent: Option<String>,
 }
 
 /// Save a web-login (cookie) credential to the credentials directory.
@@ -57,6 +60,7 @@ pub fn save_web_credential(
     updated_at: Some(now),
     failed_at: None,
     succeeded_at: None,
+    user_agent: save.maybe_user_agent,
     grok_data,
     cookies: save.cookies,
   };
@@ -146,6 +150,8 @@ pub async fn add_web_credential_command(
       cookies,
       maybe_user_info: None,
       maybe_statsig: None,
+      // Hand-entered cookies came from an unknown browser; record no UA.
+      maybe_user_agent: None,
     },
   ).map_err(|err| {
     error!("Error saving web credential: {}", err);

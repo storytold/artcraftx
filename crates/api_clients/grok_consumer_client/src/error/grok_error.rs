@@ -12,13 +12,22 @@ pub enum GrokError {
 }
 
 impl GrokError {
+  /// Cloudflare reports the origin (grok.com) is failing — wait and retry.
   pub fn is_grok_having_downtime_issues(&self) -> bool {
     match self {
-      Self::ApiGeneric(GrokGenericApiError::CloudflareError(CloudflareError::BadGateway502)) => true,
-      Self::ApiGeneric(GrokGenericApiError::CloudflareError(CloudflareError::GatewayTimeout504)) => true,
-      Self::ApiGeneric(GrokGenericApiError::CloudflareError(CloudflareError::TimeoutOccurred524)) => true,
+      Self::ApiGeneric(GrokGenericApiError::CloudflareError(err)) => err.is_origin_failure(),
       _ => false,
     }
+  }
+
+  /// Cloudflare challenged this client: the cookies (notably `cf_clearance`)
+  /// need re-earning in the login window, under the same User-Agent the
+  /// client sends.
+  pub fn is_cloudflare_challenge(&self) -> bool {
+    matches!(
+      self,
+      Self::ApiGeneric(GrokGenericApiError::CloudflareError(CloudflareError::ChallengeInterstitial403)),
+    )
   }
 }
 

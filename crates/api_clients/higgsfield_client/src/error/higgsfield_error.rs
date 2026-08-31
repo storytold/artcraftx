@@ -35,9 +35,29 @@ impl HiggsfieldError {
     }
   }
 
-  /// Whether the session itself is the problem (expired token, blocked
-  /// account) — re-authenticating is needed before retrying.
+  /// The bearer token was rejected (expired or revoked). The session can fix
+  /// this itself by minting a new one — see `HiggsfieldSession::with_auth`.
+  pub fn is_token_rejected(&self) -> bool {
+    matches!(self, Self::Api(HiggsfieldApiError::Unauthorized { .. }))
+  }
+
+  /// Bot protection or a dead Clerk session: only a human in a browser can
+  /// fix this (a fresh login re-earns the cookies).
+  pub fn needs_browser_reauth(&self) -> bool {
+    match self {
+      Self::Client(_) => false,
+      Self::Api(err) => err.needs_browser_reauth(),
+    }
+  }
+
+  /// Whether the session itself is the problem (expired token, dead session,
+  /// bot protection, unusable cookies) — some form of re-authentication is
+  /// needed before retrying. Union of [`Self::is_token_rejected`],
+  /// [`Self::needs_browser_reauth`], and client-side credential problems.
   pub fn is_auth_failure(&self) -> bool {
+    if self.is_token_rejected() || self.needs_browser_reauth() {
+      return true;
+    }
     match self {
       Self::Client(err) => matches!(
         err,
@@ -48,7 +68,7 @@ impl HiggsfieldError {
           | HiggsfieldClientError::InvalidCookies
           | HiggsfieldClientError::MissingClerkClientCookie,
       ),
-      Self::Api(err) => matches!(err, HiggsfieldApiError::Unauthorized { .. } | HiggsfieldApiError::NoActiveSession { .. }),
+      Self::Api(_) => false,
     }
   }
 }

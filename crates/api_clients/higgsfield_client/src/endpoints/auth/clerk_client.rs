@@ -29,6 +29,9 @@ string_enum! {
 pub struct ClerkClientArgs<'a> {
   pub request: ClerkClientRequest,
   pub cookies: &'a HiggsfieldCookies,
+  /// The User-Agent of the browser that captured the cookies (see
+  /// `HiggsfieldSession::with_user_agent`); `None` uses the pinned default.
+  pub maybe_user_agent: Option<&'a str>,
   pub host: &'a ClerkHost,
 }
 
@@ -84,6 +87,7 @@ pub async fn clerk_client(args: ClerkClientArgs<'_>) -> Result<ClerkClientRespon
     HttpMethod::Get,
     PATH,
     args.cookies,
+    args.maybe_user_agent,
     args.host,
     RequestBody::<()>::None,
   ).await?;
@@ -242,6 +246,7 @@ mod tests {
     let response = clerk_client(ClerkClientArgs {
       request: ClerkClientRequest,
       cookies: &cookies,
+      maybe_user_agent: None,
       host: &ClerkHost::Higgsfield,
     }).await.map_err(|err| anyhow::anyhow!("{err}"))?;
 

@@ -1,48 +1,36 @@
+use crate::classify_cloudflare_response::classify_cloudflare_response;
 use crate::cloudflare_error::CloudflareError;
+use crate::cloudflare_response_signals::CloudflareResponseSignals;
 
-/// This only filters out Cloudflare errors. Any other errors will be returned as `Ok(())`.
+/// Status + body shortcut over
+/// [`classify_cloudflare_response`]: `Err` when the response is a Cloudflare
+/// edge response, `Ok(())` for everything else (including non-Cloudflare
+/// errors, which the caller classifies itself).
+///
+/// Prefer the full classifier when the HTTP client exposes response headers
+/// — `cf-mitigated` and `server` make the decision exact.
 pub fn filter_cloudflare_errors(status_code: u16, body: &str) -> Result<(), CloudflareError> {
-  if status_code >= 200 && status_code < 300 {
-    return Ok(());
+  match classify_cloudflare_response(&CloudflareResponseSignals::new(status_code, body)) {
+    Some(error) => Err(error),
+    None => Ok(()),
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn passes_non_cloudflare_errors_through() {
+    assert!(filter_cloudflare_errors(200, "ok").is_ok());
+    assert!(filter_cloudflare_errors(500, r#"{"detail":"boom"}"#).is_ok());
   }
 
-  match status_code {
-    403 => {
-      if body.contains("challenge-platform")
-          || body.contains("challenge-error-text")
-          || body.contains("cType: 'managed'")
-          || body.contains("Just a moment...") {
-        return Err(CloudflareError::ChallengeInterstitial403);
-      }
-    }
-    _ => {}, // Fall-through
+  #[test]
+  fn catches_challenge_pages() {
+    assert_eq!(
+      filter_cloudflare_errors(403, "<title>Just a moment...</title>"),
+      Err(CloudflareError::ChallengeInterstitial403),
+    );
   }
-
-  // TODO: This is a really bad heuristic.
-  let is_cloudflare = body.contains("cloudflare")
-      || body.contains("Cloudflare");
-
-  // let is_cloudflare = body.contains("cloudflare.com")
-  //     || body.contains("Cloudflare Ray ID");
-
-  if !is_cloudflare {
-    return Ok(());
-  }
-
-  match status_code {
-    301 => return Err(CloudflareError::MovedPermanently301), // TODO: Include location header.
-    502 => return Err(CloudflareError::BadGateway502),
-    504 => return Err(CloudflareError::GatewayTimeout504),
-    524 => return Err(CloudflareError::TimeoutOccurred524),
-    _ => {},
-  }
-
-  if body.contains("errorcode_504")
-      || body.contains("Gateway time-out")
-      || body.contains("Error code 504")
-  {
-    return Err(CloudflareError::GatewayTimeout504);
-  }
-
-  Ok(())
 }

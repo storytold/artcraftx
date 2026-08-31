@@ -99,6 +99,17 @@ mod tests {
   }
 
   #[test]
+  fn cookie_replaying_sites_pin_the_user_agent_their_clients_use() {
+    use grok_consumer_client::client::browser_user_agents::FIREFOX_143_MAC_USER_AGENT;
+    use higgsfield_client::client::higgsfield_browser_profile::HIGGSFIELD_USER_AGENT;
+    use crate::services::midjourney::utils::midjourney_browser_profile::MIDJOURNEY_USER_AGENT;
+
+    assert_eq!(login_site_for(LoginWebsite::Higgsfield).user_agent(), Some(HIGGSFIELD_USER_AGENT));
+    assert_eq!(login_site_for(LoginWebsite::XAi).user_agent(), Some(FIREFOX_143_MAC_USER_AGENT));
+    assert_eq!(login_site_for(LoginWebsite::Midjourney).user_agent(), Some(MIDJOURNEY_USER_AGENT));
+  }
+
+  #[test]
   fn midjourney_journey_has_no_login_page() {
     let plan = login_site_for(LoginWebsite::Midjourney).journey().plan();
     assert_eq!(plan.len(), 2);

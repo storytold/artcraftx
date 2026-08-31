@@ -155,6 +155,7 @@ fn check_login_window(
       cookies: cookie_store,
       maybe_user_info,
       maybe_statsig,
+      maybe_user_agent: site.user_agent().map(str::to_string),
     },
   )?;
 

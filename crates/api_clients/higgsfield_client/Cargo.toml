@@ -17,6 +17,10 @@ workspace-build-acceleration.workspace = true
 
 # Internal
 browser_emulation.workspace = true
+cloudflare_errors.workspace = true
+cloudflare_mitigation.workspace = true
+datadome_errors.workspace = true
+datadome_mitigation.workspace = true
 errors.workspace = true
 jwt_light.workspace = true
 
@@ -31,5 +35,6 @@ wreq.workspace = true
 [dev-dependencies]
 anyhow.workspace = true
 base64.workspace = true
+toml.workspace = true
 env_logger.workspace = true
 tokio = { version = "1", features = ["full"] }

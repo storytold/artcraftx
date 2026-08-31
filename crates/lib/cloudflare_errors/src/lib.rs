@@ -1,7 +1,15 @@
 //! cloudflare_errors
 //!
-//! Classify common cloudflare errors so clients can handle appropriately.
+//! Recognize responses that came from Cloudflare's edge rather than the
+//! origin — bot-management challenges, WAF blocks, and origin failures — so
+//! every API client can react the same way. Pair with `cloudflare_mitigation`
+//! for what to do about each.
 //!
+//! Entry points:
+//! - [`classify_cloudflare_response`](classify_cloudflare_response::classify_cloudflare_response)
+//!   — the full classifier: status + body + the Cloudflare response headers.
+//! - [`filter_cloudflare_errors`](filter_cloudflare_errors::filter_cloudflare_errors)
+//!   — the status + body shortcut most clients use.
 
 // Never allow these
 #![forbid(private_bounds)]
@@ -18,5 +26,7 @@
 #![allow(dead_code)]
 #![allow(non_snake_case)]
 
+pub mod classify_cloudflare_response;
 pub mod cloudflare_error;
+pub mod cloudflare_response_signals;
 pub mod filter_cloudflare_errors;
