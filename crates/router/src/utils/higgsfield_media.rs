@@ -7,6 +7,7 @@ use std::collections::HashMap;
 
 use higgsfield_client::session::higgsfield_session::HiggsfieldSession;
 use higgsfield_client::session::upload_media::ReferenceMediaFile;
+use higgsfield_client::session::upload_source_guard::check_upload_source_url;
 use higgsfield_client::types::media_input::MediaInput;
 use higgsfield_client::types::media_mime_type::MediaMimeType;
 use log::info;
@@ -140,6 +141,9 @@ pub async fn upload_url_to_higgsfield(
   kind: HiggsfieldMediaKind,
   ip_check: bool,
 ) -> Result<MediaInput, ArtcraftRouterError> {
+  // Checked again by the client on upload; failing here skips the download.
+  check_upload_source_url(source_url)
+      .map_err(|err| ArtcraftRouterError::from(ProviderError::Higgsfield(err.into())))?;
   let bytes = download_file(source_url).await?;
   let file = reference_media_file_for_url(source_url, kind, bytes, ip_check);
   info!(
@@ -155,7 +159,7 @@ pub async fn upload_url_to_higgsfield(
 pub fn reference_media_file_for_url(source_url: &str, kind: HiggsfieldMediaKind, bytes: Vec<u8>, ip_check: bool) -> ReferenceMediaFile {
   let mime_type = media_mime_type_for(source_url, &bytes, kind);
   let file_name = format!("reference.{}", mime_type.file_extension());
-  let file = ReferenceMediaFile::new(file_name, mime_type, bytes);
+  let file = ReferenceMediaFile::new(file_name, mime_type, bytes).with_source_url(source_url);
   if ip_check { file.with_ip_check() } else { file }
 }
 
@@ -306,6 +310,7 @@ mod tests {
       let file = reference_media_file_for_url("https://cdn.example.com/x.png", HiggsfieldMediaKind::Image, PNG.to_vec(), false);
       assert_eq!(file.file_name, "reference.png");
       assert!(!file.force_ip_check);
+      assert_eq!(file.maybe_source_url.as_deref(), Some("https://cdn.example.com/x.png"));
     }
   }
 

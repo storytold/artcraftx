@@ -72,6 +72,14 @@ pub enum HiggsfieldClientError {
   MediaProtectedContent {
     media_id: MediaId,
   },
+
+  /// The upload's source URL is on a first-party domain (ArtCraft /
+  /// FakeYou); our own CDN assets must not be re-uploaded to Higgsfield.
+  /// See `session::upload_source_guard`.
+  UploadSourceDomainBlocked {
+    source_url: String,
+    domain: &'static str,
+  },
 }
 
 impl Error for HiggsfieldClientError {}
@@ -100,6 +108,8 @@ impl Display for HiggsfieldClientError {
         write!(f, "Media {} IP check did not finish within {}s (was it requested with force_ip_check?).", media_id, waited.as_secs()),
       Self::MediaProtectedContent { media_id } =>
         write!(f, "Media {} was flagged as protected content (recognised likeness or copyrighted image); Higgsfield will not use it as a reference.", media_id),
+      Self::UploadSourceDomainBlocked { source_url, domain } =>
+        write!(f, "Refusing to upload media sourced from {} — {} is a first-party domain whose assets must not be sent to Higgsfield.", source_url, domain),
     }
   }
 }

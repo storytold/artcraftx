@@ -14,6 +14,7 @@ use crate::endpoints::media::upload_media_bytes::{upload_media_bytes, UploadMedi
 use crate::error::higgsfield_client_error::HiggsfieldClientError;
 use crate::error::higgsfield_error::HiggsfieldError;
 use crate::session::higgsfield_session::HiggsfieldSession;
+use crate::session::upload_source_guard::check_upload_source_url;
 use crate::types::ids::MediaId;
 use crate::types::media_input::MediaInput;
 use crate::types::media_mime_type::MediaMimeType;
@@ -43,11 +44,16 @@ pub struct ReferenceMediaFile {
   /// media — Seedance 2.x answers `400 "IP check not finished for input
   /// media"` otherwise. Images and video only; audio has no IP check.
   pub force_ip_check: bool,
+
+  /// Where the bytes were downloaded from, when they came from a URL. Set
+  /// it so uploads sourced from first-party domains are refused — see
+  /// `upload_source_guard`.
+  pub maybe_source_url: Option<String>,
 }
 
 impl ReferenceMediaFile {
   pub fn new(file_name: impl Into<String>, mime_type: MediaMimeType, bytes: Vec<u8>) -> Self {
-    Self { file_name: file_name.into(), mime_type, bytes, force_ip_check: false }
+    Self { file_name: file_name.into(), mime_type, bytes, force_ip_check: false, maybe_source_url: None }
   }
 
   /// Run and wait for the IP check (see [`Self::force_ip_check`]).
@@ -56,15 +62,25 @@ impl ReferenceMediaFile {
     self
   }
 
+  /// Record where the bytes were downloaded from (see
+  /// [`Self::maybe_source_url`]).
+  pub fn with_source_url(mut self, source_url: impl Into<String>) -> Self {
+    self.maybe_source_url = Some(source_url.into());
+    self
+  }
+
   /// Guess the type from the file name's extension.
   pub fn from_file_name(file_name: impl Into<String>, bytes: Vec<u8>) -> Result<Self, HiggsfieldClientError> {
     let file_name = file_name.into();
     let mime_type = MediaMimeType::from_file_name(&file_name)
         .ok_or_else(|| HiggsfieldClientError::InvalidRequest(format!("can't tell the media type of {file_name:?}; pass it explicitly")))?;
-    Ok(Self { file_name, mime_type, bytes, force_ip_check: false })
+    Ok(Self { file_name, mime_type, bytes, force_ip_check: false, maybe_source_url: None })
   }
 
   fn validate(&self) -> Result<(), HiggsfieldClientError> {
+    if let Some(source_url) = &self.maybe_source_url {
+      check_upload_source_url(source_url)?;
+    }
     if self.file_name.trim().is_empty() {
       return Err(HiggsfieldClientError::InvalidRequest("file_name is empty".to_string()));
     }
@@ -166,7 +182,7 @@ impl HiggsfieldSession {
 
   async fn upload_and_confirm(&self, slot: &PresignedMediaUpload, file: ReferenceMediaFile) -> Result<MediaInput, HiggsfieldError> {
     let family = file.family();
-    let ReferenceMediaFile { file_name, mime_type, bytes, force_ip_check } = file;
+    let ReferenceMediaFile { file_name, mime_type, bytes, force_ip_check, .. } = file;
     let byte_count = bytes.len();
 
     upload_media_bytes(UploadMediaBytesArgs {
@@ -263,6 +279,16 @@ mod tests {
     assert!(matches!(ReferenceMediaFile::new("a.png", MediaMimeType::ImagePng, vec![]).validate(), Err(HiggsfieldClientError::InvalidRequest(_))));
     assert!(matches!(ReferenceMediaFile::new(" ", MediaMimeType::ImagePng, vec![1]).validate(), Err(HiggsfieldClientError::InvalidRequest(_))));
     assert!(ReferenceMediaFile::new("a.png", MediaMimeType::ImagePng, vec![1]).validate().is_ok());
+  }
+
+  #[test]
+  fn first_party_source_urls_are_refused() {
+    let file = ReferenceMediaFile::new("a.png", MediaMimeType::ImagePng, vec![1])
+        .with_source_url("https://cdn-2.fakeyou.com/media/a/image_a.png");
+    assert!(matches!(file.validate(), Err(HiggsfieldClientError::UploadSourceDomainBlocked { .. })));
+    let file = ReferenceMediaFile::new("a.png", MediaMimeType::ImagePng, vec![1])
+        .with_source_url("https://cdn.example.com/a.png");
+    assert!(file.validate().is_ok());
   }
 
   #[tokio::test]
