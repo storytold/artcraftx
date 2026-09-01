@@ -49,7 +49,10 @@ pub struct TaskQueueItem {
 
 #[derive(Serialize)]
 pub struct CompletedItemData {
-  pub primary_media_file: MediaFileData,
+  /// Present only when the result was uploaded to ArtCraft (requires a
+  /// logged-in session). Local-only completions have download locations but
+  /// no cloud media file.
+  pub primary_media_file: Option<MediaFileData>,
 
   /// The type of file(s) generated.
   pub media_file_class: Option<TaskMediaFileClass>,
@@ -121,26 +124,30 @@ pub async fn handle_request(
     let mut failure_reason = None;
 
     if task.status == TaskStatus::CompleteSuccess {
-      let token_and_url = task.on_complete_primary_media_file_token
-          .zip(task.on_complete_primary_media_file_cdn_url);
-
-      if let Some((primary_media_file_token, media_file_url)) = token_and_url {
-        completed_item = Some(CompletedItemData {
-          primary_media_file: MediaFileData {
+      // The cloud media file only exists when the result was uploaded to
+      // ArtCraft; a local-only completion still gets a completed item so
+      // the frontend can render (and thumbnail) the downloaded files.
+      let primary_media_file = task.on_complete_primary_media_file_token
+          .zip(task.on_complete_primary_media_file_cdn_url)
+          .map(|(primary_media_file_token, media_file_url)| MediaFileData {
             token: primary_media_file_token,
-            cdn_url: media_file_url.clone(),
+            cdn_url: media_file_url,
             maybe_thumbnail_url_template: task.on_complete_primary_media_file_thumbnail_url_template.clone(),
             // NB: This isn't the exact completion date. Also, fallback to now if missing.
             created_at: task.completed_at.unwrap_or_else(Utc::now),
-          },
-          media_file_class: task.on_complete_primary_media_file_class,
-          maybe_batch_token: task.on_complete_batch_token,
-          maybe_download_directory: task.on_complete_directory_location.clone(),
-          maybe_first_downloaded_file: task.on_complete_first_file_location.clone(),
-        });
-      } else {
-        warn!("Task {} is marked complete but has no primary media file token or URL.", task.id);
+          });
+
+      if primary_media_file.is_none() && task.on_complete_first_file_location.is_none() {
+        warn!("Task {} is marked complete but has neither a cloud media file nor a local download.", task.id);
       }
+
+      completed_item = Some(CompletedItemData {
+        primary_media_file,
+        media_file_class: task.on_complete_primary_media_file_class,
+        maybe_batch_token: task.on_complete_batch_token,
+        maybe_download_directory: task.on_complete_directory_location.clone(),
+        maybe_first_downloaded_file: task.on_complete_first_file_location.clone(),
+      });
     } else {
       // If either failure field is present, fill out the failure report.
       if let Some(failure_message) = task.on_failure_message.as_deref() {

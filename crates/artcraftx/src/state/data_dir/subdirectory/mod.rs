@@ -1,3 +1,4 @@
+pub mod app_cache_dir;
 pub mod app_credentials_dir;
 pub mod app_downloads_dir;
 pub mod app_settings_dir;

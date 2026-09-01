@@ -28,6 +28,13 @@ impl AppStateDir {
     self.path.join(format!("tasks_v{TASK_DATABASE_VERSION}.sqlite"))
   }
 
+  /// The local_files content-hash index. Unlike the tasks database this
+  /// keeps a STABLE filename: it migrates additively, and on migration
+  /// failure it's deleted and rebuilt (every row is derivable).
+  pub fn get_local_files_sqlite_database_path(&self) -> PathBuf {
+    self.path.join("local_files.sqlite")
+  }
+
   pub fn get_window_size_config_file(&self) -> PathBuf {
     self.path.join("window_size.json")
   }

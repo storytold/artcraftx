@@ -1,3 +1,4 @@
+use crate::state::data_dir::subdirectory::app_cache_dir::AppCacheDir;
 use crate::state::data_dir::subdirectory::app_credentials_dir::AppCredentialsDir;
 use crate::state::data_dir::subdirectory::app_downloads_dir::AppDownloadsDir;
 use crate::state::data_dir::subdirectory::app_settings_dir::AppSettingsDir;
@@ -27,6 +28,7 @@ pub struct AppDataRoot {
   log_file_name: PathBuf,
   log_file_name_string: String,
   
+  cache_dir: AppCacheDir,
   credentials_dir: AppCredentialsDir,
   downloads_dir: AppDownloadsDir,
   settings_dir: AppSettingsDir,
@@ -65,6 +67,7 @@ impl AppDataRoot {
       }
     }
     
+    let cache_dir = AppCacheDir::get_or_create_in_root_dir(&dir)?;
     let credentials_dir = AppCredentialsDir::get_or_create_in_root_dir(&dir)?;
     let downloads_dir = AppDownloadsDir::get_or_create_in_root_dir(&dir)?;
     let settings_dir = AppSettingsDir::get_or_create_in_root_dir(&dir)?;
@@ -80,6 +83,7 @@ impl AppDataRoot {
       path: dir,
       log_file_name,
       log_file_name_string,
+      cache_dir,
       credentials_dir,
       downloads_dir,
       settings_dir,
@@ -88,6 +92,10 @@ impl AppDataRoot {
     })
   }
   
+  pub fn cache_dir(&self) -> &AppCacheDir {
+    &self.cache_dir
+  }
+
   pub fn credentials_dir(&self) -> &AppCredentialsDir {
     &self.credentials_dir
   }

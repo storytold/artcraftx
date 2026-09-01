@@ -120,7 +120,8 @@ async function expandTaskFiles(
   const provider = t.provider ? String(t.provider) : undefined;
   const primary: CompletedFile = {
     id: t.id,
-    url: t.completed_item!.primary_media_file.cdn_url,
+    // Callers filter on cdn_url presence before expanding (line ~57).
+    url: t.completed_item!.primary_media_file!.cdn_url,
     provider,
   };
 

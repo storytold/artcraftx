@@ -18,6 +18,7 @@ artcraftx/
 │   ├── lib/                             # Various utility libraries
 │   ├── router/                          # Provider routing for generation requests (Artcraft, Fal, ...)
 │   ├── schema/                          # Data definition layer
+│   │   ├── local_files_database/        # Separate SQLite DB: content-hash index of local files (thumbnails, dedup)
 │   │   ├── sqlite_database/             # Desktop app's "tasks" SQLite database: queries + embedded migrations
 │   │   └── sqlite_identifiers/          # Enums and IDs used in sqlite queries as enums or keys
 │   ├── testing/                         # Test data and test utilities

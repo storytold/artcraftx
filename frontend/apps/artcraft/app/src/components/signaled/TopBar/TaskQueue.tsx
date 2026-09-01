@@ -23,6 +23,7 @@ import {
 import type { GalleryItem } from "@storyteller/ui-gallery-modal";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  GetLocalThumbnails,
   GetTaskQueue,
   MarkTaskAsDismissed,
   OpenLocalFile,
@@ -31,7 +32,8 @@ import {
   getFileManagerName,
   localFileBasename,
 } from "@storyteller/tauri-api";
-import type { TaskQueueItem } from "@storyteller/tauri-api";
+import type { LocalThumbnail, TaskQueueItem } from "@storyteller/tauri-api";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import {
   useSelectedImageModel,
@@ -56,6 +58,28 @@ import { coverImageCache } from "~/pages/PageImageTo3DObject/ImageTo3DStore";
 import { useCreditsState } from "@storyteller/credits";
 import { getMetaForTask, cleanupOldEntries } from "./taskEnqueueMeta";
 import { twMerge } from "tailwind-merge";
+
+// Backend-generated thumbnails for local result files, keyed by source
+// path. Module-level (like coverImageCache) so results survive re-mounts;
+// entries are content-addressed on the backend and never go stale.
+const localThumbnailCache = new Map<string, LocalThumbnail>();
+const localThumbnailPending = new Set<string>();
+
+const localStaticThumbnailUrl = (task: {
+  downloadedFilePath?: string;
+}): string | undefined => {
+  const thumb = task.downloadedFilePath
+    ? localThumbnailCache.get(task.downloadedFilePath)
+    : undefined;
+  return thumb?.maybe_thumbnail_path
+    ? convertFileSrc(thumb.maybe_thumbnail_path)
+    : undefined;
+};
+
+const localFileAssetUrl = (task: {
+  downloadedFilePath?: string;
+}): string | undefined =>
+  task.downloadedFilePath ? convertFileSrc(task.downloadedFilePath) : undefined;
 
 type InProgressTask = {
   id: string;
@@ -363,6 +387,24 @@ const CompletedCard = ({
   onClick?: () => void;
   onDismiss?: () => void;
 }) => {
+  const [isPreviewHovered, setIsPreviewHovered] = useState(false);
+  // Server thumbnail first; otherwise the backend-generated thumbnail of
+  // the downloaded file, rendered off disk via the asset protocol.
+  const localThumb = task.downloadedFilePath
+    ? localThumbnailCache.get(task.downloadedFilePath)
+    : undefined;
+  const staticThumbnailUrl =
+    task.thumbnailUrl ??
+    (localThumb?.maybe_thumbnail_path
+      ? convertFileSrc(localThumb.maybe_thumbnail_path)
+      : undefined);
+  const animatedPreviewUrl = localThumb?.maybe_animated_preview_path
+    ? convertFileSrc(localThumb.maybe_animated_preview_path)
+    : undefined;
+  const displayedThumbnailUrl =
+    isPreviewHovered && animatedPreviewUrl
+      ? animatedPreviewUrl
+      : staticThumbnailUrl;
   return (
     <div
       className="flex cursor-pointer items-center gap-2.5 rounded-md p-2 transition-colors hover:bg-ui-controls/40"
@@ -383,10 +425,12 @@ const CompletedCard = ({
               }
             : undefined
         }
+        onMouseEnter={() => setIsPreviewHovered(true)}
+        onMouseLeave={() => setIsPreviewHovered(false)}
       >
-        {task.thumbnailUrl ? (
+        {displayedThumbnailUrl ? (
           <img
-            src={task.thumbnailUrl}
+            src={displayedThumbnailUrl}
             alt={task.title}
             onError={(e) => {
               e.currentTarget.src = getPlaceholderForMediaClass(
@@ -395,7 +439,7 @@ const CompletedCard = ({
               e.currentTarget.style.opacity = "0.3";
               // Set the `data-brokenurl` property for debugging the broken images:
               (e.currentTarget as HTMLImageElement).dataset.brokenurl =
-                task.thumbnailUrl;
+                displayedThumbnailUrl;
             }}
             className="h-full w-full object-cover"
           />
@@ -595,6 +639,31 @@ export const TaskQueue = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [inProgress, setInProgress] = useState<InProgressTask[]>([]);
   const [completed, setCompleted] = useState<CompletedTask[]>([]);
+  // Bumped when backend-generated local thumbnails arrive (the cache itself
+  // is module-level; this just triggers a re-render).
+  const [, setLocalThumbnailVersion] = useState(0);
+
+  // Local-only results have no server thumbnail; ask the backend to serve
+  // (or generate) thumbnails for their downloaded files, in one bulk call.
+  useEffect(() => {
+    const wanted = completed
+      .filter((t) => !t.thumbnailUrl && t.downloadedFilePath)
+      .map((t) => t.downloadedFilePath!)
+      .filter(
+        (p) => !localThumbnailCache.has(p) && !localThumbnailPending.has(p),
+      );
+    if (wanted.length === 0) return;
+    wanted.forEach((p) => localThumbnailPending.add(p));
+    GetLocalThumbnails(wanted)
+      .then((thumbs) => {
+        for (const thumb of thumbs) {
+          localThumbnailCache.set(thumb.file_path, thumb);
+        }
+        setLocalThumbnailVersion((v) => v + 1);
+      })
+      .catch((err) => console.error("GetLocalThumbnails failed:", err))
+      .finally(() => wanted.forEach((p) => localThumbnailPending.delete(p)));
+  }, [completed]);
   const [failed, setFailed] = useState<FailedTask[]>([]);
   const [lastReadAt, setLastReadAt] = useState<number>(() => {
     const stored = localStorage.getItem("taskQueueLastReadAt");
@@ -889,10 +958,9 @@ export const TaskQueue = () => {
             const failureReason = fr
               ? FAILURE_REASON_LABEL[fr.failure_type] || undefined
               : undefined;
-            const failureMessage =
-              fr?.failure_message && fr.failure_type !== "unknown"
-                ? fr.failure_message
-                : undefined;
+            // Backend failure messages are curated, user-facing copy —
+            // show them whenever present, whatever the failure type.
+            const failureMessage = fr?.failure_message || undefined;
             const meta = getMetaForTask(
               t.id,
               t.model_type ? String(t.model_type) : undefined,
@@ -1185,8 +1253,14 @@ export const TaskQueue = () => {
                                   const item: GalleryItem = {
                                     id: firstMediaToken,
                                     label: t.title,
-                                    thumbnail: t.thumbnailUrl || null,
-                                    fullImage: t.imageUrls?.[0] || null,
+                                    thumbnail:
+                                      t.thumbnailUrl ||
+                                      localStaticThumbnailUrl(t) ||
+                                      null,
+                                    fullImage:
+                                      t.imageUrls?.[0] ||
+                                      localFileAssetUrl(t) ||
+                                      null,
                                     createdAt: (
                                       t.completedAt || new Date()
                                     ).toISOString(),
@@ -1329,8 +1403,12 @@ export const TaskQueue = () => {
                           const item: GalleryItem = {
                             id: t.id,
                             label: t.title,
-                            thumbnail: t.thumbnailUrl || null,
-                            fullImage: t.imageUrls?.[0] || null,
+                            thumbnail:
+                              t.thumbnailUrl ||
+                              localStaticThumbnailUrl(t) ||
+                              null,
+                            fullImage:
+                              t.imageUrls?.[0] || localFileAssetUrl(t) || null,
                             createdAt: (
                               t.completedAt || new Date()
                             ).toISOString(),

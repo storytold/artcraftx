@@ -34,7 +34,10 @@ export interface TaskQueueItem {
 }
 
 export interface TaskQueueCompletedItem {
-  primary_media_file: MediaFileData;
+  // Present only when the result was uploaded to ArtCraft (logged-in
+  // session). Local-only completions carry download paths but no cloud
+  // media file.
+  primary_media_file?: MediaFileData;
   media_file_class?: TaskMediaFileClass;
   maybe_batch_token?: string;
   // If the results were downloaded: the directory and the first (or only)
@@ -65,7 +68,7 @@ export const GetTaskQueue = async (): Promise<GetTaskQueueResponse> => {
   const newTasks: TaskQueueItem[] = tasks.map((task) => {
     const completed_item = task.completed_item;
 
-    if (completed_item) {
+    if (completed_item?.primary_media_file) {
       completed_item.primary_media_file.created_at = new Date(
         completed_item.primary_media_file.created_at
       );

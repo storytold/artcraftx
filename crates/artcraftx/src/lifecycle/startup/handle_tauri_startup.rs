@@ -1,3 +1,4 @@
+use crate::lifecycle::startup::tasks::bootstrap_local_files_database::bootstrap_local_files_database;
 use crate::lifecycle::startup::tasks::bootstrap_task_database::bootstrap_task_database;
 use crate::lifecycle::startup::tasks::initially_size_and_position_windows::initially_size_and_position_windows;
 use crate::lifecycle::startup::tasks::set_app_log_level::set_app_log_level;
@@ -48,6 +49,8 @@ pub async fn handle_tauri_startup(
 
   let task_database =
       bootstrap_task_database(&app, &root).await?;
+
+  bootstrap_local_files_database(&app, &root).await?;
 
   spawn_main_window_thread(
     &app,

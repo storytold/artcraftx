@@ -22,6 +22,7 @@ export * from "./lib/generate/models/image/ListImageModels.js";
 export * from "./lib/generate/models/mesh/ListMeshModels.js";
 export * from "./lib/generate/models/splat/ListSplatModels.js";
 export * from "./lib/generate/models/video/ListVideoModels.js";
+export * from "./lib/local_files/GetLocalThumbnails.js";
 export * from "./lib/events/BasicEventWrapper.js";
 export * from "./lib/fal/FalBackgroundRemoval.js";
 export * from "./lib/fal/FalHunyuanImageTo3d.js";

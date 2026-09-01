@@ -15,7 +15,11 @@ use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
 use crate::threads::third_party_task_polling_thread::handlers::higgsfield::handle_higgsfield_complete::handle_higgsfield_complete;
 use crate::threads::third_party_task_polling_thread::handlers::higgsfield::handle_higgsfield_failure::handle_higgsfield_failure;
+use crate::threads::third_party_task_polling_thread::handlers::higgsfield::higgsfield_failure_reason::{
+  build_failure_report, HiggsfieldFailureReport, HiggsfieldJobFailure, HiggsfieldJobFailureKind,
+};
 use crate::threads::third_party_task_polling_thread::handlers::higgsfield::higgsfield_poll_sessions::HiggsfieldPollSessions;
+use sqlite_identifiers::enums::task_failure_type::TaskFailureType;
 
 /// Check every pending Higgsfield task. Jobs are looked up through each
 /// stored Higgsfield account in turn (a job only answers on the account that
@@ -82,7 +86,12 @@ async fn poll_single_task(
 
   if job_ids.is_empty() {
     warn!("[HiggsfieldPolling] Task {} has no job ids; marking as failed", task.id.as_str());
-    handle_higgsfield_failure(app_handle, task_database, task, "No Higgsfield job ids to check").await;
+    let report = HiggsfieldFailureReport {
+      failure_type: TaskFailureType::Unknown,
+      user_message: "This generation lost track of its Higgsfield job and can't be resumed. Please generate again.".to_string(),
+      log_details: "task record has no provider job ids".to_string(),
+    };
+    handle_higgsfield_failure(app_handle, task_database, task, &report).await;
     return Ok(());
   }
 
@@ -99,15 +108,39 @@ async fn poll_single_task(
 
   // Fetch the full record (result URLs, prompt) of every finished job.
   let mut finished: Vec<JobStatusResponse> = Vec::new();
-  let mut failures: Vec<String> = Vec::new();
+  let mut failures: Vec<HiggsfieldJobFailure> = Vec::new();
   for outcome in &outcomes {
     if !outcome.status.is_success() {
-      failures.push(format!("{} ended {}", outcome.job_id, outcome.status));
+      // Best-effort: the full job record carries the server's fail_reason
+      // (e.g. "Input audio duration is not supported"), which is the most
+      // useful thing we can show. A fetch error just means no reason.
+      let maybe_server_reason = match session.job_status(&outcome.job_id).await {
+        Ok(job) => job.fail_reason().map(str::to_string),
+        Err(err) => {
+          warn!(
+            "[HiggsfieldPolling] Could not fetch fail_reason for job {} (task {}): {}",
+            outcome.job_id, task.id.as_str(), err,
+          );
+          None
+        }
+      };
+      failures.push(HiggsfieldJobFailure {
+        job_id: outcome.job_id.clone(),
+        kind: HiggsfieldJobFailureKind::TerminalStatus(outcome.status.clone()),
+        maybe_server_reason,
+      });
       continue;
     }
     match session.job_status(&outcome.job_id).await {
       Ok(job) if job.result_url().is_some() => finished.push(job),
-      Ok(job) => failures.push(format!("{} completed without a result URL", job.id)),
+      Ok(job) => {
+        let maybe_server_reason = job.fail_reason().map(str::to_string);
+        failures.push(HiggsfieldJobFailure {
+          job_id: job.id.clone(),
+          kind: HiggsfieldJobFailureKind::CompletedWithoutResult,
+          maybe_server_reason,
+        });
+      }
       Err(err) => {
         // Transient: try again next iteration rather than failing the task.
         warn!("[HiggsfieldPolling] Could not fetch job {} for task {}: {}", outcome.job_id, task.id.as_str(), err);
@@ -117,15 +150,16 @@ async fn poll_single_task(
   }
 
   if finished.is_empty() {
-    let reason = if failures.is_empty() { "Higgsfield produced no output".to_string() } else { failures.join("; ") };
-    handle_higgsfield_failure(app_handle, task_database, task, &reason).await;
+    let report = build_failure_report(&failures, outcomes.len());
+    handle_higgsfield_failure(app_handle, task_database, task, &report).await;
     return Ok(());
   }
 
   if !failures.is_empty() {
+    let report = build_failure_report(&failures, outcomes.len());
     warn!(
-      "[HiggsfieldPolling] Task {}: {} of {} job(s) failed ({}); delivering the rest",
-      task.id.as_str(), failures.len(), outcomes.len(), failures.join("; "),
+      "[HiggsfieldPolling] Task {}: {} of {} job(s) failed; delivering the rest. Details: {}",
+      task.id.as_str(), failures.len(), outcomes.len(), report.log_details,
     );
   }
 

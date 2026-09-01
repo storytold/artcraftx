@@ -51,6 +51,7 @@ use crate::commands::generate::generate_video::generate_video_command::generate_
 use crate::commands::service::get_app_info_command::get_app_info_command;
 use crate::commands::service::load_without_cors_command::load_without_cors_command;
 use crate::commands::service::platform_info_command::platform_info_command;
+use crate::commands::local_files::get_local_thumbnails_command::get_local_thumbnails_command;
 use crate::commands::task_queue::get_task_queue_command::get_task_queue_command;
 use crate::commands::task_queue::mark_task_as_dismissed_command::mark_task_as_dismissed_command;
 use crate::commands::task_queue::tasks_nuke_all_command::tasks_nuke_all_command;
@@ -236,6 +237,7 @@ pub fn run() {
     get_app_info_command,
     get_app_preferences_command,
     get_promptbox_state_command,
+    get_local_thumbnails_command,
     get_task_queue_command,
     load_custom_sound_command,
     load_without_cors_command,

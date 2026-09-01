@@ -53,4 +53,7 @@ helpers go in the parent `mod tests` so sub-modules can `use super::*`.
 - `seedance2pro_client` — HTTP client for the Kinovi/Seedance2Pro video generation service
 - `core_types` — highest-level shared types: `GenerationSource`, the desktop app's own IDs (e.g. `credential_{ulid}`)
 - `sqlite_database` — SQLx queries + embedded migrations for the desktop app's local task database
+- `local_files_database` — separate SQLite DB (runtime SQLx queries, no macros): BLAKE3 content-hash index of local files + thumbnail accounting
+- `thumbnails` — pure-Rust thumbnail generation: images via `image`, H.264 MP4 first-frame JPEG + ~1s animated WebP via `mp4`/`openh264`/`webp-animation`
+- `file_hashing` — streaming BLAKE3 content hashing
 - `sqlite_identifiers` — enums and IDs used in sqlite queries as enums or keys
