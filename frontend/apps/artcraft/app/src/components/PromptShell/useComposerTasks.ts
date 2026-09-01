@@ -16,9 +16,9 @@ export interface CompletedFile {
   /** Unique per file (task id, or task id + batch index). */
   id: string;
   url: string;
-  /** Generation provider ("artcraft", "fal", ...) — ArtCraft files are
-   *  auto-saved by the Rust polling thread, so the frontend must not
-   *  download them again. */
+  /** Generation provider ("artcraft", "fal", "higgsfield", ...). Every
+   *  provider's files are auto-saved by the Rust polling threads; the
+   *  frontend only receipts them. */
   provider?: string;
 }
 

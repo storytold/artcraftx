@@ -97,11 +97,17 @@ export function ClassyModelSelector({
   // instances with API capabilities. Swap a stale selected instance for the
   // fresh one so capability-driven UI (keyframes, references, pickers)
   // reflects the API data without needing a manual re-select.
+  //
+  // NB: the store may hold a provider-specific variant of the model (see
+  // `Model.forProvider()`), which is a different instance from the base in
+  // `itemModels` on purpose. Compare against the variant's base, or this
+  // would re-select the base, the store would swap back to the variant, and
+  // the effect would loop until React gives up ("Maximum update depth").
   useEffect(() => {
     const selected = selectedModels[page];
     if (!selected) return;
     const fresh = itemModels.find((m) => m.tauriId === selected.tauriId);
-    if (fresh !== undefined && fresh !== selected) {
+    if (fresh !== undefined && fresh !== selected.forProvider(undefined)) {
       setSelectedModel(page, fresh);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

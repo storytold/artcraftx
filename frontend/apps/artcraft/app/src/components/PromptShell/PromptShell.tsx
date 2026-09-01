@@ -1,6 +1,5 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { Check } from "lucide-react";
-import { DownloadUrl } from "@storyteller/tauri-api";
 import type { CompletedFile } from "./useComposerTasks";
 
 // The full-window composer frame, styled after the marketing site's AppWindow
@@ -21,7 +20,7 @@ interface PromptShellProps {
   icon?: ReactNode;
   /** Any task for this page's modality currently in flight. */
   busy: boolean;
-  /** Newly-completed files; each is auto-saved to disk once, with a receipt. */
+  /** Newly-completed files; each gets a "written to disk" receipt once. */
   completed?: CompletedFile[];
   /** The page's promptbox, rendered full-bleed. */
   children: ReactNode;
@@ -36,48 +35,23 @@ export function PromptShell({
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const savedIdsRef = useRef<Set<string>>(new Set());
 
-  // Save each completed file exactly once. ArtCraft-provider files are
-  // already auto-saved to disk by the Rust polling thread (named per the
-  // user's filename convention), so they only get receipted here —
-  // downloading them again would create duplicates. The Rust side already
-  // flashes a toast if a download fails, so errors only suppress the receipt.
+  // Receipt each completed file exactly once. Every provider's completion
+  // path on the Rust side (the ArtCraft poller and the shared third-party
+  // completion routine used by Grok, FAL, Midjourney, Sora, World Labs and
+  // Higgsfield) already saves the results to the user's download directory,
+  // named per their filename convention. Downloading them again here would
+  // create duplicates (it used to, for every non-ArtCraft provider). The Rust
+  // side flashes a toast if a save fails.
   useEffect(() => {
     if (!completed?.length) return;
     const fresh = completed.filter((f) => !savedIdsRef.current.has(f.id));
     if (fresh.length === 0) return;
     fresh.forEach((f) => savedIdsRef.current.add(f.id));
 
-    let cancelled = false;
-    (async () => {
-      const savedNames: string[] = [];
-      let savedOnDiskCount = 0;
-      for (const file of fresh) {
-        if (file.provider === "artcraft") {
-          savedOnDiskCount += 1;
-          continue;
-        }
-        try {
-          await DownloadUrl(file.url);
-          savedNames.push(fileNameFromUrl(file.url));
-        } catch {
-          // Rust flashed the failure toast; nothing to receipt.
-        }
-      }
-      const total = savedNames.length + savedOnDiskCount;
-      if (cancelled || total === 0) return;
-      setReceipt({
-        text:
-          savedNames.length === 1 && savedOnDiskCount === 0
-            ? savedNames[0]
-            : total === 1
-              ? "1 file"
-              : `${total} files`,
-        key: Date.now(),
-      });
-    })();
-    return () => {
-      cancelled = true;
-    };
+    setReceipt({
+      text: fresh.length === 1 ? "1 file" : `${fresh.length} files`,
+      key: Date.now(),
+    });
   }, [completed]);
 
   // Auto-fade the receipt.
@@ -124,19 +98,4 @@ export function PromptShell({
       </div>
     </div>
   );
-}
-
-/** Mirror the Rust download filename: last URL path segment, prefixed with
- *  "artcraft_" unless it already starts with it. */
-function fileNameFromUrl(url: string): string {
-  try {
-    const segments = new URL(url).pathname.split("/").filter(Boolean);
-    let name = segments[segments.length - 1] ?? "file";
-    if (!name.toLowerCase().startsWith("artcraft")) {
-      name = `artcraft_${name}`;
-    }
-    return name;
-  } catch {
-    return "file";
-  }
 }

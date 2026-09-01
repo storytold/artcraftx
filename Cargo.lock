@@ -5590,6 +5590,7 @@ dependencies = [
  "gmicloud_client",
  "grok_api_client",
  "grok_consumer_client",
+ "higgsfield_client",
  "log",
  "midjourney_client",
  "reqwest 0.12.23",
