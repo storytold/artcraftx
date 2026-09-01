@@ -3,6 +3,7 @@ use crate::client::router_fal_client::RouterFalClient;
 use crate::client::router_gmicloud_client::RouterGmiCloudClient;
 use crate::client::router_grok_api_client::RouterGrokApiClient;
 use crate::client::router_grok_client::RouterGrokClient;
+use crate::client::router_higgsfield_client::RouterHiggsfieldClient;
 use crate::client::router_midjourney_client::RouterMidjourneyClient;
 use crate::client::router_seedance2pro_client::RouterSeedance2ProClient;
 use crate::client::router_worldlabs_client::RouterWorldLabsClient;
@@ -14,6 +15,7 @@ pub struct MultiRouterClient {
   pub(crate) gmicloud_client: Option<RouterGmiCloudClient>,
   pub(crate) grok_api_client: Option<RouterGrokApiClient>,
   pub(crate) grok_client: Option<RouterGrokClient>,
+  pub(crate) higgsfield_client: Option<RouterHiggsfieldClient>,
   pub(crate) midjourney_client: Option<RouterMidjourneyClient>,
   pub(crate) seedance2pro_client: Option<RouterSeedance2ProClient>,
   pub(crate) worldlabs_client: Option<RouterWorldLabsClient>,
@@ -43,6 +45,11 @@ impl MultiRouterClient {
   pub fn get_grok_client_ref(&self) -> Result<&RouterGrokClient, ClientError> {
     self.grok_client.as_ref()
       .ok_or(ClientError::ClientNotConfigured(ClientType::Grok))
+  }
+
+  pub fn get_higgsfield_client_ref(&self) -> Result<&RouterHiggsfieldClient, ClientError> {
+    self.higgsfield_client.as_ref()
+      .ok_or(ClientError::ClientNotConfigured(ClientType::Higgsfield))
   }
 
   pub fn get_midjourney_client_ref(&self) -> Result<&RouterMidjourneyClient, ClientError> {

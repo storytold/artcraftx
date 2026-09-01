@@ -6,6 +6,7 @@ pub enum GenerationServiceProvider {
   Artcraft,
   Fal,
   Grok,
+  Higgsfield,
   Midjourney,
   Sora,
   WorldLabs,
@@ -43,6 +44,8 @@ pub enum GenerationModel {
   NanoBanana,
   #[serde(rename = "nano_banana_2")]
   NanoBanana2,
+  #[serde(rename = "nano_banana_2_lite")]
+  NanoBanana2Lite,
   #[serde(rename = "nano_banana_pro")]
   NanoBananaPro,
   #[serde(rename = "seedream_4")]
@@ -163,6 +166,14 @@ pub enum GenerationModel {
   Seedance2p0,
   #[serde(rename = "seedance_2p0_fast")]
   Seedance2p0Fast,
+  #[serde(rename = "seedance_2p0_mini")]
+  Seedance2p0Mini,
+  #[serde(rename = "seedance_2p5")]
+  Seedance2p5,
+  #[serde(rename = "seedance_2p5_edit")]
+  Seedance2p5Edit,
+  #[serde(rename = "minimax_h3")]
+  MinimaxH3,
   #[serde(rename = "veo_2")]
   Veo2,
   #[serde(rename = "veo_3")]

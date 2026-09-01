@@ -40,6 +40,9 @@ pub enum TauriImageModel {
   NanoBanana,
   #[serde(rename = "nano_banana_2")]
   NanoBanana2,
+  // Higgsfield's Nano Banana 2 Lite (fixed 1K, High / Minimal quality).
+  #[serde(rename = "nano_banana_2_lite")]
+  NanoBanana2Lite,
   #[serde(rename = "nano_banana_pro")]
   NanoBananaPro,
   #[serde(rename = "seedream_4")]

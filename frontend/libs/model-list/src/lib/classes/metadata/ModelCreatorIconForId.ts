@@ -19,6 +19,7 @@ export const MODEL_ID_PREFIX_CREATORS: Array<[string, ModelCreator]> = [
   ["veo", ModelCreator.Google],
   ["grok", ModelCreator.Grok],
   ["happy_horse", ModelCreator.Alibaba],
+  ["minimax", ModelCreator.Hailuo],
   ["qwen", ModelCreator.Alibaba],
   ["suno", ModelCreator.Suno],
   ["seed_audio", ModelCreator.Bytedance],

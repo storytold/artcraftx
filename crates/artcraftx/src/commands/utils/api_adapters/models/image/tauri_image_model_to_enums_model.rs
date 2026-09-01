@@ -16,6 +16,7 @@ pub fn tauri_image_model_to_enums_model(model: TauriImageModel) -> Option<Common
     TauriImageModel::GptImage2 => Some(CommonImageModel::GptImage2),
     TauriImageModel::NanoBanana => Some(CommonImageModel::NanoBanana),
     TauriImageModel::NanoBanana2 => Some(CommonImageModel::NanoBanana2),
+    TauriImageModel::NanoBanana2Lite => None, // Higgsfield only; not on the omni endpoint.
     TauriImageModel::NanoBananaPro => Some(CommonImageModel::NanoBananaPro),
     TauriImageModel::Seedream4 => Some(CommonImageModel::Seedream4),
     TauriImageModel::Seedream4p5 => Some(CommonImageModel::Seedream4p5),

@@ -15,10 +15,83 @@ const SEEDANCE_ASPECT_RATIOS: &[CommonAspectRatio] = &[
   CommonAspectRatio::TallNineBySixteen,
 ];
 
-/// Bytedance Seedance video models: the 2.0 family (with references), 1.5
-/// Pro, and 1.0 Lite.
+/// Bytedance Seedance video models: 2.5 (Higgsfield), the 2.0 family (with
+/// references), 1.5 Pro, and 1.0 Lite.
 pub fn seedance_video_models() -> Vec<VideoModelConfig> {
   let mut models = Vec::new();
+
+  // Higgsfield-only. Same reference surface as 2.0, longer clips (up to 30s),
+  // and no 4K tier.
+  models.push(VideoModelConfig {
+    model: VideoModel::Seedance2p5,
+    model_creator: ModelCreator::Bytedance,
+    full_name: "Seedance 2.5".to_string(),
+    selector_name: "Seedance 2.5".to_string(),
+    selector_description: "Newest Seedance; up to 30 seconds".to_string(),
+    selector_badges: strings(&["~10 min."]),
+    progress_bar_ms: 600_000,
+    supports_system_prompt: false,
+    text_prompt_max_length: Some(10_000),
+    starting_keyframe_supported: true,
+    ending_keyframe_supported: true,
+    image_references_supported: true,
+    image_references_max: Some(9),
+    video_references_supported: true,
+    video_references_max: Some(3),
+    video_references_max_total_duration_seconds: Some(15),
+    audio_references_supported: true,
+    audio_references_max: Some(3),
+    audio_references_max_total_duration_seconds: Some(15),
+    show_generate_with_sound_toggle: true,
+    aspect_ratio_options: SEEDANCE_ASPECT_RATIOS.to_vec(),
+    aspect_ratio_default: Some(CommonAspectRatio::WideSixteenByNine),
+    resolution_options: vec![CommonResolution::FourEightyP, CommonResolution::SevenTwentyP, CommonResolution::TenEightyP],
+    resolution_default: Some(CommonResolution::SevenTwentyP),
+    bitrate_options: vec![CommonBitrate::Normal, CommonBitrate::High],
+    bitrate_default: Some(CommonBitrate::High),
+    duration_seconds_min: Some(4),
+    duration_seconds_max: Some(30),
+    duration_seconds_options: Some((4..=30).collect()),
+    duration_seconds_default: Some(5),
+    batch_size_max: 4,
+    batch_size_options: Some(vec![1, 2, 3, 4]),
+    batch_size_default: 1,
+    ..Default::default()
+  });
+
+  // Higgsfield-only. Video-to-video: the first video reference is the clip to
+  // edit; images and audio are extra references. Output keeps the source's
+  // length and framing, so there is no duration or aspect control.
+  models.push(VideoModelConfig {
+    model: VideoModel::Seedance2p5Edit,
+    model_creator: ModelCreator::Bytedance,
+    full_name: "Seedance 2.5 Edit".to_string(),
+    selector_name: "Seedance 2.5 Edit".to_string(),
+    selector_description: "Edit an existing video with a prompt".to_string(),
+    extra_info: Some("Video-to-video. Attach the clip to edit as a video reference; add image and audio references to guide the edit.".to_string()),
+    selector_badges: strings(&["~10 min."]),
+    progress_bar_ms: 600_000,
+    supports_system_prompt: false,
+    text_to_video_supported: false,
+    text_prompt_max_length: Some(10_000),
+    image_references_supported: true,
+    image_references_max: Some(9),
+    video_references_supported: true,
+    video_references_max: Some(1),
+    video_references_max_total_duration_seconds: Some(15),
+    audio_references_supported: true,
+    audio_references_max: Some(3),
+    audio_references_max_total_duration_seconds: Some(15),
+    show_generate_with_sound_toggle: true,
+    resolution_options: vec![CommonResolution::FourEightyP, CommonResolution::SevenTwentyP, CommonResolution::TenEightyP],
+    resolution_default: Some(CommonResolution::SevenTwentyP),
+    bitrate_options: vec![CommonBitrate::Normal, CommonBitrate::High],
+    bitrate_default: Some(CommonBitrate::High),
+    batch_size_max: 4,
+    batch_size_options: Some(vec![1, 2, 3, 4]),
+    batch_size_default: 1,
+    ..Default::default()
+  });
 
   models.push(seedance_2p0(
     VideoModel::Seedance2p0,

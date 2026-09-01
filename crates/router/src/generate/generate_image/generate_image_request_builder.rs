@@ -48,6 +48,13 @@ use crate::generate::generate_image::providers::kinovi::midjourney_7_niji::build
 use crate::generate::generate_image::providers::kinovi::midjourney_8::build::build_kinovi_midjourney_8;
 use crate::generate::generate_image::providers::kinovi::seedream_5p0_pro::build::build_kinovi_seedream_5p0_pro;
 use crate::generate::generate_image::providers::grok::grok_imagine_image::build::build_grok_imagine_image;
+use crate::generate::generate_image::providers::higgsfield::gpt_image_2::build::build_higgsfield_gpt_image_2;
+use crate::generate::generate_image::providers::higgsfield::nano_banana_2::build::build_higgsfield_nano_banana_2;
+use crate::generate::generate_image::providers::higgsfield::nano_banana_2_lite::build::build_higgsfield_nano_banana_2_lite;
+use crate::generate::generate_image::providers::higgsfield::nano_banana_pro::build::build_higgsfield_nano_banana_pro;
+use crate::generate::generate_image::providers::higgsfield::seedream_4p5::build::build_higgsfield_seedream_4p5;
+use crate::generate::generate_image::providers::higgsfield::seedream_5p0_lite::build::build_higgsfield_seedream_5p0_lite;
+use crate::generate::generate_image::providers::higgsfield::seedream_5p0_pro::build::build_higgsfield_seedream_5p0_pro;
 use crate::generate::generate_image::providers::midjourney::midjourney_8::build::build_midjourney_midjourney_8;
 
 #[derive(Clone, Debug)]
@@ -161,6 +168,14 @@ impl GenerateImageRequestBuilder {
       // First-party (cookie-session) Grok Imagine. Fast vs quality ("pro") mode.
       (RouterProvider::Grok, RouterImageModel::GrokImagineImage) => build_grok_imagine_image(self, false),
       (RouterProvider::Grok, RouterImageModel::GrokImagineImageQuality) => build_grok_imagine_image(self, true),
+      // First-party (cookie-session) Higgsfield.
+      (RouterProvider::Higgsfield, RouterImageModel::NanoBananaPro) => build_higgsfield_nano_banana_pro(self),
+      (RouterProvider::Higgsfield, RouterImageModel::NanoBanana2) => build_higgsfield_nano_banana_2(self),
+      (RouterProvider::Higgsfield, RouterImageModel::NanoBanana2Lite) => build_higgsfield_nano_banana_2_lite(self),
+      (RouterProvider::Higgsfield, RouterImageModel::GptImage2) => build_higgsfield_gpt_image_2(self),
+      (RouterProvider::Higgsfield, RouterImageModel::Seedream5p0Pro) => build_higgsfield_seedream_5p0_pro(self),
+      (RouterProvider::Higgsfield, RouterImageModel::Seedream5Lite) => build_higgsfield_seedream_5p0_lite(self),
+      (RouterProvider::Higgsfield, RouterImageModel::Seedream4p5) => build_higgsfield_seedream_4p5(self),
 
       _ => self.unsupported_provider_and_model(),
     }

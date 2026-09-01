@@ -51,7 +51,8 @@ impl LoginWebsite {
       Self::ArtCraft => Some(GenerationSource::Artcraft),
       Self::Midjourney => Some(GenerationSource::Midjourney),
       Self::XAi => Some(GenerationSource::Grok),
-      Self::OpenArt | Self::Higgsfield | Self::Runway | Self::Magnific => None,
+      Self::Higgsfield => Some(GenerationSource::Higgsfield),
+      Self::OpenArt | Self::Runway | Self::Magnific => None,
     }
   }
 

@@ -22,6 +22,7 @@ fal_client.workspace = true
 gmicloud_client.workspace = true
 grok_api_client.workspace = true
 grok_consumer_client.workspace = true
+higgsfield_client.workspace = true
 midjourney_client.workspace = true
 seedance2pro_client.workspace = true
 sqlite_identifiers.workspace = true

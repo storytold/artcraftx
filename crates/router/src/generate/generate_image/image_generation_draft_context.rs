@@ -4,6 +4,7 @@ use std::fmt::Debug;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::client::router_client::RouterClient;
+use crate::client::router_higgsfield_client::RouterHiggsfieldClient;
 use crate::client::router_seedance2pro_client::RouterSeedance2ProClient;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::client_error::ClientError;
@@ -11,8 +12,9 @@ use crate::errors::client_error::ClientError;
 /// Context passed when finalizing an image draft into a concrete request.
 ///
 /// Drafts only exist for providers that need to upload assets before
-/// sending the request. Today that's the Seedance2Pro/Kinovi pipeline
-/// (used for Midjourney image generation with reference images); other
+/// sending the request: the Seedance2Pro/Kinovi pipeline (used for
+/// Midjourney image generation with reference images) and first-party
+/// Higgsfield (reference images become Higgsfield media ids); other
 /// providers — Artcraft, Fal — accept image URLs directly and skip the
 /// draft phase entirely.
 #[derive(Clone, Default)]
@@ -32,6 +34,12 @@ impl<'a> ImageGenerationDraftContext<'a> {
   pub fn get_seedance2pro_client_ref(&self) -> Result<&RouterSeedance2ProClient, ArtcraftRouterError> {
     let client = self.client.ok_or(ArtcraftRouterError::Client(ClientError::RouterClientNotProvided))?;
     client.get_seedance2pro_client_ref()
+      .map_err(ArtcraftRouterError::Client)
+  }
+
+  pub fn get_higgsfield_client_ref(&self) -> Result<&RouterHiggsfieldClient, ArtcraftRouterError> {
+    let client = self.client.ok_or(ArtcraftRouterError::Client(ClientError::RouterClientNotProvided))?;
+    client.get_higgsfield_client_ref()
       .map_err(ArtcraftRouterError::Client)
   }
 }

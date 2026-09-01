@@ -1,4 +1,5 @@
 use crate::client::router_client::RouterClient;
+use crate::client::router_higgsfield_client::RouterHiggsfieldClient;
 use crate::client::router_seedance2pro_client::RouterSeedance2ProClient;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::client_error::ClientError;
@@ -26,6 +27,12 @@ impl <'a> VideoGenerationDraftContext<'a> {
     let client = self.client.ok_or(ArtcraftRouterError::Client(ClientError::RouterClientNotProvided))?;
     client.get_seedance2pro_client_ref()
       .map_err(|err| ArtcraftRouterError::Client(err))
+  }
+
+  pub fn get_higgsfield_client_ref(&self) -> Result<&RouterHiggsfieldClient, ArtcraftRouterError> {
+    let client = self.client.ok_or(ArtcraftRouterError::Client(ClientError::RouterClientNotProvided))?;
+    client.get_higgsfield_client_ref()
+      .map_err(ArtcraftRouterError::Client)
   }
 
   pub fn get_media_file_to_artcraft_url_map(&self) -> Result<&HashMap<MediaFileToken, String>, ArtcraftRouterError> {

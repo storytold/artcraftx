@@ -81,9 +81,14 @@ pub enum GenerationSource {
   #[serde(rename = "worldlabs_cookies")]
   WorldLabsCookies,
 
-  // ── Other website (cookie) integrations ──
+  // ── Higgsfield ──
+  /// The generation provider recorded on tasks run with a Higgsfield account.
+  #[serde(rename = "higgsfield")]
+  Higgsfield,
+  /// Higgsfield website cookies captured from the login webview.
   #[serde(rename = "higgsfield_cookies")]
   HiggsfieldCookies,
+  // ── Other website (cookie) integrations ──
   #[serde(rename = "magnific_cookies")]
   MagnificCookies,
   #[serde(rename = "openart_cookies")]
@@ -111,6 +116,7 @@ impl GenerationSource {
       | Self::MidjourneyCookies
       | Self::WorldLabs
       | Self::WorldLabsCookies
+      | Self::Higgsfield
       | Self::HiggsfieldCookies
       | Self::MagnificCookies
       | Self::OpenArtCookies
@@ -142,6 +148,7 @@ impl GenerationSource {
       Self::OpenAiApi => "openai_api",
       Self::WorldLabs => "world_labs",
       Self::WorldLabsCookies => "worldlabs_cookies",
+      Self::Higgsfield => "higgsfield",
       Self::HiggsfieldCookies => "higgsfield_cookies",
       Self::MagnificCookies => "magnific_cookies",
       Self::OpenArtCookies => "openart_cookies",
@@ -168,6 +175,7 @@ impl GenerationSource {
       "openai_api" => Ok(Self::OpenAiApi),
       "world_labs" => Ok(Self::WorldLabs),
       "worldlabs_cookies" => Ok(Self::WorldLabsCookies),
+      "higgsfield" => Ok(Self::Higgsfield),
       "higgsfield_cookies" => Ok(Self::HiggsfieldCookies),
       "magnific_cookies" => Ok(Self::MagnificCookies),
       "openart_cookies" => Ok(Self::OpenArtCookies),
@@ -196,6 +204,7 @@ impl GenerationSource {
       Self::OpenAiApi,
       Self::WorldLabs,
       Self::WorldLabsCookies,
+      Self::Higgsfield,
       Self::HiggsfieldCookies,
       Self::MagnificCookies,
       Self::OpenArtCookies,
@@ -245,7 +254,7 @@ mod tests {
 
     #[test]
     fn all_variants_count() {
-      assert_eq!(GenerationSource::all_variants().len(), 21);
+      assert_eq!(GenerationSource::all_variants().len(), 22);
     }
 
     #[test]

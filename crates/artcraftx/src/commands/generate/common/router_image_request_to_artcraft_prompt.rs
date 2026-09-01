@@ -50,6 +50,8 @@ fn image_model_to_common_model_type(model: RouterImageModel) -> Option<CommonMod
     RouterImageModel::GptImage2 => Some(CommonModelType::GptImage2),
     RouterImageModel::NanoBanana => Some(CommonModelType::NanoBanana),
     RouterImageModel::NanoBanana2 => Some(CommonModelType::NanoBanana2),
+    // Higgsfield-only; storyteller-web has no prompt type for it.
+    RouterImageModel::NanoBanana2Lite => None,
     RouterImageModel::NanoBananaPro => Some(CommonModelType::NanoBananaPro),
     RouterImageModel::Seedream4 => Some(CommonModelType::Seedream4),
     RouterImageModel::Seedream4p5 => Some(CommonModelType::Seedream4p5),
@@ -71,6 +73,7 @@ fn provider_to_generation_provider(provider: RouterProvider) -> GenerationSource
     RouterProvider::Artcraft => GenerationSource::Artcraft,
     RouterProvider::Fal => GenerationSource::Fal,
     RouterProvider::Grok => GenerationSource::Grok,
+    RouterProvider::Higgsfield => GenerationSource::Higgsfield,
     RouterProvider::Midjourney => GenerationSource::Midjourney,
     // Unused providers -> ArtCraft
     RouterProvider::Seedance2Pro => GenerationSource::Artcraft ,

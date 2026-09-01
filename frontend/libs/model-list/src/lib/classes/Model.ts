@@ -58,6 +58,14 @@ export class Model {
   // Maximum character length for the prompt text input
   readonly maxPromptLength: number;
 
+  // Providers whose menus differ from this (base) config get a variant: a
+  // model with the same id built from the provider's override config. See
+  // `forProvider()`. Only set on base models.
+  private providerVariants?: Map<GenerationProvider, Model>;
+
+  // On a variant: the base model it was derived from.
+  private baseModel?: Model;
+
   protected constructor(args: {
     id: string;
     tauriId: string;
@@ -90,6 +98,25 @@ export class Model {
 
   getProviders(): GenerationProvider[] {
     return this.providers ?? [GenerationProvider.Artcraft];
+  }
+
+  // Register `variant` as what this model looks like on `provider`.
+  attachProviderVariant(provider: GenerationProvider, variant: Model): void {
+    variant.baseModel = this;
+    (this.providerVariants ??= new Map()).set(provider, variant);
+  }
+
+  hasProviderVariants(): boolean {
+    return (this.baseModel ?? this).providerVariants?.size ? true : false;
+  }
+
+  // The model as `provider` runs it: the provider's variant when its menus
+  // differ, else the base model. Works from a base or from another variant;
+  // no provider (or one without overrides) resolves to the base.
+  forProvider(provider: GenerationProvider | undefined): Model {
+    const root = this.baseModel ?? this;
+    if (provider === undefined) return root;
+    return root.providerVariants?.get(provider) ?? root;
   }
 
   toLegacyBadges(): { label: string }[] {

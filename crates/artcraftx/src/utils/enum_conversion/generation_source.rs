@@ -20,9 +20,10 @@ pub fn to_generation_service_provider(source: GenerationSource) -> GenerationSer
     | GenerationSource::OpenAiApi => GenerationServiceProvider::Sora,
     GenerationSource::WorldLabs
     | GenerationSource::WorldLabsCookies => GenerationServiceProvider::WorldLabs,
+    GenerationSource::Higgsfield
+    | GenerationSource::HiggsfieldCookies => GenerationServiceProvider::Higgsfield,
     // No tasks are generated from these sources (yet); fall back to Artcraft.
-    GenerationSource::HiggsfieldCookies
-    | GenerationSource::MagnificCookies
+    GenerationSource::MagnificCookies
     | GenerationSource::OpenArtCookies
     | GenerationSource::RunwayCookies
     | GenerationSource::ReplicateApi => GenerationServiceProvider::Artcraft,

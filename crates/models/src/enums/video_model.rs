@@ -56,6 +56,14 @@ pub enum VideoModel {
   Seedance2p0BytePlusMini,
   #[serde(rename = "seedance_2p0_bpu_mini")]
   Seedance2p0BytePlusUltraMini,
+  #[serde(rename = "seedance_2p5")]
+  Seedance2p5,
+  /// Seedance 2.5 video-to-video editing: rewrites a source video clip.
+  #[serde(rename = "seedance_2p5_edit")]
+  Seedance2p5Edit,
+  // ── MiniMax (Hailuo) ──
+  #[serde(rename = "minimax_h3")]
+  MinimaxH3,
   // ── Alibaba ──
   #[serde(rename = "happy_horse_1p0")]
   HappyHorse1p0,
@@ -103,5 +111,8 @@ mod tests {
     assert_eq!(serde_json::to_string(&VideoModel::Seedance10Lite).unwrap(), "\"seedance_1p0_lite\"");
     assert_eq!(serde_json::to_string(&VideoModel::Seedance2p0BytePlusUltraMini).unwrap(), "\"seedance_2p0_bpu_mini\"");
     assert_eq!(serde_json::from_str::<VideoModel>("\"switch_x\"").unwrap(), VideoModel::SwitchX);
+    assert_eq!(serde_json::to_string(&VideoModel::Seedance2p5).unwrap(), "\"seedance_2p5\"");
+    assert_eq!(serde_json::to_string(&VideoModel::Seedance2p5Edit).unwrap(), "\"seedance_2p5_edit\"");
+    assert_eq!(serde_json::to_string(&VideoModel::MinimaxH3).unwrap(), "\"minimax_h3\"");
   }
 }

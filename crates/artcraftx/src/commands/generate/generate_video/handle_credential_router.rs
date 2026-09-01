@@ -6,6 +6,7 @@ use crate::commands::generate::generate_error::GenerateError;
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::common::generation_credential::{credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential};
 use crate::commands::generate::generate_video::artcraft::handle_artcraft_video_via_router::handle_artcraft_video_via_router;
+use crate::commands::generate::generate_video::higgsfield::handle_higgsfield_video_via_router::handle_higgsfield_video_via_router;
 use crate::commands::generate::generate_video::request::TauriGenerateVideoRequest;
 use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::auth_credential::AuthCredential;
@@ -35,6 +36,10 @@ pub async fn handle_credential_router(
     | GenerationSource::ArtcraftLocal
     | GenerationSource::ArtcraftCookies => {
       handle_artcraft_credential(request, &credential).await
+    }
+    GenerationSource::HiggsfieldCookies
+    | GenerationSource::Higgsfield => {
+      handle_higgsfield_video_via_router(request, &credential).await
     }
     other => Err(credential_not_usable(
       &credential,

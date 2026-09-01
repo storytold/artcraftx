@@ -84,6 +84,10 @@ fn video_model_to_common_model_type(model: RouterVideoModel) -> Option<CommonMod
     RouterVideoModel::PreviewModelFast => Some(CommonModelType::PreviewModelFast),
     RouterVideoModel::GrokImagineVideo => Some(CommonModelType::GrokImagineVideo),
     RouterVideoModel::GrokImagineVideo1p5 => Some(CommonModelType::GrokImagineVideo1p5),
+    // Higgsfield-only; storyteller-web has no prompt types for them.
+    RouterVideoModel::Seedance2p5
+    | RouterVideoModel::Seedance2p5Edit
+    | RouterVideoModel::MinimaxH3 => None,
   }
 }
 
@@ -92,6 +96,7 @@ fn provider_to_generation_provider(provider: RouterProvider) -> GenerationSource
     RouterProvider::Artcraft => GenerationSource::Artcraft,
     RouterProvider::Fal => GenerationSource::Fal,
     RouterProvider::Grok => GenerationSource::Grok,
+    RouterProvider::Higgsfield => GenerationSource::Higgsfield,
     RouterProvider::Midjourney => GenerationSource::Midjourney,
     // Unused providers -> ArtCraft
     RouterProvider::Seedance2Pro => GenerationSource::Artcraft ,

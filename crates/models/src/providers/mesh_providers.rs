@@ -45,7 +45,7 @@ mod tests {
   #[test]
   fn offerings_are_consistent_with_the_model_table() {
     let known: Vec<MeshModel> = MESH_MODELS.iter().filter(|c| !c.is_disabled).map(|c| c.model).collect();
-    check_offerings(&MESH_PROVIDERS, &known);
+    check_offerings(&MESH_PROVIDERS, &known, |config| config.model);
     assert_eq!(MESH_PROVIDERS.len(), 1, "mesh is ArtCraft-only");
   }
 }

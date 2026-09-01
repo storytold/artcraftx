@@ -16,6 +16,7 @@ pub fn tauri_image_model_to_generation_model(model: TauriImageModel) -> Generati
     TauriImageModel::GptImage2 => GenerationModel::GptImage2,
     TauriImageModel::NanoBanana => GenerationModel::NanoBanana,
     TauriImageModel::NanoBanana2 => GenerationModel::NanoBanana2,
+    TauriImageModel::NanoBanana2Lite => GenerationModel::NanoBanana2Lite,
     TauriImageModel::NanoBananaPro => GenerationModel::NanoBananaPro,
     TauriImageModel::Seedream4 => GenerationModel::Seedream4,
     TauriImageModel::Seedream4p5 => GenerationModel::Seedream4p5,

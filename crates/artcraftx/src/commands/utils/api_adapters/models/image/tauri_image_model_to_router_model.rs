@@ -16,6 +16,7 @@ pub fn tauri_image_model_to_router_model(model: TauriImageModel) -> Option<Route
     TauriImageModel::GptImage2 => Some(RouterImageModel::GptImage2), // Text-to-Image
     TauriImageModel::NanoBanana => Some(RouterImageModel::NanoBanana), // Text-to-Image
     TauriImageModel::NanoBanana2 => Some(RouterImageModel::NanoBanana2), // Text-to-Image
+    TauriImageModel::NanoBanana2Lite => Some(RouterImageModel::NanoBanana2Lite), // Higgsfield only
     TauriImageModel::NanoBananaPro => Some(RouterImageModel::NanoBananaPro), // Text-to-Image
     TauriImageModel::Seedream4 => Some(RouterImageModel::Seedream4), // Text-to-Image
     TauriImageModel::Seedream4p5 => Some(RouterImageModel::Seedream4p5), // Text-to-Image

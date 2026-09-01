@@ -31,6 +31,9 @@ export const providerForService = (service: string): GenerationProvider | undefi
     case "grok_cookies":
     case "xai_api":
       return GenerationProvider.Grok;
+    case "higgsfield":
+    case "higgsfield_cookies":
+      return GenerationProvider.Higgsfield;
     case "midjourney":
     case "midjourney_cookies":
       return GenerationProvider.Midjourney;

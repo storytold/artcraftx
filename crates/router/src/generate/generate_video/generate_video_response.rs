@@ -53,11 +53,30 @@ pub struct GrokVideoResponsePayload {
   pub maybe_outbound_request: Option<Arc<dyn Debug + Send + Sync>>,
 }
 
+/// Response from the first-party (cookie-session) Higgsfield provider. One
+/// enqueue creates a job set with one job per requested video; the caller
+/// polls the jobs (`HiggsfieldSession::job_status_batch`) by id.
+#[derive(Clone, Debug)]
+pub struct HiggsfieldVideoResponsePayload {
+  pub job_set_id: String,
+  /// In generation order; never empty.
+  pub job_ids: Vec<String>,
+}
+
+impl HiggsfieldVideoResponsePayload {
+  /// The first job, which stands in for the whole set as the task's
+  /// `provider_job_id`.
+  pub fn primary_job_id(&self) -> &str {
+    &self.job_ids[0]
+  }
+}
+
 #[derive(Clone, Debug)]
 pub enum GenerateVideoResponse {
   Artcraft(ArtcraftVideoResponsePayload),
   GmiCloud(GmiCloudVideoResponsePayload),
   Grok(GrokVideoResponsePayload),
+  Higgsfield(HiggsfieldVideoResponsePayload),
   Seedance2Pro(Seedance2proVideoResponsePayload),
   Fal(FalVideoResponsePayload),
 }
@@ -87,6 +106,13 @@ impl GenerateVideoResponse {
   pub fn get_grok_payload(&self) -> Option<GrokVideoResponsePayload> {
     match self {
       Self::Grok(p) => Some(p.clone()),
+      _ => None,
+    }
+  }
+
+  pub fn get_higgsfield_payload(&self) -> Option<HiggsfieldVideoResponsePayload> {
+    match self {
+      Self::Higgsfield(p) => Some(p.clone()),
       _ => None,
     }
   }

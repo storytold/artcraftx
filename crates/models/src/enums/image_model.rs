@@ -51,6 +51,10 @@ pub enum ImageModel {
   NanoBanana,
   #[serde(rename = "nano_banana_2")]
   NanoBanana2,
+  /// Higgsfield's Nano Banana 2 Lite pipeline (quality tiers instead of a
+  /// resolution menu).
+  #[serde(rename = "nano_banana_2_lite")]
+  NanoBanana2Lite,
   #[serde(rename = "nano_banana_pro")]
   NanoBananaPro,
   // ── Bytedance ──
@@ -79,5 +83,6 @@ mod tests {
     assert_eq!(serde_json::to_string(&ImageModel::GrokImagineImageQuality).unwrap(), "\"grok_imagine_image_q\"");
     assert_eq!(serde_json::to_string(&ImageModel::Seedream5p0ProUltra).unwrap(), "\"seedream_5p0_pro_u\"");
     assert_eq!(serde_json::from_str::<ImageModel>("\"flux_pro_1\"").unwrap(), ImageModel::FluxPro1);
+    assert_eq!(serde_json::to_string(&ImageModel::NanoBanana2Lite).unwrap(), "\"nano_banana_2_lite\"");
   }
 }

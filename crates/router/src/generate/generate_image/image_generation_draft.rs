@@ -3,6 +3,8 @@ use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::generate::generate_image::image_generation_cost_estimate::ImageGenerationCostEstimate;
 use crate::generate::generate_image::image_generation_draft_context::ImageGenerationDraftContext;
 use crate::generate::generate_image::image_generation_request::ImageGenerationRequest;
+use crate::generate::generate_image::providers::higgsfield::cost::HiggsfieldImageCostState;
+use crate::generate::generate_image::providers::higgsfield::draft::HiggsfieldImageDraftState;
 use crate::generate::generate_image::providers::kinovi::midjourney_7::cost::KinoviMidjourney7CostState;
 use crate::generate::generate_image::providers::kinovi::midjourney_7::draft::KinoviMidjourney7DraftState;
 use crate::generate::generate_image::providers::kinovi::midjourney_7_niji::cost::KinoviMidjourney7NijiCostState;
@@ -16,15 +18,17 @@ use crate::generate::generate_image::providers::kinovi::seedream_5p0_pro::draft:
 ///
 /// Drafts hold validated/planned parameters but may still need media
 /// resolution (e.g. uploading local files to a provider) before they can
-/// be sent. Today only the Kinovi models need this — when the caller
-/// supplies reference images, we must upload them to the Seedance2Pro
-/// CDN before sending the request.
+/// be sent. The Kinovi models need this (reference images are uploaded to
+/// the Seedance2Pro CDN first), and so does first-party Higgsfield
+/// (reference images become Higgsfield media ids).
 #[derive(Clone, Debug)]
 pub enum ImageGenerationDraftRequest {
   KinoviMidjourney7(KinoviMidjourney7DraftState),
   KinoviMidjourney7Niji(KinoviMidjourney7NijiDraftState),
   KinoviMidjourney8(KinoviMidjourney8DraftState),
   KinoviSeedream5p0Pro(KinoviSeedream5p0ProDraftState),
+  /// Any Higgsfield image model (the state says which).
+  HiggsfieldImage(HiggsfieldImageDraftState),
 }
 
 impl ImageGenerationDraftRequest {
@@ -34,6 +38,7 @@ impl ImageGenerationDraftRequest {
       Self::KinoviMidjourney7Niji(_) => RouterProvider::Seedance2Pro,
       Self::KinoviMidjourney8(_) => RouterProvider::Seedance2Pro,
       Self::KinoviSeedream5p0Pro(_) => RouterProvider::Seedance2Pro,
+      Self::HiggsfieldImage(_) => RouterProvider::Higgsfield,
     }
   }
 
@@ -43,6 +48,7 @@ impl ImageGenerationDraftRequest {
       Self::KinoviMidjourney7Niji(draft) => Ok(KinoviMidjourney7NijiCostState::from_draft(draft).estimate_cost()),
       Self::KinoviMidjourney8(draft) => Ok(KinoviMidjourney8CostState::from_draft(draft).estimate_cost()),
       Self::KinoviSeedream5p0Pro(draft) => Ok(KinoviSeedream5p0ProCostState::from_draft(draft).estimate_cost()),
+      Self::HiggsfieldImage(draft) => Ok(HiggsfieldImageCostState::from_draft(draft).estimate_cost()),
     }
   }
 
@@ -63,6 +69,10 @@ impl ImageGenerationDraftRequest {
       Self::KinoviSeedream5p0Pro(mut draft) => {
         let result = draft.to_request(&draft_context).await?;
         Ok(ImageGenerationRequest::KinoviSeedream5p0Pro(result))
+      }
+      Self::HiggsfieldImage(mut draft) => {
+        let result = draft.to_request(&draft_context).await?;
+        Ok(ImageGenerationRequest::HiggsfieldImage(result))
       }
     }
   }

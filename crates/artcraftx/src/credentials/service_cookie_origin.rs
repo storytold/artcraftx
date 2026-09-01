@@ -20,7 +20,8 @@ pub fn cookie_origin_for_service(service: GenerationSource) -> Option<Url> {
     | GenerationSource::SoraCookies => "https://chatgpt.com/",
     GenerationSource::WorldLabs
     | GenerationSource::WorldLabsCookies => "https://worldlabs.ai/",
-    GenerationSource::HiggsfieldCookies => "https://higgsfield.ai/",
+    GenerationSource::Higgsfield
+    | GenerationSource::HiggsfieldCookies => "https://higgsfield.ai/",
     GenerationSource::MagnificCookies => "https://www.magnific.com/",
     GenerationSource::OpenArtCookies => "https://openart.ai/",
     GenerationSource::RunwayCookies => "https://app.runwayml.com/",

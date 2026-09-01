@@ -23,6 +23,12 @@ impl<Model, Config> OfferedModel<Model, Config> {
   pub fn same_as_base(model: Model) -> Self {
     Self { model, overrides: None }
   }
+
+  /// This provider runs the model with a different capability surface than
+  /// the base config (fewer resolutions, other durations, ...).
+  pub fn with_overrides(model: Model, overrides: Config) -> Self {
+    Self { model, overrides: Some(overrides) }
+  }
 }
 
 impl<Model: Copy + PartialEq, Config> ProviderOffering<Model, Config> {
@@ -37,6 +43,28 @@ impl<Model: Copy + PartialEq, Config> ProviderOffering<Model, Config> {
   pub fn offers(&self, model: Model) -> bool {
     self.models.iter().any(|offered| offered.model == model)
   }
+
+  /// This provider's replacement config for `model`, if it has one.
+  pub fn overrides_for(&self, model: Model) -> Option<&Config> {
+    self.models.iter()
+        .find(|offered| offered.model == model)
+        .and_then(|offered| offered.overrides.as_ref())
+  }
+}
+
+/// The config `provider` runs `model` with: its override when the offering
+/// carries one, else `base`. Callers that plan a request against a specific
+/// provider should read options from this, not from the base table.
+pub fn effective_config<'a, Model: Copy + PartialEq, Config>(
+  offerings: &'a [ProviderOffering<Model, Config>],
+  provider: GenerationProvider,
+  model: Model,
+  base: &'a Config,
+) -> &'a Config {
+  offerings.iter()
+      .find(|offering| offering.provider == provider)
+      .and_then(|offering| offering.overrides_for(model))
+      .unwrap_or(base)
 }
 
 /// The providers that offer `model`, in table order (the first is the

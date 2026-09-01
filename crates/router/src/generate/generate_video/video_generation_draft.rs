@@ -9,6 +9,8 @@ use crate::generate::generate_video::providers::kinovi::seedance_2p0_fast::cost:
 use crate::generate::generate_video::providers::kinovi::seedance_2p0_fast::draft::KinoviSeedance2p0FastDraftState;
 use crate::generate::generate_video::providers::kinovi::seedance_2p0_mini::cost::KinoviSeedance2p0MiniCostState;
 use crate::generate::generate_video::providers::kinovi::seedance_2p0_mini::draft::KinoviSeedance2p0MiniDraftState;
+use crate::generate::generate_video::providers::higgsfield::cost::HiggsfieldVideoCostState;
+use crate::generate::generate_video::providers::higgsfield::draft::HiggsfieldVideoDraftState;
 use crate::generate::generate_video::video_generation_draft_context::VideoGenerationDraftContext;
 use crate::generate::generate_video::video_generation_request::VideoGenerationRequest;
 
@@ -21,6 +23,8 @@ pub enum VideoGenerationDraftRequest {
   KinoviSeedance2p0(KinoviSeedance2p0DraftState),
   KinoviSeedance2p0Fast(KinoviSeedance2p0FastDraftState),
   KinoviSeedance2p0Mini(KinoviSeedance2p0MiniDraftState),
+  /// Any Higgsfield video model (the state says which).
+  HiggsfieldVideo(HiggsfieldVideoDraftState),
 }
 
 impl VideoGenerationDraftRequest {
@@ -31,6 +35,7 @@ impl VideoGenerationDraftRequest {
       Self::KinoviSeedance2p0(_) => RouterProvider::Seedance2Pro,
       Self::KinoviSeedance2p0Fast(_) => RouterProvider::Seedance2Pro,
       Self::KinoviSeedance2p0Mini(_) => RouterProvider::Seedance2Pro,
+      Self::HiggsfieldVideo(_) => RouterProvider::Higgsfield,
     }
   }
 
@@ -41,6 +46,7 @@ impl VideoGenerationDraftRequest {
       VideoGenerationDraftRequest::KinoviSeedance2p0(draft) => Ok(KinoviSeedance2p0CostState::from_draft(draft).estimate_cost()),
       VideoGenerationDraftRequest::KinoviSeedance2p0Fast(draft) => Ok(KinoviSeedance2p0FastCostState::from_draft(draft).estimate_cost()),
       VideoGenerationDraftRequest::KinoviSeedance2p0Mini(draft) => Ok(KinoviSeedance2p0MiniCostState::from_draft(draft).estimate_cost()),
+      VideoGenerationDraftRequest::HiggsfieldVideo(draft) => Ok(HiggsfieldVideoCostState::from_draft(draft).estimate_cost()),
     }
   }
 
@@ -63,6 +69,10 @@ impl VideoGenerationDraftRequest {
       VideoGenerationDraftRequest::KinoviSeedance2p0Mini(mut draft) => {
         let result = draft.to_request(&draft_context).await?;
         Ok(VideoGenerationRequest::KinoviSeedance2p0Mini(result))
+      },
+      VideoGenerationDraftRequest::HiggsfieldVideo(mut draft) => {
+        let result = draft.to_request(&draft_context).await?;
+        Ok(VideoGenerationRequest::HiggsfieldVideo(result))
       },
     }
   }

@@ -10,6 +10,8 @@ pub enum RouterProvider {
   GrokApi,
   /// First-party (cookie-session) Grok Imagine.
   Grok,
+  /// First-party (cookie-session) Higgsfield.
+  Higgsfield,
   /// First-party (cookie-session) Midjourney.
   Midjourney,
   Seedance2Pro,

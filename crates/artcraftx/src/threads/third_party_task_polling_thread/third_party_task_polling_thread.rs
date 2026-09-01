@@ -5,6 +5,8 @@ use crate::state::database::task_database::TaskDatabase;
 use crate::threads::third_party_task_polling_thread::handlers::fal::poll_fal_tasks::poll_fal_tasks;
 use crate::threads::third_party_task_polling_thread::handlers::grok::grok_image_collector::GrokImageCollector;
 use crate::threads::third_party_task_polling_thread::handlers::grok::poll_grok_image_tasks::poll_grok_image_tasks;
+use crate::threads::third_party_task_polling_thread::handlers::higgsfield::higgsfield_poll_sessions::HiggsfieldPollSessions;
+use crate::threads::third_party_task_polling_thread::handlers::higgsfield::poll_higgsfield_tasks::poll_higgsfield_tasks;
 use crate::database::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use core_types::enums::generation_source::GenerationSource;
@@ -33,6 +35,8 @@ pub async fn third_party_task_polling_thread(
   let mut has_ever_seen_third_party_jobs = false;
   // Grok streams a prompt's images one frame at a time; accumulate across iterations.
   let mut grok_image_collector = GrokImageCollector::new();
+  // One Higgsfield session per account, reused so bearer tokens aren't re-minted every poll.
+  let mut higgsfield_sessions = HiggsfieldPollSessions::new();
 
   loop {
     let result = poll_iteration(
@@ -43,6 +47,7 @@ pub async fn third_party_task_polling_thread(
       &storyteller_creds_manager,
       &grok_websockets,
       &mut grok_image_collector,
+      &mut higgsfield_sessions,
       &mut has_ever_seen_third_party_jobs,
     ).await;
 
@@ -61,6 +66,7 @@ async fn poll_iteration(
   storyteller_creds_manager: &StorytellerCredentialManager,
   grok_websockets: &GrokWebsockets,
   grok_image_collector: &mut GrokImageCollector,
+  higgsfield_sessions: &mut HiggsfieldPollSessions,
   has_ever_seen_third_party_jobs: &mut bool,
 ) -> Result<(), PollError> {
   let task_list = list_non_artcraft_pending_tasks(ListNonArtcraftPendingTasksArgs {
@@ -91,8 +97,14 @@ async fn poll_iteration(
     .filter(|t| t.provider == GenerationSource::Grok && t.task_type == TaskType::ImageGeneration)
     .collect();
 
+  // First-party Higgsfield images and videos (see handlers/higgsfield).
+  let higgsfield_tasks: Vec<&Task> = tasks.iter()
+    .filter(|t| t.provider == GenerationSource::Higgsfield)
+    .collect();
+
   let unhandled_tasks: Vec<&Task> = tasks.iter()
     .filter(|t| t.provider != GenerationSource::Fal)
+    .filter(|t| t.provider != GenerationSource::Higgsfield)
     .filter(|t| !(t.provider == GenerationSource::Grok && t.task_type == TaskType::ImageGeneration))
     .collect();
 
@@ -116,6 +128,19 @@ async fn poll_iteration(
       grok_websockets,
       grok_image_collector,
       &grok_image_tasks,
+    ).await;
+  }
+
+  if !higgsfield_tasks.is_empty() {
+    info!("[ThirdPartyPolling] {} Higgsfield job(s) pending", higgsfield_tasks.len());
+    poll_higgsfield_tasks(
+      app_handle,
+      app_data_root,
+      app_preferences,
+      task_database,
+      storyteller_creds_manager,
+      higgsfield_sessions,
+      &higgsfield_tasks,
     ).await;
   }
 

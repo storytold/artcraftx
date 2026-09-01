@@ -4,6 +4,7 @@ use crate::client::router_fal_client::RouterFalClient;
 use crate::client::router_gmicloud_client::RouterGmiCloudClient;
 use crate::client::router_grok_api_client::RouterGrokApiClient;
 use crate::client::router_grok_client::RouterGrokClient;
+use crate::client::router_higgsfield_client::RouterHiggsfieldClient;
 use crate::client::router_midjourney_client::RouterMidjourneyClient;
 use crate::client::router_seedance2pro_client::RouterSeedance2ProClient;
 use crate::client::router_worldlabs_client::RouterWorldLabsClient;
@@ -16,6 +17,7 @@ pub enum RouterClient {
   GmiCloud(RouterGmiCloudClient),
   GrokApi(RouterGrokApiClient),
   Grok(RouterGrokClient),
+  Higgsfield(RouterHiggsfieldClient),
   Midjourney(RouterMidjourneyClient),
   Seedance2Pro(RouterSeedance2ProClient),
   WorldLabs(RouterWorldLabsClient),
@@ -59,6 +61,14 @@ impl RouterClient {
       RouterClient::Grok(client) => Ok(client),
       RouterClient::Multi(multi) => multi.get_grok_client_ref(),
       _ => Err(ClientError::ClientNotConfigured(ClientType::Grok)),
+    }
+  }
+
+  pub fn get_higgsfield_client_ref(&self) -> Result<&RouterHiggsfieldClient, ClientError> {
+    match self {
+      RouterClient::Higgsfield(client) => Ok(client),
+      RouterClient::Multi(multi) => multi.get_higgsfield_client_ref(),
+      _ => Err(ClientError::ClientNotConfigured(ClientType::Higgsfield)),
     }
   }
 

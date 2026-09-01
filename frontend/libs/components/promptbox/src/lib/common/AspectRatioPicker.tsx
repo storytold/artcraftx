@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { CommonAspectRatio } from "@storyteller/model-list";
+import { CommonAspectRatio, nearestAspectRatio } from "@storyteller/model-list";
 import { PopoverItem, PopoverMenu } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { ImageModel } from "@storyteller/model-list";
@@ -32,15 +32,18 @@ export const AspectRatioPicker = ({
     currentAspectRatio ?? model.defaultAspectRatio ?? undefined;
 
   // If the stored ratio isn't supported by the current model (e.g. user picked
-  // SquareHd on Imagen then switched to Flux Pro 1.1), reset to the model's
-  // default. Otherwise PopoverMenu's toggle mode finds no selected item and
-  // renders just the icon with no label.
+  // SquareHd on Imagen then switched to Flux Pro 1.1, or to a provider that
+  // runs the model with a narrower menu), snap to the nearest ratio it does
+  // support, falling back to the model's default. Otherwise PopoverMenu's
+  // toggle mode finds no selected item and renders just the icon with no label.
   useEffect(() => {
     if (currentAspectRatio === undefined) return;
     if (model.aspectRatios?.includes(currentAspectRatio)) return;
-    const def = model.defaultAspectRatio;
-    if (!def) return;
-    handleCommonAspectRatioSelect(def);
+    const next =
+      nearestAspectRatio(currentAspectRatio, model.aspectRatios ?? [], model.defaultAspectRatio) ??
+      model.defaultAspectRatio;
+    if (!next) return;
+    handleCommonAspectRatioSelect(next);
   }, [model, currentAspectRatio, handleCommonAspectRatioSelect]);
 
   const isAutoRatio =

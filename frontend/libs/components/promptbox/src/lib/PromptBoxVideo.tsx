@@ -18,6 +18,8 @@ import {
   CommonResolution,
   effectivePromptMaxLength,
   formatResolution,
+  nearestNumber,
+  nearestResolutionLabel,
   SizeIconOption,
   SizeOption,
   VideoModel,
@@ -381,32 +383,43 @@ export const PromptBoxVideo = ({
     );
   };
 
-  // Sync duration with model default when switching models.
-  // Read duration from the store directly to avoid stale closure issues
-  // when the model and duration are updated together (e.g. during recreate).
+  // Keep the duration within the model's menu when switching models (or
+  // providers: a provider with narrower menus is a different model instance).
+  // A duration the new menu lacks snaps to the nearest one it has, so a 20s
+  // clip becomes 15s rather than jumping to the default. Read from the store
+  // directly to avoid stale closure issues when the model and duration are
+  // updated together (e.g. during recreate).
   useEffect(() => {
     const currentDuration = usePromptVideoStore.getState().duration;
     if (selectedModel?.durationOptions && selectedModel.defaultDuration) {
-      if (
-        currentDuration === null ||
-        !selectedModel.durationOptions.includes(currentDuration)
-      ) {
+      if (currentDuration === null) {
         setDuration(selectedModel.defaultDuration);
+      } else if (!selectedModel.durationOptions.includes(currentDuration)) {
+        setDuration(
+          nearestNumber(currentDuration, selectedModel.durationOptions) ??
+            selectedModel.defaultDuration,
+        );
       }
     } else if (currentDuration !== null) {
       setDuration(null);
     }
   }, [selectedModel]);
 
-  // Sync resolution with model default when switching models.
-  // Read from store directly to avoid stale closure (same as duration above).
+  // Same for resolution: snap to the nearest tier the model offers (4K on a
+  // 1080p-max provider becomes 1080p). Read from store directly to avoid
+  // stale closure (same as duration above).
   useEffect(() => {
     const currentResolution = usePromptVideoStore.getState().resolution;
     if (selectedModel?.resolutionOptions && selectedModel.defaultResolution) {
       if (
         !selectedModel.resolutionOptions.includes(currentResolution as string)
       ) {
-        setResolution(selectedModel.defaultResolution);
+        setResolution(
+          nearestResolutionLabel(
+            currentResolution as string,
+            selectedModel.resolutionOptions,
+          ) ?? selectedModel.defaultResolution,
+        );
       }
     }
   }, [selectedModel]);

@@ -3,6 +3,7 @@
 use crate::configs::video_model_config::VideoModelConfig;
 use crate::enums::generation_provider::GenerationProvider;
 use crate::enums::video_model::VideoModel;
+use crate::providers::higgsfield_video_offering::higgsfield_video_offering;
 use crate::providers::provider_offering::{is_offered, providers_for_model, ProviderOffering};
 use once_cell::sync::Lazy;
 
@@ -20,8 +21,9 @@ pub fn provider_offers_video_model(provider: GenerationProvider, model: VideoMod
 
 fn video_providers() -> Vec<VideoProviderOffering> {
   vec![
-    // ArtCraft runs every video model (Grok Imagine video is served through
-    // storyteller-web too). Grok and Midjourney offer no video models.
+    // ArtCraft runs every video model except the Higgsfield-only ones (Grok
+    // Imagine video is served through storyteller-web too). Grok and
+    // Midjourney offer no video models.
     VideoProviderOffering::of(GenerationProvider::Artcraft, &[
       VideoModel::Seedance2p0,
       VideoModel::Seedance2p0Fast,
@@ -62,6 +64,9 @@ fn video_providers() -> Vec<VideoProviderOffering> {
     VideoProviderOffering::of(GenerationProvider::Sora, &[
       VideoModel::Sora2,
     ]),
+    // First-party (cookie-session) Higgsfield, with per-model overrides where
+    // its menus differ from ArtCraft's.
+    higgsfield_video_offering(),
   ]
 }
 
@@ -74,7 +79,7 @@ mod tests {
   #[test]
   fn offerings_are_consistent_with_the_model_table() {
     let known: Vec<VideoModel> = VIDEO_MODELS.iter().filter(|c| !c.is_disabled).map(|c| c.model).collect();
-    check_offerings(&VIDEO_PROVIDERS, &known);
+    check_offerings(&VIDEO_PROVIDERS, &known, |config| config.model);
   }
 
   #[test]
@@ -83,5 +88,6 @@ mod tests {
     assert!(!VIDEO_PROVIDERS.iter().any(|o| o.provider == GenerationProvider::Midjourney));
     assert_eq!(providers_for_video_model(VideoModel::Sora2), vec![GenerationProvider::Artcraft, GenerationProvider::Sora]);
     assert!(provider_offers_video_model(GenerationProvider::Artcraft, VideoModel::GrokImagineVideo));
+    assert_eq!(providers_for_video_model(VideoModel::Seedance2p0), vec![GenerationProvider::Artcraft, GenerationProvider::Higgsfield]);
   }
 }

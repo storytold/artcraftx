@@ -6,6 +6,9 @@
 // models are kept out of the picker lists but registered for lookups (task
 // history, icons) via `registerLoadedModels`. Each model's `providers` come
 // from the listing's provider offerings (a model offered by nobody has none).
+// An offering's `overrides` (a provider that runs a model with different
+// menus) becomes a per-provider variant on the base model; see
+// `Model.forProvider()`.
 
 import { create } from "zustand";
 import {
@@ -15,6 +18,7 @@ import {
   Object3DModel,
   SplatModel,
   VideoModel,
+  attachProviderVariants,
   imageModelFromListing,
   object3DModelFromListing,
   providersByModelFromOfferings,
@@ -68,6 +72,7 @@ export const useModelsStore = create<ModelsStoreState>((set, get) => ({
     if (image.status === "fulfilled") {
       const providers = providersByModelFromOfferings(image.value.payload.providers);
       const built = image.value.payload.models.map((m) => imageModelFromListing(m, providers.get(m.model) ?? []));
+      attachProviderVariants(built, image.value.payload.providers, providers, imageModelFromListing);
       allModels.push(...built);
       next.imageModels = enabledOnly(image.value.payload.models, built);
     } else {
@@ -77,6 +82,7 @@ export const useModelsStore = create<ModelsStoreState>((set, get) => ({
     if (video.status === "fulfilled") {
       const providers = providersByModelFromOfferings(video.value.payload.providers);
       const built = video.value.payload.models.map((m) => videoModelFromListing(m, providers.get(m.model) ?? []));
+      attachProviderVariants(built, video.value.payload.providers, providers, videoModelFromListing);
       allModels.push(...built);
       next.videoModels = enabledOnly(video.value.payload.models, built);
     } else {

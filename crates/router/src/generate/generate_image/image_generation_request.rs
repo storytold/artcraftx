@@ -75,6 +75,8 @@ use crate::generate::generate_image::providers::fal::seedream_5_lite::cost::FalS
 use crate::generate::generate_image::providers::fal::seedream_5_lite::request::FalSeedream5LiteRequestState;
 use crate::generate::generate_image::providers::grok::grok_imagine_image::cost::GrokImagineImageCostState;
 use crate::generate::generate_image::providers::grok::grok_imagine_image::request::GrokImagineImageRequestState;
+use crate::generate::generate_image::providers::higgsfield::cost::HiggsfieldImageCostState;
+use crate::generate::generate_image::providers::higgsfield::request::HiggsfieldImageRequestState;
 use crate::generate::generate_image::providers::kinovi::midjourney_7::cost::KinoviMidjourney7CostState;
 use crate::generate::generate_image::providers::kinovi::midjourney_7::request::KinoviMidjourney7RequestState;
 use crate::generate::generate_image::providers::kinovi::midjourney_7_niji::cost::KinoviMidjourney7NijiCostState;
@@ -138,6 +140,8 @@ pub enum ImageGenerationRequest {
 
   // ── First-party (cookie-session) Grok Imagine provider ──
   GrokImagineImage(GrokImagineImageRequestState),
+  // ── First-party (cookie-session) Higgsfield provider (any of its models) ──
+  HiggsfieldImage(HiggsfieldImageRequestState),
 }
 
 impl ImageGenerationRequest {
@@ -188,6 +192,7 @@ impl ImageGenerationRequest {
       Self::MidjourneyMidjourney8(_) => RouterProvider::Midjourney,
 
       Self::GrokImagineImage(_) => RouterProvider::Grok,
+      Self::HiggsfieldImage(_) => RouterProvider::Higgsfield,
     }
   }
 
@@ -280,6 +285,7 @@ impl ImageGenerationRequest {
       Self::MidjourneyMidjourney8(request) => Ok(MidjourneyMidjourney8CostState::from_request(request).estimate_cost()),
 
       Self::GrokImagineImage(request) => Ok(GrokImagineImageCostState::from_request(request).estimate_cost()),
+      Self::HiggsfieldImage(request) => Ok(HiggsfieldImageCostState::from_request(request).estimate_cost()),
     }
   }
 
@@ -468,6 +474,12 @@ impl ImageGenerationRequest {
         let grok_client = client.get_grok_client_ref()
           .map_err(ArtcraftRouterError::Client)?;
         request.send(grok_client).await
+      }
+      // ── First-party (cookie-session) Higgsfield ──
+      Self::HiggsfieldImage(request) => {
+        let higgsfield_client = client.get_higgsfield_client_ref()
+          .map_err(ArtcraftRouterError::Client)?;
+        request.send(higgsfield_client).await
       }
     }
   }

@@ -32,6 +32,8 @@ describe("providerForService", () => {
     expect(providerForService("grok_cookies")).toBe(GenerationProvider.Grok);
     expect(providerForService("midjourney_cookies")).toBe(GenerationProvider.Midjourney);
     expect(providerForService("artcraft_api")).toBe(GenerationProvider.Artcraft);
+    expect(providerForService("higgsfield_cookies")).toBe(GenerationProvider.Higgsfield);
+    expect(providerForService("higgsfield")).toBe(GenerationProvider.Higgsfield);
     expect(providerForService("runway_cookies")).toBeUndefined();
   });
 });

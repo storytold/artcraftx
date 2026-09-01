@@ -3,6 +3,11 @@
 // with. Every write goes through the rules in `selection-rules.ts`, so the
 // combination stays valid: a model is only ever paired with a provider that
 // offers it, and with an account that generates through that provider.
+//
+// The selected model is always the provider's view of it
+// (`Model.forProvider()`): when a provider runs a model with narrower menus,
+// the page holds that variant, so the prompt boxes' option pickers (which
+// key off the model instance) re-validate their choices on provider change.
 import { create } from "zustand";
 import { ModelPage } from "./model-pages";
 import { ImageModel, Model, VideoModel } from "@storyteller/model-list";
@@ -156,16 +161,27 @@ const remember = (draft: Draft, page: ModelPage): Draft => {
   };
 };
 
-const withProvider = (state: Draft, page: ModelPage, modelId: string, provider: GenerationProvider): Draft => ({
-  ...pick(state),
-  selectedProviders: {
-    ...state.selectedProviders,
-    [page]: { ...(state.selectedProviders[page] ?? {}), [modelId]: provider },
-  },
-});
+const withProvider = (state: Draft, page: ModelPage, modelId: string, provider: GenerationProvider): Draft => {
+  const draft: Draft = {
+    ...pick(state),
+    selectedProviders: {
+      ...state.selectedProviders,
+      [page]: { ...(state.selectedProviders[page] ?? {}), [modelId]: provider },
+    },
+  };
+  // The page's selection follows the provider's variant of the model.
+  const current = state.selectedModels[page];
+  if (current && current.id === modelId) {
+    const effective = current.forProvider(provider);
+    if (effective !== current) {
+      draft.selectedModels = { ...state.selectedModels, [page]: effective };
+    }
+  }
+  return draft;
+};
 
 const withModel = (state: Draft, page: ModelPage, model: Model, provider: GenerationProvider | undefined): Draft => {
-  const draft: Draft = { ...pick(state), selectedModels: { ...state.selectedModels, [page]: model } };
+  const draft: Draft = { ...pick(state), selectedModels: { ...state.selectedModels, [page]: model.forProvider(provider) } };
   return provider ? withProvider(draft, page, model.id, provider) : draft;
 };
 

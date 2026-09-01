@@ -23,6 +23,7 @@ fn video_models() -> Vec<VideoModelConfig> {
   models.extend(by_type::veo_video_models::veo_video_models());
   models.extend(by_type::vidu_video_models::vidu_video_models());
   models.extend(by_type::happy_horse_video_models::happy_horse_video_models());
+  models.extend(by_type::minimax_video_models::minimax_video_models());
   models.extend(by_type::sora_video_models::sora_video_models());
   models.extend(by_type::grok_video_models::grok_video_models());
   models.extend(by_type::beeble_video_models::beeble_video_models());

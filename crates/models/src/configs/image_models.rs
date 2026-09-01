@@ -146,6 +146,30 @@ fn google_models() -> Vec<ImageModelConfig> {
       batch_size_default: 1,
       ..Default::default()
     },
+    // Higgsfield-only: Nano Banana 2 at a fixed 1K with a High / Minimal
+    // "thinking" menu (surfaced as quality High / Low).
+    ImageModelConfig {
+      model: ImageModel::NanoBanana2Lite,
+      model_creator: ModelCreator::Google,
+      full_name: "Nano Banana 2 Lite".to_string(),
+      selector_name: "Nano Banana 2 Lite".to_string(),
+      selector_description: "Fastest instructive editing".to_string(),
+      selector_badges: strings(&["20 sec."]),
+      tags: vec![ModelTag::InstructiveEdit],
+      progress_bar_ms: 20_000,
+      can_edit_images: true,
+      text_prompt_max_length: None,
+      image_refs_supported: true,
+      image_refs_max: Some(6),
+      aspect_ratio_options: NANO_BANANA_ASPECT_RATIOS.to_vec(),
+      aspect_ratio_default: Some(CommonAspectRatio::WideSixteenByNine),
+      aspect_ratio_default_when_editing: Some(CommonAspectRatio::Auto),
+      quality_options: vec![CommonQuality::High, CommonQuality::Low],
+      quality_default: Some(CommonQuality::High),
+      batch_size_max: 4,
+      batch_size_default: 1,
+      ..Default::default()
+    },
     ImageModelConfig {
       model: ImageModel::NanoBanana,
       model_creator: ModelCreator::Google,

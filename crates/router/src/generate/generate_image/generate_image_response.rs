@@ -53,11 +53,30 @@ pub struct GrokImageResponsePayload {
   pub request_id: String,
 }
 
+/// Response from the first-party (cookie-session) Higgsfield provider. One
+/// enqueue creates a job set with one job per requested image; the caller
+/// polls the jobs (`HiggsfieldSession::job_status_batch`) by id.
+#[derive(Clone, Debug)]
+pub struct HiggsfieldImageResponsePayload {
+  pub job_set_id: String,
+  /// In generation order; never empty.
+  pub job_ids: Vec<String>,
+}
+
+impl HiggsfieldImageResponsePayload {
+  /// The first job, which stands in for the whole set as the task's
+  /// `provider_job_id`.
+  pub fn primary_job_id(&self) -> &str {
+    &self.job_ids[0]
+  }
+}
+
 #[derive(Clone, Debug)]
 pub enum GenerateImageResponse {
   Artcraft(ArtcraftImageResponsePayload),
   Fal(FalImageResponsePayload),
   Grok(GrokImageResponsePayload),
+  Higgsfield(HiggsfieldImageResponsePayload),
   Midjourney(MidjourneyImageResponsePayload),
   Seedance2Pro(Seedance2proImageResponsePayload),
 }
@@ -80,6 +99,13 @@ impl GenerateImageResponse {
   pub fn get_grok_payload(&self) -> Option<GrokImageResponsePayload> {
     match self {
       Self::Grok(p) => Some(p.clone()),
+      _ => None,
+    }
+  }
+
+  pub fn get_higgsfield_payload(&self) -> Option<HiggsfieldImageResponsePayload> {
+    match self {
+      Self::Higgsfield(p) => Some(p.clone()),
       _ => None,
     }
   }

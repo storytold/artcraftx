@@ -6,6 +6,7 @@ import { ReactNode } from "react";
 const GENERATION_PROVIDER_TO_CREATOR: Partial<Record<GenerationProvider, ModelCreator>> = {
   [GenerationProvider.Artcraft]: ModelCreator.ArtCraft,
   [GenerationProvider.Grok]: ModelCreator.Grok,
+  [GenerationProvider.Higgsfield]: ModelCreator.Higgsfield,
   [GenerationProvider.Midjourney]: ModelCreator.Midjourney,
   [GenerationProvider.Sora]: ModelCreator.OpenAi,
   [GenerationProvider.WorldLabs]: ModelCreator.WorldLabs,
@@ -39,6 +40,8 @@ export const getProviderDisplayName = (provider: GenerationProvider): string => 
       return "FAL";
     case GenerationProvider.Grok:
       return "Grok";
+    case GenerationProvider.Higgsfield:
+      return "Higgsfield";
     case GenerationProvider.Midjourney:
       return "Midjourney";
     case GenerationProvider.Sora:

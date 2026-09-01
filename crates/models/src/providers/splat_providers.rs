@@ -46,7 +46,7 @@ mod tests {
   #[test]
   fn offerings_are_consistent_with_the_model_table() {
     let known: Vec<SplatModel> = SPLAT_MODELS.iter().filter(|c| !c.is_disabled).map(|c| c.model).collect();
-    check_offerings(&SPLAT_PROVIDERS, &known);
+    check_offerings(&SPLAT_PROVIDERS, &known, |config| config.model);
     assert_eq!(providers_for_splat_model(SplatModel::TripoSplat), vec![GenerationProvider::Artcraft]);
   }
 }

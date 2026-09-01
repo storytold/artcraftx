@@ -73,6 +73,13 @@ pub enum RouterVideoModel {
 
   #[serde(rename = "seedance_2p0_bpu_mini")]
   Seedance2p0BytePlusUltraMini,
+  #[serde(rename = "seedance_2p5")]
+  Seedance2p5,
+  /// Seedance 2.5 video-to-video editing.
+  #[serde(rename = "seedance_2p5_edit")]
+  Seedance2p5Edit,
+  #[serde(rename = "minimax_h3")]
+  MinimaxH3,
 
   #[serde(rename = "happy_horse_1p0")]
   HappyHorse1p0,

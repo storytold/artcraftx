@@ -17,6 +17,7 @@ pub fn tauri_image_model_to_common_model_type(model: TauriImageModel) -> CommonM
     TauriImageModel::GptImage2 => CommonModelType::GptImage2,
     TauriImageModel::NanoBanana => CommonModelType::NanoBanana,
     TauriImageModel::NanoBanana2 => CommonModelType::NanoBanana2,
+    TauriImageModel::NanoBanana2Lite => CommonModelType::NanoBanana2, // NB: no dedicated legacy type; nearest.
     TauriImageModel::NanoBananaPro => CommonModelType::NanoBananaPro,
     TauriImageModel::Seedream4 => CommonModelType::Seedream4,
     TauriImageModel::Seedream4p5 => CommonModelType::Seedream4p5,

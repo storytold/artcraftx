@@ -32,6 +32,8 @@ pub enum TaskModelType {
   NanoBanana,
   #[serde(rename = "nano_banana_2")]
   NanoBanana2,
+  #[serde(rename = "nano_banana_2_lite")]
+  NanoBanana2Lite,
   #[serde(rename = "nano_banana_pro")]
   NanoBananaPro,
   #[serde(rename = "gpt_image_1")]
@@ -98,6 +100,14 @@ pub enum TaskModelType {
   Seedance2p0,
   #[serde(rename = "seedance_2p0_fast")]
   Seedance2p0Fast,
+  #[serde(rename = "seedance_2p0_mini")]
+  Seedance2p0Mini,
+  #[serde(rename = "seedance_2p5")]
+  Seedance2p5,
+  #[serde(rename = "seedance_2p5_edit")]
+  Seedance2p5Edit,
+  #[serde(rename = "minimax_h3")]
+  MinimaxH3,
   #[serde(rename = "sora_2")]
   Sora2,
   #[serde(rename = "sora_2_pro")]
@@ -194,6 +204,7 @@ impl TaskModelType {
       Self::Gemini25Flash => "gemini_25_flash",
       Self::NanoBanana => "nano_banana",
       Self::NanoBanana2 => "nano_banana_2",
+      Self::NanoBanana2Lite => "nano_banana_2_lite",
       Self::NanoBananaPro => "nano_banana_pro",
       Self::GptImage1 => "gpt_image_1",
       Self::GptImage1p5 => "gpt_image_1p5",
@@ -226,6 +237,10 @@ impl TaskModelType {
       Self::Seedance1p5Pro => "seedance_1p5_pro",
       Self::Seedance2p0 => "seedance_2p0",
       Self::Seedance2p0Fast => "seedance_2p0_fast",
+      Self::Seedance2p0Mini => "seedance_2p0_mini",
+      Self::Seedance2p5 => "seedance_2p5",
+      Self::Seedance2p5Edit => "seedance_2p5_edit",
+      Self::MinimaxH3 => "minimax_h3",
       Self::Sora2 => "sora_2",
       Self::Sora2Pro => "sora_2_pro",
       Self::Veo2 => "veo_2",
@@ -277,6 +292,7 @@ impl TaskModelType {
       "gemini_25_flash" => Ok(Self::Gemini25Flash),
       "nano_banana" => Ok(Self::NanoBanana),
       "nano_banana_2" => Ok(Self::NanoBanana2),
+      "nano_banana_2_lite" => Ok(Self::NanoBanana2Lite),
       "nano_banana_pro" => Ok(Self::NanoBananaPro),
       "gpt_image_1" => Ok(Self::GptImage1),
       "gpt_image_1p5" => Ok(Self::GptImage1p5),
@@ -309,6 +325,10 @@ impl TaskModelType {
       "seedance_1p5_pro" => Ok(Self::Seedance1p5Pro),
       "seedance_2p0" => Ok(Self::Seedance2p0),
       "seedance_2p0_fast" => Ok(Self::Seedance2p0Fast),
+      "seedance_2p0_mini" => Ok(Self::Seedance2p0Mini),
+      "seedance_2p5" => Ok(Self::Seedance2p5),
+      "seedance_2p5_edit" => Ok(Self::Seedance2p5Edit),
+      "minimax_h3" => Ok(Self::MinimaxH3),
       "sora_2" => Ok(Self::Sora2),
       "sora_2_pro" => Ok(Self::Sora2Pro),
       "veo_2" => Ok(Self::Veo2),
@@ -363,6 +383,7 @@ impl TaskModelType {
       Self::Gemini25Flash,
       Self::NanoBanana,
       Self::NanoBanana2,
+      Self::NanoBanana2Lite,
       Self::NanoBananaPro,
       Self::GptImage1,
       Self::GptImage1p5,
@@ -395,6 +416,10 @@ impl TaskModelType {
       Self::Seedance1p5Pro,
       Self::Seedance2p0,
       Self::Seedance2p0Fast,
+      Self::Seedance2p0Mini,
+      Self::Seedance2p5,
+      Self::Seedance2p5Edit,
+      Self::MinimaxH3,
       Self::Sora2,
       Self::Sora2Pro,
       Self::Veo2,
@@ -697,7 +722,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TaskModelType::all_variants();
-      assert_eq!(variants.len(), 75);
+      assert_eq!(variants.len(), 80);
       // Image models
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Dev));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Flux1Schnell));
@@ -709,6 +734,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TaskModelType::Gemini25Flash));
       assert_eq!(variants.pop_first(), Some(TaskModelType::NanoBanana));
       assert_eq!(variants.pop_first(), Some(TaskModelType::NanoBanana2));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::NanoBanana2Lite));
       assert_eq!(variants.pop_first(), Some(TaskModelType::NanoBananaPro));
       assert_eq!(variants.pop_first(), Some(TaskModelType::GptImage1));
       assert_eq!(variants.pop_first(), Some(TaskModelType::GptImage1p5));
@@ -741,6 +767,10 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TaskModelType::Seedance1p5Pro));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Seedance2p0));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Seedance2p0Fast));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Seedance2p0Mini));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Seedance2p5));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::Seedance2p5Edit));
+      assert_eq!(variants.pop_first(), Some(TaskModelType::MinimaxH3));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Sora2));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Sora2Pro));
       assert_eq!(variants.pop_first(), Some(TaskModelType::Veo2));

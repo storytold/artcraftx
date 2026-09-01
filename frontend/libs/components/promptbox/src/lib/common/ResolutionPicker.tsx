@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Monitor, MonitorUp, Square, type LucideIcon } from "lucide-react";
 import { PopoverItem, PopoverMenu } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
-import { CommonResolution, ImageModel } from "@storyteller/model-list";
+import { CommonResolution, ImageModel, nearestResolution } from "@storyteller/model-list";
 
 interface ResolutionPickerProps {
   model: ImageModel;
@@ -43,12 +43,16 @@ export const ResolutionPicker = ({
     supportedResolutions[0];
 
   // If the stored resolution isn't supported by the current model (e.g. the
-  // user picked 4K then switched to a 1K-only model), reset to the model's
-  // default. Mirrors AspectRatioPicker.
+  // user picked 4K then switched to a 2K-max model, or to a provider that
+  // runs the model with fewer tiers), snap to the nearest tier it does
+  // support, falling back to the model's default. Mirrors AspectRatioPicker.
   useEffect(() => {
     if (currentResolution === undefined) return;
     if (supportedResolutions.includes(currentResolution)) return;
-    const fallback = model.defaultResolution ?? supportedResolutions[0];
+    const fallback =
+      nearestResolution(currentResolution, supportedResolutions) ??
+      model.defaultResolution ??
+      supportedResolutions[0];
     if (!fallback) return;
     handleCommonResolutionSelect(fallback);
     // eslint-disable-next-line react-hooks/exhaustive-deps

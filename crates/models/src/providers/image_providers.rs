@@ -3,6 +3,7 @@
 use crate::configs::image_model_config::ImageModelConfig;
 use crate::enums::generation_provider::GenerationProvider;
 use crate::enums::image_model::ImageModel;
+use crate::providers::higgsfield_image_offering::higgsfield_image_offering;
 use crate::providers::provider_offering::{is_offered, providers_for_model, ProviderOffering};
 use once_cell::sync::Lazy;
 
@@ -69,6 +70,9 @@ fn image_providers() -> Vec<ImageProviderOffering> {
       ImageModel::Midjourney7,
       ImageModel::Midjourney7Niji,
     ]),
+    // First-party (cookie-session) Higgsfield, with per-model overrides where
+    // its menus differ from ArtCraft's.
+    higgsfield_image_offering(),
   ]
 }
 
@@ -81,7 +85,7 @@ mod tests {
   #[test]
   fn offerings_are_consistent_with_the_model_table() {
     let known: Vec<ImageModel> = IMAGE_MODELS.iter().filter(|c| !c.is_disabled).map(|c| c.model).collect();
-    check_offerings(&IMAGE_PROVIDERS, &known);
+    check_offerings(&IMAGE_PROVIDERS, &known, |config| config.model);
   }
 
   #[test]
@@ -94,5 +98,6 @@ mod tests {
     assert!(!provider_offers_image_model(GenerationProvider::Grok, ImageModel::Midjourney7));
     // ArtCraft is the default provider for the shared models.
     assert_eq!(providers_for_image_model(ImageModel::Flux1Dev)[0], GenerationProvider::Artcraft);
+    assert_eq!(providers_for_image_model(ImageModel::NanoBananaPro), vec![GenerationProvider::Artcraft, GenerationProvider::Fal, GenerationProvider::Higgsfield]);
   }
 }

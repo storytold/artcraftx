@@ -39,7 +39,7 @@ mod tests {
   #[test]
   fn offerings_are_consistent_with_the_model_table() {
     let known: Vec<AudioModel> = AUDIO_MODELS.iter().filter(|c| !c.is_disabled).map(|c| c.model).collect();
-    check_offerings(&AUDIO_PROVIDERS, &known);
+    check_offerings(&AUDIO_PROVIDERS, &known, |config| config.model);
     assert_eq!(AUDIO_PROVIDERS.len(), 1, "audio is ArtCraft-only");
   }
 }

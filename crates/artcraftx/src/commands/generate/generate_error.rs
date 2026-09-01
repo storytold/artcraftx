@@ -7,6 +7,7 @@ use core_types::enums::generation_source::GenerationSource;
 use artcraft_client::enums::common::generation::common_model_type::CommonModelType;
 use errors::AnyhowError;
 use grok_consumer_client::error::grok_error::GrokError;
+use higgsfield_client::error::higgsfield_error::HiggsfieldError;
 use midjourney_client::error::midjourney_error::MidjourneyError;
 use openai_sora_client::error::sora_error::SoraError;
 use artcraft_client::error::storyteller_error::StorytellerError;
@@ -112,6 +113,7 @@ pub struct BillingIssueReason {
 pub enum BillingProvider {
   Artcraft,
   Fal,
+  Higgsfield,
   Kinovi,
   Midjourney,
   Sora,
@@ -123,6 +125,9 @@ pub enum ProviderFailureReason {
   /// NB: The Grok client doesn't say why certain errors (eg. missing fields) happen, so we synthesize this.
   GrokJobEnqueueFailed,
   //Fal(FalErrorPlus),
+  /// First-party Higgsfield failed. `needs_browser_reauth()` on the inner
+  /// error means the user has to log into Higgsfield again.
+  HiggsfieldError(HiggsfieldError),
   MidjourneyError(MidjourneyError),
   /// NB: The midjourney client doesn't categorize all errors, so we have to do so on our end.
   MidjourneyJobEnqueueFailed,
@@ -219,6 +224,12 @@ impl From<GrokError> for GenerateError {
   }
 }
 
+impl From<HiggsfieldError> for GenerateError {
+  fn from(value: HiggsfieldError) -> Self {
+    Self::ProviderFailure(ProviderFailureReason::HiggsfieldError(value))
+  }
+}
+
 impl From<MidjourneyError> for GenerateError {
   fn from(value: MidjourneyError) -> Self {
     Self::ProviderFailure(ProviderFailureReason::MidjourneyError(value))
@@ -260,6 +271,7 @@ impl From<ArtcraftRouterError> for GenerateError {
           ProviderError::GmiCloud(_) => BillingProvider::Artcraft,
           ProviderError::GrokApi(_) => BillingProvider::Artcraft,
           ProviderError::Grok(_) => BillingProvider::Artcraft,
+          ProviderError::Higgsfield(_) => BillingProvider::Higgsfield,
           ProviderError::WorldLabs(_) => BillingProvider::Artcraft,
         };
         Self::BillingIssue(BillingIssueReason { provider })
@@ -270,6 +282,8 @@ impl From<ArtcraftRouterError> for GenerateError {
       ArtcraftRouterError::Provider(ProviderError::GrokApi(_)) => Self::ArtcraftRouterNotYetSupportedProvider("grok_api"),
       // First-party (cookie-session) Grok Imagine websocket/POST failure. The string carries the raw detail.
       ArtcraftRouterError::Provider(ProviderError::Grok(message)) => Self::ProviderRejected(message),
+      // First-party (cookie-session) Higgsfield.
+      ArtcraftRouterError::Provider(ProviderError::Higgsfield(e)) => Self::ProviderFailure(ProviderFailureReason::HiggsfieldError(e)),
       ArtcraftRouterError::Provider(ProviderError::Seedance2Pro(_)) => Self::ArtcraftRouterNotYetSupportedProvider("seedance2pro"),
       ArtcraftRouterError::Provider(ProviderError::Midjourney(e)) => Self::ProviderFailure(ProviderFailureReason::MidjourneyError(e)),
       ArtcraftRouterError::Provider(ProviderError::MidjourneySubscriptionRequired(message)) => Self::ProviderRejected(message),
@@ -279,6 +293,7 @@ impl From<ArtcraftRouterError> for GenerateError {
       ArtcraftRouterError::Provider(ProviderError::WorldLabs(_)) => Self::ArtcraftRouterNotYetSupportedProvider("world_labs"),
       ArtcraftRouterError::UnsupportedModel(model) => Self::NotYetImplemented(format!("Unsupported model: {}", model)),
       ArtcraftRouterError::UnsupportedProviderAndModelForNewApi(_message) => Self::ArtcraftRouterNotYetSupportedProvider("unsupported model for new router API"),
+      ArtcraftRouterError::ProviderResponseInvalid(message) => Self::ProviderRejected(message),
     }
   }
 }

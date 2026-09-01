@@ -44,6 +44,7 @@ const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
   artcraft: "ArtCraft",
   fal: "FAL",
   grok: "Grok",
+  higgsfield: "Higgsfield",
   midjourney: "Midjourney",
   sora: "Sora",
   worldlabs: "World Labs",

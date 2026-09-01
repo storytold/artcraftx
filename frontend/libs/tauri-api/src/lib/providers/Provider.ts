@@ -6,5 +6,6 @@ export enum Provider {
   Fal = "fal",
   Sora = "sora",
   Grok = "grok",
+  Higgsfield = "higgsfield",
   Midjourney = "midjourney",
 }

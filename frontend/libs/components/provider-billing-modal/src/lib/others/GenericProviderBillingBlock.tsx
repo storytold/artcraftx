@@ -26,6 +26,8 @@ function getServiceProviderName(provider: GenerationProvider) : string {
       return "Fal";
     case GenerationProvider.Grok:
       return "Grok";
+    case GenerationProvider.Higgsfield:
+      return "Higgsfield";
     case GenerationProvider.Midjourney:
       return "Midjourney";
     case GenerationProvider.WorldLabs:

@@ -72,6 +72,14 @@ use crate::generate::generate_video::providers::fal::vidu_q3::build::build_fal_v
 use crate::generate::generate_video::providers::fal::vidu_q3_turbo::build::build_fal_vidu_q3_turbo;
 use crate::generate::generate_video::providers::kinovi::seedance_2p0_fast::build::build_kinovi_seedance_2p0_fast;
 use crate::generate::generate_video::providers::kinovi::seedance_2p0_mini::build::build_kinovi_seedance_2p0_mini;
+use crate::generate::generate_video::providers::higgsfield::grok_imagine_1p5::build::build_higgsfield_grok_imagine_1p5;
+use crate::generate::generate_video::providers::higgsfield::kling_3p0_pro::build::build_higgsfield_kling_3p0_pro;
+use crate::generate::generate_video::providers::higgsfield::kling_3p0_standard::build::build_higgsfield_kling_3p0_standard;
+use crate::generate::generate_video::providers::higgsfield::minimax_h3::build::build_higgsfield_minimax_h3;
+use crate::generate::generate_video::providers::higgsfield::seedance_2p0::build::build_higgsfield_seedance_2p0;
+use crate::generate::generate_video::providers::higgsfield::seedance_2p0_mini::build::build_higgsfield_seedance_2p0_mini;
+use crate::generate::generate_video::providers::higgsfield::seedance_2p5::build::build_higgsfield_seedance_2p5;
+use crate::generate::generate_video::providers::higgsfield::seedance_2p5_edit::build::build_higgsfield_seedance_2p5_edit;
 use crate::generate::generate_video::video_generation_draft_or_request::VideoGenerationDraftOrRequest;
 
 /// RouterProvider-agnostic video generation request. Distilled by `build2()` into a
@@ -236,6 +244,15 @@ impl GenerateVideoRequestBuilder {
       (RouterProvider::Seedance2Pro, RouterVideoModel::Seedance2p0Mini) => build_kinovi_seedance_2p0_mini(self),
       (RouterProvider::Seedance2Pro, RouterVideoModel::Seedance2p0BytePlusMini) => build_kinovi_seedance_2p0_mini(self),
       (RouterProvider::Seedance2Pro, RouterVideoModel::Seedance2p0BytePlusUltraMini) => build_kinovi_seedance_2p0_mini(self),
+      // First-party (cookie-session) Higgsfield
+      (RouterProvider::Higgsfield, RouterVideoModel::Seedance2p5) => build_higgsfield_seedance_2p5(self),
+      (RouterProvider::Higgsfield, RouterVideoModel::Seedance2p5Edit) => build_higgsfield_seedance_2p5_edit(self),
+      (RouterProvider::Higgsfield, RouterVideoModel::Seedance2p0) => build_higgsfield_seedance_2p0(self),
+      (RouterProvider::Higgsfield, RouterVideoModel::Seedance2p0Mini) => build_higgsfield_seedance_2p0_mini(self),
+      (RouterProvider::Higgsfield, RouterVideoModel::MinimaxH3) => build_higgsfield_minimax_h3(self),
+      (RouterProvider::Higgsfield, RouterVideoModel::Kling3p0Standard) => build_higgsfield_kling_3p0_standard(self),
+      (RouterProvider::Higgsfield, RouterVideoModel::Kling3p0Pro) => build_higgsfield_kling_3p0_pro(self),
+      (RouterProvider::Higgsfield, RouterVideoModel::GrokImagineVideo1p5) => build_higgsfield_grok_imagine_1p5(self),
       _ => self.unsupported_provider_and_model(),
     }
   }

@@ -26,6 +26,7 @@ use crate::commands::generate::common::generation_credential::{
   credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential,
 };
 use crate::commands::generate::generate_error::{BadInputReason, GenerateError};
+use crate::commands::generate::generate_image::higgsfield::enqueue_via_higgsfield::enqueue_via_higgsfield;
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;
 use crate::commands::generate::generate_image::tauri_image_model::TauriImageModel;
 use crate::commands::generate::generate_image::utils::convert_enums_to_router::{
@@ -87,6 +88,10 @@ pub async fn enqueue_image_generation(
 
     GenerationSource::GrokCookies | GenerationSource::Grok => {
       enqueue_via_grok(request, app, app_data_root, &credential, grok_websockets).await
+    }
+
+    GenerationSource::HiggsfieldCookies | GenerationSource::Higgsfield => {
+      enqueue_via_higgsfield(request, &credential).await
     }
 
     other => Err(credential_not_usable(
