@@ -196,6 +196,10 @@ impl HiggsfieldSession {
       slot.id, byte_count, mime_type, confirmation.status,
     );
 
+    if confirmation.is_ip_detected() {
+      return Err(HiggsfieldClientError::MediaProtectedContent { media_id: slot.id.clone() }.into());
+    }
+
     if force_ip_check && !confirmation.ip_check_finished.unwrap_or(false) {
       let status_family = match family {
         MediaFamily::Image => Some(MediaStatusFamily::Image),
@@ -225,6 +229,9 @@ impl HiggsfieldSession {
         async move { get_media_status(GetMediaStatusArgs { request, auth: &auth, host: self.api_host() }).await }
       }).await?;
 
+      if status.is_ip_detected() {
+        return Err(HiggsfieldClientError::MediaProtectedContent { media_id: media_id.clone() }.into());
+      }
       if status.is_ip_check_finished() {
         info!("Higgsfield media {} IP check finished after {}s (ip_detected={:?})", media_id, started.elapsed().as_secs(), status.ip_detected);
         return Ok(status);

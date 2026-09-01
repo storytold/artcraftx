@@ -10,7 +10,7 @@ use std::fmt::{Display, Formatter};
 pub struct VideoDurationSeconds(u32);
 
 impl VideoDurationSeconds {
-  pub fn new(seconds: u32) -> Self {
+  pub const fn new(seconds: u32) -> Self {
     Self(seconds)
   }
 

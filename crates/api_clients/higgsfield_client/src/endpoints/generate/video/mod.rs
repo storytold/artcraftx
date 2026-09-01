@@ -14,6 +14,7 @@ pub mod minimax_h3;
 pub mod seedance_2p0;
 pub mod seedance_2p0_mini;
 pub mod seedance_2p5;
+pub mod seedance_2p5_edit;
 
 #[cfg(test)]
 pub(crate) mod test_fixtures;

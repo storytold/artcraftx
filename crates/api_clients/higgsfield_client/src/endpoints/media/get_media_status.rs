@@ -89,6 +89,11 @@ impl GetMediaStatusResponse {
   pub fn is_ip_check_finished(&self) -> bool {
     self.ip_check_finished == Some(true)
   }
+
+  /// Flagged as protected content (see `MediaUploadStatus::IpDetected`).
+  pub fn is_ip_detected(&self) -> bool {
+    self.status == MediaUploadStatus::IpDetected
+  }
 }
 
 pub async fn get_media_status(args: GetMediaStatusArgs<'_>) -> Result<GetMediaStatusResponse, HiggsfieldError> {
@@ -126,5 +131,10 @@ mod tests {
 
     let pending: GetMediaStatusResponse = serde_json::from_str(r#"{"id":"x","ip_check_finished":null,"status":"uploaded"}"#).unwrap();
     assert!(!pending.is_ip_check_finished());
+
+    // Live 2026-08-31: a public figure's photo.
+    let flagged: GetMediaStatusResponse = serde_json::from_str(r#"{"id":"x","ip_check_finished":true,"is_face_detected":true,"status":"ip_detected"}"#).unwrap();
+    assert!(flagged.is_ip_detected());
+    assert_eq!(flagged.is_face_detected, Some(true));
   }
 }

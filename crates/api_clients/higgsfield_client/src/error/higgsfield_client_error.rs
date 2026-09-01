@@ -64,6 +64,14 @@ pub enum HiggsfieldClientError {
     media_id: MediaId,
     waited: Duration,
   },
+
+  /// The upload was flagged as protected content (a recognised public
+  /// figure or copyrighted image); the server will refuse it in every
+  /// generation request (`404 "Media input not found"`). Nothing to retry
+  /// — pick different media.
+  MediaProtectedContent {
+    media_id: MediaId,
+  },
 }
 
 impl Error for HiggsfieldClientError {}
@@ -90,6 +98,8 @@ impl Display for HiggsfieldClientError {
         write!(f, "Job {} did not finish within {}s (last status: {}).", job_id, waited.as_secs(), last_status),
       Self::MediaIpCheckTimedOut { media_id, waited } =>
         write!(f, "Media {} IP check did not finish within {}s (was it requested with force_ip_check?).", media_id, waited.as_secs()),
+      Self::MediaProtectedContent { media_id } =>
+        write!(f, "Media {} was flagged as protected content (recognised likeness or copyrighted image); Higgsfield will not use it as a reference.", media_id),
     }
   }
 }

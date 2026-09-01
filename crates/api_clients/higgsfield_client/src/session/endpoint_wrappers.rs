@@ -14,6 +14,7 @@ use crate::endpoints::generate::video::minimax_h3::{minimax_h3, MinimaxH3Args, M
 use crate::endpoints::generate::video::seedance_2p0::{seedance_2p0, Seedance2p0Args, Seedance2p0Request};
 use crate::endpoints::generate::video::seedance_2p0_mini::{seedance_2p0_mini, Seedance2p0MiniArgs, Seedance2p0MiniRequest};
 use crate::endpoints::generate::video::seedance_2p5::{seedance_2p5, Seedance2p5Args, Seedance2p5Request};
+use crate::endpoints::generate::video::seedance_2p5_edit::{seedance_2p5_edit, Seedance2p5EditArgs, Seedance2p5EditRequest};
 use crate::endpoints::jobs::job_status::{job_status, JobStatusArgs, JobStatusRequest, JobStatusResponse};
 use crate::endpoints::jobs::job_status_batch::{job_status_batch, JobStatusBatchArgs, JobStatusBatchRequest, JobStatusBatchResponse};
 use crate::endpoints::user::user_data::{user_data, UserDataArgs, UserDataRequest, UserDataResponse};
@@ -87,6 +88,14 @@ impl HiggsfieldSession {
     self.with_auth(|auth| {
       let request = request.clone();
       async move { seedance_2p5(Seedance2p5Args { request, auth: &auth, host: self.api_host() }).await }
+    }).await
+  }
+
+  /// Enqueue a Seedance 2.5 Edit (video-to-video) job.
+  pub async fn seedance_2p5_edit(&self, request: Seedance2p5EditRequest) -> Result<EnqueueJobsResponse, HiggsfieldError> {
+    self.with_auth(|auth| {
+      let request = request.clone();
+      async move { seedance_2p5_edit(Seedance2p5EditArgs { request, auth: &auth, host: self.api_host() }).await }
     }).await
   }
 

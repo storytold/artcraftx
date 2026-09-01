@@ -67,12 +67,27 @@ impl ConfirmMediaUploadRequest {
 }
 
 string_enum! {
-  /// Where the media is in its lifecycle. Only `uploaded` has been observed
-  /// right after confirming.
+  /// Where the media is in its lifecycle.
   MediaUploadStatus {
+    /// Usable as a reference.
     Uploaded => "uploaded",
+
+    /// The IP / likeness check flagged the file as protected content (a
+    /// recognised public figure or copyrighted still — observed live on
+    /// photos of Jim Varney as Ernest). The media stays listed but every
+    /// generation that references it answers `404 "Media input not
+    /// found"`; the web app shows "Protected content is not allowed".
+    IpDetected => "ip_detected",
+
     Pending => "pending",
     Failed => "failed",
+  }
+}
+
+impl MediaUploadStatus {
+  /// The server will refuse this media in generation requests.
+  pub fn is_blocked(&self) -> bool {
+    matches!(self, Self::IpDetected | Self::Failed)
   }
 }
 
@@ -94,6 +109,11 @@ pub struct ConfirmMediaUploadResponse {
 impl ConfirmMediaUploadResponse {
   pub fn is_uploaded(&self) -> bool {
     self.status == MediaUploadStatus::Uploaded
+  }
+
+  /// Flagged as protected content; see [`MediaUploadStatus::IpDetected`].
+  pub fn is_ip_detected(&self) -> bool {
+    self.status == MediaUploadStatus::IpDetected
   }
 }
 
@@ -140,6 +160,12 @@ mod tests {
     let response: ConfirmMediaUploadResponse = serde_json::from_str(r#"{"id":"00000000-0000-4000-8000-0000000000aa","status":"uploaded","ip_check_finished":null}"#).unwrap();
     assert!(response.is_uploaded());
     assert_eq!(response.ip_check_finished, None);
+
+    // Live 2026-08-31: a photo of a public figure, confirmed with force_ip_check.
+    let flagged: ConfirmMediaUploadResponse = serde_json::from_str(r#"{"id":"00000000-0000-4000-8000-0000000000ab","ip_check_finished":true,"status":"ip_detected"}"#).unwrap();
+    assert!(flagged.is_ip_detected());
+    assert!(flagged.status.is_blocked());
+    assert!(!flagged.is_uploaded());
 
     let unknown: ConfirmMediaUploadResponse = serde_json::from_str(r#"{"id":"x","status":"quarantined","ip_check_finished":true,"note":"n"}"#).unwrap();
     assert_eq!(unknown.status, MediaUploadStatus::Other("quarantined".to_string()));
