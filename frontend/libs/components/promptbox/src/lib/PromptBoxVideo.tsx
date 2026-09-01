@@ -1711,16 +1711,6 @@ export const PromptBoxVideo = ({
             </Tooltip>
           </div>
         </div>
-        {/* {selectedModel?.id === "seedance_2p0" && (
-          <div className="flex items-start gap-2.5 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-3.5 py-2.5 text-xs text-yellow-200">
-            <TriangleAlert className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-yellow-400" />
-            <span>
-              Seedance 2.0 is in Early Alpha. Generations may be slow, and may
-              experience outages. Seedance may reject safe inputs unexpectedly.
-              Try several short generations before longer ones.
-            </span>
-          </div>
-        )} */}
       </div>
       <CharactersModal
         isOpen={isCharactersModalOpen}

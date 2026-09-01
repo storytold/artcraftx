@@ -11,7 +11,6 @@ import {
   LoaderCircle,
   SquareArrowOutUpRight,
   Trash2,
-  TriangleAlert,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -212,7 +211,6 @@ const InProgressCard = ({
     : task.estimatedTimeLeftMs != null && task.estimatedTimeLeftMs > 0
       ? formatTimeLeft(task.estimatedTimeLeftMs)
       : null;
-  const isSeedance2 = task.modelType === "seedance_2p0";
   const hasRefImages = task.refImageUrls && task.refImageUrls.length > 0;
 
   const thumbnailContent = hasRefImages ? (
@@ -249,18 +247,6 @@ const InProgressCard = ({
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-1.5 truncate font-medium text-base-fg/90">
               {task.title}
-              {isSeedance2 && (
-                <Tooltip
-                  content="Seedance 2.0 is in Early Alpha. Generations may be slow and may experience outages."
-                  position="top"
-                  strategy="fixed"
-                  className="w-[200px] text-wrap bg-yellow-400/60 backdrop-blur-3xl"
-                  zIndex={50}
-                  delay={100}
-                >
-                  <TriangleAlert className="h-3 w-3 shrink-0 text-yellow-400/60 transition-all hover:text-yellow-400" />
-                </Tooltip>
-              )}
             </div>
             <div className="ml-2 shrink-0 text-[11px] tabular-nums text-base-fg/60">
               {progressPercent}%
