@@ -28,6 +28,7 @@ use sqlite_identifiers::ids::prompt_token::PromptToken;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 use uuid_utils::uuid::generate_random_uuid;
+use crate::utils::enum_conversion::artcraft_api_generation_provider::artcraft_api_generation_provider;
 
 const MAX_UPLOAD_RETRIES: u32 = 5;
 const INITIAL_RETRY_DELAY_SECS: u64 = 10;
@@ -148,12 +149,14 @@ async fn resolve_prompt_token(
       None
     }
     CompletionPrompt::Create { model_type, maybe_prompt } => {
+      // Only providers the API's enum knows; others (Higgsfield) go unspecified
+      // rather than failing the request with `unknown variant`.
       let request = CreatePromptRequest {
         uuid_idempotency_token: generate_random_uuid(),
         positive_prompt: maybe_prompt,
         negative_prompt: None,
         model_type: Some(model_type),
-        generation_provider: Some(generation_provider),
+        generation_provider: artcraft_api_generation_provider(generation_provider),
         maybe_generation_mode: None,
         maybe_aspect_ratio: None,
         maybe_resolution: None,
@@ -214,6 +217,8 @@ async fn try_upload(
   maybe_prompt_token: Option<&PromptToken>,
   maybe_batch_token: Option<&BatchGenerationToken>,
 ) -> Result<MediaFileToken, StorytellerError> {
+  // See `resolve_prompt_token`: providers the API doesn't know go unspecified.
+  let maybe_generation_provider = artcraft_api_generation_provider(generation_provider);
   let media_token = match media_class {
     TaskMediaFileClass::Video => {
       let result = upload_video_media_file_from_file(UploadVideoFromFileArgs {
@@ -221,7 +226,7 @@ async fn try_upload(
         maybe_creds: Some(creds),
         path,
         maybe_prompt_token,
-        maybe_generation_provider: Some(generation_provider),
+        maybe_generation_provider,
       }).await?;
       result.media_file_token
     }
@@ -230,7 +235,7 @@ async fn try_upload(
         api_host: &ApiHost::Storyteller,
         maybe_creds: Some(creds),
         path,
-        maybe_generation_provider: Some(generation_provider),
+        maybe_generation_provider,
       }).await?;
       result.media_file_token
     }
@@ -242,7 +247,7 @@ async fn try_upload(
         is_intermediate_system_file: false,
         maybe_prompt_token,
         maybe_batch_token,
-        maybe_generation_provider: Some(generation_provider),
+        maybe_generation_provider,
       }).await?;
       result.media_file_token
     }
