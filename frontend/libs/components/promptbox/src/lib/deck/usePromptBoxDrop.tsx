@@ -12,10 +12,21 @@ type DropKind = "image" | "video" | "audio";
  *  least one file the current model can take as a reference. */
 export type DropDragState = "idle" | "accept" | "reject";
 
+/** One dropped/pasted/picked reference. Desktop drops keep the OS path so
+ *  the media never leaves the machine; the `File` is then a zero-byte
+ *  stand-in carrying only name + MIME, and `previewUrl` is the asset-protocol
+ *  URL (`convertFileSrc`) that renders it straight off disk. Browser drops
+ *  and pastes have real bytes and no path. */
+export interface DroppedMedia {
+  file: File;
+  localPath?: string;
+  previewUrl?: string;
+}
+
 export interface DroppedFiles {
-  images: File[];
-  videos: File[];
-  audios: File[];
+  images: DroppedMedia[];
+  videos: DroppedMedia[];
+  audios: DroppedMedia[];
 }
 
 export interface UsePromptBoxDropOptions {
@@ -157,22 +168,22 @@ export function usePromptBoxDrop({
     return () => adjustActiveDropZoneCount(-1);
   }, [enabled]);
 
-  const routeFiles = (files: File[]) => {
+  const routeFiles = (files: DroppedMedia[]) => {
     const accepted: DroppedFiles = { images: [], videos: [], audios: [] };
     const rejectedKinds = new Set<DropKind>();
     let unknownCount = 0;
-    for (const file of files) {
-      const kind = kindOfMime(file.type) ?? kindOfPath(file.name);
+    for (const media of files) {
+      const kind = kindOfMime(media.file.type) ?? kindOfPath(media.file.name);
       if (kind === null) {
         unknownCount++;
       } else if (!acceptsKind(kind)) {
         rejectedKinds.add(kind);
       } else if (kind === "image") {
-        accepted.images.push(file);
+        accepted.images.push(media);
       } else if (kind === "video") {
-        accepted.videos.push(file);
+        accepted.videos.push(media);
       } else {
-        accepted.audios.push(file);
+        accepted.audios.push(media);
       }
     }
 
@@ -274,7 +285,7 @@ export function usePromptBoxDrop({
     setDragState("idle");
 
     const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) routeFiles(files);
+    if (files.length > 0) routeFiles(files.map((file) => ({ file })));
   };
 
   // ── Tauri transport ──────────────────────────────────────────────────
@@ -325,47 +336,20 @@ export function usePromptBoxDrop({
           if (!isInsideZone(payload.position)) return;
           if (payload.paths.length === 0) return;
 
-          // Only read the files this box can actually take; unsupported ones
-          // still reach routeFiles (as zero-byte stand-ins) so it can raise
-          // the same "not available here" toast the browser path does.
-          const readable = payload.paths.filter(
-            (path) => kindOfPath(path) !== null,
-          );
-          const unsupported = payload.paths.filter(
-            (path) => kindOfPath(path) === null,
-          );
-
-          const files = await Promise.all(
-            readable.map(async (path) => {
-              const fileName = path.split(/[/\\]/).pop() ?? "file";
-              const type = MIME_BY_EXTENSION[extensionOf(path)] ?? "";
-              try {
-                const response = await fetch(convertFileSrc(path));
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const blob = await response.blob();
-                return new File([blob], fileName, { type });
-              } catch (err) {
-                console.error("[PromptBoxDrop] file read failed:", err);
-                return null;
-              }
-            }),
-          );
-
+          // The OS path IS the media source: no bytes are read into JS. A
+          // zero-byte stand-in File carries the name + MIME for routing;
+          // unsupported files keep no path so routeFiles can raise the same
+          // "not available here" toast the browser path does.
           if (disposed) return;
-
-          const readFiles = files.filter((file): file is File => file !== null);
-          const failedCount = readable.length - readFiles.length;
-          if (failedCount > 0) {
-            toast.error(
-              `Couldn't read ${failedCount} file${failedCount > 1 ? "s" : ""}`,
-            );
-          }
-
-          const placeholders = unsupported.map(
-            (path) => new File([], path.split(/[/\\]/).pop() ?? "file"),
-          );
-          const allFiles = [...readFiles, ...placeholders];
-          if (allFiles.length > 0) routeFilesRef.current(allFiles);
+          const media: DroppedMedia[] = payload.paths.map((path) => {
+            const fileName = path.split(/[/\\]/).pop() ?? "file";
+            const type = MIME_BY_EXTENSION[extensionOf(path)] ?? "";
+            const file = new File([], fileName, { type });
+            return kindOfPath(path) !== null
+              ? { file, localPath: path, previewUrl: convertFileSrc(path) }
+              : { file };
+          });
+          if (media.length > 0) routeFilesRef.current(media);
         });
 
         if (disposed) stop();
@@ -398,7 +382,7 @@ export function usePromptBoxDrop({
       marked.promptBoxHandled = true;
       // No preventDefault: any text alongside the file still pastes into
       // whichever field is focused.
-      routeFilesRef.current(files);
+      routeFilesRef.current(files.map((file) => ({ file })));
     };
     window.addEventListener("paste", handlePaste);
     return () => window.removeEventListener("paste", handlePaste);

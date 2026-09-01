@@ -4,6 +4,7 @@ export * from "./lib/artcraft/task_queue/GetTaskQueue.js";
 export * from "./lib/artcraft/task_queue/MarkTaskAsDismissed.js";
 export * from "./lib/artcraft/task_queue/TasksNukeAll.js";
 export * from "./lib/common/CommandStatus.js";
+export * from "./lib/common/MediaSource.js";
 export * from "./lib/download/DownloadDirectoryReveal.js";
 export * from "./lib/download/DownloadUrl.js";
 export * from "./lib/download/OpenLocalFile.js";

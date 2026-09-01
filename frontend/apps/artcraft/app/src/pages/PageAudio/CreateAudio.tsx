@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { PromptBoxAudio, usePromptAudioStore } from "@storyteller/ui-promptbox";
-import { UploadAudioMedia, UploadImageMedia } from "@storyteller/api";
 import {
   useOmniGenAudioModels,
   useAudioCostEstimate,
@@ -48,8 +47,6 @@ const CreateAudio = () => {
       <PromptBoxAudio
         fullBleed
         models={models}
-        uploadAudio={UploadAudioMedia}
-        uploadImage={UploadImageMedia}
         credits={audioCredits}
         accountSelector={<AccountSelector />}
         credentialId={selectedAccountId}

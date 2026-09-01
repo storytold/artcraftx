@@ -19,6 +19,16 @@ pub(super) fn resolve_image_list_ref(
     Some(ImageListRef::Urls(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::ArtcraftOnlySupportsMediaTokens))
     }
+    Some(ImageListRef::Sources(refs)) => {
+      let mut tokens = Vec::with_capacity(refs.len());
+      for image_ref in refs {
+        match image_ref {
+          ImageRef::MediaFileToken(token) => tokens.push(token),
+          _ => return Err(ArtcraftRouterError::Client(ClientError::ArtcraftOnlySupportsMediaTokens)),
+        }
+      }
+      Ok(Some(tokens))
+    }
   }
 }
 
@@ -28,7 +38,7 @@ pub(super) fn resolve_image_ref(
   match image_ref {
     None => Ok(None),
     Some(ImageRef::MediaFileToken(token)) => Ok(Some(token)),
-    Some(ImageRef::Url(_)) => {
+    Some(ImageRef::Url(_) | ImageRef::LocalPath(_) | ImageRef::Bytes(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::ArtcraftOnlySupportsMediaTokens))
     }
   }
@@ -40,7 +50,7 @@ pub(super) fn resolve_mesh_ref(
   match mesh_ref {
     None => Ok(None),
     Some(MeshRef::MediaFileToken(token)) => Ok(Some(token)),
-    Some(MeshRef::Url(_)) => {
+    Some(MeshRef::Url(_) | MeshRef::LocalPath(_) | MeshRef::Bytes(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::ArtcraftOnlySupportsMediaTokens))
     }
   }

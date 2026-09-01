@@ -1,5 +1,4 @@
 import { PromptBoxImage } from "@storyteller/ui-promptbox";
-import { UploadImageMedia } from "@storyteller/api";
 import {
   useTextToImagePageModelList,
   ModelPage,
@@ -50,7 +49,6 @@ const TextToImage = ({ imageMediaId, imageUrl }: TextToImageProps) => {
     >
       <PromptBoxImage
         fullBleed
-        uploadImage={UploadImageMedia}
         selectedModel={selectedImageModel}
         selectedProvider={selectedProvider}
         imageMediaId={imageMediaId}

@@ -24,6 +24,7 @@ use crate::api::image_ref::ImageRef;
 use crate::api::router_aspect_ratio::RouterAspectRatio;
 use crate::api::router_resolution::RouterResolution;
 use crate::api::video_list_ref::VideoListRef;
+use crate::api::video_ref::VideoRef;
 use crate::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::client_error::ClientError;
@@ -202,7 +203,7 @@ fn optional_url(image_ref: Option<ImageRef>) -> Result<Option<String>, ArtcraftR
   match image_ref {
     None => Ok(None),
     Some(ImageRef::Url(url)) => Ok(Some(url)),
-    Some(ImageRef::MediaFileToken(_)) => {
+    Some(ImageRef::MediaFileToken(_) | ImageRef::LocalPath(_) | ImageRef::Bytes(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls))
     }
   }
@@ -217,6 +218,17 @@ fn reference_image_urls(refs: Option<ImageListRef>) -> Result<Option<Vec<String>
     Some(ImageListRef::MediaFileTokens(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls))
     }
+    Some(ImageListRef::Sources(refs)) if refs.is_empty() => Ok(None),
+    Some(ImageListRef::Sources(refs)) => {
+      let mut urls = Vec::with_capacity(refs.len());
+      for image_ref in refs {
+        match image_ref {
+          ImageRef::Url(url) => urls.push(url),
+          _ => return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls)),
+        }
+      }
+      Ok(Some(urls))
+    }
   }
 }
 
@@ -228,6 +240,17 @@ fn reference_video_urls(refs: Option<VideoListRef>) -> Result<Option<Vec<String>
     Some(VideoListRef::MediaFileTokens(tokens)) if tokens.is_empty() => Ok(None),
     Some(VideoListRef::MediaFileTokens(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls))
+    }
+    Some(VideoListRef::Sources(refs)) if refs.is_empty() => Ok(None),
+    Some(VideoListRef::Sources(refs)) => {
+      let mut urls = Vec::with_capacity(refs.len());
+      for video_ref in refs {
+        match video_ref {
+          VideoRef::Url(url) => urls.push(url),
+          _ => return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls)),
+        }
+      }
+      Ok(Some(urls))
     }
   }
 }

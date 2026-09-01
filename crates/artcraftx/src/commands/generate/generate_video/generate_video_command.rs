@@ -1,4 +1,5 @@
 use crate::commands::generate::common::notify_frontend_of_errors::notify_frontend_of_errors;
+use crate::commands::generate::common::tauri_media_source::validate_sources;
 use crate::commands::generate::generate_error::{BadInputReason, GenerateError, MissingCredentialsReason};
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::generate_video::handle_credential_router::handle_credential_router;
@@ -63,6 +64,10 @@ pub async fn generate_video_command(
           error_type = TauriGenerateVideoErrorType::ModelNotSpecified;
           error_message = "No model specified for video generation".to_string();
         }
+        GenerateError::BadInput(BadInputReason::LocalMediaFileNotFound { path }) => {
+          status = CommandErrorStatus::BadRequest;
+          error_message = format!("A reference file no longer exists on disk: {}", path.display());
+        }
         GenerateError::NoProviderAvailable => {
           status = CommandErrorStatus::ServerError;
           error_type = TauriGenerateVideoErrorType::NoProviderAvailable;
@@ -120,6 +125,10 @@ async fn handle_request(
   artcraft_usage_tracker: &ArtcraftUsageTracker,
   task_database: &TaskDatabase,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
+
+  // Reject unusable media sources (missing local files, empty bytes) before
+  // any provider work.
+  validate_sources(request.media_sources().iter())?;
 
   // Generation is credential-driven: the request names a stored credential,
   // and the router dispatches to that credential's service.

@@ -6,7 +6,11 @@ import { toast } from "@storyteller/ui-toaster";
 import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { GenerateIconButton } from "@storyteller/ui-button";
-import { GenerateImage, GenerateImageRequest } from "@storyteller/tauri-api";
+import {
+  GenerateImage,
+  GenerateImageRequest,
+  mediaSourcesFromRefs,
+} from "@storyteller/tauri-api";
 import { ChevronDown, ChevronUp, Expand } from "lucide-react";
 import { ImageModel } from "@storyteller/model-list";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -408,9 +412,10 @@ export const PromptBoxImage = ({
         !!referenceImages &&
         referenceImages.length > 0
       ) {
-        request.image_media_tokens = referenceImages
-          .map((image) => image.mediaToken)
-          .filter((t) => t.length > 0);
+        // Three-way sources: library tokens pass through; local files stay
+        // on disk (path) or travel as bytes — never uploaded to the cloud
+        // here.
+        request.image_sources = await mediaSourcesFromRefs(referenceImages);
       }
 
       window.__storeTaskEnqueueMeta?.({

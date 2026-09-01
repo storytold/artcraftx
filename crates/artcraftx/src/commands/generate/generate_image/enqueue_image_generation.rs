@@ -25,6 +25,10 @@ use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 use crate::commands::generate::common::generation_credential::{
   credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential,
 };
+use crate::commands::generate::common::media_source_conversion::{
+  image_sources_to_fal_urls, sources_to_artcraft_tokens, ArtcraftMediaKind,
+};
+use crate::commands::generate::common::tauri_media_source::validate_sources;
 use crate::commands::generate::generate_error::{BadInputReason, GenerateError};
 use crate::commands::generate::generate_image::higgsfield::enqueue_via_higgsfield::enqueue_via_higgsfield;
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;
@@ -61,6 +65,10 @@ pub async fn enqueue_image_generation(
   mj_session: &MidjourneyLiveSession,
   grok_websockets: &GrokWebsockets,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
+  // Reject unusable media sources (missing local files, empty bytes) before
+  // any provider work.
+  validate_sources(request.reference_media_sources().iter().flatten())?;
+
   let credential = resolve_generation_credential(request.credential_id.as_deref(), app_data_root)?;
   let credential = maybe_reroute_grok_model_to_grok_credential(request, credential, app_data_root)?;
 
@@ -79,7 +87,7 @@ pub async fn enqueue_image_generation(
       let api_key = credential.api_key().ok_or_else(|| {
         credential_not_usable(&credential, "the FAL credential has no API key")
       })?;
-      enqueue_via_fal(request, &api_key.api_key).await
+      enqueue_via_fal(request, &api_key.api_key, app_data_root).await
     }
 
     GenerationSource::MidjourneyCookies | GenerationSource::Midjourney => {
@@ -124,9 +132,14 @@ async fn enqueue_via_artcraft(
 
   let creds = storyteller_creds_from_credential(credential)?;
 
-  // Upload any raw image bytes before the generate request.
+  // Upload any raw image bytes before the generate request. Local-file /
+  // bytes references also upload here: ArtCraft's API is token-native and
+  // the media must reach ArtCraft anyway.
   let semantic_media_files = parse_semantic_media_files(request, &creds, &api_host).await?;
-  let image_inputs = collect_artcraft_image_inputs(request, &semantic_media_files);
+  let reference_tokens = sources_to_artcraft_tokens(
+    request.reference_media_sources(), ArtcraftMediaKind::Image, Some(&creds), &api_host,
+  ).await?;
+  let image_inputs = collect_artcraft_image_inputs(&semantic_media_files, reference_tokens);
 
   let router_request = GenerateImageRequestBuilder {
     model: router_model,
@@ -170,11 +183,10 @@ async fn enqueue_via_artcraft(
 }
 
 /// Reference images for the Artcraft router request: canvas first, then scene,
-/// then the un-semantic reference images. (Artcraft accepts media tokens
-/// directly; no URL resolution needed.)
+/// then the un-semantic reference images (already resolved to tokens).
 fn collect_artcraft_image_inputs(
-  request: &TauriGenerateImageRequest,
   semantic_media_files: &SemanticMediaFiles,
+  reference_tokens: Option<Vec<MediaFileToken>>,
 ) -> Option<ImageListRef> {
   let mut tokens: Vec<MediaFileToken> = Vec::new();
 
@@ -184,9 +196,7 @@ fn collect_artcraft_image_inputs(
   if let Some(scene_token) = &semantic_media_files.scene_image_media_token {
     tokens.push(scene_token.clone());
   }
-  if let Some(media_tokens) = &request.image_media_tokens {
-    tokens.extend(media_tokens.clone());
-  }
+  tokens.extend(reference_tokens.unwrap_or_default());
 
   if tokens.is_empty() {
     None
@@ -198,10 +208,13 @@ fn collect_artcraft_image_inputs(
 // ── Fal ──
 
 /// Generate via the router's FAL provider using a stored FAL API key. FAL only
-/// accepts URLs, so Artcraft media tokens are resolved to CDN URLs first.
+/// accepts URLs, so media tokens resolve to CDN URLs — and local files / raw
+/// bytes upload to ArtCraft first to get one (FAL is the ONLY non-ArtCraft
+/// provider allowed to route local media through the ArtCraft cloud).
 async fn enqueue_via_fal(
   request: &TauriGenerateImageRequest,
   api_key: &str,
+  app_data_root: &AppDataRoot,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let tauri_model = request.model.ok_or(GenerateError::no_model_specified())?;
 
@@ -212,7 +225,7 @@ async fn enqueue_via_fal(
     )),
   )?;
 
-  let image_inputs = resolve_fal_image_inputs(request, &ApiHost::Storyteller).await?;
+  let image_inputs = resolve_fal_image_inputs(request, &ApiHost::Storyteller, app_data_root).await?;
 
   let router_request = GenerateImageRequestBuilder {
     model: router_model,
@@ -245,24 +258,33 @@ async fn enqueue_via_fal(
 async fn resolve_fal_image_inputs(
   request: &TauriGenerateImageRequest,
   api_host: &ApiHost,
+  app_data_root: &AppDataRoot,
 ) -> Result<Option<ImageListRef>, GenerateError> {
-  let mut tokens: Vec<MediaFileToken> = Vec::new();
+  let mut canvas_and_scene_tokens: Vec<MediaFileToken> = Vec::new();
 
   if let Some(canvas_token) = &request.canvas_image_media_token {
-    tokens.push(canvas_token.clone());
+    canvas_and_scene_tokens.push(canvas_token.clone());
   }
   if let Some(scene_token) = &request.scene_image_media_token {
-    tokens.push(scene_token.clone());
-  }
-  if let Some(media_tokens) = &request.image_media_tokens {
-    tokens.extend(media_tokens.clone());
+    canvas_and_scene_tokens.push(scene_token.clone());
   }
 
-  if tokens.is_empty() {
+  let mut urls = map_media_file_tokens_to_cdn_urls(&canvas_and_scene_tokens, api_host).await?;
+
+  // Local files / raw bytes upload to ArtCraft, authenticated with any
+  // stored ArtCraft account (anonymous otherwise).
+  let maybe_artcraft_credential = find_first_credential_for_service(app_data_root, GenerationSource::ArtcraftCookies)
+      .or_else(|| find_first_credential_for_service(app_data_root, GenerationSource::Artcraft));
+  let maybe_creds = maybe_artcraft_credential.as_ref()
+      .and_then(|credential| storyteller_creds_from_credential(credential).ok());
+  let reference_urls = image_sources_to_fal_urls(
+    request.reference_media_sources(), maybe_creds.as_ref(), api_host,
+  ).await?;
+  urls.extend(reference_urls.unwrap_or_default());
+
+  if urls.is_empty() {
     return Ok(None);
   }
-
-  let urls = map_media_file_tokens_to_cdn_urls(&tokens, api_host).await?;
   Ok(Some(ImageListRef::Urls(urls)))
 }
 

@@ -5,8 +5,8 @@ use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::api::image_list_ref::ImageListRef;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
-use crate::errors::client_error::ClientError;
-use crate::generate::generate_image::providers::kinovi::upload::upload_to_seedance2pro;
+use crate::generate::generate_image::providers::kinovi::upload::upload_source_to_seedance2pro;
+use crate::utils::media_source_ref::MediaSourceRef;
 
 /// Resolve an [`ImageListRef`] to a list of public Seedance2Pro CDN URLs,
 /// uploading each image one at a time. Preserves order.
@@ -19,33 +19,15 @@ pub(crate) async fn resolve_and_upload_image_list(
   list: Option<ImageListRef>,
   maybe_map: Option<&HashMap<MediaFileToken, String>>,
 ) -> Result<Option<Vec<String>>, ArtcraftRouterError> {
-  let source_urls = match list {
+  let sources = match list {
     None => return Ok(None),
-    Some(ImageListRef::Urls(urls)) if urls.is_empty() => return Ok(None),
-    Some(ImageListRef::Urls(urls)) => urls,
-    Some(ImageListRef::MediaFileTokens(tokens)) if tokens.is_empty() => return Ok(None),
-    Some(ImageListRef::MediaFileTokens(tokens)) => resolve_tokens(maybe_map, &tokens)?,
+    Some(list) if list.is_empty() => return Ok(None),
+    Some(list) => MediaSourceRef::list_from_images(list),
   };
 
-  let mut uploaded = Vec::with_capacity(source_urls.len());
-  for url in &source_urls {
-    uploaded.push(upload_to_seedance2pro(session, url).await?);
+  let mut uploaded = Vec::with_capacity(sources.len());
+  for source in sources {
+    uploaded.push(upload_source_to_seedance2pro(session, source, maybe_map).await?);
   }
   Ok(Some(uploaded))
-}
-
-fn resolve_tokens(
-  maybe_map: Option<&HashMap<MediaFileToken, String>>,
-  tokens: &[MediaFileToken],
-) -> Result<Vec<String>, ArtcraftRouterError> {
-  let map = maybe_map.ok_or(ArtcraftRouterError::Client(ClientError::MediaFileToUrlMapNotProvided))?;
-  tokens.iter()
-    .map(|token| {
-      map.get(token).cloned().ok_or_else(|| {
-        ArtcraftRouterError::Client(ClientError::MediaFileTokenNotFoundInMap {
-          token: token.clone(),
-        })
-      })
-    })
-    .collect()
 }

@@ -8,6 +8,7 @@ use fal_client::requests_old::webhook::image::text::enqueue_gemini_25_flash_text
 
 use crate::api::router_aspect_ratio::RouterAspectRatio;
 use crate::api::image_list_ref::ImageListRef;
+use crate::api::image_ref::ImageRef;
 use crate::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::client_error::ClientError;
@@ -184,6 +185,13 @@ fn resolve_image_list_ref(
     Some(ImageListRef::MediaFileTokens(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls))
     }
+    Some(ImageListRef::Sources(refs)) => refs
+      .into_iter()
+      .map(|image_ref| match image_ref {
+        ImageRef::Url(url) => Ok(url),
+        _ => Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls)),
+      })
+      .collect(),
   }
 }
 

@@ -6,6 +6,7 @@ import {
   VideoModel,
 } from "@storyteller/model-list";
 import { GenerationProvider } from "@storyteller/api-enums";
+import type { MediaSource } from "../common/MediaSource.js";
 
 export interface GenerateVideoRequest {
   // Stable id (`credential_{entropy}`) of the stored credential (account)
@@ -37,6 +38,15 @@ export interface GenerateVideoRequest {
   reference_audio_media_tokens?: string[];
   reference_character_tokens?: string[];
 
+  // Three-way media sources (bytes | local path | media token). Each wins
+  // over its legacy `*_media_token(s)` twin; local files never touch the
+  // ArtCraft cloud unless the target provider requires it.
+  start_frame_image_source?: MediaSource;
+  end_frame_image_source?: MediaSource;
+  reference_image_sources?: MediaSource[];
+  reference_video_sources?: MediaSource[];
+  reference_audio_sources?: MediaSource[];
+
   aspect_ratio?: CommonAspectRatio;
   resolution?: CommonResolution;
 
@@ -66,6 +76,11 @@ interface RawGenerateVideoRequest {
   reference_video_media_tokens?: string[];
   reference_audio_media_tokens?: string[];
   reference_character_tokens?: string[];
+  start_frame_image_source?: MediaSource;
+  end_frame_image_source?: MediaSource;
+  reference_image_sources?: MediaSource[];
+  reference_video_sources?: MediaSource[];
+  reference_audio_sources?: MediaSource[];
   aspect_ratio?: CommonAspectRatio;
   resolution?: CommonResolution;
   duration_seconds?: number;
@@ -144,6 +159,21 @@ export const GenerateVideo = async (
   }
   if (!!request.reference_character_tokens && request.reference_character_tokens.length > 0) {
     mutableRequest.reference_character_tokens = request.reference_character_tokens;
+  }
+  if (!!request.start_frame_image_source) {
+    mutableRequest.start_frame_image_source = request.start_frame_image_source;
+  }
+  if (!!request.end_frame_image_source) {
+    mutableRequest.end_frame_image_source = request.end_frame_image_source;
+  }
+  if (!!request.reference_image_sources && request.reference_image_sources.length > 0) {
+    mutableRequest.reference_image_sources = request.reference_image_sources;
+  }
+  if (!!request.reference_video_sources && request.reference_video_sources.length > 0) {
+    mutableRequest.reference_video_sources = request.reference_video_sources;
+  }
+  if (!!request.reference_audio_sources && request.reference_audio_sources.length > 0) {
+    mutableRequest.reference_audio_sources = request.reference_audio_sources;
   }
   if (!!request.aspect_ratio) mutableRequest.aspect_ratio = request.aspect_ratio;
   if (!!request.resolution) mutableRequest.resolution = request.resolution;

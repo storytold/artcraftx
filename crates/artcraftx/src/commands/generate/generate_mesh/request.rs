@@ -5,6 +5,9 @@ use artcraft_client::enums::common::generation::common_mesh_quality::CommonMeshQ
 use artcraft_client::enums::common::generation::common_polygon_type::CommonPolygonType;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
+use crate::commands::generate::common::tauri_media_source::{
+  merge_source_with_legacy_token, merge_sources_with_legacy_tokens, TauriMediaSource,
+};
 use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 
 // ── Request ──
@@ -33,6 +36,15 @@ pub struct TauriGenerateMeshRequest {
 
   /// Input mesh for mesh-to-mesh models (part splitting, retopology).
   pub input_mesh_media_token: Option<MediaFileToken>,
+
+  // Three-way media sources (bytes | local path | media token). Each wins
+  // over its legacy `*_media_token(s)` twin above when both are set.
+  pub reference_image_sources: Option<Vec<TauriMediaSource>>,
+  pub front_image_source: Option<TauriMediaSource>,
+  pub back_image_source: Option<TauriMediaSource>,
+  pub left_image_source: Option<TauriMediaSource>,
+  pub right_image_source: Option<TauriMediaSource>,
+  pub input_mesh_source: Option<TauriMediaSource>,
 
   /// Requested mesh output type.
   pub mesh_output_type: Option<CommonMeshOutputType>,
@@ -65,6 +77,45 @@ pub struct TauriGenerateMeshRequest {
 
   /// A frontend-defined payload sent back as a Tauri event on task completion.
   pub frontend_subscriber_payload: Option<String>,
+}
+
+/// The mesh request's media inputs, normalized: legacy token fields fold
+/// into [`TauriMediaSource`]s so handlers see one shape.
+#[derive(Debug, Clone)]
+pub struct MeshRequestMediaSources {
+  pub reference_images: Option<Vec<TauriMediaSource>>,
+  pub front_image: Option<TauriMediaSource>,
+  pub back_image: Option<TauriMediaSource>,
+  pub left_image: Option<TauriMediaSource>,
+  pub right_image: Option<TauriMediaSource>,
+  pub input_mesh: Option<TauriMediaSource>,
+}
+
+impl TauriGenerateMeshRequest {
+  pub fn media_sources(&self) -> MeshRequestMediaSources {
+    MeshRequestMediaSources {
+      reference_images: merge_sources_with_legacy_tokens(
+        self.reference_image_sources.clone(), self.reference_image_media_tokens.clone(),
+      ),
+      front_image: merge_source_with_legacy_token(self.front_image_source.clone(), self.front_image_media_token.clone()),
+      back_image: merge_source_with_legacy_token(self.back_image_source.clone(), self.back_image_media_token.clone()),
+      left_image: merge_source_with_legacy_token(self.left_image_source.clone(), self.left_image_media_token.clone()),
+      right_image: merge_source_with_legacy_token(self.right_image_source.clone(), self.right_image_media_token.clone()),
+      input_mesh: merge_source_with_legacy_token(self.input_mesh_source.clone(), self.input_mesh_media_token.clone()),
+    }
+  }
+}
+
+impl MeshRequestMediaSources {
+  /// Every source the request carries, for up-front validation.
+  pub fn iter(&self) -> impl Iterator<Item = &TauriMediaSource> {
+    self.reference_images.iter().flatten()
+        .chain(self.front_image.iter())
+        .chain(self.back_image.iter())
+        .chain(self.left_image.iter())
+        .chain(self.right_image.iter())
+        .chain(self.input_mesh.iter())
+  }
 }
 
 /// The mesh models the frontend can request, identified by their omni

@@ -66,6 +66,10 @@ pub enum BadInputReason {
   Base64DecodeError,
   BothImageMaskMediaTokenAndBytesSupplied,
   CannotDetermineImageMimeType,
+  /// A `local_path` media source doesn't point at an existing regular file.
+  LocalMediaFileNotFound { path: std::path::PathBuf },
+  /// A `bytes` media source arrived empty.
+  EmptyMediaBytes,
   InvalidNumberOfInputImages {
     provided: u32,
     min: u32,

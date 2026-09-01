@@ -1,9 +1,14 @@
-//! Reference media for first-party Higgsfield: a source URL (an ArtCraft CDN
-//! link, or any public URL) is downloaded and re-uploaded through the
-//! session, and the resulting [`MediaInput`] is what generation requests
-//! reference. Shared by the image and video Higgsfield providers.
+//! Reference media for first-party Higgsfield: each source — an ArtCraft
+//! media token, a public URL, a local file, or in-memory bytes — is turned
+//! into bytes and uploaded through the session, and the resulting
+//! [`MediaInput`] is what generation requests reference. Shared by the image
+//! and video Higgsfield providers.
+//!
+//! Only ArtCraft media tokens touch the ArtCraft cloud (they resolve through
+//! the token→URL map); local files and bytes go straight to Higgsfield.
 
 use std::collections::HashMap;
+use std::path::Path;
 
 use higgsfield_client::session::higgsfield_session::HiggsfieldSession;
 use higgsfield_client::session::upload_media::ReferenceMediaFile;
@@ -12,19 +17,21 @@ use higgsfield_client::types::media_input::MediaInput;
 use higgsfield_client::types::media_mime_type::MediaMimeType;
 use log::info;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
-use url_utils::extension::extract_extension_from_url::{extract_extension_from_url_str, ExtractExtensions};
 
 use crate::api::audio_list_ref::AudioListRef;
 use crate::api::image_list_ref::ImageListRef;
 use crate::api::image_ref::ImageRef;
 use crate::api::video_list_ref::VideoListRef;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
-use crate::errors::client_error::ClientError;
 use crate::errors::provider_error::ProviderError;
-use crate::utils::download_file::download_file;
+use crate::utils::media_source_ref::{
+  extension_from_name_hint, resolve_media_source_bytes, MediaSourceRef, ResolvedMediaBytes,
+};
+
+pub use crate::utils::media_source_ref::{resolve_media_token, resolve_media_tokens};
 
 /// What a reference file is expected to be. Picks the upload endpoint family
-/// and the fallback MIME type when the bytes and URL don't say.
+/// and the fallback MIME type when the bytes and name don't say.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum HiggsfieldMediaKind {
   Image,
@@ -50,49 +57,35 @@ impl HiggsfieldMediaKind {
   }
 }
 
-/// A list of reference sources before they're resolved to URLs.
-pub enum HiggsfieldMediaSources {
-  Urls(Vec<String>),
-  Tokens(Vec<MediaFileToken>),
-}
+/// A list of reference sources, in upload order.
+#[derive(Clone, Debug)]
+pub struct HiggsfieldMediaSources(pub Vec<MediaSourceRef>);
 
 impl From<ImageListRef> for HiggsfieldMediaSources {
   fn from(list: ImageListRef) -> Self {
-    match list {
-      ImageListRef::Urls(urls) => Self::Urls(urls),
-      ImageListRef::MediaFileTokens(tokens) => Self::Tokens(tokens),
-    }
+    Self(MediaSourceRef::list_from_images(list))
   }
 }
 
 impl From<VideoListRef> for HiggsfieldMediaSources {
   fn from(list: VideoListRef) -> Self {
-    match list {
-      VideoListRef::Urls(urls) => Self::Urls(urls),
-      VideoListRef::MediaFileTokens(tokens) => Self::Tokens(tokens),
-    }
+    Self(MediaSourceRef::list_from_videos(list))
   }
 }
 
 impl From<AudioListRef> for HiggsfieldMediaSources {
   fn from(list: AudioListRef) -> Self {
-    match list {
-      AudioListRef::Urls(urls) => Self::Urls(urls),
-      AudioListRef::MediaFileTokens(tokens) => Self::Tokens(tokens),
-    }
+    Self(MediaSourceRef::list_from_audios(list))
   }
 }
 
 impl HiggsfieldMediaSources {
   pub fn len(&self) -> usize {
-    match self {
-      Self::Urls(urls) => urls.len(),
-      Self::Tokens(tokens) => tokens.len(),
-    }
+    self.0.len()
   }
 
   pub fn is_empty(&self) -> bool {
-    self.len() == 0
+    self.0.is_empty()
   }
 }
 
@@ -105,14 +98,13 @@ pub async fn upload_media_list(
   ip_check: bool,
   maybe_map: Option<&HashMap<MediaFileToken, String>>,
 ) -> Result<Vec<MediaInput>, ArtcraftRouterError> {
-  let source_urls = match list {
+  let sources = match list {
     None => return Ok(Vec::new()),
-    Some(HiggsfieldMediaSources::Urls(urls)) => urls,
-    Some(HiggsfieldMediaSources::Tokens(tokens)) => resolve_media_tokens(maybe_map, &tokens)?,
+    Some(sources) => sources.0,
   };
-  let mut uploaded = Vec::with_capacity(source_urls.len());
-  for url in &source_urls {
-    uploaded.push(upload_url_to_higgsfield(session, url, kind, ip_check).await?);
+  let mut uploaded = Vec::with_capacity(sources.len());
+  for source in sources {
+    uploaded.push(upload_source_to_higgsfield(session, source, kind, ip_check, maybe_map).await?);
   }
   Ok(uploaded)
 }
@@ -124,58 +116,74 @@ pub async fn upload_image_ref(
   ip_check: bool,
   maybe_map: Option<&HashMap<MediaFileToken, String>>,
 ) -> Result<Option<MediaInput>, ArtcraftRouterError> {
-  let source_url = match image_ref {
-    None => return Ok(None),
-    Some(ImageRef::Url(url)) => url,
-    Some(ImageRef::MediaFileToken(token)) => resolve_media_token(maybe_map, &token)?,
-  };
-  Ok(Some(upload_url_to_higgsfield(session, &source_url, HiggsfieldMediaKind::Image, ip_check).await?))
+  match image_ref {
+    None => Ok(None),
+    Some(image_ref) => {
+      Ok(Some(upload_source_to_higgsfield(session, image_ref.into(), HiggsfieldMediaKind::Image, ip_check, maybe_map).await?))
+    }
+  }
 }
 
-/// Download `source_url` and upload it to Higgsfield as reference media.
-/// `ip_check` asks Higgsfield to run (and waits for) its intellectual-property
-/// check, which the Seedance video models require on images and clips.
-pub async fn upload_url_to_higgsfield(
+/// Turn one source into bytes and upload it to Higgsfield as reference
+/// media. `ip_check` asks Higgsfield to run (and waits for) its
+/// intellectual-property check, which the Seedance video models require on
+/// images and clips.
+///
+/// The first-party-domain guard applies only to caller-supplied `Url`
+/// sources: a token that resolves to our own CDN is a deliberate library
+/// pick, and local paths / bytes never had a URL at all.
+pub async fn upload_source_to_higgsfield(
   session: &HiggsfieldSession,
-  source_url: &str,
+  source: MediaSourceRef,
   kind: HiggsfieldMediaKind,
   ip_check: bool,
+  maybe_map: Option<&HashMap<MediaFileToken, String>>,
 ) -> Result<MediaInput, ArtcraftRouterError> {
-  // Checked again by the client on upload; failing here skips the download.
-  check_upload_source_url(source_url)
-      .map_err(|err| ArtcraftRouterError::from(ProviderError::Higgsfield(err.into())))?;
-  let bytes = download_file(source_url).await?;
-  let file = reference_media_file_for_url(source_url, kind, bytes, ip_check);
+  if let MediaSourceRef::Url(url) = &source {
+    check_upload_source_url(url)
+        .map_err(|err| ArtcraftRouterError::from(ProviderError::Higgsfield(err.into())))?;
+  }
+  let resolved = resolve_media_source_bytes(source, maybe_map).await?;
+
+  let file = reference_media_file(resolved, kind, ip_check);
   info!(
-    "Uploading {:?} reference to Higgsfield: {} ({} bytes, {}, ip_check={})",
-    kind, source_url, file.bytes.len(), file.mime_type, ip_check,
+    "Uploading {:?} reference to Higgsfield ({} bytes, {}, ip_check={})",
+    kind, file.bytes.len(), file.mime_type, ip_check,
   );
   session.upload_reference_media(file).await
       .map_err(|err| ArtcraftRouterError::from(ProviderError::Higgsfield(err)))
 }
 
-/// Describe downloaded bytes for upload: the MIME type is sniffed from the
-/// bytes, then guessed from the URL's extension, then defaulted by `kind`.
-pub fn reference_media_file_for_url(source_url: &str, kind: HiggsfieldMediaKind, bytes: Vec<u8>, ip_check: bool) -> ReferenceMediaFile {
-  let mime_type = media_mime_type_for(source_url, &bytes, kind);
+/// Describe resolved bytes for upload: the MIME type is sniffed from the
+/// bytes, then guessed from the name hint (URL, path, or file name), then
+/// defaulted by `kind`. The resolved source URL (caller-supplied URLs only)
+/// engages the client's first-party-domain guard.
+pub fn reference_media_file(resolved: ResolvedMediaBytes, kind: HiggsfieldMediaKind, ip_check: bool) -> ReferenceMediaFile {
+  let ResolvedMediaBytes { bytes, maybe_name_hint, maybe_source_url, description } = resolved;
+  let mime_type = media_mime_type_for(maybe_name_hint.as_deref(), &bytes, kind);
+  info!("Higgsfield reference resolved from {} as {}", description, mime_type);
   let file_name = format!("reference.{}", mime_type.file_extension());
-  let file = ReferenceMediaFile::new(file_name, mime_type, bytes).with_source_url(source_url);
+  let mut file = ReferenceMediaFile::new(file_name, mime_type, bytes);
+  if let Some(source_url) = maybe_source_url {
+    file = file.with_source_url(source_url);
+  }
   if ip_check { file.with_ip_check() } else { file }
 }
 
-/// The best MIME type for a reference: magic bytes first (the URL may have
-/// no extension, or lie), then the URL's extension, then the kind's default.
-/// A type from the wrong family for `kind` is ignored.
-pub fn media_mime_type_for(source_url: &str, bytes: &[u8], kind: HiggsfieldMediaKind) -> MediaMimeType {
+/// The best MIME type for a reference: magic bytes first (the name may have
+/// no extension, or lie), then the name hint's extension, then the kind's
+/// default. A type from the wrong family for `kind` is ignored.
+pub fn media_mime_type_for(maybe_name_hint: Option<&str>, bytes: &[u8], kind: HiggsfieldMediaKind) -> MediaMimeType {
   sniff_mime_type(bytes)
-      .or_else(|| mime_type_from_url_extension(source_url))
+      .or_else(|| maybe_name_hint.and_then(mime_type_from_name_hint))
       .filter(|mime_type| kind.accepts(mime_type))
       .unwrap_or_else(|| kind.fallback_mime_type())
 }
 
-fn mime_type_from_url_extension(source_url: &str) -> Option<MediaMimeType> {
-  let extension = extract_extension_from_url_str(source_url, &ExtractExtensions::All)?;
-  MediaMimeType::from_file_name(&format!("file.{}", extension.without_period()))
+/// Extension-based MIME guess for a URL, filesystem path, or bare file name.
+fn mime_type_from_name_hint(name_hint: &str) -> Option<MediaMimeType> {
+  let extension = extension_from_name_hint(name_hint)?;
+  MediaMimeType::from_file_name(&format!("file.{extension}"))
 }
 
 /// Recognise the common image / video / audio containers by their magic
@@ -220,25 +228,13 @@ pub fn sniff_mime_type(bytes: &[u8]) -> Option<MediaMimeType> {
   None
 }
 
-pub fn resolve_media_token(
-  maybe_map: Option<&HashMap<MediaFileToken, String>>,
-  token: &MediaFileToken,
-) -> Result<String, ArtcraftRouterError> {
-  let map = maybe_map.ok_or(ArtcraftRouterError::Client(ClientError::MediaFileToUrlMapNotProvided))?;
-  map.get(token).cloned().ok_or_else(|| {
-    ArtcraftRouterError::Client(ClientError::MediaFileTokenNotFoundInMap { token: token.clone() })
-  })
-}
-
-pub fn resolve_media_tokens(
-  maybe_map: Option<&HashMap<MediaFileToken, String>>,
-  tokens: &[MediaFileToken],
-) -> Result<Vec<String>, ArtcraftRouterError> {
-  tokens.iter().map(|token| resolve_media_token(maybe_map, token)).collect()
-}
-
 #[cfg(test)]
 mod tests {
+  use std::path::PathBuf;
+
+  use crate::api::media_bytes::MediaBytes;
+  use crate::errors::client_error::ClientError;
+
   use super::*;
 
   const PNG: &[u8] = b"\x89PNG\r\n\x1a\n\0\0\0\rIHDR";
@@ -278,43 +274,65 @@ mod tests {
     #[test]
     fn bytes_win_over_extension() {
       // A PNG served from a ".jpg" URL is still a PNG.
-      assert_eq!(media_mime_type_for("https://cdn.example.com/a.jpg", PNG, HiggsfieldMediaKind::Image), MediaMimeType::ImagePng);
+      assert_eq!(media_mime_type_for(Some("https://cdn.example.com/a.jpg"), PNG, HiggsfieldMediaKind::Image), MediaMimeType::ImagePng);
     }
 
     #[test]
     fn extension_is_used_when_bytes_are_unrecognised() {
-      assert_eq!(media_mime_type_for("https://cdn.example.com/a.webp?x=1", b"????", HiggsfieldMediaKind::Image), MediaMimeType::ImageWebp);
-      assert_eq!(media_mime_type_for("https://cdn.example.com/clip.mov", b"????", HiggsfieldMediaKind::Video), MediaMimeType::VideoQuicktime);
-      assert_eq!(media_mime_type_for("https://cdn.example.com/song.mp3", b"????", HiggsfieldMediaKind::Audio), MediaMimeType::AudioMpeg);
+      assert_eq!(media_mime_type_for(Some("https://cdn.example.com/a.webp?x=1"), b"????", HiggsfieldMediaKind::Image), MediaMimeType::ImageWebp);
+      assert_eq!(media_mime_type_for(Some("https://cdn.example.com/clip.mov"), b"????", HiggsfieldMediaKind::Video), MediaMimeType::VideoQuicktime);
+      assert_eq!(media_mime_type_for(Some("https://cdn.example.com/song.mp3"), b"????", HiggsfieldMediaKind::Audio), MediaMimeType::AudioMpeg);
+    }
+
+    #[test]
+    fn local_paths_and_bare_names_give_extensions() {
+      assert_eq!(media_mime_type_for(Some("/Users/me/Pictures/photo.webp"), b"????", HiggsfieldMediaKind::Image), MediaMimeType::ImageWebp);
+      assert_eq!(media_mime_type_for(Some("clip.mov"), b"????", HiggsfieldMediaKind::Video), MediaMimeType::VideoQuicktime);
     }
 
     #[test]
     fn falls_back_by_kind() {
-      assert_eq!(media_mime_type_for("https://cdn.example.com/media/abc", b"????", HiggsfieldMediaKind::Image), MediaMimeType::ImageJpeg);
-      assert_eq!(media_mime_type_for("https://cdn.example.com/media/abc", b"????", HiggsfieldMediaKind::Video), MediaMimeType::VideoMp4);
-      assert_eq!(media_mime_type_for("https://cdn.example.com/media/abc", b"????", HiggsfieldMediaKind::Audio), MediaMimeType::AudioMpeg);
+      assert_eq!(media_mime_type_for(Some("https://cdn.example.com/media/abc"), b"????", HiggsfieldMediaKind::Image), MediaMimeType::ImageJpeg);
+      assert_eq!(media_mime_type_for(None, b"????", HiggsfieldMediaKind::Video), MediaMimeType::VideoMp4);
+      assert_eq!(media_mime_type_for(None, b"????", HiggsfieldMediaKind::Audio), MediaMimeType::AudioMpeg);
     }
 
     #[test]
     fn wrong_family_for_kind_is_ignored() {
-      // An image URL handed in as a video reference: don't claim it's a PNG video.
-      assert_eq!(media_mime_type_for("https://cdn.example.com/a.png", PNG, HiggsfieldMediaKind::Video), MediaMimeType::VideoMp4);
+      // An image handed in as a video reference: don't claim it's a PNG video.
+      assert_eq!(media_mime_type_for(Some("https://cdn.example.com/a.png"), PNG, HiggsfieldMediaKind::Video), MediaMimeType::VideoMp4);
     }
 
     #[test]
-    fn reference_file_carries_extension_and_ip_check() {
-      let file = reference_media_file_for_url("https://cdn.example.com/x", HiggsfieldMediaKind::Video, MP4.to_vec(), true);
+    fn reference_file_carries_extension_ip_check_and_source_url() {
+      let resolved = ResolvedMediaBytes {
+        bytes: MP4.to_vec(),
+        maybe_name_hint: Some("https://cdn.example.com/x".into()),
+        maybe_source_url: Some("https://cdn.example.com/x".into()),
+        description: "url https://cdn.example.com/x".into(),
+      };
+      let file = reference_media_file(resolved, HiggsfieldMediaKind::Video, true);
       assert_eq!(file.file_name, "reference.mp4");
       assert_eq!(file.mime_type, MediaMimeType::VideoMp4);
       assert!(file.force_ip_check);
-      let file = reference_media_file_for_url("https://cdn.example.com/x.png", HiggsfieldMediaKind::Image, PNG.to_vec(), false);
+      assert_eq!(file.maybe_source_url.as_deref(), Some("https://cdn.example.com/x"));
+
+      let resolved = ResolvedMediaBytes {
+        bytes: PNG.to_vec(),
+        maybe_name_hint: Some("/local/x.png".into()),
+        maybe_source_url: None,
+        description: "local file /local/x.png".into(),
+      };
+      let file = reference_media_file(resolved, HiggsfieldMediaKind::Image, false);
       assert_eq!(file.file_name, "reference.png");
       assert!(!file.force_ip_check);
-      assert_eq!(file.maybe_source_url.as_deref(), Some("https://cdn.example.com/x.png"));
+      assert!(file.maybe_source_url.is_none());
     }
   }
 
   mod token_resolution {
+    use std::collections::HashMap;
+
     use super::*;
 
     #[test]
@@ -341,6 +359,14 @@ mod tests {
       assert_eq!(videos.len(), 1);
       let audio: HiggsfieldMediaSources = AudioListRef::Urls(vec![]).into();
       assert!(audio.is_empty());
+      let mixed: HiggsfieldMediaSources = ImageListRef::Sources(vec![
+        ImageRef::MediaFileToken(MediaFileToken::new_from_str("m_2")),
+        ImageRef::LocalPath(PathBuf::from("/tmp/a.png")),
+        ImageRef::Bytes(MediaBytes::new(vec![1, 2, 3])),
+      ]).into();
+      assert_eq!(mixed.len(), 3);
+      assert!(matches!(mixed.0[1], MediaSourceRef::LocalPath(_)));
+      assert!(matches!(mixed.0[2], MediaSourceRef::Bytes(_)));
     }
   }
 }

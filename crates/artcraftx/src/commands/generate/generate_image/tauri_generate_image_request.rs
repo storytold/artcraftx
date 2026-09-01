@@ -6,6 +6,7 @@ use sqlite_identifiers::enums::tauri_command_caller::TauriCommandCaller;
 use serde_derive::{Deserialize, Serialize};
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
+use crate::commands::generate::common::tauri_media_source::{merge_sources_with_legacy_tokens, TauriMediaSource};
 use crate::commands::generate::generate_image::tauri_image_model::TauriImageModel;
 use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 
@@ -43,6 +44,11 @@ pub struct TauriGenerateImageRequest {
   /// Reference images (without semantics).
   /// The purpose varies on a model-by-model basis.
   pub image_media_tokens: Option<Vec<MediaFileToken>>,
+
+  /// Three-way reference images (bytes | local path | media token). Wins
+  /// over `image_media_tokens` when both are set; local files and bytes
+  /// never touch the ArtCraft cloud unless the target provider requires it.
+  pub image_sources: Option<Vec<TauriMediaSource>>,
 
   // ── Canvas / scene images ──
 
@@ -96,6 +102,14 @@ pub struct TauriGenerateImageRequest {
 
   /// A frontend-defined payload sent back as a Tauri event on task completion.
   pub frontend_subscriber_payload: Option<String>,
+}
+
+impl TauriGenerateImageRequest {
+  /// The un-semantic reference images, normalized: `image_sources` wins,
+  /// legacy `image_media_tokens` fold into [`TauriMediaSource`]s.
+  pub fn reference_media_sources(&self) -> Option<Vec<TauriMediaSource>> {
+    merge_sources_with_legacy_tokens(self.image_sources.clone(), self.image_media_tokens.clone())
+  }
 }
 
 // ── Response ──

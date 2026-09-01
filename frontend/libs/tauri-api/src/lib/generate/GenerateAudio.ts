@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
+import type { MediaSource } from "../common/MediaSource.js";
 
 export interface GenerateAudioRequest {
   // Stable id (`credential_{entropy}`) of the stored credential (account)
@@ -16,6 +17,12 @@ export interface GenerateAudioRequest {
   style_prompt?: string;
   audio_media_tokens?: string[];
   image_media_tokens?: string[];
+
+  // Three-way media sources (bytes | local path | media token). Each wins
+  // over its legacy token twin.
+  audio_sources?: MediaSource[];
+  image_sources?: MediaSource[];
+
   keep_lyrics?: boolean;
   is_instrumental?: boolean;
   is_loopable?: boolean;
@@ -40,6 +47,8 @@ interface RawGenerateAudioRequest {
   style_prompt?: string;
   audio_media_tokens?: string[];
   image_media_tokens?: string[];
+  audio_sources?: MediaSource[];
+  image_sources?: MediaSource[];
   keep_lyrics?: boolean;
   is_instrumental?: boolean;
   is_loopable?: boolean;
@@ -85,6 +94,12 @@ export const GenerateAudio = async (
   }
   if (!!request.image_media_tokens && request.image_media_tokens.length > 0) {
     mutableRequest.image_media_tokens = request.image_media_tokens;
+  }
+  if (!!request.audio_sources && request.audio_sources.length > 0) {
+    mutableRequest.audio_sources = request.audio_sources;
+  }
+  if (!!request.image_sources && request.image_sources.length > 0) {
+    mutableRequest.image_sources = request.image_sources;
   }
   if (typeof request.keep_lyrics === "boolean") mutableRequest.keep_lyrics = request.keep_lyrics;
   if (typeof request.is_instrumental === "boolean") mutableRequest.is_instrumental = request.is_instrumental;

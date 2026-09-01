@@ -137,12 +137,20 @@ fn plan_image_urls(
     Some(ImageListRef::MediaFileTokens(_)) => {
       return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls));
     }
+    Some(ImageListRef::Sources(refs)) => {
+      for image_ref in refs {
+        match image_ref {
+          ImageRef::Url(url) => urls.push(url),
+          _ => return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls)),
+        }
+      }
+    }
   }
 
   match front_image {
     None => {}
     Some(ImageRef::Url(url)) => urls.push(url),
-    Some(ImageRef::MediaFileToken(_)) => {
+    Some(ImageRef::MediaFileToken(_) | ImageRef::LocalPath(_) | ImageRef::Bytes(_)) => {
       return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls));
     }
   }

@@ -44,34 +44,28 @@
   ],
   "references": [
     {
-      "path": "../slider-v2/tsconfig.lib.json"
-    },
-    {
-      "path": "../button-icon-select/tsconfig.lib.json"
-    },
-    {
-      "path": "../../omni-gen/tsconfig.lib.json"
-    },
-    {
-      "path": "../../analytics/google-analytics/tsconfig.lib.json"
-    },
-    {
-      "path": "../../tauri-api/tsconfig.lib.json"
-    },
-    {
-      "path": "../camera-settings-modal/tsconfig.lib.json"
-    },
-    {
       "path": "../../tauri-utils/tsconfig.lib.json"
+    },
+    {
+      "path": "../slider-v2/tsconfig.lib.json"
     },
     {
       "path": "../../api-enums/tsconfig.lib.json"
     },
     {
+      "path": "../../analytics/google-analytics/tsconfig.lib.json"
+    },
+    {
       "path": "../../model-list/tsconfig.lib.json"
     },
     {
+      "path": "../../omni-gen/tsconfig.lib.json"
+    },
+    {
       "path": "../popover/tsconfig.lib.json"
+    },
+    {
+      "path": "../../tauri-api/tsconfig.lib.json"
     },
     {
       "path": "../../common/tsconfig.lib.json"

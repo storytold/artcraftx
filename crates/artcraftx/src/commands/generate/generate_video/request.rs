@@ -6,6 +6,9 @@ use serde_derive::{Deserialize, Serialize};
 use artcraft_client::tokens::characters::CharacterToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
+use crate::commands::generate::common::tauri_media_source::{
+  merge_source_with_legacy_token, merge_sources_with_legacy_tokens, TauriMediaSource,
+};
 use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 
 /// This is used in the Tauri command bridge.
@@ -127,6 +130,16 @@ pub struct TauriGenerateVideoRequest {
   pub reference_audio_media_tokens: Option<Vec<MediaFileToken>>,
   pub reference_character_tokens: Option<Vec<CharacterToken>>,
 
+  // Three-way media sources (bytes | local path | media token). Each wins
+  // over its legacy `*_media_token(s)` twin above when both are set; local
+  // files and bytes never touch the ArtCraft cloud unless the target
+  // provider requires it.
+  pub start_frame_image_source: Option<TauriMediaSource>,
+  pub end_frame_image_source: Option<TauriMediaSource>,
+  pub reference_image_sources: Option<Vec<TauriMediaSource>>,
+  pub reference_video_sources: Option<Vec<TauriMediaSource>>,
+  pub reference_audio_sources: Option<Vec<TauriMediaSource>>,
+
   pub aspect_ratio: Option<RouterAspectRatio>,
   pub resolution: Option<RouterResolution>,
 
@@ -143,6 +156,56 @@ pub struct TauriGenerateVideoRequest {
   pub frontend_caller: Option<TauriCommandCaller>,
   pub frontend_subscriber_id: Option<String>,
   pub frontend_subscriber_payload: Option<String>,
+}
+
+/// The request's media inputs, normalized: legacy token fields are folded
+/// into [`TauriMediaSource`]s so handlers see one shape.
+#[derive(Debug, Clone)]
+pub struct VideoRequestMediaSources {
+  pub start_frame: Option<TauriMediaSource>,
+  pub end_frame: Option<TauriMediaSource>,
+  pub reference_images: Option<Vec<TauriMediaSource>>,
+  pub reference_videos: Option<Vec<TauriMediaSource>>,
+  pub reference_audios: Option<Vec<TauriMediaSource>>,
+}
+
+impl TauriGenerateVideoRequest {
+  pub fn media_sources(&self) -> VideoRequestMediaSources {
+    VideoRequestMediaSources {
+      start_frame: merge_source_with_legacy_token(
+        self.start_frame_image_source.clone(),
+        self.start_frame_image_media_token.clone(),
+      ),
+      end_frame: merge_source_with_legacy_token(
+        self.end_frame_image_source.clone(),
+        self.end_frame_image_media_token.clone(),
+      ),
+      reference_images: merge_sources_with_legacy_tokens(
+        self.reference_image_sources.clone(),
+        self.reference_image_media_tokens.clone(),
+      ),
+      reference_videos: merge_sources_with_legacy_tokens(
+        self.reference_video_sources.clone(),
+        self.reference_video_media_tokens.clone(),
+      ),
+      reference_audios: merge_sources_with_legacy_tokens(
+        self.reference_audio_sources.clone(),
+        self.reference_audio_media_tokens.clone(),
+      ),
+    }
+  }
+}
+
+impl VideoRequestMediaSources {
+  /// Every source the request carries, for up-front validation and for
+  /// collecting the tokens that need CDN resolution.
+  pub fn iter(&self) -> impl Iterator<Item = &TauriMediaSource> {
+    self.start_frame.iter()
+        .chain(self.end_frame.iter())
+        .chain(self.reference_images.iter().flatten())
+        .chain(self.reference_videos.iter().flatten())
+        .chain(self.reference_audios.iter().flatten())
+  }
 }
 
 #[derive(Deserialize, Debug, Clone, Copy)]

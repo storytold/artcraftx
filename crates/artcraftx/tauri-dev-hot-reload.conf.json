@@ -7,12 +7,13 @@
   },
   "app": {
     "withGlobalTauri": true,
-    "windows": [
-    ],
+    "windows": [],
     "security": {
       "assetProtocol": {
         "enable": true,
-        "scope": ["**"]
+        "scope": [
+          "**"
+        ]
       },
       "csp": {
         "default-src": [
@@ -58,6 +59,14 @@
           "https://*.storyteller.ai",
           "ipc://localhost",
           "tauri://localhost"
+        ],
+        "media-src": [
+          "'self'",
+          "*",
+          "asset:",
+          "blob:",
+          "data:",
+          "https://asset.localhost"
         ],
         "script-src": [
           "'self'",

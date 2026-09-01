@@ -59,11 +59,7 @@ pub fn build_kinovi_seedream_5p0_pro(
 }
 
 fn has_image_inputs(image_inputs: Option<&ImageListRef>) -> bool {
-  match image_inputs {
-    None => false,
-    Some(ImageListRef::Urls(urls)) => !urls.is_empty(),
-    Some(ImageListRef::MediaFileTokens(tokens)) => !tokens.is_empty(),
-  }
+  image_inputs.is_some_and(|refs| !refs.is_empty())
 }
 
 /// Reject over-limit reference lists before any uploads happen — the
@@ -72,11 +68,7 @@ fn has_image_inputs(image_inputs: Option<&ImageListRef>) -> bool {
 fn validate_reference_image_count(
   image_inputs: Option<&ImageListRef>,
 ) -> Result<(), ArtcraftRouterError> {
-  let count = match image_inputs {
-    None => 0,
-    Some(ImageListRef::Urls(urls)) => urls.len(),
-    Some(ImageListRef::MediaFileTokens(tokens)) => tokens.len(),
-  };
+  let count = image_inputs.map_or(0, ImageListRef::len);
   if count > MAX_REFERENCE_IMAGES {
     return Err(ArtcraftRouterError::Client(ClientError::ModelDoesNotSupportOption {
       field: "image_inputs",

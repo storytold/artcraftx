@@ -1,12 +1,15 @@
 import { useMemo, useRef, useState } from "react";
 import { Box, Earth, Plus, X } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { v4 as uuidv4 } from "uuid";
 import { twMerge } from "tailwind-merge";
-import { MediaUploadApi } from "@storyteller/api";
 import { GenerateIconButton } from "@storyteller/ui-button";
 import { useCostBreakdownModalStore } from "@storyteller/ui-pricing-modal";
-import { GenerateMesh, GenerateSplat, useSplatModels } from "@storyteller/tauri-api";
+import {
+  GenerateMesh,
+  GenerateSplat,
+  useSplatModels,
+  type MediaSource,
+} from "@storyteller/tauri-api";
 import {
   ClassyModelSelector,
   ModelPage,
@@ -28,7 +31,10 @@ type Variant = "object" | "world";
 interface TrayImage {
   id: string;
   preview: string;
+  /** Set only for library picks; locally attached files keep their bytes in
+   *  `file` and travel with the generate request instead. */
   mediaToken: string | null;
+  file: File | null;
   name: string;
   isUploading: boolean;
 }
@@ -69,15 +75,13 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const readyTokens = useMemo(
+  const readyImages = useMemo(
     () =>
-      images
-        .filter((img) => img.mediaToken && !img.isUploading)
-        .map((img) => img.mediaToken!),
+      images.filter((img) => (img.mediaToken || img.file) && !img.isUploading),
     [images],
   );
   const canGenerate =
-    !isGenerating && readyTokens.length > 0 && !images.some((i) => i.isUploading);
+    !isGenerating && readyImages.length > 0 && !images.some((i) => i.isUploading);
 
   const handleFiles = async (files?: FileList | File[] | null) => {
     if (!files) return;
@@ -87,6 +91,9 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
       .slice(0, Math.max(0, remaining));
     if (imageFiles.length === 0) return;
 
+    // No upload at attach time: keep the bytes local; they travel with the
+    // generate request (the backend uploads to ArtCraft only then, since
+    // mesh/splat generation runs on the ArtCraft provider).
     await Promise.all(
       imageFiles.map(async (file) => {
         const imageId = generateId();
@@ -102,32 +109,11 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
             id: imageId,
             preview,
             mediaToken: null,
+            file,
             name: file.name,
-            isUploading: true,
+            isUploading: false,
           },
         ]);
-
-        try {
-          const mediaUploadApi = new MediaUploadApi();
-          const uploadResult = await mediaUploadApi.UploadImage({
-            blob: file,
-            fileName: file.name,
-            uuid: uuidv4(),
-          });
-          if (!uploadResult.success || !uploadResult.data) {
-            throw new Error("Upload failed");
-          }
-          setImages((prev) =>
-            prev.map((img) =>
-              img.id === imageId
-                ? { ...img, mediaToken: uploadResult.data!, isUploading: false }
-                : img,
-            ),
-          );
-        } catch {
-          toast.error(`Failed to upload ${file.name}`);
-          setImages((prev) => prev.filter((img) => img.id !== imageId));
-        }
       }),
     );
   };
@@ -149,6 +135,20 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
         timestamp: Date.now(),
       });
 
+      // Three-way sources: library tokens pass through; locally attached
+      // files travel as bytes.
+      const referenceImageSources: MediaSource[] = await Promise.all(
+        readyImages.map(async (img): Promise<MediaSource> => {
+          if (img.mediaToken) {
+            return { kind: "media_file_token", token: img.mediaToken };
+          }
+          const bytes = Array.from(
+            new Uint8Array(await img.file!.arrayBuffer()),
+          );
+          return { kind: "bytes", bytes, file_name: img.name || undefined };
+        }),
+      );
+
       const result = isWorld
         ? await GenerateSplat({
             credential_id: selectedAccountId ?? undefined,
@@ -156,7 +156,7 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
               (selectedModel as any)?.tauriId ??
               defaultSplatModel?.tauriId,
             prompt: prompt.trim() || undefined,
-            reference_image_media_tokens: readyTokens,
+            reference_image_sources: referenceImageSources,
             frontend_caller: "splat_page",
             frontend_subscriber_id: subscriberId,
           })
@@ -164,7 +164,7 @@ export const ImageTo3DComposer = ({ variant }: ImageTo3DComposerProps) => {
             credential_id: selectedAccountId ?? undefined,
             model: selectedObjectModelId,
             prompt: prompt.trim() || undefined,
-            reference_image_media_tokens: readyTokens,
+            reference_image_sources: referenceImageSources,
             frontend_caller: "mesh_page",
             frontend_subscriber_id: subscriberId,
           });

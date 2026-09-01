@@ -75,7 +75,7 @@ pub(crate) fn build_fal_veo_3_fast_state(
         safety_tolerance: None,
       })
     }
-    Some(ImageRef::MediaFileToken(_)) => {
+    Some(ImageRef::MediaFileToken(_) | ImageRef::LocalPath(_) | ImageRef::Bytes(_)) => {
       return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls));
     }
     None => {

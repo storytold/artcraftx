@@ -32,11 +32,7 @@ pub fn build_grok_imagine_image(
 }
 
 fn has_image_inputs(image_inputs: Option<&ImageListRef>) -> bool {
-  match image_inputs {
-    None => false,
-    Some(ImageListRef::Urls(urls)) => !urls.is_empty(),
-    Some(ImageListRef::MediaFileTokens(tokens)) => !tokens.is_empty(),
-  }
+  image_inputs.is_some_and(|refs| !refs.is_empty())
 }
 
 #[cfg(test)]

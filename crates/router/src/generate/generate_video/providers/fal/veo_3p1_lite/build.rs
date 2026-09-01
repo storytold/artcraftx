@@ -136,7 +136,7 @@ fn optional_url(image_ref: Option<ImageRef>) -> Result<Option<String>, ArtcraftR
   match image_ref {
     None => Ok(None),
     Some(ImageRef::Url(url)) => Ok(Some(url)),
-    Some(ImageRef::MediaFileToken(_)) => {
+    Some(ImageRef::MediaFileToken(_) | ImageRef::LocalPath(_) | ImageRef::Bytes(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls))
     }
   }
@@ -147,6 +147,7 @@ fn has_reference_images(refs: &Option<ImageListRef>) -> bool {
     None => false,
     Some(ImageListRef::Urls(urls)) => !urls.is_empty(),
     Some(ImageListRef::MediaFileTokens(tokens)) => !tokens.is_empty(),
+    Some(ImageListRef::Sources(refs)) => !refs.is_empty(),
   }
 }
 
@@ -155,6 +156,7 @@ fn has_reference_videos(refs: &Option<VideoListRef>) -> bool {
     None => false,
     Some(VideoListRef::Urls(urls)) => !urls.is_empty(),
     Some(VideoListRef::MediaFileTokens(tokens)) => !tokens.is_empty(),
+    Some(VideoListRef::Sources(refs)) => !refs.is_empty(),
   }
 }
 

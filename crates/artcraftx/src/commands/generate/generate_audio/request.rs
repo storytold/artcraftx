@@ -3,6 +3,7 @@ use serde_derive::{Deserialize, Serialize};
 use artcraft_client::enums::common::generation::common_musical_key::CommonMusicalKey;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
+use crate::commands::generate::common::tauri_media_source::{merge_sources_with_legacy_tokens, TauriMediaSource};
 use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
 
 // ── Request ──
@@ -28,6 +29,14 @@ pub struct TauriGenerateAudioRequest {
 
   /// Reference images (already uploaded).
   pub image_media_tokens: Option<Vec<MediaFileToken>>,
+
+  /// Three-way reference audio (bytes | local path | media token). Wins
+  /// over `audio_media_tokens` when both are set.
+  pub audio_sources: Option<Vec<TauriMediaSource>>,
+
+  /// Three-way reference images (bytes | local path | media token). Wins
+  /// over `image_media_tokens` when both are set.
+  pub image_sources: Option<Vec<TauriMediaSource>>,
 
   /// Keep the original lyrics (Suno Remix).
   pub keep_lyrics: Option<bool>,
@@ -66,6 +75,18 @@ pub struct TauriGenerateAudioRequest {
 
   /// A frontend-defined payload sent back as a Tauri event on task completion.
   pub frontend_subscriber_payload: Option<String>,
+}
+
+impl TauriGenerateAudioRequest {
+  /// Reference audio, normalized: `audio_sources` wins, legacy tokens fold in.
+  pub fn audio_media_sources(&self) -> Option<Vec<TauriMediaSource>> {
+    merge_sources_with_legacy_tokens(self.audio_sources.clone(), self.audio_media_tokens.clone())
+  }
+
+  /// Reference images, normalized: `image_sources` wins, legacy tokens fold in.
+  pub fn image_media_sources(&self) -> Option<Vec<TauriMediaSource>> {
+    merge_sources_with_legacy_tokens(self.image_sources.clone(), self.image_media_tokens.clone())
+  }
 }
 
 /// The audio models the frontend can request, identified by their omni

@@ -14,6 +14,8 @@ use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 use crate::commands::generate::common::higgsfield_generation::{
   higgsfield_media_url_map, higgsfield_router_client, join_higgsfield_job_ids, send_higgsfield_image_request,
 };
+use crate::commands::generate::common::media_source_conversion::collect_source_tokens;
+use crate::commands::generate::common::tauri_media_source::TauriMediaSource;
 use crate::commands::generate::generate_error::GenerateError;
 use crate::commands::generate::generate_image::tauri_generate_image_request::TauriGenerateImageRequest;
 use crate::commands::generate::generate_image::utils::convert_enums_to_router::{convert_aspect_ratio, convert_quality, convert_resolution};
@@ -24,11 +26,12 @@ use crate::credentials::auth_credential::AuthCredential;
 
 /// Enqueue via the router's first-party Higgsfield provider.
 ///
-/// Reference images (canvas, scene, and the prompt box's image references)
-/// travel as ArtCraft media tokens; the router resolves them to CDN URLs
-/// through the map built here, downloads them, and uploads them to
-/// Higgsfield before enqueuing. The returned task carries every job id of
-/// the Higgsfield job set so the poller can follow a batch.
+/// Reference images (canvas, scene, and the prompt box's three-way image
+/// sources) go to the router; local files and raw bytes upload straight to
+/// Higgsfield, while ArtCraft media tokens (cloud-library picks) resolve to
+/// CDN URLs through the map built here before the router downloads and
+/// re-uploads them. The returned task carries every job id of the
+/// Higgsfield job set so the poller can follow a batch.
 pub async fn enqueue_via_higgsfield(
   request: &TauriGenerateImageRequest,
   credential: &AuthCredential,
@@ -42,9 +45,11 @@ pub async fn enqueue_via_higgsfield(
     )),
   )?;
 
-  let tokens = collect_reference_tokens(request);
-  let media_url_map = higgsfield_media_url_map(&tokens).await?;
-  let image_inputs = (!tokens.is_empty()).then(|| ImageListRef::MediaFileTokens(tokens));
+  let sources = collect_reference_sources(request);
+  let media_url_map = higgsfield_media_url_map(&collect_source_tokens(&sources)).await?;
+  let image_inputs = (!sources.is_empty()).then(|| {
+    ImageListRef::Sources(sources.into_iter().map(TauriMediaSource::into_image_ref).collect())
+  });
 
   let router_request = GenerateImageRequestBuilder {
     model: router_model,
@@ -90,20 +95,19 @@ pub async fn enqueue_via_higgsfield(
 }
 
 /// Reference images in priority order: canvas first, then scene, then the
-/// un-semantic references. (Raw canvas / scene bytes aren't accepted on this
-/// path — they'd need an ArtCraft session to become tokens.)
-fn collect_reference_tokens(request: &TauriGenerateImageRequest) -> Vec<MediaFileToken> {
-  let mut tokens: Vec<MediaFileToken> = Vec::new();
+/// un-semantic references (three-way sources). (Raw canvas / scene bytes
+/// aren't accepted on this path — they'd need an ArtCraft session to become
+/// tokens.)
+fn collect_reference_sources(request: &TauriGenerateImageRequest) -> Vec<TauriMediaSource> {
+  let mut sources: Vec<TauriMediaSource> = Vec::new();
   if let Some(canvas_token) = &request.canvas_image_media_token {
-    tokens.push(canvas_token.clone());
+    sources.push(TauriMediaSource::MediaFileToken { token: canvas_token.clone() });
   }
   if let Some(scene_token) = &request.scene_image_media_token {
-    tokens.push(scene_token.clone());
+    sources.push(TauriMediaSource::MediaFileToken { token: scene_token.clone() });
   }
-  if let Some(media_tokens) = &request.image_media_tokens {
-    tokens.extend(media_tokens.clone());
-  }
-  tokens
+  sources.extend(request.reference_media_sources().unwrap_or_default());
+  sources
 }
 
 /// Live smoke tests that hit the REAL Higgsfield API with the REAL stored

@@ -81,10 +81,7 @@ pub(crate) fn plan_splat_input(
 fn image_list_to_refs(reference_images: Option<ImageListRef>) -> Vec<ImageRef> {
   match reference_images {
     None => Vec::new(),
-    Some(ImageListRef::Urls(urls)) => urls.into_iter().map(ImageRef::Url).collect(),
-    Some(ImageListRef::MediaFileTokens(tokens)) => {
-      tokens.into_iter().map(ImageRef::MediaFileToken).collect()
-    }
+    Some(list) => list.into_refs(),
   }
 }
 

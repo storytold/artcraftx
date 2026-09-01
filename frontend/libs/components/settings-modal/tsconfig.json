@@ -3,7 +3,7 @@
   "include": [],
   "references": [
     {
-      "path": "../promptbox"
+      "path": "../../analytics/google-analytics"
     },
     {
       "path": "../../tauri-utils"
@@ -36,19 +36,16 @@
       "path": "../input"
     },
     {
-      "path": "../../analytics/google-analytics"
+      "path": "../button"
+    },
+    {
+      "path": "../modal"
     },
     {
       "path": "../label"
     },
     {
       "path": "../../tauri-api"
-    },
-    {
-      "path": "../button"
-    },
-    {
-      "path": "../modal"
     },
     {
       "path": "./tsconfig.lib.json"

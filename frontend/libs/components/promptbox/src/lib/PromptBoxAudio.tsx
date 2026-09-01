@@ -16,7 +16,7 @@ import {
   OMNI_GENERATE_OUTAGE_MESSAGE,
   type AudioGenerationSettings,
 } from "@storyteller/omni-gen";
-import { GenerateAudio } from "@storyteller/tauri-api";
+import { GenerateAudio, mediaSourcesFromRefs } from "@storyteller/tauri-api";
 import {
   getCreatorIconPathForModelId,
   getModelDescription,
@@ -396,14 +396,27 @@ export const PromptBoxAudio = ({
       // selector's credential authenticates the request).
       const body = buildAudioRequest(selectedModel, settings);
 
+      // Three-way sources: library tokens pass through; local files stay on
+      // disk (path) or travel as bytes — never uploaded to the cloud here.
+      const audioSources =
+        selectedModel.audio_references_supported === true &&
+        referenceAudios.length > 0
+          ? await mediaSourcesFromRefs(referenceAudios)
+          : undefined;
+      const imageSources =
+        selectedModel.image_references_supported === true &&
+        referenceImages.length > 0
+          ? await mediaSourcesFromRefs(referenceImages)
+          : undefined;
+
       await GenerateAudio({
         credential_id: credentialId ?? undefined,
         frontend_caller: "audio_page",
         model: String(body.model),
         prompt: body.prompt ?? undefined,
         style_prompt: body.style_prompt ?? undefined,
-        audio_media_tokens: body.audio_media_tokens ?? undefined,
-        image_media_tokens: body.image_media_tokens ?? undefined,
+        audio_sources: audioSources,
+        image_sources: imageSources,
         keep_lyrics: body.keep_lyrics ?? undefined,
         is_instrumental: body.is_instrumental ?? undefined,
         is_loopable: body.is_loopable ?? undefined,

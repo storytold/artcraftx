@@ -1,26 +1,23 @@
 //! Shared resolve helpers for the Kinovi audio provider.
 //!
-//! The remix/sample models take exactly one user audio reference, which must
-//! be downloaded from our CDN and re-uploaded to the Kinovi CDN during the
-//! draft `finalize()` phase. The upload plumbing is shared with the Kinovi
-//! video provider (`generate_video::providers::kinovi::upload`).
+//! The remix/sample models take exactly one user audio reference, which is
+//! resolved to bytes (CDN download, local read, or as-is) and re-uploaded to
+//! the Kinovi CDN during the draft `finalize()` phase. The upload plumbing is
+//! shared with the Kinovi video provider
+//! (`generate_video::providers::kinovi::upload`).
 
 use seedance2pro_client::creds::seedance2pro_session::Seedance2ProSession;
-use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::api::audio_list_ref::AudioListRef;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::client_error::ClientError;
 use crate::generate::generate_audio::audio_generation_draft_context::AudioGenerationDraftContext;
-use crate::generate::generate_video::providers::kinovi::upload::upload_to_seedance2pro;
+use crate::generate::generate_video::providers::kinovi::upload::upload_source_to_seedance2pro;
+use crate::utils::media_source_ref::MediaSourceRef;
 
-/// A single unresolved audio reference: either an ArtCraft/public URL or a
-/// media file token that resolves to one via the draft context's map.
-#[derive(Debug, Clone)]
-pub enum SingleAudioRef {
-  Url(String),
-  MediaFileToken(MediaFileToken),
-}
+/// A single unresolved audio reference: a media token (resolved via the
+/// draft context's map), a URL, a local file, or raw bytes.
+pub type SingleAudioRef = MediaSourceRef;
 
 /// Extract exactly one audio reference from the builder's audio list.
 /// The Kinovi remix/sample models operate on a single source track, so zero
@@ -28,16 +25,13 @@ pub enum SingleAudioRef {
 pub(crate) fn require_single_audio_ref(
   audio_references: Option<AudioListRef>,
 ) -> Result<SingleAudioRef, ArtcraftRouterError> {
-  let refs = match audio_references {
+  let refs: Vec<MediaSourceRef> = match audio_references {
     None => {
       return Err(ArtcraftRouterError::InvalidInput(
         "Exactly one audio reference is required, but none was provided".to_string(),
       ));
     }
-    Some(AudioListRef::Urls(urls)) => urls.into_iter().map(SingleAudioRef::Url).collect::<Vec<_>>(),
-    Some(AudioListRef::MediaFileTokens(tokens)) => {
-      tokens.into_iter().map(SingleAudioRef::MediaFileToken).collect::<Vec<_>>()
-    }
+    Some(list) => MediaSourceRef::list_from_audios(list),
   };
 
   match refs.len() {
@@ -52,33 +46,25 @@ pub(crate) fn require_single_audio_ref(
   }
 }
 
-/// Resolve a single audio reference to a source URL and re-upload it to the
-/// Kinovi CDN, returning the Kinovi CDN URL.
+/// Resolve a single audio reference and re-upload it to the Kinovi CDN,
+/// returning the Kinovi CDN URL.
 pub(crate) async fn resolve_and_upload_audio_ref(
   session: &Seedance2ProSession,
   audio_ref: &SingleAudioRef,
   draft_context: &AudioGenerationDraftContext<'_>,
 ) -> Result<String, ArtcraftRouterError> {
-  let source_url = match audio_ref {
-    SingleAudioRef::Url(url) => url.clone(),
-    SingleAudioRef::MediaFileToken(token) => {
-      let map = draft_context.media_file_to_artcraft_url_map
-        .ok_or(ArtcraftRouterError::Client(ClientError::MediaFileToUrlMapNotProvided))?;
-      map.get(token).cloned().ok_or_else(|| {
-        ArtcraftRouterError::Client(ClientError::MediaFileTokenNotFoundInMap {
-          token: token.clone(),
-        })
-      })?
-    }
-  };
-  upload_to_seedance2pro(session, &source_url).await
+  upload_source_to_seedance2pro(session, audio_ref.clone(), draft_context.media_file_to_artcraft_url_map).await
 }
 
 #[cfg(test)]
 mod tests {
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
+
   use super::*;
 
   mod require_single_audio_ref_tests {
+    use std::path::PathBuf;
+
     use super::*;
 
     #[test]
@@ -110,6 +96,15 @@ mod tests {
         MediaFileToken::new("mf_test123".to_string()),
       ]))).expect("should accept a single token");
       assert!(matches!(result, SingleAudioRef::MediaFileToken(t) if t.as_str() == "mf_test123"));
+    }
+
+    #[test]
+    fn single_local_path_is_accepted() {
+      use crate::api::audio_ref::AudioRef;
+      let result = require_single_audio_ref(Some(AudioListRef::Sources(vec![
+        AudioRef::LocalPath(PathBuf::from("/tmp/track.mp3")),
+      ]))).expect("should accept a single local path");
+      assert!(matches!(result, SingleAudioRef::LocalPath(path) if path == PathBuf::from("/tmp/track.mp3")));
     }
 
     #[test]

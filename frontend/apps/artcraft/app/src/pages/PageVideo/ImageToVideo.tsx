@@ -3,11 +3,6 @@ import {
   PromptBoxErrorBoundary,
 } from "@storyteller/ui-promptbox";
 import {
-  UploadImageMedia,
-  UploadVideoMedia,
-  UploadAudioMedia,
-} from "@storyteller/api";
-import {
   ClassyModelSelector,
   useImageToVideoPageModelList,
   ModelPage,
@@ -82,9 +77,6 @@ const ImageToVideo = ({ imageMediaId, imageUrl }: ImageToVideoProps) => {
           selectedProvider={selectedProvider}
           imageMediaId={imageMediaId}
           url={imageUrl ?? undefined}
-          uploadImage={UploadImageMedia}
-          uploadVideo={UploadVideoMedia}
-          uploadAudio={UploadAudioMedia}
           credits={videoCredits}
           accountSelector={<AccountSelector />}
           credentialId={selectedAccountId}

@@ -15,6 +15,8 @@ use crate::commands::utils::api_adapters::models::audio::tauri_audio_model_to_ro
 use crate::commands::generate::generate_error::GenerateError;
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::common::generation_credential::{credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential};
+use crate::commands::generate::common::media_source_conversion::{sources_to_artcraft_tokens, ArtcraftMediaKind};
+use crate::commands::generate::common::tauri_media_source::validate_sources;
 use crate::commands::generate::generate_audio::request::TauriGenerateAudioRequest;
 use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::auth_credential::AuthCredential;
@@ -27,6 +29,11 @@ pub async fn handle_credential_router(
   request: &TauriGenerateAudioRequest,
   app_data_root: &AppDataRoot,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
+  // Reject unusable media sources (missing local files, empty bytes) before
+  // any provider work.
+  validate_sources(request.audio_media_sources().iter().flatten())?;
+  validate_sources(request.image_media_sources().iter().flatten())?;
+
   let credential = resolve_generation_credential(
     request.credential_id.as_deref(),
     app_data_root,
@@ -52,8 +59,8 @@ pub async fn handle_credential_router(
 }
 
 /// Generate via the router's Artcraft provider, authenticating with the
-/// stored session cookies. Requests carry media tokens only, which Artcraft
-/// accepts directly — no pre-upload step is needed.
+/// stored session cookies. Artcraft's API is token-native; local files and
+/// bytes upload to ArtCraft here, at generate time.
 async fn handle_artcraft_credential(
   request: &TauriGenerateAudioRequest,
   credential: &AuthCredential,
@@ -68,6 +75,13 @@ async fn handle_artcraft_credential(
 
   let creds = storyteller_creds_from_credential(credential)?;
 
+  let audio_references = sources_to_artcraft_tokens(
+    request.audio_media_sources(), ArtcraftMediaKind::Audio, Some(&creds), &api_host,
+  ).await?.map(AudioListRef::MediaFileTokens);
+  let image_references = sources_to_artcraft_tokens(
+    request.image_media_sources(), ArtcraftMediaKind::Image, Some(&creds), &api_host,
+  ).await?.map(ImageListRef::MediaFileTokens);
+
   let client = RouterClient::Artcraft(RouterArtcraftClient::new(
     api_host,
     creds,
@@ -78,8 +92,8 @@ async fn handle_artcraft_credential(
     provider: RouterProvider::Artcraft,
     prompt: request.prompt.clone(),
     style_prompt: request.style_prompt.clone(),
-    audio_references: request.audio_media_tokens.clone().map(AudioListRef::MediaFileTokens),
-    image_references: request.image_media_tokens.clone().map(ImageListRef::MediaFileTokens),
+    audio_references,
+    image_references,
     keep_lyrics: request.keep_lyrics,
     is_instrumental: request.is_instrumental,
     is_loopable: request.is_loopable,

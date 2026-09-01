@@ -16,6 +16,10 @@ use crate::commands::utils::api_adapters::models::mesh::tauri_mesh_model_to_rout
 use crate::commands::generate::generate_error::GenerateError;
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::common::generation_credential::{credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential};
+use crate::commands::generate::common::media_source_conversion::{
+  maybe_source_to_artcraft_token, sources_to_artcraft_tokens, ArtcraftMediaKind,
+};
+use crate::commands::generate::common::tauri_media_source::{validate_sources, TauriMediaSource};
 use crate::commands::generate::generate_mesh::request::TauriGenerateMeshRequest;
 use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::auth_credential::AuthCredential;
@@ -28,6 +32,10 @@ pub async fn handle_credential_router(
   request: &TauriGenerateMeshRequest,
   app_data_root: &AppDataRoot,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
+  // Reject unusable media sources (missing local files, empty bytes) before
+  // any provider work.
+  validate_sources(request.media_sources().iter())?;
+
   let credential = resolve_generation_credential(
     request.credential_id.as_deref(),
     app_data_root,
@@ -53,8 +61,8 @@ pub async fn handle_credential_router(
 }
 
 /// Generate via the router's Artcraft provider, authenticating with the
-/// stored session cookies. Requests carry media tokens only, which Artcraft
-/// accepts directly — no pre-upload step is needed.
+/// stored session cookies. Artcraft's API is token-native; local image
+/// files and bytes upload to ArtCraft here, at generate time.
 async fn handle_artcraft_credential(
   request: &TauriGenerateMeshRequest,
   credential: &AuthCredential,
@@ -69,6 +77,28 @@ async fn handle_artcraft_credential(
 
   let creds = storyteller_creds_from_credential(credential)?;
 
+  let media = request.media_sources();
+  let reference_images = sources_to_artcraft_tokens(media.reference_images, ArtcraftMediaKind::Image, Some(&creds), &api_host)
+      .await?.map(ImageListRef::MediaFileTokens);
+  let front_image = maybe_source_to_artcraft_token(media.front_image, ArtcraftMediaKind::Image, Some(&creds), &api_host)
+      .await?.map(ImageRef::MediaFileToken);
+  let back_image = maybe_source_to_artcraft_token(media.back_image, ArtcraftMediaKind::Image, Some(&creds), &api_host)
+      .await?.map(ImageRef::MediaFileToken);
+  let left_image = maybe_source_to_artcraft_token(media.left_image, ArtcraftMediaKind::Image, Some(&creds), &api_host)
+      .await?.map(ImageRef::MediaFileToken);
+  let right_image = maybe_source_to_artcraft_token(media.right_image, ArtcraftMediaKind::Image, Some(&creds), &api_host)
+      .await?.map(ImageRef::MediaFileToken);
+  // There's no ArtCraft mesh-file upload endpoint yet; meshes stay token-only.
+  let input_mesh = match media.input_mesh {
+    None => None,
+    Some(TauriMediaSource::MediaFileToken { token }) => Some(MeshRef::MediaFileToken(token)),
+    Some(_) => {
+      return Err(GenerateError::NotYetImplemented(
+        "Local mesh files can't be used as generation inputs yet; pick one from the library".to_string(),
+      ));
+    }
+  };
+
   let client = RouterClient::Artcraft(RouterArtcraftClient::new(
     api_host,
     creds,
@@ -78,12 +108,12 @@ async fn handle_artcraft_credential(
     model: router_model,
     provider: RouterProvider::Artcraft,
     prompt: request.prompt.clone(),
-    reference_images: request.reference_image_media_tokens.clone().map(ImageListRef::MediaFileTokens),
-    front_image: request.front_image_media_token.clone().map(ImageRef::MediaFileToken),
-    back_image: request.back_image_media_token.clone().map(ImageRef::MediaFileToken),
-    left_image: request.left_image_media_token.clone().map(ImageRef::MediaFileToken),
-    right_image: request.right_image_media_token.clone().map(ImageRef::MediaFileToken),
-    input_mesh: request.input_mesh_media_token.clone().map(MeshRef::MediaFileToken),
+    reference_images,
+    front_image,
+    back_image,
+    left_image,
+    right_image,
+    input_mesh,
     mesh_output_type: request.mesh_output_type,
     polygon_type: request.polygon_type,
     face_count: request.face_count,

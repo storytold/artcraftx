@@ -53,7 +53,7 @@ fn require_url(
 ) -> Result<String, ArtcraftRouterError> {
   match start_frame {
     Some(ImageRef::Url(url)) => Ok(url),
-    Some(ImageRef::MediaFileToken(_)) => {
+    Some(ImageRef::MediaFileToken(_) | ImageRef::LocalPath(_) | ImageRef::Bytes(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::ModelDoesNotSupportOption {
         field,
         value: "Fal only supports image URLs, not media file tokens".to_string(),
@@ -70,7 +70,7 @@ fn optional_url(image_ref: Option<ImageRef>) -> Result<Option<String>, ArtcraftR
   match image_ref {
     None => Ok(None),
     Some(ImageRef::Url(url)) => Ok(Some(url)),
-    Some(ImageRef::MediaFileToken(_)) => {
+    Some(ImageRef::MediaFileToken(_) | ImageRef::LocalPath(_) | ImageRef::Bytes(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::ModelDoesNotSupportOption {
         field: "end_frame",
         value: "Fal only supports image URLs, not media file tokens".to_string(),

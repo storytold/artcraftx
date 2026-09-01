@@ -44,7 +44,7 @@
   ],
   "references": [
     {
-      "path": "../promptbox/tsconfig.lib.json"
+      "path": "../../analytics/google-analytics/tsconfig.lib.json"
     },
     {
       "path": "../../tauri-utils/tsconfig.lib.json"
@@ -77,19 +77,16 @@
       "path": "../input/tsconfig.lib.json"
     },
     {
-      "path": "../../analytics/google-analytics/tsconfig.lib.json"
+      "path": "../button/tsconfig.lib.json"
+    },
+    {
+      "path": "../modal/tsconfig.lib.json"
     },
     {
       "path": "../label/tsconfig.lib.json"
     },
     {
       "path": "../../tauri-api/tsconfig.lib.json"
-    },
-    {
-      "path": "../button/tsconfig.lib.json"
-    },
-    {
-      "path": "../modal/tsconfig.lib.json"
     }
   ]
 }

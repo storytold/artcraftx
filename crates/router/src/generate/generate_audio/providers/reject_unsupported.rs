@@ -40,11 +40,7 @@ pub(crate) fn reject_unsupported_audio_references(
   refs: Option<&AudioListRef>,
   strategy: RequestMismatchMitigationStrategy,
 ) -> Result<(), ArtcraftRouterError> {
-  let has_refs = match refs {
-    None => false,
-    Some(AudioListRef::Urls(urls)) => !urls.is_empty(),
-    Some(AudioListRef::MediaFileTokens(tokens)) => !tokens.is_empty(),
-  };
+  let has_refs = refs.is_some_and(|refs| !refs.is_empty());
   if has_refs {
     return reject_unsupported_option("audio_references", refs, strategy);
   }
@@ -57,11 +53,7 @@ pub(crate) fn reject_unsupported_image_references(
   refs: Option<&ImageListRef>,
   strategy: RequestMismatchMitigationStrategy,
 ) -> Result<(), ArtcraftRouterError> {
-  let has_refs = match refs {
-    None => false,
-    Some(ImageListRef::Urls(urls)) => !urls.is_empty(),
-    Some(ImageListRef::MediaFileTokens(tokens)) => !tokens.is_empty(),
-  };
+  let has_refs = refs.is_some_and(|refs| !refs.is_empty());
   if has_refs {
     return reject_unsupported_option("image_references", refs, strategy);
   }

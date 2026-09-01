@@ -1,5 +1,6 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
+use std::path::PathBuf;
 use artcraft_client::tokens::characters::CharacterToken;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
@@ -72,6 +73,18 @@ pub enum ClientError {
 
   /// A character token was not found in the provided character-token-to-id map
   CharacterTokenNotFoundInMap { token: CharacterToken },
+
+  /// A local-file reference points at a path that doesn't exist (or isn't a
+  /// regular file).
+  LocalFileNotFound { path: PathBuf },
+
+  /// A local-file reference exists but couldn't be read.
+  LocalFileRead { path: PathBuf, error: std::io::Error },
+
+  /// This provider can't take local files or raw bytes directly; the caller
+  /// must convert the reference first (e.g. upload it to obtain a token or
+  /// URL).
+  ProviderCannotUseLocalMedia { client_type: ClientType },
 }
 
 impl Error for ClientError {}
@@ -114,6 +127,15 @@ impl Display for ClientError {
       }
       Self::CharacterTokenNotFoundInMap { token } => {
         write!(f, "Character token '{}' was not found in the provided character-token-to-id map", token.as_str())
+      }
+      Self::LocalFileNotFound { path } => {
+        write!(f, "Local media file not found (or not a regular file): {}", path.display())
+      }
+      Self::LocalFileRead { path, error } => {
+        write!(f, "Could not read local media file {}: {}", path.display(), error)
+      }
+      Self::ProviderCannotUseLocalMedia { client_type } => {
+        write!(f, "{} cannot take local files or raw bytes directly; convert the reference to a media token or URL first", client_type)
       }
     }
   }

@@ -3,18 +3,16 @@
 
 use core_types::enums::generation_source::GenerationSource;
 use log::info;
-use router::api::audio_list_ref::AudioListRef;
-use router::api::image_list_ref::ImageListRef;
-use router::api::image_ref::ImageRef;
 use router::api::router_provider::RouterProvider;
-use router::api::video_list_ref::VideoListRef;
 use router::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 use router::generate::generate_video::generate_video_request_builder::GenerateVideoRequestBuilder;
 use sqlite_identifiers::enums::task_type::TaskType;
-use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::commands::generate::common::higgsfield_generation::{
   higgsfield_media_url_map, higgsfield_router_client, join_higgsfield_job_ids, send_higgsfield_video_request,
+};
+use crate::commands::generate::common::media_source_conversion::{
+  collect_source_tokens, source_to_image_ref, sources_to_audio_list, sources_to_image_list, sources_to_video_list,
 };
 use crate::commands::generate::generate_error::GenerateError;
 use crate::commands::generate::generate_video::request::TauriGenerateVideoRequest;
@@ -25,11 +23,13 @@ use crate::credentials::auth_credential::AuthCredential;
 
 /// Enqueue via the router's first-party Higgsfield provider.
 ///
-/// Keyframes and image / video / audio references travel as ArtCraft media
-/// tokens; the router resolves them to CDN URLs through the map built here,
-/// downloads them, and uploads them to Higgsfield (running its IP check
-/// where the model demands it) before enqueuing. The returned task carries
-/// every job id of the Higgsfield job set so the poller can follow a batch.
+/// Keyframes and image / video / audio references arrive as three-way media
+/// sources. Local files and raw bytes go straight to Higgsfield; only
+/// ArtCraft media tokens (cloud-library picks) resolve to CDN URLs through
+/// the map built here before the router downloads and re-uploads them
+/// (running Higgsfield's IP check where the model demands it). The returned
+/// task carries every job id of the Higgsfield job set so the poller can
+/// follow a batch.
 pub async fn handle_higgsfield_video_via_router(
   request: &TauriGenerateVideoRequest,
   credential: &AuthCredential,
@@ -38,7 +38,8 @@ pub async fn handle_higgsfield_video_via_router(
   let router_model = tauri_video_model_to_router_model(tauri_model);
   let generation_model = tauri_video_model_to_generation_model(tauri_model);
 
-  let media_url_map = higgsfield_media_url_map(&collect_media_tokens(request)).await?;
+  let media = request.media_sources();
+  let media_url_map = higgsfield_media_url_map(&collect_source_tokens(media.iter())).await?;
 
   // Character references have no Higgsfield equivalent; the router drops
   // them with a warning, so they aren't forwarded at all.
@@ -47,11 +48,11 @@ pub async fn handle_higgsfield_video_via_router(
     provider: RouterProvider::Higgsfield,
     prompt: request.prompt.clone(),
     negative_prompt: request.negative_prompt.clone(),
-    start_frame: request.start_frame_image_media_token.clone().map(ImageRef::MediaFileToken),
-    end_frame: request.end_frame_image_media_token.clone().map(ImageRef::MediaFileToken),
-    reference_images: request.reference_image_media_tokens.clone().map(ImageListRef::MediaFileTokens),
-    reference_videos: request.reference_video_media_tokens.clone().map(VideoListRef::MediaFileTokens),
-    reference_audio: request.reference_audio_media_tokens.clone().map(AudioListRef::MediaFileTokens),
+    start_frame: source_to_image_ref(media.start_frame),
+    end_frame: source_to_image_ref(media.end_frame),
+    reference_images: sources_to_image_list(media.reference_images),
+    reference_videos: sources_to_video_list(media.reference_videos),
+    reference_audio: sources_to_audio_list(media.reference_audios),
     reference_character_tokens: None,
     resolution: request.resolution,
     aspect_ratio: request.aspect_ratio,
@@ -89,19 +90,6 @@ pub async fn handle_higgsfield_video_via_router(
   })
 }
 
-/// Every media token the request references, so each can be resolved to a
-/// CDN URL for re-upload.
-fn collect_media_tokens(request: &TauriGenerateVideoRequest) -> Vec<MediaFileToken> {
-  let mut tokens: Vec<MediaFileToken> = Vec::new();
-  tokens.extend(request.start_frame_image_media_token.clone());
-  tokens.extend(request.end_frame_image_media_token.clone());
-  tokens.extend(request.reference_image_media_tokens.clone().unwrap_or_default());
-  tokens.extend(request.reference_video_media_tokens.clone().unwrap_or_default());
-  tokens.extend(request.reference_audio_media_tokens.clone().unwrap_or_default());
-  tokens.dedup();
-  tokens
-}
-
 /// Live smoke tests that hit the REAL Higgsfield API with the REAL stored
 /// credential and SPEND HIGGSFIELD CREDITS. `#[ignore]`; run explicitly:
 ///   SQLX_OFFLINE=true cargo test -p artcraftx live_higgsfield_video -- --ignored --nocapture
@@ -109,6 +97,7 @@ fn collect_media_tokens(request: &TauriGenerateVideoRequest) -> Vec<MediaFileTok
 mod live_higgsfield_video_tests {
   use router::api::router_aspect_ratio::RouterAspectRatio;
   use router::api::router_resolution::RouterResolution;
+  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
   use crate::commands::generate::generate_video::request::TauriVideoModel;
   use crate::state::data_dir::app_data_root::AppDataRoot;

@@ -1,4 +1,5 @@
 use crate::api::image_list_ref::ImageListRef;
+use crate::api::image_ref::ImageRef;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::client_error::ClientError;
 
@@ -23,5 +24,18 @@ pub fn require_at_least_one_image_input(
       Err(ArtcraftRouterError::Client(ClientError::ArtcraftOnlySupportsMediaTokens))
     }
     Some(ImageListRef::MediaFileTokens(_)) => Ok(()),
+    Some(ImageListRef::Sources(refs)) if refs.is_empty() => {
+      Err(ArtcraftRouterError::Client(ClientError::ModelDoesNotSupportOption {
+        field: "image_inputs",
+        value: format!("Angle models require exactly one input image, got {}", refs.len()),
+      }))
+    }
+    Some(ImageListRef::Sources(refs)) => {
+      if refs.iter().all(|image_ref| matches!(image_ref, ImageRef::MediaFileToken(_))) {
+        Ok(())
+      } else {
+        Err(ArtcraftRouterError::Client(ClientError::ArtcraftOnlySupportsMediaTokens))
+      }
+    }
   }
 }

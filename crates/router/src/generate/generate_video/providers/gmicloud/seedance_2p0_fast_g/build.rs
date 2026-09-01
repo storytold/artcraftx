@@ -3,14 +3,16 @@ use gmicloud_client::requests::api::video::seedance_2_0_fast_260128::api::{
 };
 
 use crate::api::audio_list_ref::AudioListRef;
+use crate::api::audio_ref::AudioRef;
 use crate::api::router_aspect_ratio::RouterAspectRatio;
 use crate::api::router_resolution::RouterResolution;
 use crate::api::image_list_ref::ImageListRef;
 use crate::api::image_ref::ImageRef;
 use crate::api::video_list_ref::VideoListRef;
+use crate::api::video_ref::VideoRef;
 use crate::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
-use crate::errors::client_error::ClientError;
+use crate::errors::client_error::{ClientError, ClientType};
 use crate::generate::generate_video::generate_video_request_builder::GenerateVideoRequestBuilder;
 use crate::generate::generate_video::providers::gmicloud::seedance_2p0_fast_g::request::GmiCloudSeedance2p0UltraFastRequestState;
 use crate::generate::generate_video::video_generation_draft_or_request::VideoGenerationDraftOrRequest;
@@ -102,6 +104,11 @@ fn resolve_url(image_ref: Option<ImageRef>) -> Result<Option<String>, ArtcraftRo
         value: "GmiCloud only supports image URLs, not media file tokens".to_string(),
       }))
     }
+    Some(ImageRef::LocalPath(_)) | Some(ImageRef::Bytes(_)) => {
+      Err(ArtcraftRouterError::Client(ClientError::ProviderCannotUseLocalMedia {
+        client_type: ClientType::GmiCloud,
+      }))
+    }
   }
 }
 
@@ -117,6 +124,20 @@ fn resolve_url_list_from_images(
         value: "GmiCloud only supports image URLs, not media file tokens".to_string(),
       }))
     }
+    Some(ImageListRef::Sources(refs)) => {
+      let mut urls = Vec::with_capacity(refs.len());
+      for image_ref in refs {
+        match image_ref {
+          ImageRef::Url(url) => urls.push(url),
+          ImageRef::MediaFileToken(_) | ImageRef::LocalPath(_) | ImageRef::Bytes(_) => {
+            return Err(ArtcraftRouterError::Client(ClientError::ProviderCannotUseLocalMedia {
+              client_type: ClientType::GmiCloud,
+            }));
+          }
+        }
+      }
+      Ok(Some(urls))
+    }
   }
 }
 
@@ -131,6 +152,20 @@ fn resolve_url_list_from_videos(
         field: "reference_videos",
         value: "GmiCloud only supports video URLs, not media file tokens".to_string(),
       }))
+    }
+    Some(VideoListRef::Sources(refs)) => {
+      let mut urls = Vec::with_capacity(refs.len());
+      for video_ref in refs {
+        match video_ref {
+          VideoRef::Url(url) => urls.push(url),
+          VideoRef::MediaFileToken(_) | VideoRef::LocalPath(_) | VideoRef::Bytes(_) => {
+            return Err(ArtcraftRouterError::Client(ClientError::ProviderCannotUseLocalMedia {
+              client_type: ClientType::GmiCloud,
+            }));
+          }
+        }
+      }
+      Ok(Some(urls))
     }
   }
 }
@@ -318,6 +353,20 @@ fn resolve_url_list_from_audios(
         field: "reference_audios",
         value: "GmiCloud only supports audio URLs, not media file tokens".to_string(),
       }))
+    }
+    Some(AudioListRef::Sources(refs)) => {
+      let mut urls = Vec::with_capacity(refs.len());
+      for audio_ref in refs {
+        match audio_ref {
+          AudioRef::Url(url) => urls.push(url),
+          AudioRef::MediaFileToken(_) | AudioRef::LocalPath(_) | AudioRef::Bytes(_) => {
+            return Err(ArtcraftRouterError::Client(ClientError::ProviderCannotUseLocalMedia {
+              client_type: ClientType::GmiCloud,
+            }));
+          }
+        }
+      }
+      Ok(Some(urls))
     }
   }
 }

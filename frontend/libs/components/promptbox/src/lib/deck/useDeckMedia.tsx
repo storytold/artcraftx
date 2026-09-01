@@ -3,11 +3,13 @@ import { GalleryItem, GalleryModal } from "@storyteller/ui-gallery-modal";
 import { downloadFileFromUrl, type UploadMediaFn } from "@storyteller/api";
 import { toast } from "@storyteller/ui-toaster";
 import { UploaderStates } from "@storyteller/common";
+import { IsDesktopApp } from "@storyteller/tauri-utils";
 import {
   AUDIO_FILE_ACCEPT,
   AUDIO_FILE_TYPE_ERROR,
   isAudioFile,
 } from "../common/audioFiles";
+import type { DroppedMedia } from "./usePromptBoxDrop";
 
 /** Minimal structural shapes so both apps' ref types fit. */
 export interface DeckRefLike {
@@ -54,6 +56,60 @@ export interface UseDeckMediaOptions<
 }
 
 const randomId = () => Math.random().toString(36).substring(7);
+
+// Extensions offered by the native file pickers; mirror the accept lists of
+// the hidden <input> fallbacks.
+const PICKER_IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "webp", "gif", "bmp", "avif"];
+const PICKER_VIDEO_EXTENSIONS = ["mp4"];
+const PICKER_AUDIO_EXTENSIONS = ["mp3", "wav", "ogg", "flac", "aac", "m4a", "opus"];
+
+const PICKER_MIME_BY_EXTENSION: Record<string, string> = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  webp: "image/webp",
+  gif: "image/gif",
+  bmp: "image/bmp",
+  avif: "image/avif",
+  mp4: "video/mp4",
+  mp3: "audio/mpeg",
+  wav: "audio/wav",
+  ogg: "audio/ogg",
+  flac: "audio/flac",
+  aac: "audio/aac",
+  m4a: "audio/mp4",
+  opus: "audio/opus",
+};
+
+/**
+ * Desktop-only native file picker: returns path-backed [`DroppedMedia`]
+ * (asset-protocol previews, no bytes copied into JS), or `null` when the
+ * user cancelled.
+ */
+const pickLocalMedia = async (
+  extensions: string[],
+  multiple: boolean,
+): Promise<DroppedMedia[] | null> => {
+  const { open } = await import("@tauri-apps/plugin-dialog");
+  const { convertFileSrc } = await import("@tauri-apps/api/core");
+  const picked = await open({
+    multiple,
+    directory: false,
+    filters: [{ name: "Media", extensions }],
+  });
+  if (picked === null) return null;
+  const paths = Array.isArray(picked) ? picked : [picked];
+  return paths.map((path) => {
+    const fileName = path.split(/[/\\]/).pop() ?? "file";
+    const extension = fileName.split(".").pop()?.toLowerCase() ?? "";
+    const type = PICKER_MIME_BY_EXTENSION[extension] ?? "";
+    return {
+      file: new File([], fileName, { type }),
+      localPath: path,
+      previewUrl: convertFileSrc(path),
+    };
+  });
+};
 
 // A non-finite duration cap means "no limit" — leave it out of the message.
 const videoLimitMessage = (maxVideos: number, maxTotalSec: number) =>
@@ -167,20 +223,23 @@ export function useDeckMedia<
     referenceAudiosRef.current = referenceAudios;
   }, [referenceAudios]);
 
-  // The hook only ever commits `{ id, url, file, mediaToken, duration? }`,
-  // which is structurally assignable to both apps' ref types (desktop
-  // promptStore refs match exactly; the webapp's extra fields are optional).
+  // The hook only ever commits `{ id, url, file, mediaToken, localPath?,
+  // duration? }`, which is structurally assignable to both apps' ref types
+  // (desktop promptStore refs match exactly; the webapp's extra fields are
+  // optional).
   const asImage = (img: {
     id: string;
     url: string;
     file: File;
     mediaToken: string;
+    localPath?: string;
   }) => img as unknown as TImage;
   const asVideo = (video: {
     id: string;
     url: string;
     file: File;
     mediaToken: string;
+    localPath?: string;
     duration: number;
   }) => video as unknown as TVideo;
   const asAudio = (audio: {
@@ -188,6 +247,7 @@ export function useDeckMedia<
     url: string;
     file: File;
     mediaToken: string;
+    localPath?: string;
     duration: number;
   }) => audio as unknown as TAudio;
 
@@ -197,19 +257,73 @@ export function useDeckMedia<
     previewUrl: URL.createObjectURL(file),
   });
 
+  // On desktop the pickers are native dialogs returning OS paths, so picked
+  // files stay local (no upload, asset-protocol previews). The hidden
+  // <input> elements remain the browser fallback.
   const openImageUpload = () => {
     imageTargetRef.current = "start";
+    if (IsDesktopApp()) {
+      void pickLocalMedia(PICKER_IMAGE_EXTENSIONS, maxImages > 1).then(
+        (media) => media && processImageFiles(media, "start"),
+      );
+      return;
+    }
     fileInputRef.current?.click();
   };
 
   const openEndUpload = () => {
     imageTargetRef.current = "end";
+    if (IsDesktopApp()) {
+      void pickLocalMedia(PICKER_IMAGE_EXTENSIONS, false).then(
+        (media) => media && processImageFiles(media, "end"),
+      );
+      return;
+    }
     fileInputRef.current?.click();
   };
 
-  const openVideoUpload = () => videoFileInputRef.current?.click();
-  const openAudioUpload = () => audioFileInputRef.current?.click();
-  const openAnyUpload = () => anyFileInputRef.current?.click();
+  const openVideoUpload = () => {
+    if (IsDesktopApp()) {
+      void pickLocalMedia(PICKER_VIDEO_EXTENSIONS, maxVideos > 1).then(
+        (media) => media && processVideoFiles(media),
+      );
+      return;
+    }
+    videoFileInputRef.current?.click();
+  };
+
+  const openAudioUpload = () => {
+    if (IsDesktopApp()) {
+      void pickLocalMedia(PICKER_AUDIO_EXTENSIONS, maxAudios > 1).then(
+        (media) => media && processAudioFiles(media),
+      );
+      return;
+    }
+    audioFileInputRef.current?.click();
+  };
+
+  const openAnyUpload = () => {
+    if (IsDesktopApp()) {
+      const extensions = [
+        ...(maxImages > 0 ? PICKER_IMAGE_EXTENSIONS : []),
+        ...(setReferenceVideos ? PICKER_VIDEO_EXTENSIONS : []),
+        ...(setReferenceAudios ? PICKER_AUDIO_EXTENSIONS : []),
+      ];
+      void pickLocalMedia(extensions, true).then((media) => {
+        if (!media) return;
+        const images = media.filter((m) => m.file.type.startsWith("image/"));
+        const audios = media.filter((m) => isAudioFile(m.file));
+        const videos = media.filter(
+          (m) => m.file.type.startsWith("video/") && !isAudioFile(m.file),
+        );
+        if (images.length > 0) processImageFiles(images, "start");
+        if (videos.length > 0 && setReferenceVideos) void processVideoFiles(videos);
+        if (audios.length > 0 && setReferenceAudios) void processAudioFiles(audios);
+      });
+      return;
+    }
+    anyFileInputRef.current?.click();
+  };
 
   const openGallery = (target: "start" | "end" | "video" | "audio") => {
     setGalleryTarget(target);
@@ -217,7 +331,7 @@ export function useDeckMedia<
   };
 
   const processImageFiles = (
-    files: File[],
+    files: DroppedMedia[],
     uploadTarget: "start" | "end",
   ) => {
     const currentCount = referenceImages.length + uploadingImages.length;
@@ -231,7 +345,29 @@ export function useDeckMedia<
         ? files.slice(0, 1)
         : files.slice(0, availableSlots);
 
-    filesToProcess.forEach((file) => {
+    filesToProcess.forEach(({ file, localPath, previewUrl }) => {
+      const commitRef = (url: string, mediaToken: string) => {
+        const referenceImage = asImage({
+          id: randomId(),
+          url,
+          file,
+          mediaToken,
+          localPath,
+        });
+        if (uploadTarget === "end") {
+          setEndFrameImage?.(referenceImage);
+        } else {
+          setReferenceImages([...referenceImagesRef.current, referenceImage]);
+        }
+      };
+
+      // A path-backed file previews straight off disk and commits
+      // immediately — nothing to read or upload.
+      if (localPath && previewUrl) {
+        commitRef(previewUrl, "");
+        return;
+      }
+
       const entry = makeEntry(file);
       if (uploadTarget === "end") {
         setUploadingEnd(entry);
@@ -249,18 +385,8 @@ export function useDeckMedia<
       };
 
       const commit = (url: string, mediaToken: string) => {
-        const referenceImage = asImage({
-          id: randomId(),
-          url,
-          file,
-          mediaToken,
-        });
         finishEntry();
-        if (uploadTarget === "end") {
-          setEndFrameImage?.(referenceImage);
-        } else {
-          setReferenceImages([...referenceImagesRef.current, referenceImage]);
-        }
+        commitRef(url, mediaToken);
       };
 
       const reader = new FileReader();
@@ -293,10 +419,10 @@ export function useDeckMedia<
     const files = Array.from(event.target.files || []);
     if (fileInputRef.current) fileInputRef.current.value = "";
     if (files.length === 0) return;
-    processImageFiles(files, imageTargetRef.current);
+    processImageFiles(files.map((file) => ({ file })), imageTargetRef.current);
   };
 
-  const processVideoFiles = async (files: File[]) => {
+  const processVideoFiles = async (files: DroppedMedia[]) => {
     // Snapshot the committed state at call time so removes that happened
     // before this call are respected (don't re-read a stale ref).
     const baseVideos = [...referenceVideos];
@@ -311,8 +437,11 @@ export function useDeckMedia<
     const filesToProcess = files.slice(0, availableSlots);
     let committed = baseVideos;
 
-    for (const file of filesToProcess) {
-      const duration = await getVideoDuration(file);
+    for (const { file, localPath, previewUrl } of filesToProcess) {
+      const duration =
+        localPath && previewUrl
+          ? await getVideoDurationFromSrc(previewUrl)
+          : await getVideoDuration(file);
       const currentTotal = committed.reduce((sum, v) => sum + v.duration, 0);
 
       if (currentTotal + duration > maxVideoTotalSec) {
@@ -320,6 +449,24 @@ export function useDeckMedia<
           id: "video-ref-limit",
         });
         break;
+      }
+
+      // A path-backed file previews straight off disk and commits
+      // immediately — nothing to read or upload.
+      if (localPath && previewUrl) {
+        committed = [
+          ...committed,
+          asVideo({
+            id: randomId(),
+            url: previewUrl,
+            file,
+            mediaToken: "",
+            localPath,
+            duration,
+          }),
+        ];
+        setReferenceVideos?.(committed);
+        continue;
       }
 
       const entry = makeEntry(file);
@@ -369,11 +516,11 @@ export function useDeckMedia<
     const files = Array.from(event.target.files || []);
     if (videoFileInputRef.current) videoFileInputRef.current.value = "";
     if (files.length === 0) return;
-    await processVideoFiles(files);
+    await processVideoFiles(files.map((file) => ({ file })));
   };
 
-  const processAudioFiles = async (files: File[]) => {
-    const audioFiles = files.filter(isAudioFile);
+  const processAudioFiles = async (files: DroppedMedia[]) => {
+    const audioFiles = files.filter((media) => isAudioFile(media.file));
     if (audioFiles.length < files.length) {
       toast.error(AUDIO_FILE_TYPE_ERROR, { id: "audio-ref-type" });
     }
@@ -386,8 +533,11 @@ export function useDeckMedia<
 
     const filesToProcess = audioFiles.slice(0, availableSlots);
 
-    for (const file of filesToProcess) {
-      const duration = await getAudioDuration(file);
+    for (const { file, localPath, previewUrl } of filesToProcess) {
+      const duration =
+        localPath && previewUrl
+          ? await getAudioDurationFromSrc(previewUrl)
+          : await getAudioDuration(file);
       const currentTotal = referenceAudiosRef.current.reduce(
         (sum, a) => sum + a.duration,
         0,
@@ -396,6 +546,23 @@ export function useDeckMedia<
       if (currentTotal + duration > maxAudioTotalSec) {
         toast.error(`Total audio duration cannot exceed ${maxAudioTotalSec}s`);
         break;
+      }
+
+      // A path-backed file previews straight off disk and commits
+      // immediately — nothing to read or upload.
+      if (localPath && previewUrl) {
+        setReferenceAudios?.([
+          ...referenceAudiosRef.current,
+          asAudio({
+            id: randomId(),
+            url: previewUrl,
+            file,
+            mediaToken: "",
+            localPath,
+            duration,
+          }),
+        ]);
+        continue;
       }
 
       const entry = makeEntry(file);
@@ -441,7 +608,7 @@ export function useDeckMedia<
     const files = Array.from(event.target.files || []);
     if (audioFileInputRef.current) audioFileInputRef.current.value = "";
     if (files.length === 0) return;
-    await processAudioFiles(files);
+    await processAudioFiles(files.map((file) => ({ file })));
   };
 
   // Combined picker for direct clicks on the reference card / circular "+":
@@ -451,12 +618,13 @@ export function useDeckMedia<
     if (anyFileInputRef.current) anyFileInputRef.current.value = "";
     if (files.length === 0) return;
 
-    const images = files.filter((f) => f.type.startsWith("image/"));
+    const media = files.map((file) => ({ file }));
+    const images = media.filter((m) => m.file.type.startsWith("image/"));
     // isAudioFile also claims .m4a files that platforms report as video/mp4,
     // so exclude them from the video bucket.
-    const audios = files.filter(isAudioFile);
-    const videos = files.filter(
-      (f) => f.type.startsWith("video/") && !isAudioFile(f),
+    const audios = media.filter((m) => isAudioFile(m.file));
+    const videos = media.filter(
+      (m) => m.file.type.startsWith("video/") && !isAudioFile(m.file),
     );
 
     if (images.length > 0) processImageFiles(images, "start");

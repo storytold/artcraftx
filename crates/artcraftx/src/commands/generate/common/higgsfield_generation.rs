@@ -1,7 +1,8 @@
 //! Shared pieces of the first-party (cookie-session) Higgsfield enqueue path
 //! for images and videos: the router client for a stored credential, the
-//! media-token → CDN URL map the router needs to re-upload references to
-//! Higgsfield, and running a built request through the draft phase.
+//! media-token → CDN URL map for cloud-library references (local files and
+//! bytes go straight to Higgsfield without touching ArtCraft), and running a
+//! built request through the draft phase.
 
 use std::collections::HashMap;
 
@@ -34,9 +35,11 @@ pub fn higgsfield_router_client(credential: &AuthCredential) -> Result<RouterCli
   Ok(RouterClient::Higgsfield(RouterHiggsfieldClient::new(session)))
 }
 
-/// Resolve reference media tokens to their ArtCraft CDN URLs. Higgsfield
-/// can't fetch ArtCraft media itself, so the router downloads each URL and
-/// re-uploads the bytes as Higgsfield reference media.
+/// Resolve reference media tokens (cloud-library picks only) to their
+/// ArtCraft CDN URLs. Higgsfield can't fetch ArtCraft media itself, so the
+/// router downloads each URL and re-uploads the bytes as Higgsfield
+/// reference media. Empty when every reference is a local file or bytes —
+/// then ArtCraft is never contacted at all.
 pub async fn higgsfield_media_url_map(tokens: &[MediaFileToken]) -> Result<HashMap<MediaFileToken, String>, GenerateError> {
   if tokens.is_empty() {
     return Ok(HashMap::new());

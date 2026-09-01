@@ -15,6 +15,7 @@ use crate::api::image_ref::ImageRef;
 use crate::api::video_list_ref::VideoListRef;
 use crate::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
+use crate::errors::client_error::{ClientError, ClientType};
 use crate::generate::generate_video::generate_video_request_builder::GenerateVideoRequestBuilder;
 use crate::generate::generate_video::providers::grok_api::grok_imagine_video::request::GrokApiGrokImagineVideoRequestState;
 use crate::generate::generate_video::video_generation_draft_or_request::VideoGenerationDraftOrRequest;
@@ -29,6 +30,9 @@ use crate::generate::generate_video::video_generation_request::VideoGenerationRe
 ///
 /// Fields that Grok DOESN'T accept (`end_frame`, `reference_videos`, `reference_audio`,
 /// and `MediaFileToken`-style image refs) are silently dropped with an info-level log.
+/// `LocalPath`/`Bytes` image refs are the exception: they error with
+/// `ProviderCannotUseLocalMedia`, since silently dropping the caller's local media
+/// would produce a video that ignores their input.
 /// Same goes for the `start_frame` + `reference_images` conflict — we prefer
 /// `start_frame` (image-to-video) and drop `reference_images`. This keeps the
 /// pipeline tolerant when callers fan a single builder out to multiple providers
@@ -52,7 +56,7 @@ pub fn build_grok_api_grok_imagine_video(
   // Image sources: prefer start_frame (image-to-video). If both start_frame and
   // reference_images are supplied, drop reference_images (xAI rejects the
   // combination on the wire).
-  let start_frame = resolve_url_to_image_source(builder.start_frame.take());
+  let start_frame = resolve_url_to_image_source(builder.start_frame.take())?;
   let reference_images_supplied = builder.reference_images.take();
 
   let (image, reference_images) = match (start_frame, reference_images_supplied) {
@@ -60,12 +64,12 @@ pub fn build_grok_api_grok_imagine_video(
       info!(
         "grok_imagine_video: both start_frame and reference_images supplied — \
          preferring start_frame (image-to-video). Dropping {} reference images.",
-        count_image_list_ref(&refs),
+        refs.len(),
       );
       (Some(img), None)
     }
     (Some(img), None) => (Some(img), None),
-    (None, Some(refs)) => (None, resolve_url_list_to_image_sources(refs)),
+    (None, Some(refs)) => (None, resolve_url_list_to_image_sources(refs)?),
     (None, None) => (None, None),
   };
 
@@ -149,40 +153,67 @@ fn plan_resolution(
 
 // ── Image source resolvers (silent drops for unsupported variants) ──
 
-fn resolve_url_to_image_source(image_ref: Option<ImageRef>) -> Option<GrokVideoImageSource> {
+fn resolve_url_to_image_source(
+  image_ref: Option<ImageRef>,
+) -> Result<Option<GrokVideoImageSource>, ArtcraftRouterError> {
   match image_ref {
-    None => None,
-    Some(ImageRef::Url(url)) => Some(GrokVideoImageSource::Url(url)),
+    None => Ok(None),
+    Some(ImageRef::Url(url)) => Ok(Some(GrokVideoImageSource::Url(url))),
     Some(ImageRef::MediaFileToken(token)) => {
       info!(
         "grok_imagine_video: dropping MediaFileToken {:?} for start_frame — \
          Grok only accepts public URLs. Resolve the token to a URL upstream if needed.",
         token,
       );
-      None
+      Ok(None)
+    }
+    Some(ImageRef::LocalPath(_)) | Some(ImageRef::Bytes(_)) => {
+      Err(ArtcraftRouterError::Client(ClientError::ProviderCannotUseLocalMedia {
+        client_type: ClientType::GrokApi,
+      }))
     }
   }
 }
 
-fn resolve_url_list_to_image_sources(list_ref: ImageListRef) -> Option<Vec<GrokVideoImageSource>> {
+fn resolve_url_list_to_image_sources(
+  list_ref: ImageListRef,
+) -> Result<Option<Vec<GrokVideoImageSource>>, ArtcraftRouterError> {
   match list_ref {
-    ImageListRef::Urls(urls) if urls.is_empty() => None,
-    ImageListRef::Urls(urls) => Some(urls.into_iter().map(GrokVideoImageSource::Url).collect()),
+    ImageListRef::Urls(urls) if urls.is_empty() => Ok(None),
+    ImageListRef::Urls(urls) => {
+      Ok(Some(urls.into_iter().map(GrokVideoImageSource::Url).collect()))
+    }
     ImageListRef::MediaFileTokens(tokens) => {
       info!(
         "grok_imagine_video: dropping {} MediaFileToken reference image(s) — \
          Grok only accepts public URLs. Resolve tokens to URLs upstream if needed.",
         tokens.len(),
       );
-      None
+      Ok(None)
     }
-  }
-}
-
-fn count_image_list_ref(refs: &ImageListRef) -> usize {
-  match refs {
-    ImageListRef::Urls(v) => v.len(),
-    ImageListRef::MediaFileTokens(v) => v.len(),
+    ImageListRef::Sources(refs) => {
+      let mut urls = Vec::with_capacity(refs.len());
+      let mut dropped_tokens = 0usize;
+      for image_ref in refs {
+        match image_ref {
+          ImageRef::Url(url) => urls.push(url),
+          ImageRef::MediaFileToken(_) => dropped_tokens += 1,
+          ImageRef::LocalPath(_) | ImageRef::Bytes(_) => {
+            return Err(ArtcraftRouterError::Client(ClientError::ProviderCannotUseLocalMedia {
+              client_type: ClientType::GrokApi,
+            }));
+          }
+        }
+      }
+      if dropped_tokens > 0 {
+        info!(
+          "grok_imagine_video: dropping {} MediaFileToken reference image(s) — \
+           Grok only accepts public URLs. Resolve tokens to URLs upstream if needed.",
+          dropped_tokens,
+        );
+      }
+      resolve_url_list_to_image_sources(ImageListRef::Urls(urls))
+    }
   }
 }
 
@@ -196,26 +227,18 @@ fn log_and_drop_end_frame(end_frame: Option<ImageRef>) {
 
 fn log_and_drop_reference_videos(refs: Option<VideoListRef>) {
   if let Some(refs) = refs {
-    let count = match refs {
-      VideoListRef::Urls(v) => v.len(),
-      VideoListRef::MediaFileTokens(v) => v.len(),
-    };
     info!(
       "grok_imagine_video: dropping {} reference video(s) — Grok doesn't accept reference videos.",
-      count,
+      refs.len(),
     );
   }
 }
 
 fn log_and_drop_reference_audio(refs: Option<AudioListRef>) {
   if let Some(refs) = refs {
-    let count = match refs {
-      AudioListRef::Urls(v) => v.len(),
-      AudioListRef::MediaFileTokens(v) => v.len(),
-    };
     info!(
       "grok_imagine_video: dropping {} reference audio clip(s) — Grok doesn't accept reference audio.",
-      count,
+      refs.len(),
     );
   }
 }

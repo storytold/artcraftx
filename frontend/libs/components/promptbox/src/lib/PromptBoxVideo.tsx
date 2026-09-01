@@ -5,7 +5,12 @@ import { PopoverMenu, PopoverItem } from "@storyteller/ui-popover";
 import { SliderV2 } from "@storyteller/ui-sliderv2";
 import { Tooltip } from "@storyteller/ui-tooltip";
 import { ToggleButton, GenerateIconButton } from "@storyteller/ui-button";
-import { GenerateVideo, GenerateVideoRequest } from "@storyteller/tauri-api";
+import {
+  GenerateVideo,
+  GenerateVideoRequest,
+  mediaSourceFromRef,
+  mediaSourcesFromRefs,
+} from "@storyteller/tauri-api";
 import {
   AudioLines,
   ChevronDown,
@@ -1068,12 +1073,6 @@ export const PromptBoxVideo = ({
     const isRefMode =
       inputMode === "reference" && !!selectedModel.supportsReferenceMode;
 
-    let imageMediaToken = undefined;
-
-    if (!isRefMode && referenceImages.length > 0) {
-      imageMediaToken = referenceImages[0].mediaToken;
-    }
-
     setTimeout(() => {
       // TODO(bt,2025-05-08): This is a hack so we don't accidentally wind up with a permanently disabled prompt box if
       // the backend hangs on a given request.
@@ -1081,14 +1080,36 @@ export const PromptBoxVideo = ({
       setIsEnqueueing(false);
     }, 10000);
 
+    // Resolve reference media to three-way sources (library token | local
+    // path | raw bytes) once, up front — local files stay on disk and are
+    // read by the backend, never uploaded to the cloud at this point.
+    const startFrameSource =
+      !isRefMode && referenceImages.length > 0
+        ? await mediaSourceFromRef(referenceImages[0])
+        : undefined;
+    const endFrameSource =
+      !isRefMode && endFrameImage
+        ? await mediaSourceFromRef(endFrameImage)
+        : undefined;
+    const referenceImageSources =
+      isRefMode && referenceImages.length > 0
+        ? await mediaSourcesFromRefs(referenceImages)
+        : undefined;
+    const referenceVideoSources =
+      isRefMode && referenceVideos.length > 0
+        ? await mediaSourcesFromRefs(referenceVideos)
+        : undefined;
+    const referenceAudioSources =
+      isRefMode && referenceAudios.length > 0
+        ? await mediaSourcesFromRefs(referenceAudios)
+        : undefined;
+
     const buildRequest = (subscriberId: string): GenerateVideoRequest => {
       let request: GenerateVideoRequest = {
         model: selectedModel,
-        start_frame_image_media_token: imageMediaToken,
+        start_frame_image_source: startFrameSource,
         prompt: prompt,
-        end_frame_image_media_token: isRefMode
-          ? undefined
-          : endFrameImage?.mediaToken,
+        end_frame_image_source: endFrameSource,
         frontend_caller: "video_page",
         frontend_subscriber_id: subscriberId,
       };
@@ -1105,25 +1126,15 @@ export const PromptBoxVideo = ({
         request.generate_audio = !!generateWithSound;
       }
 
-      // Pass reference image tokens in reference mode
-      if (isRefMode && referenceImages.length > 0) {
-        request.reference_image_media_tokens = referenceImages.map(
-          (img) => img.mediaToken,
-        );
+      // Pass reference media sources in reference mode
+      if (referenceImageSources) {
+        request.reference_image_sources = referenceImageSources;
       }
-
-      // Pass reference video tokens in reference mode
-      if (isRefMode && referenceVideos.length > 0) {
-        request.reference_video_media_tokens = referenceVideos.map(
-          (v) => v.mediaToken,
-        );
+      if (referenceVideoSources) {
+        request.reference_video_sources = referenceVideoSources;
       }
-
-      // Pass reference audio tokens in reference mode
-      if (isRefMode && referenceAudios.length > 0) {
-        request.reference_audio_media_tokens = referenceAudios.map(
-          (a) => a.mediaToken,
-        );
+      if (referenceAudioSources) {
+        request.reference_audio_sources = referenceAudioSources;
       }
 
       // Extract character tokens from @-mentions in prompt, resolving to

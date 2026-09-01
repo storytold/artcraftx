@@ -7,6 +7,7 @@ use fal_client::requests::api::image::text::flux_1_dev_text_to_image::api::{
 
 use crate::api::router_aspect_ratio::RouterAspectRatio;
 use crate::api::image_list_ref::ImageListRef;
+use crate::api::image_ref::ImageRef;
 use crate::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::client_error::ClientError;
@@ -137,6 +138,22 @@ fn resolve_single_image_url(
     }
     Some(ImageListRef::MediaFileTokens(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls))
+    }
+    Some(ImageListRef::Sources(refs)) => {
+      let mut urls = Vec::with_capacity(refs.len());
+      for image_ref in refs {
+        match image_ref {
+          ImageRef::Url(url) => urls.push(url),
+          _ => return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls)),
+        }
+      }
+      if urls.len() > 1 {
+        return Err(ArtcraftRouterError::Client(ClientError::ModelDoesNotSupportOption {
+          field: "image_inputs",
+          value: format!("Flux 1 Dev image-to-image supports exactly 1 image, got {}", urls.len()),
+        }));
+      }
+      Ok(urls.into_iter().next())
     }
   }
 }

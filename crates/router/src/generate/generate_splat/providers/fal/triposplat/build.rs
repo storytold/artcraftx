@@ -3,6 +3,7 @@ use fal_client::requests::api::splat::image::triposplat_image_to_splat::api::{
 };
 
 use crate::api::image_list_ref::ImageListRef;
+use crate::api::image_ref::ImageRef;
 use crate::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::client_error::ClientError;
@@ -65,6 +66,16 @@ fn plan_single_image_url(
     Some(ImageListRef::MediaFileTokens(tokens)) if tokens.is_empty() => return Ok(None),
     Some(ImageListRef::MediaFileTokens(_)) => {
       return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls));
+    }
+    Some(ImageListRef::Sources(refs)) => {
+      let mut urls = Vec::with_capacity(refs.len());
+      for image_ref in refs {
+        match image_ref {
+          ImageRef::Url(url) => urls.push(url),
+          _ => return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls)),
+        }
+      }
+      urls
     }
   };
 

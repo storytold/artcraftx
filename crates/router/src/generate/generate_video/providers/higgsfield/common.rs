@@ -244,24 +244,15 @@ fn check_limit(count: usize, max: usize, field: &'static str, what: &str, model:
 }
 
 fn list_len(list: &ImageListRef) -> usize {
-  match list {
-    ImageListRef::Urls(urls) => urls.len(),
-    ImageListRef::MediaFileTokens(tokens) => tokens.len(),
-  }
+  list.len()
 }
 
 fn video_list_len(list: &VideoListRef) -> usize {
-  match list {
-    VideoListRef::Urls(urls) => urls.len(),
-    VideoListRef::MediaFileTokens(tokens) => tokens.len(),
-  }
+  list.len()
 }
 
 fn audio_list_len(list: &AudioListRef) -> usize {
-  match list {
-    AudioListRef::Urls(urls) => urls.len(),
-    AudioListRef::MediaFileTokens(tokens) => tokens.len(),
-  }
+  list.len()
 }
 
 /// Wrap a plan: with media to upload it's a draft, otherwise it's ready to

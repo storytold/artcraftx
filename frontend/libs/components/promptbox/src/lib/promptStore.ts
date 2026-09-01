@@ -7,14 +7,21 @@ export interface RefImage {
   id: string;
   url: string;
   file: File;
+  /** Empty for local files — they never mint an ArtCraft token. */
   mediaToken: string;
+  /** OS path for a locally attached file; the media stays on disk and is
+   *  read by the backend at generate time. */
+  localPath?: string;
 }
 
 export interface RefVideo {
   id: string;
   url: string;
   file: File;
+  /** Empty for local files — they never mint an ArtCraft token. */
   mediaToken: string;
+  /** OS path for a locally attached file (see RefImage.localPath). */
+  localPath?: string;
   duration: number; // seconds
 }
 
@@ -22,7 +29,10 @@ export interface RefAudio {
   id: string;
   url: string;
   file: File;
+  /** Empty for local files — they never mint an ArtCraft token. */
   mediaToken: string;
+  /** OS path for a locally attached file (see RefImage.localPath). */
+  localPath?: string;
   duration: number; // seconds
 }
 

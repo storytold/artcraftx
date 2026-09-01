@@ -17,7 +17,7 @@ use crate::api::image_ref::ImageRef;
 use crate::api::video_ref::VideoRef;
 use crate::client::router_worldlabs_client::RouterWorldLabsClient;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
-use crate::errors::client_error::ClientError;
+use crate::errors::client_error::{ClientError, ClientType};
 use crate::errors::provider_error::ProviderError;
 use crate::generate::generate_splat::providers::worldlabs::request_common::WorldLabsSplatRequest;
 use crate::generate::generate_splat::providers::worldlabs::resolve::SplatInput;
@@ -150,6 +150,11 @@ fn resolve_image_source_url(
   match image {
     ImageRef::Url(url) => Ok(url.clone()),
     ImageRef::MediaFileToken(token) => resolve_token_source_url(token, draft_context),
+    ImageRef::LocalPath(_) | ImageRef::Bytes(_) => {
+      Err(ArtcraftRouterError::Client(ClientError::ProviderCannotUseLocalMedia {
+        client_type: ClientType::WorldLabs,
+      }))
+    }
   }
 }
 
@@ -160,6 +165,11 @@ fn resolve_video_source_url(
   match video {
     VideoRef::Url(url) => Ok(url.clone()),
     VideoRef::MediaFileToken(token) => resolve_token_source_url(token, draft_context),
+    VideoRef::LocalPath(_) | VideoRef::Bytes(_) => {
+      Err(ArtcraftRouterError::Client(ClientError::ProviderCannotUseLocalMedia {
+        client_type: ClientType::WorldLabs,
+      }))
+    }
   }
 }
 

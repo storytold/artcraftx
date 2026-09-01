@@ -23,11 +23,9 @@ pub struct HiggsfieldImageRemainingItems {
 
 impl HiggsfieldImageDraftState {
   pub fn reference_image_count(&self) -> usize {
-    match self.unhandled_request_state.as_ref().and_then(|remaining| remaining.reference_images.as_ref()) {
-      None => 0,
-      Some(ImageListRef::Urls(urls)) => urls.len(),
-      Some(ImageListRef::MediaFileTokens(tokens)) => tokens.len(),
-    }
+    self.unhandled_request_state.as_ref()
+        .and_then(|remaining| remaining.reference_images.as_ref())
+        .map_or(0, ImageListRef::len)
   }
 
   pub async fn to_request(

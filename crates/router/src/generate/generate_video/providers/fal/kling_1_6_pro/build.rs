@@ -113,7 +113,7 @@ pub(crate) fn require_url(
 ) -> Result<String, ArtcraftRouterError> {
   match image_ref {
     Some(ImageRef::Url(url)) => Ok(url),
-    Some(ImageRef::MediaFileToken(_)) => {
+    Some(ImageRef::MediaFileToken(_) | ImageRef::LocalPath(_) | ImageRef::Bytes(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls))
     }
     None => Err(ArtcraftRouterError::Client(ClientError::ModelDoesNotSupportOption {
@@ -127,7 +127,7 @@ pub(crate) fn optional_url(image_ref: Option<ImageRef>) -> Result<Option<String>
   match image_ref {
     None => Ok(None),
     Some(ImageRef::Url(url)) => Ok(Some(url)),
-    Some(ImageRef::MediaFileToken(_)) => {
+    Some(ImageRef::MediaFileToken(_) | ImageRef::LocalPath(_) | ImageRef::Bytes(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls))
     }
   }
@@ -142,6 +142,13 @@ fn resolve_reference_image_urls(
     Some(ImageListRef::MediaFileTokens(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls))
     }
+    Some(ImageListRef::Sources(refs)) => refs
+      .into_iter()
+      .map(|image_ref| match image_ref {
+        ImageRef::Url(url) => Ok(url),
+        _ => Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls)),
+      })
+      .collect(),
   }
 }
 

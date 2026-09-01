@@ -10,10 +10,9 @@ use crate::api::image_ref::ImageRef;
 use crate::api::video_list_ref::VideoListRef;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::generate::generate_video::providers::kinovi::resolve::{
-  audio_list_ref_into_urls_or_tokens, image_list_ref_into_urls_or_tokens,
   resolve_and_upload_list, resolve_and_upload_single, resolve_character_tokens,
-  video_list_ref_into_urls_or_tokens,
 };
+use crate::utils::media_source_ref::MediaSourceRef;
 use crate::generate::generate_video::providers::kinovi::seedance_2p0::request::KinoviSeedance2p0RequestState;
 use crate::generate::generate_video::video_generation_draft_context::VideoGenerationDraftContext;
 
@@ -64,15 +63,15 @@ impl KinoviSeedance2p0DraftState {
       end_frame_url = resolve_and_upload_single(session, remaining.end_frame, map).await?;
 
       reference_image_urls = resolve_and_upload_list(
-        session, remaining.reference_images.map(image_list_ref_into_urls_or_tokens), map,
+        session, remaining.reference_images.map(MediaSourceRef::list_from_images), map,
       ).await?;
 
       reference_video_urls = resolve_and_upload_list(
-        session, remaining.reference_videos.map(video_list_ref_into_urls_or_tokens), map,
+        session, remaining.reference_videos.map(MediaSourceRef::list_from_videos), map,
       ).await?;
 
       reference_audio_urls = resolve_and_upload_list(
-        session, remaining.reference_audio.map(audio_list_ref_into_urls_or_tokens), map,
+        session, remaining.reference_audio.map(MediaSourceRef::list_from_audios), map,
       ).await?;
 
       character_ids = resolve_character_tokens(

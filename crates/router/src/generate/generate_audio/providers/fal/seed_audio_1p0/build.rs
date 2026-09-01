@@ -3,7 +3,9 @@ use fal_client::requests::api::audio::omni::seed_audio_1p0::api::{
 };
 
 use crate::api::audio_list_ref::AudioListRef;
+use crate::api::audio_ref::AudioRef;
 use crate::api::image_list_ref::ImageListRef;
+use crate::api::image_ref::ImageRef;
 use crate::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::client_error::ClientError;
@@ -88,6 +90,16 @@ fn plan_audio_urls(
     Some(AudioListRef::MediaFileTokens(_)) => {
       return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls));
     }
+    Some(AudioListRef::Sources(refs)) => {
+      let mut urls = Vec::with_capacity(refs.len());
+      for audio_ref in refs {
+        match audio_ref {
+          AudioRef::Url(url) => urls.push(url),
+          _ => return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls)),
+        }
+      }
+      urls
+    }
   };
   if urls.is_empty() {
     return Ok(None);
@@ -126,6 +138,16 @@ fn plan_image_url(
     Some(ImageListRef::MediaFileTokens(tokens)) if tokens.is_empty() => return Ok(None),
     Some(ImageListRef::MediaFileTokens(_)) => {
       return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls));
+    }
+    Some(ImageListRef::Sources(refs)) => {
+      let mut urls = Vec::with_capacity(refs.len());
+      for image_ref in refs {
+        match image_ref {
+          ImageRef::Url(url) => urls.push(url),
+          _ => return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls)),
+        }
+      }
+      urls
     }
   };
   if urls.is_empty() {

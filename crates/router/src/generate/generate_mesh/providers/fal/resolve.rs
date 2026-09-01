@@ -30,6 +30,14 @@ pub(crate) fn plan_primary_image_url(
     Some(ImageListRef::MediaFileTokens(_)) => {
       return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls));
     }
+    Some(ImageListRef::Sources(refs)) => {
+      for image_ref in refs {
+        match image_ref {
+          ImageRef::Url(url) => candidates.push(url),
+          _ => return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls)),
+        }
+      }
+    }
   }
 
   if let Some(front) = front_image {
@@ -62,7 +70,7 @@ pub(crate) fn plan_input_mesh_url(
   match mesh_ref {
     None => Ok(None),
     Some(MeshRef::Url(url)) => Ok(Some(url)),
-    Some(MeshRef::MediaFileToken(_)) => {
+    Some(MeshRef::MediaFileToken(_) | MeshRef::LocalPath(_) | MeshRef::Bytes(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls))
     }
   }
@@ -119,7 +127,7 @@ pub(crate) fn plan_textured_mesh(
 fn image_ref_to_url(image_ref: ImageRef) -> Result<String, ArtcraftRouterError> {
   match image_ref {
     ImageRef::Url(url) => Ok(url),
-    ImageRef::MediaFileToken(_) => {
+    ImageRef::MediaFileToken(_) | ImageRef::LocalPath(_) | ImageRef::Bytes(_) => {
       Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls))
     }
   }

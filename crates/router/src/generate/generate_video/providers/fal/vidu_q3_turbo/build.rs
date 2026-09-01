@@ -109,6 +109,7 @@ fn reject_reference_videos(
     None => false,
     Some(VideoListRef::Urls(urls)) => !urls.is_empty(),
     Some(VideoListRef::MediaFileTokens(tokens)) => !tokens.is_empty(),
+    Some(VideoListRef::Sources(refs)) => !refs.is_empty(),
   };
   if has_reference_videos {
     return Err(ArtcraftRouterError::Client(ClientError::ModelDoesNotSupportOption {
@@ -126,6 +127,7 @@ fn reject_reference_images(
     None => false,
     Some(ImageListRef::Urls(urls)) => !urls.is_empty(),
     Some(ImageListRef::MediaFileTokens(tokens)) => !tokens.is_empty(),
+    Some(ImageListRef::Sources(refs)) => !refs.is_empty(),
   };
   if has_reference_images {
     return Err(ArtcraftRouterError::Client(ClientError::ModelDoesNotSupportOption {

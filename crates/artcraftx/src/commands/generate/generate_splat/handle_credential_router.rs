@@ -15,6 +15,10 @@ use crate::commands::utils::api_adapters::models::splat::tauri_splat_model_to_ro
 use crate::commands::generate::generate_error::GenerateError;
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::common::generation_credential::{credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential};
+use crate::commands::generate::common::media_source_conversion::{
+  maybe_source_to_artcraft_token, sources_to_artcraft_tokens, ArtcraftMediaKind,
+};
+use crate::commands::generate::common::tauri_media_source::validate_sources;
 use crate::commands::generate::generate_splat::request::TauriGenerateSplatRequest;
 use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::auth_credential::AuthCredential;
@@ -27,6 +31,10 @@ pub async fn handle_credential_router(
   request: &TauriGenerateSplatRequest,
   app_data_root: &AppDataRoot,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
+  // Reject unusable media sources (missing local files, empty bytes) before
+  // any provider work.
+  validate_sources(request.media_sources().iter())?;
+
   let credential = resolve_generation_credential(
     request.credential_id.as_deref(),
     app_data_root,
@@ -52,8 +60,8 @@ pub async fn handle_credential_router(
 }
 
 /// Generate via the router's Artcraft provider, authenticating with the
-/// stored session cookies. Requests carry media tokens only, which Artcraft
-/// accepts directly — no pre-upload step is needed.
+/// stored session cookies. Artcraft's API is token-native; local files and
+/// bytes upload to ArtCraft here, at generate time.
 async fn handle_artcraft_credential(
   request: &TauriGenerateSplatRequest,
   credential: &AuthCredential,
@@ -68,6 +76,12 @@ async fn handle_artcraft_credential(
 
   let creds = storyteller_creds_from_credential(credential)?;
 
+  let media = request.media_sources();
+  let reference_images = sources_to_artcraft_tokens(media.reference_images, ArtcraftMediaKind::Image, Some(&creds), &api_host)
+      .await?.map(ImageListRef::MediaFileTokens);
+  let reference_video = maybe_source_to_artcraft_token(media.reference_video, ArtcraftMediaKind::Video, Some(&creds), &api_host)
+      .await?.map(VideoRef::MediaFileToken);
+
   let client = RouterClient::Artcraft(RouterArtcraftClient::new(
     api_host,
     creds,
@@ -77,8 +91,8 @@ async fn handle_artcraft_credential(
     model: router_model,
     provider: RouterProvider::Artcraft,
     prompt: request.prompt.clone(),
-    reference_images: request.reference_image_media_tokens.clone().map(ImageListRef::MediaFileTokens),
-    reference_video: request.reference_video_media_token.clone().map(VideoRef::MediaFileToken),
+    reference_images,
+    reference_video,
     is_panoramic: request.is_panoramic,
     disable_recaption: request.disable_recaption,
     request_mismatch_mitigation_strategy: RequestMismatchMitigationStrategy::PayMoreUpgrade,

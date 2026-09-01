@@ -1,4 +1,5 @@
 use crate::api::image_list_ref::ImageListRef;
+use crate::api::image_ref::ImageRef;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::client_error::ClientError;
 use crate::generate::generate_splat::generate_splat_request::GenerateSplatRequest;
@@ -34,6 +35,16 @@ fn resolve_single_image_ref(
     }
     Some(ImageListRef::Urls(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::ArtcraftOnlySupportsMediaTokens))
+    }
+    Some(ImageListRef::Sources(refs)) => {
+      let mut tokens = Vec::with_capacity(refs.len());
+      for image_ref in refs {
+        match image_ref {
+          ImageRef::MediaFileToken(token) => tokens.push(token),
+          _ => return Err(ArtcraftRouterError::Client(ClientError::ArtcraftOnlySupportsMediaTokens)),
+        }
+      }
+      Ok(tokens.into_iter().next())
     }
   }
 }

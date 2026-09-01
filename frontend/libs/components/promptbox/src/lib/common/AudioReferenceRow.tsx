@@ -15,12 +15,13 @@ import {
   AUDIO_FILE_TYPE_ERROR,
   isAudioFile,
 } from "./audioFiles";
+import type { DroppedMedia } from "../deck/usePromptBoxDrop";
 
-/** Lets the prompt box push dropped/pasted files through the same upload
+/** Lets the prompt box push dropped/pasted files through the same intake
  *  path the row's own file inputs use. */
 export interface AudioReferenceRowHandle {
-  addAudioFiles: (files: File[]) => Promise<void>;
-  addImageFile: (file: File) => Promise<void>;
+  addAudioFiles: (files: DroppedMedia[]) => Promise<void>;
+  addImageFile: (file: DroppedMedia) => Promise<void>;
 }
 
 export interface AudioReferenceRowProps {
@@ -76,19 +77,22 @@ export const AudioReferenceRow = forwardRef<
   const referenceImagesRef = useRef(referenceImages);
   referenceImagesRef.current = referenceImages;
 
-  const processAudioFiles = async (files: File[]) => {
-    if (files.length === 0) return;
+  const processAudioFiles = async (media: DroppedMedia[]) => {
+    if (media.length === 0) return;
 
-    const audioFiles = files.filter(isAudioFile);
-    if (audioFiles.length < files.length) {
+    const audioFiles = media.filter((m) => isAudioFile(m.file));
+    if (audioFiles.length < media.length) {
       toast.error(AUDIO_FILE_TYPE_ERROR);
     }
 
     const availableSlots = Math.max(0, maxAudioCount - referenceAudios.length);
     const filesToProcess = audioFiles.slice(0, availableSlots);
 
-    for (const file of filesToProcess) {
-      const duration = await getAudioFileDuration(file);
+    for (const { file, localPath, previewUrl } of filesToProcess) {
+      const duration =
+        localPath && previewUrl
+          ? await getAudioSrcDuration(previewUrl)
+          : await getAudioFileDuration(file);
       const currentTotal = referenceAudiosRef.current.reduce(
         (sum, audio) => sum + audio.duration,
         0,
@@ -100,7 +104,24 @@ export const AudioReferenceRow = forwardRef<
         break;
       }
 
-      if (uploadAudio) {
+      if (!uploadAudio) {
+        // No drop-time cloud upload: commit locally; the file's bytes (or
+        // path) travel with the generate request instead.
+        onReferenceAudiosChange([
+          ...referenceAudiosRef.current,
+          {
+            id: Math.random().toString(36).substring(7),
+            url: localPath && previewUrl ? previewUrl : URL.createObjectURL(file),
+            file,
+            mediaToken: "",
+            localPath,
+            duration,
+          },
+        ]);
+        continue;
+      }
+
+      {
         setIsUploadingAudio(true);
         await uploadAudio({
           title: `reference-audio-${Math.random().toString(36).substring(2, 15)}`,
@@ -135,12 +156,27 @@ export const AudioReferenceRow = forwardRef<
   const handleAudioFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    await processAudioFiles(Array.from(event.target.files || []));
+    await processAudioFiles(
+      Array.from(event.target.files || []).map((file) => ({ file })),
+    );
     if (audioInputRef.current) audioInputRef.current.value = "";
   };
 
-  const processImageFile = async (file: File) => {
-    if (!uploadImage) return;
+  const processImageFile = async ({ file, localPath, previewUrl }: DroppedMedia) => {
+    if (!uploadImage) {
+      // No drop-time cloud upload: commit locally; the file's bytes (or
+      // path) travel with the generate request instead.
+      onReferenceImagesChange?.([
+        {
+          id: Math.random().toString(36).substring(7),
+          url: localPath && previewUrl ? previewUrl : URL.createObjectURL(file),
+          file,
+          mediaToken: "",
+          localPath,
+        },
+      ]);
+      return;
+    }
 
     setIsUploadingImage(true);
     await uploadImage({
@@ -171,7 +207,7 @@ export const AudioReferenceRow = forwardRef<
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = (event.target.files || [])[0];
-    if (file) await processImageFile(file);
+    if (file) await processImageFile({ file });
     if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
@@ -358,6 +394,16 @@ function AudioRefTile({
       </button>
     </div>
   );
+}
+
+function getAudioSrcDuration(srcUrl: string): Promise<number> {
+  return new Promise((resolve) => {
+    const audio = document.createElement("audio");
+    audio.preload = "metadata";
+    audio.onloadedmetadata = () => resolve(Math.round(audio.duration));
+    audio.onerror = () => resolve(0);
+    audio.src = srcUrl;
+  });
 }
 
 function getAudioFileDuration(file: File): Promise<number> {

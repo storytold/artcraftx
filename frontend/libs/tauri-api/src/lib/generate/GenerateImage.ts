@@ -7,6 +7,7 @@ import {
   ImageModel,
 } from "@storyteller/model-list";
 import { GenerationProvider } from "@storyteller/api-enums";
+import type { MediaSource } from "../common/MediaSource.js";
 
 export interface GenerateImageRequest {
   // Stable id (`credential_{entropy}`) of the stored credential (account)
@@ -38,6 +39,11 @@ export interface GenerateImageRequest {
   // Reference images (without semantics — purpose varies per model).
   image_media_tokens?: string[];
 
+  // Three-way reference images (bytes | local path | media token). Wins
+  // over `image_media_tokens`; local files never touch the ArtCraft cloud
+  // unless the target provider requires it.
+  image_sources?: MediaSource[];
+
   // Canvas image — supply this XOR canvas_image_raw_bytes.
   // Becomes the first image reference (pushing back image_media_tokens by one).
   canvas_image_media_token?: string;
@@ -66,6 +72,7 @@ export interface GenerateImageRequest {
 }
 
 interface RawGenerateImageRequest {
+  image_sources?: MediaSource[];
   credential_id?: string;
   provider?: GenerationProvider;
   model?: string;
@@ -146,6 +153,9 @@ export const GenerateImage = async (
   if (!!request.resolution) mutableRequest.resolution = request.resolution;
   if (!!request.quality) mutableRequest.quality = request.quality;
   if (typeof request.batch_size === "number") mutableRequest.batch_size = request.batch_size;
+  if (!!request.image_sources && request.image_sources.length > 0) {
+    mutableRequest.image_sources = request.image_sources;
+  }
   if (!!request.image_media_tokens && request.image_media_tokens.length > 0) {
     mutableRequest.image_media_tokens = request.image_media_tokens;
   }

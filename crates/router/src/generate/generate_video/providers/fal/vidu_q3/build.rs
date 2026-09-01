@@ -13,6 +13,7 @@ use fal_client::requests::api::video::text::vidu_q3::api::{
 };
 
 use crate::api::image_list_ref::ImageListRef;
+use crate::api::image_ref::ImageRef;
 use crate::api::router_aspect_ratio::RouterAspectRatio;
 use crate::api::router_resolution::RouterResolution;
 use crate::api::video_list_ref::VideoListRef;
@@ -156,6 +157,7 @@ fn reject_reference_videos(
     None => false,
     Some(VideoListRef::Urls(urls)) => !urls.is_empty(),
     Some(VideoListRef::MediaFileTokens(tokens)) => !tokens.is_empty(),
+    Some(VideoListRef::Sources(refs)) => !refs.is_empty(),
   };
   if has_reference_videos {
     return Err(ArtcraftRouterError::Client(ClientError::ModelDoesNotSupportOption {
@@ -175,6 +177,13 @@ fn resolve_reference_image_urls(
     Some(ImageListRef::MediaFileTokens(_)) => {
       Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls))
     }
+    Some(ImageListRef::Sources(refs)) => refs
+      .into_iter()
+      .map(|image_ref| match image_ref {
+        ImageRef::Url(url) => Ok(url),
+        _ => Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls)),
+      })
+      .collect(),
   }
 }
 

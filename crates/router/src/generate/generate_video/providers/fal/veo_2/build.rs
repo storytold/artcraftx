@@ -51,7 +51,7 @@ pub(crate) fn build_fal_veo_2_state(
       image_url: url,
       duration: duration.map(to_i2v_duration),
     }),
-    Some(ImageRef::MediaFileToken(_)) => {
+    Some(ImageRef::MediaFileToken(_) | ImageRef::LocalPath(_) | ImageRef::Bytes(_)) => {
       return Err(ArtcraftRouterError::Client(ClientError::FalOnlySupportsUrls));
     }
     None => {

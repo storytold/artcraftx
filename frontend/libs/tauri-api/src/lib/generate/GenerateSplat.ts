@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
+import type { MediaSource } from "../common/MediaSource.js";
 
 export interface GenerateSplatRequest {
   // Stable id (`credential_{entropy}`) of the stored credential (account)
@@ -15,6 +16,12 @@ export interface GenerateSplatRequest {
 
   reference_image_media_tokens?: string[];
   reference_video_media_token?: string;
+
+  // Three-way media sources (bytes | local path | media token). Each wins
+  // over its legacy token twin.
+  reference_image_sources?: MediaSource[];
+  reference_video_source?: MediaSource;
+
   is_panoramic?: boolean;
   disable_recaption?: boolean;
 
@@ -31,6 +38,8 @@ interface RawGenerateSplatRequest {
   prompt?: string;
   reference_image_media_tokens?: string[];
   reference_video_media_token?: string;
+  reference_image_sources?: MediaSource[];
+  reference_video_source?: MediaSource;
   is_panoramic?: boolean;
   disable_recaption?: boolean;
   frontend_caller?: string;
@@ -67,6 +76,10 @@ export const GenerateSplat = async (
     mutableRequest.reference_image_media_tokens = request.reference_image_media_tokens;
   }
   if (!!request.reference_video_media_token) mutableRequest.reference_video_media_token = request.reference_video_media_token;
+  if (!!request.reference_image_sources && request.reference_image_sources.length > 0) {
+    mutableRequest.reference_image_sources = request.reference_image_sources;
+  }
+  if (!!request.reference_video_source) mutableRequest.reference_video_source = request.reference_video_source;
   if (typeof request.is_panoramic === "boolean") mutableRequest.is_panoramic = request.is_panoramic;
   if (typeof request.disable_recaption === "boolean") mutableRequest.disable_recaption = request.disable_recaption;
   if (!!request.frontend_caller) mutableRequest.frontend_caller = request.frontend_caller;

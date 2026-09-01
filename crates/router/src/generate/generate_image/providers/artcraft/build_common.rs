@@ -9,6 +9,7 @@ use crate::api::router_aspect_ratio::RouterAspectRatio;
 use crate::api::router_quality::RouterQuality;
 use crate::api::router_resolution::RouterResolution;
 use crate::api::image_list_ref::ImageListRef;
+use crate::api::image_ref::ImageRef;
 use crate::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 use crate::errors::artcraft_router_error::ArtcraftRouterError;
 use crate::errors::client_error::ClientError;
@@ -88,6 +89,19 @@ pub fn resolve_image_list_ref(
     None => Ok(None),
     Some(ImageListRef::MediaFileTokens(tokens)) => Ok(Some(tokens)),
     Some(ImageListRef::Urls(_)) => Ok(None),
+    // Unlike the Urls form, mixed sources may carry local files or raw bytes
+    // that have never been uploaded — silently dropping them would lose the
+    // input entirely, so any non-token item errors out.
+    Some(ImageListRef::Sources(refs)) => {
+      let mut tokens = Vec::with_capacity(refs.len());
+      for image_ref in refs {
+        match image_ref {
+          ImageRef::MediaFileToken(token) => tokens.push(token),
+          _ => return Err(ArtcraftRouterError::Client(ClientError::ArtcraftOnlySupportsMediaTokens)),
+        }
+      }
+      Ok(Some(tokens))
+    }
   }
 }
 

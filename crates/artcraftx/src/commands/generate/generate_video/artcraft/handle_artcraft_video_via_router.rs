@@ -1,3 +1,6 @@
+use crate::commands::generate::common::media_source_conversion::{
+  maybe_source_to_artcraft_token, sources_to_artcraft_tokens, ArtcraftMediaKind,
+};
 use crate::commands::generate::generate_error::GenerateError;
 use crate::commands::generate::generate_video::request::TauriGenerateVideoRequest;
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
@@ -33,12 +36,20 @@ pub async fn handle_artcraft_video_via_router(
     creds.clone(),
   ));
 
-  let start_frame = request.image_media_token.clone().map(ImageRef::MediaFileToken);
-  let end_frame = request.end_frame_image_media_token.clone().map(ImageRef::MediaFileToken);
+  // ArtCraft's API is token-native: local files and bytes upload to
+  // ArtCraft here, at generate time (the media must reach ArtCraft anyway).
+  let media = request.media_sources();
+  let start_frame = maybe_source_to_artcraft_token(media.start_frame, ArtcraftMediaKind::Image, Some(creds), api_host)
+      .await?.map(ImageRef::MediaFileToken);
+  let end_frame = maybe_source_to_artcraft_token(media.end_frame, ArtcraftMediaKind::Image, Some(creds), api_host)
+      .await?.map(ImageRef::MediaFileToken);
 
-  let reference_images = request.reference_image_media_tokens.clone().map(ImageListRef::MediaFileTokens);
-  let reference_videos = request.reference_video_media_tokens.clone().map(VideoListRef::MediaFileTokens);
-  let reference_audio = request.reference_audio_media_tokens.clone().map(AudioListRef::MediaFileTokens);
+  let reference_images = sources_to_artcraft_tokens(media.reference_images, ArtcraftMediaKind::Image, Some(creds), api_host)
+      .await?.map(ImageListRef::MediaFileTokens);
+  let reference_videos = sources_to_artcraft_tokens(media.reference_videos, ArtcraftMediaKind::Video, Some(creds), api_host)
+      .await?.map(VideoListRef::MediaFileTokens);
+  let reference_audio = sources_to_artcraft_tokens(media.reference_audios, ArtcraftMediaKind::Audio, Some(creds), api_host)
+      .await?.map(AudioListRef::MediaFileTokens);
 
   let reference_character_tokens = request.reference_character_tokens.clone().map(CharacterListRef::CharacterTokens);
 

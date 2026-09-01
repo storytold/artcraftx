@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
+import type { MediaSource } from "../common/MediaSource.js";
 
 export interface GenerateMeshRequest {
   // Stable id (`credential_{entropy}`) of the stored credential (account)
@@ -14,6 +15,11 @@ export interface GenerateMeshRequest {
   prompt?: string;
 
   reference_image_media_tokens?: string[];
+
+  // Three-way reference images (bytes | local path | media token). Wins
+  // over `reference_image_media_tokens`.
+  reference_image_sources?: MediaSource[];
+
   front_image_media_token?: string;
   back_image_media_token?: string;
   left_image_media_token?: string;
@@ -39,6 +45,7 @@ interface RawGenerateMeshRequest {
   model?: string;
   prompt?: string;
   reference_image_media_tokens?: string[];
+  reference_image_sources?: MediaSource[];
   front_image_media_token?: string;
   back_image_media_token?: string;
   left_image_media_token?: string;
@@ -83,6 +90,9 @@ export const GenerateMesh = async (
   if (!!request.prompt) mutableRequest.prompt = request.prompt;
   if (!!request.reference_image_media_tokens && request.reference_image_media_tokens.length > 0) {
     mutableRequest.reference_image_media_tokens = request.reference_image_media_tokens;
+  }
+  if (!!request.reference_image_sources && request.reference_image_sources.length > 0) {
+    mutableRequest.reference_image_sources = request.reference_image_sources;
   }
   if (!!request.front_image_media_token) mutableRequest.front_image_media_token = request.front_image_media_token;
   if (!!request.back_image_media_token) mutableRequest.back_image_media_token = request.back_image_media_token;

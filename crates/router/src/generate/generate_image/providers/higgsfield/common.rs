@@ -31,11 +31,7 @@ pub(crate) fn require_prompt(prompt: Option<String>) -> Result<String, ArtcraftR
 }
 
 pub(crate) fn image_input_count(image_inputs: Option<&ImageListRef>) -> usize {
-  match image_inputs {
-    None => 0,
-    Some(ImageListRef::Urls(urls)) => urls.len(),
-    Some(ImageListRef::MediaFileTokens(tokens)) => tokens.len(),
-  }
+  image_inputs.map_or(0, ImageListRef::len)
 }
 
 /// Reject over-limit reference lists before anything is uploaded.
