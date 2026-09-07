@@ -8,7 +8,12 @@ import * as gpu from "detect-gpu";
 import { useSignals } from "@preact/signals-react/runtime";
 
 import { TopBar } from "~/components";
-import { toast, Toaster } from "@storyteller/ui-toaster";
+import {
+  toast,
+  Toaster,
+  showProgressToast,
+  dismissProgressToast,
+} from "@storyteller/ui-toaster";
 import {
   PricingModal,
   CreditsModal,
@@ -23,6 +28,8 @@ import {
   useAppPreferencesSync,
   useFlashFileDownloadErrorEvent,
   useFlashNoticeEvent,
+  useProgressNoticeEvent,
+  ProgressNoticeState,
   useFlashUserInputErrorEvent,
   useGenerationCompleteEvent,
   useGenerationEnqueueFailureEvent,
@@ -86,6 +93,18 @@ export const MainApp = () => {
         color: "#ffffff",
       },
     });
+  });
+
+  // A backend step the user is waiting on (e.g. Higgsfield's IP check):
+  // the toast stays up until the matching `finished` event, the user
+  // closes it, or a long safety timeout.
+  useProgressNoticeEvent(async (event) => {
+    console.log("Progress notice event received:", event);
+    if (event.state === ProgressNoticeState.Started) {
+      showProgressToast(event.notice_id, event.maybe_message ?? "Working\u2026");
+    } else {
+      dismissProgressToast(event.notice_id);
+    }
   });
 
   useFlashUserInputErrorEvent(async (event) => {

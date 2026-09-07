@@ -1,4 +1,5 @@
 import rhToast, { Toaster as RHToaster } from "react-hot-toast";
+import { ProgressToastStyles } from "./progress-toast";
 
 // Host apps that render their own toast UI instead of mounting <Toaster />
 // (e.g. the webapp) register a delegate here. Shared-lib `toast.success` /
@@ -54,29 +55,32 @@ export function Toaster({
   zIndex = 15,
 }: ToasterProps) {
   return (
-    <RHToaster
-      position={position}
-      toastOptions={{
-        success: {
-          style: {
-            background: "#ffffff",
+    <>
+      <ProgressToastStyles />
+      <RHToaster
+        position={position}
+        toastOptions={{
+          success: {
+            style: {
+              background: "#ffffff",
+            },
           },
-        },
-        error: {
-          style: {
-            background: "#ffffff",
+          error: {
+            style: {
+              background: "#ffffff",
+            },
           },
-        },
-      }}
-      containerStyle={{
-        top: offsetTop,
-        left: offsetLeft,
-        bottom: offsetBottom,
-        right: offsetRight,
-        zIndex: zIndex,
-      }}
-      containerClassName="text-[15px] font-medium"
-    />
+        }}
+        containerStyle={{
+          top: offsetTop,
+          left: offsetLeft,
+          bottom: offsetBottom,
+          right: offsetRight,
+          zIndex: zIndex,
+        }}
+        containerClassName="text-[15px] font-medium"
+      />
+    </>
   );
 }
 

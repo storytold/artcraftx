@@ -3,9 +3,9 @@ use artcraft_client::enums::tauri::ux::tauri_event_name::TauriEventName;
 use serde_derive::Serialize;
 
 /// Flash an informational (non-error) message in the frontend — a "notice"
-/// toast, e.g. "Higgsfield is checking your media for Intellectual Property
-/// and Likeness". Purely informational: nothing failed and nothing is
-/// required of the user.
+/// toast, e.g. "Your library was refreshed". Purely informational: nothing
+/// failed and nothing is required of the user. For a step the user has to
+/// wait on, use `ProgressNotice` instead.
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub struct FlashNoticeEvent {
