@@ -8,7 +8,6 @@ pub enum GenerationServiceProvider {
   Grok,
   Higgsfield,
   Midjourney,
-  Sora,
   WorldLabs,
 }
 
@@ -152,8 +151,6 @@ pub enum GenerationModel {
   HappyHorse1p0,
   #[serde(rename = "recraft_3")]
   Recraft3,
-  #[serde(rename = "sora")]
-  Sora,
   #[serde(rename = "sora_2")]
   Sora2,
   #[serde(rename = "sora_2_pro")]

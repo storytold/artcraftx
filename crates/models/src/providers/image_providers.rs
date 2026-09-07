@@ -55,10 +55,6 @@ fn image_providers() -> Vec<ImageProviderOffering> {
       ImageModel::Flux1Dev,
       ImageModel::Flux1Schnell,
     ]),
-    // First-party (cookie-session) Sora.
-    ImageProviderOffering::of(GenerationProvider::Sora, &[
-      ImageModel::GptImage1,
-    ]),
     // First-party (cookie-session) Grok: the imagine websocket only.
     ImageProviderOffering::of(GenerationProvider::Grok, &[
       ImageModel::GrokImagineImage,

@@ -173,7 +173,6 @@ export const getProviderDisplayName = (provider: string): string => {
     grok: "Grok",
     higgsfield: "Higgsfield",
     midjourney: "Midjourney",
-    sora: "Sora",
     worldlabs: "World Labs",
   };
 
@@ -191,7 +190,6 @@ export const getProviderIconByName = (
     grok: ModelCreator.Grok,
     higgsfield: ModelCreator.Higgsfield,
     midjourney: ModelCreator.Midjourney,
-    sora: ModelCreator.OpenAi,
     worldlabs: ModelCreator.WorldLabs,
   };
   const creator = providerToCreator[provider?.toLowerCase?.() ?? ""];

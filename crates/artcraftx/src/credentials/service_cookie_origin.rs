@@ -16,8 +16,6 @@ pub fn cookie_origin_for_service(service: GenerationSource) -> Option<Url> {
     | GenerationSource::GrokCookies => "https://grok.com/",
     GenerationSource::Midjourney
     | GenerationSource::MidjourneyCookies => "https://www.midjourney.com/",
-    GenerationSource::Sora
-    | GenerationSource::SoraCookies => "https://chatgpt.com/",
     GenerationSource::WorldLabs
     | GenerationSource::WorldLabsCookies => "https://worldlabs.ai/",
     GenerationSource::Higgsfield

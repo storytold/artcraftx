@@ -5,9 +5,6 @@ use crate::commands::utils::response::success_response_wrapper::CommandSuccessRe
 //  - get_app_preferences_command
 //  - update_app_preferences_command
 //  - flip_image
-//  - check_sora_session_command
-//  - open_sora_login_command
-//  - sora_image_generation_command
 
 // TODO(already updated, need to update frontend):
 //  - platform_info_command
@@ -19,7 +16,6 @@ use crate::commands::utils::response::success_response_wrapper::CommandSuccessRe
 //  - fal_kling_image_to_video_command
 //  - get_fal_api_key_command
 //  - set_fal_api_key_command
-//  - sora_image_remix_command
 
 /// Easy to use infallible response.
 /// This always contains a success payload and never results in an error.

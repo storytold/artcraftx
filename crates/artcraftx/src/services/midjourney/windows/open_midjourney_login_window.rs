@@ -42,7 +42,6 @@ pub async fn open_midjourney_login_window(
   let url = WebviewUrl::External(START_URL.clone());
 
   let window = WebviewWindowBuilder::new(app, MIDJOURNEY_LOGIN_WINDOW_NAME, url)
-      //.user_agent(openai_sora_client::credentials::USER_AGENT)
       .always_on_top(false)
       .title("Login to Midjourney")
       .center()

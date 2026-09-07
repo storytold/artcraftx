@@ -36,7 +36,6 @@ pub async fn grok_login_window_open(
   let url = WebviewUrl::External(START_URL.clone());
 
   let window = WebviewWindowBuilder::new(app, GROK_LOGIN_WINDOW_NAME, url)
-      //.user_agent(openai_sora_client::credentials::USER_AGENT)
       .always_on_top(false)
       .title("Login to Grok")
       .center()

@@ -74,7 +74,6 @@ const ALL_SERVICES: ServiceMeta[] = [
   ...WEBSITE_LOGIN_SERVICES,
   { value: "artcraft_cookies", label: "ArtCraft", logo: "artcraft.svg" },
   { value: "grok_cookies", label: "Grok", logo: "grok.svg" },
-  { value: "sora_cookies", label: "Sora", logo: "openai.svg" },
   { value: "worldlabs_cookies", label: "World Labs", logo: "worldlabs.svg" },
 ];
 

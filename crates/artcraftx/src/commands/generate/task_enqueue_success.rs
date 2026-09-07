@@ -141,7 +141,6 @@ impl TaskEnqueueSuccess{
       // TODO: These seem wrong -
       Some(GenerationModel::Kling1_6) => Some(TaskModelType::Kling16Pro), // NB: `VideoModel::Kling16Pro`.
       Some(GenerationModel::Kling2_0) => None, // TODO: unused elsewhere?
-      Some(GenerationModel::Sora) => None, // TODO: unused elsewhere?
     };
 
     create_task(CreateTaskArgs {

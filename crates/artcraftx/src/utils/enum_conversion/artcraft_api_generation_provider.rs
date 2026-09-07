@@ -11,9 +11,9 @@
 //! "unspecified" rather than losing the upload / prompt.
 //!
 //! NB: the app only records tasks for providers it generates with, so the
-//! cookie-only services (Magnific, OpenArt, Runway) have no bare
-//! [`GenerationSource`] variant to send yet; add one alongside their
-//! generation path.
+//! cookie-only services (Magnific, OpenArt, Runway) and the API-key-only
+//! ones (OpenAI, Replicate) have no bare [`GenerationSource`] variant to
+//! send yet; add one alongside their generation path.
 
 use core_types::enums::generation_source::GenerationSource;
 
@@ -30,9 +30,6 @@ pub fn artcraft_api_generation_provider(source: GenerationSource) -> Option<Gene
     | GenerationSource::XAiApi => Some(GenerationSource::Grok),
     GenerationSource::Midjourney
     | GenerationSource::MidjourneyCookies => Some(GenerationSource::Midjourney),
-    GenerationSource::Sora
-    | GenerationSource::SoraCookies
-    | GenerationSource::OpenAiApi => Some(GenerationSource::Sora),
     GenerationSource::WorldLabs
     | GenerationSource::WorldLabsCookies => Some(GenerationSource::WorldLabs),
     GenerationSource::Higgsfield
@@ -42,6 +39,7 @@ pub fn artcraft_api_generation_provider(source: GenerationSource) -> Option<Gene
     GenerationSource::MagnificCookies
     | GenerationSource::OpenArtCookies
     | GenerationSource::RunwayCookies
+    | GenerationSource::OpenAiApi
     | GenerationSource::ReplicateApi => None,
   }
 }
@@ -81,7 +79,7 @@ mod tests {
 
   #[test]
   fn services_without_a_bare_provider_stay_unspecified() {
-    for source in [GenerationSource::MagnificCookies, GenerationSource::OpenArtCookies, GenerationSource::RunwayCookies, GenerationSource::ReplicateApi] {
+    for source in [GenerationSource::MagnificCookies, GenerationSource::OpenArtCookies, GenerationSource::RunwayCookies, GenerationSource::OpenAiApi, GenerationSource::ReplicateApi] {
       assert_eq!(artcraft_api_generation_provider(source), None, "{source}");
     }
   }

@@ -15,9 +15,6 @@ pub fn to_generation_service_provider(source: GenerationSource) -> GenerationSer
     | GenerationSource::XAiApi => GenerationServiceProvider::Grok,
     GenerationSource::Midjourney
     | GenerationSource::MidjourneyCookies => GenerationServiceProvider::Midjourney,
-    GenerationSource::Sora
-    | GenerationSource::SoraCookies
-    | GenerationSource::OpenAiApi => GenerationServiceProvider::Sora,
     GenerationSource::WorldLabs
     | GenerationSource::WorldLabsCookies => GenerationServiceProvider::WorldLabs,
     GenerationSource::Higgsfield
@@ -26,6 +23,7 @@ pub fn to_generation_service_provider(source: GenerationSource) -> GenerationSer
     GenerationSource::MagnificCookies
     | GenerationSource::OpenArtCookies
     | GenerationSource::RunwayCookies
+    | GenerationSource::OpenAiApi
     | GenerationSource::ReplicateApi => GenerationServiceProvider::Artcraft,
   }
 }

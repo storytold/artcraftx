@@ -14,7 +14,6 @@ members = [
   "crates/api_clients/grok_consumer_statsig",
   "crates/api_clients/higgsfield_client",
   "crates/api_clients/midjourney_client",
-  "crates/api_clients/openai_sora_client",
   "crates/router",
   "crates/api_clients/seedance2pro_client",
   "crates/api_clients/worldlabs_api_client",
@@ -119,7 +118,6 @@ jwt_light = { path = "crates/lib/jwt_light" }
 memory_store = { path = "crates/lib/caching/memory_store" }
 midjourney_client = { path = "crates/api_clients/midjourney_client" }
 mimetypes = { path = "crates/lib/files/mimetypes" }
-openai_sora_client = { path = "crates/api_clients/openai_sora_client" }
 primitives = { path = "crates/lib/data/primitives" }
 router = { path = "crates/router" }
 seedance2pro_client = { path = "crates/api_clients/seedance2pro_client" }

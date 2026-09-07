@@ -44,7 +44,6 @@ local_files_database.workspace = true
 memory_store.workspace = true
 midjourney_client.workspace = true
 mimetypes.workspace = true
-openai_sora_client.workspace = true
 primitives.workspace = true
 sqlite_database.workspace = true
 thumbnails.workspace = true

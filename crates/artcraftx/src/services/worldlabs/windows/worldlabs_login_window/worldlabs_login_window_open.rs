@@ -45,7 +45,6 @@ pub async fn worldlabs_login_window_open(
   let url = WebviewUrl::External(START_URL.clone());
 
   let window = WebviewWindowBuilder::new(app, WORLDLABS_LOGIN_WINDOW_NAME, url)
-      //.user_agent(openai_sora_client::credentials::USER_AGENT)
       .on_new_window(move |_url, _features| {
         // WorldLabs needs popups as they (1) don't have a distinct login page
         // (it's embedded) and (2) they don't redirect with OAuth, but rather

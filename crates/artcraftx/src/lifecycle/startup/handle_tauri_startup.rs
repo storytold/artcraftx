@@ -4,7 +4,6 @@ use crate::lifecycle::startup::tasks::initially_size_and_position_windows::initi
 use crate::lifecycle::startup::tasks::set_app_log_level::set_app_log_level;
 use crate::lifecycle::startup::tasks::spawn_discord_presence_thread::spawn_discord_presence_thread;
 use crate::lifecycle::startup::tasks::spawn_main_window_thread::spawn_main_window_thread;
-use crate::lifecycle::startup::tasks::spawn_sora_task_polling_thread::spawn_sora_task_polling_thread;
 use crate::lifecycle::startup::tasks::spawn_storyteller_threads::spawn_storyteller_threads;
 use crate::state::runtime::artcraft_platform_info::ArtcraftPlatformInfo;
 use crate::state::usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
@@ -16,8 +15,6 @@ use crate::services::grok::threads::grok_video_task_polling::grok_video_task_pol
 use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveSession;
 use crate::services::midjourney::threads::midjourney_long_polling_thread::midjourney_long_polling_thread;
 use crate::services::midjourney::threads::midjourney_websocket_thread::midjourney_websocket_thread;
-use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
-use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::services::worldlabs::state::worldlabs_bearer_bridge::WorldlabsBearerBridge;
 use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
@@ -33,8 +30,6 @@ pub async fn handle_tauri_startup(
   artcraft_platform_info: ArtcraftPlatformInfo,
   artcraft_usage_tracker: ArtcraftUsageTracker,
   storyteller_creds_manager: StorytellerCredentialManager,
-  sora_credential_manager: SoraCredentialManager,
-  sora_task_queue: SoraTaskQueue,
   midjourney_live_session: MidjourneyLiveSession,
   grok_creds_manager: GrokCredentialManager,
   grok_websockets: GrokWebsockets,
@@ -65,16 +60,6 @@ pub async fn handle_tauri_startup(
     &artcraft_platform_info,
     &task_database,
     &storyteller_creds_manager,
-  )?;
-
-  spawn_sora_task_polling_thread(
-    &app,
-    &root,
-    &task_database,
-    &sora_credential_manager,
-    &storyteller_creds_manager,
-    &sora_task_queue,
-    &app_preferences,
   )?;
 
   tauri::async_runtime::spawn(grok_video_task_polling_thread(

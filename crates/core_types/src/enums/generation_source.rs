@@ -67,11 +67,7 @@ pub enum GenerationSource {
   #[serde(rename = "midjourney_cookies")]
   MidjourneyCookies,
 
-  // ── OpenAI / Sora ──
-  #[serde(rename = "sora")]
-  Sora,
-  #[serde(rename = "sora_cookies")]
-  SoraCookies,
+  // ── OpenAI ──
   #[serde(rename = "openai_api")]
   OpenAiApi,
 
@@ -111,8 +107,6 @@ impl GenerationSource {
       | Self::Grok
       | Self::GrokCookies
       | Self::Midjourney
-      | Self::Sora
-      | Self::SoraCookies
       | Self::MidjourneyCookies
       | Self::WorldLabs
       | Self::WorldLabsCookies
@@ -143,8 +137,6 @@ impl GenerationSource {
       Self::XAiApi => "xai_api",
       Self::Midjourney => "midjourney",
       Self::MidjourneyCookies => "midjourney_cookies",
-      Self::Sora => "sora",
-      Self::SoraCookies => "sora_cookies",
       Self::OpenAiApi => "openai_api",
       Self::WorldLabs => "world_labs",
       Self::WorldLabsCookies => "worldlabs_cookies",
@@ -170,8 +162,6 @@ impl GenerationSource {
       "xai_api" => Ok(Self::XAiApi),
       "midjourney" => Ok(Self::Midjourney),
       "midjourney_cookies" => Ok(Self::MidjourneyCookies),
-      "sora" => Ok(Self::Sora),
-      "sora_cookies" => Ok(Self::SoraCookies),
       "openai_api" => Ok(Self::OpenAiApi),
       "world_labs" => Ok(Self::WorldLabs),
       "worldlabs_cookies" => Ok(Self::WorldLabsCookies),
@@ -199,8 +189,6 @@ impl GenerationSource {
       Self::XAiApi,
       Self::Midjourney,
       Self::MidjourneyCookies,
-      Self::Sora,
-      Self::SoraCookies,
       Self::OpenAiApi,
       Self::WorldLabs,
       Self::WorldLabsCookies,
@@ -254,7 +242,7 @@ mod tests {
 
     #[test]
     fn all_variants_count() {
-      assert_eq!(GenerationSource::all_variants().len(), 22);
+      assert_eq!(GenerationSource::all_variants().len(), 20);
     }
 
     #[test]

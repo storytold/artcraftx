@@ -83,9 +83,6 @@ export enum EnqueueEditImageErrorType {
   BadRequest = "bad_request",
   ServerError = "server_error",
   TooManyConcurrentTasks = "too_many_concurrent_tasks",
-  SoraLoginRequired = "sora_login_required",
-  SoraUsernameNotYetCreated = "sora_username_not_yet_created",
-  SoraIsHavingProblems = "sora_is_having_problems",
 }
 
 export enum EnqueueEditImageModel {

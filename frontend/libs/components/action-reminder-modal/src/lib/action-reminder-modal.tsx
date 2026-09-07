@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 import { LogIn, type LucideIcon } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
-export type ReminderType = "default" | "soraLogin" | "artcraftLogin";
+export type ReminderType = "default" | "artcraftLogin";
 
 interface ActionReminderModalProps {
   isOpen: boolean;
@@ -50,9 +50,6 @@ export function ActionReminderModal({
 
   if (!hideTitle) {
     switch (reminderType) {
-      case "soraLogin":
-        titleText = customTitle || "Link Your OpenAI Sora Account";
-        break;
       case "artcraftLogin":
         titleText = customTitle || "Login to ArtCraft";
         break;
@@ -65,18 +62,6 @@ export function ActionReminderModal({
   }
 
   switch (reminderType) {
-    case "soraLogin":
-      titleText = customTitle || "Link Your OpenAI Account";
-      messageContent = customMessage || (
-        <p>
-          To use this feature, please connect your OpenAI account. This allows
-          us to leverage your existing subscription.
-        </p>
-      );
-      primaryActionBtnText = customPrimaryActionText || "Login with OpenAI";
-      primaryActionIcon = customPrimaryActionIcon || LogIn;
-      primaryActionBtnClassName = customPrimaryActionBtnClassName || "";
-      break;
     case "artcraftLogin":
       messageContent = customMessage || (
         <p className="text-sm text-white/70">

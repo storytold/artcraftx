@@ -26,7 +26,6 @@ interface ProviderSelectorProps {
 const DEFAULT_PROVIDER_OPTIONS: GenerationProvider[] = [
   GenerationProvider.Artcraft,
   GenerationProvider.Fal,
-  GenerationProvider.Sora,
 ];
 
 export function ProviderSelector({

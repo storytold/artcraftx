@@ -37,7 +37,7 @@ export function PromptShell({
 
   // Receipt each completed file exactly once. Every provider's completion
   // path on the Rust side (the ArtCraft poller and the shared third-party
-  // completion routine used by Grok, FAL, Midjourney, Sora, World Labs and
+  // completion routine used by Grok, FAL, Midjourney, World Labs and
   // Higgsfield) already saves the results to the user's download directory,
   // named per their filename convention. Downloading them again here would
   // create duplicates (it used to, for every non-ArtCraft provider). The Rust

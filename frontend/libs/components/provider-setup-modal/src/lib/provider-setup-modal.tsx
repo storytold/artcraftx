@@ -23,7 +23,6 @@ export function ProviderSetupModal({
   switch (provider) {
     case GenerationProvider.Grok:
     case GenerationProvider.Higgsfield:
-    case GenerationProvider.Sora:
       modalDescription = `You can add your ${serviceProviderName} account to ArtCraft by simply logging in. Use can then use it directly within Artcraft. You can add all of your AI accounts to Artcraft to use them all in one place and build the ultimate AI art tool.`;
       break;
     default:
@@ -47,9 +46,6 @@ export function ProviderSetupModal({
         break;
       case GenerationProvider.Midjourney:
         await invoke("midjourney_open_login_command");
-        break;
-      case GenerationProvider.Sora:
-        await invoke("open_sora_login_command"); // TODO: Rename in Tauri
         break;
       case GenerationProvider.Fal:
         break; // TODO: None yet.
@@ -121,8 +117,6 @@ function getServiceProviderName(provider: GenerationProvider) : string {
       return "Fal";
     case GenerationProvider.Midjourney:
       return "Midjourney";
-    case GenerationProvider.Sora:
-      return "Sora";
     case GenerationProvider.WorldLabs:
       return "WorldLabs";
     case GenerationProvider.Artcraft:

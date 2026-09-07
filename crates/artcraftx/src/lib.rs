@@ -65,8 +65,6 @@ use crate::services::grok::state::grok_credential_manager::GrokCredentialManager
 use crate::services::grok::state::grok_websockets::GrokWebsockets;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveSession;
-use crate::services::sora::state::sora_credential_manager::SoraCredentialManager;
-use crate::services::sora::state::sora_task_queue::SoraTaskQueue;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::services::worldlabs::state::worldlabs_bearer_bridge::WorldlabsBearerBridge;
 use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
@@ -103,14 +101,6 @@ pub fn run() {
   let storyteller_creds_manager_2 = storyteller_creds_manager.clone();
   let storyteller_creds_manager_3 = storyteller_creds_manager.clone();
   
-  println!("Attempting to read existing sora credentials...");
-  let sora_creds_manager = SoraCredentialManager::initialize_from_disk_infallible(&app_data_root);
-  let sora_creds_manager_2 = sora_creds_manager.clone();
-  
-  // Other state
-  let sora_task_queue = SoraTaskQueue::new();
-  let sora_task_queue_2 = sora_task_queue.clone();
-
   let midjourney_creds_manager = MidjourneyCredentialManager::initialize_from_disk_infallible(&app_data_root);
 
   // In-memory, process-lifetime Midjourney session (user_id, websocket token,
@@ -158,8 +148,6 @@ pub fn run() {
       let handle = app.clone();
       let root = app_data_root_2.clone();
       let storyteller_creds = storyteller_creds_manager_2.clone();
-      let sora_creds = sora_creds_manager_2.clone();
-      let sora_tasks = sora_task_queue_2.clone();
 
       tauri::async_runtime::block_on(async move {
         let _result = setup_main_window(&app).await;
@@ -171,8 +159,6 @@ pub fn run() {
           artcraft_platform_info_2,
           artcraft_usage_tracker_2,
           storyteller_creds,
-          sora_creds,
-          sora_tasks,
           midjourney_live_session_2,
           grok_creds_manager_2,
           grok_websockets_2,
@@ -197,8 +183,6 @@ pub fn run() {
     .manage(grok_websockets)
     .manage(midjourney_creds_manager)
     .manage(midjourney_live_session)
-    .manage(sora_creds_manager)
-    .manage(sora_task_queue)
     .manage(storyteller_creds_manager_3)
     .manage(worldlabs_bearer_bridge)
     .manage(worldlabs_creds_manager);

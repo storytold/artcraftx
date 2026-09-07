@@ -9,7 +9,6 @@ use errors::AnyhowError;
 use grok_consumer_client::error::grok_error::GrokError;
 use higgsfield_client::error::higgsfield_error::HiggsfieldError;
 use midjourney_client::error::midjourney_error::MidjourneyError;
-use openai_sora_client::error::sora_error::SoraError;
 use artcraft_client::error::storyteller_error::StorytellerError;
 use router::errors::download_error::DownloadError;
 use worldlabs_consumer_client::error::world_labs_error::WorldLabsError;
@@ -103,7 +102,6 @@ pub enum MissingCredentialsReason {
   NeedsMidjourneyCredentials,
   NeedsMidjourneyUserId,
   NeedsMidjourneyUserInfo,
-  NeedsSoraCredentials,
   NeedsStorytellerCredentials,
   NeedsWorldLabsCredentials,
 }
@@ -120,7 +118,6 @@ pub enum BillingProvider {
   Higgsfield,
   Kinovi,
   Midjourney,
-  Sora,
 }
 
 #[derive(Debug)]
@@ -135,7 +132,6 @@ pub enum ProviderFailureReason {
   MidjourneyError(MidjourneyError),
   /// NB: The midjourney client doesn't categorize all errors, so we have to do so on our end.
   MidjourneyJobEnqueueFailed,
-  SoraError(SoraError),
   StorytellerError(StorytellerError),
   WorldLabsError(WorldLabsError),
 }
@@ -176,10 +172,6 @@ impl GenerateError {
 
   pub fn needs_midjourney_credentials() -> Self {
     Self::MissingCredentials(MissingCredentialsReason::NeedsMidjourneyCredentials)
-  }
-
-  pub fn needs_sora_credentials() -> Self {
-    Self::MissingCredentials(MissingCredentialsReason::NeedsSoraCredentials)
   }
 
   pub fn needs_storyteller_credentials() -> Self {
@@ -237,12 +229,6 @@ impl From<HiggsfieldError> for GenerateError {
 impl From<MidjourneyError> for GenerateError {
   fn from(value: MidjourneyError) -> Self {
     Self::ProviderFailure(ProviderFailureReason::MidjourneyError(value))
-  }
-}
-
-impl From<SoraError> for GenerateError {
-  fn from(value: SoraError) -> Self {
-    Self::ProviderFailure(ProviderFailureReason::SoraError(value))
   }
 }
 

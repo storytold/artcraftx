@@ -60,10 +60,6 @@ fn video_providers() -> Vec<VideoProviderOffering> {
       VideoModel::GrokImagineVideo1p5,
       VideoModel::SwitchX,
     ]),
-    // First-party (cookie-session) Sora.
-    VideoProviderOffering::of(GenerationProvider::Sora, &[
-      VideoModel::Sora2,
-    ]),
     // First-party (cookie-session) Higgsfield, with per-model overrides where
     // its menus differ from ArtCraft's.
     higgsfield_video_offering(),
@@ -86,7 +82,7 @@ mod tests {
   fn grok_and_midjourney_offer_no_video() {
     assert!(!VIDEO_PROVIDERS.iter().any(|o| o.provider == GenerationProvider::Grok));
     assert!(!VIDEO_PROVIDERS.iter().any(|o| o.provider == GenerationProvider::Midjourney));
-    assert_eq!(providers_for_video_model(VideoModel::Sora2), vec![GenerationProvider::Artcraft, GenerationProvider::Sora]);
+    assert_eq!(providers_for_video_model(VideoModel::Sora2), vec![GenerationProvider::Artcraft]);
     assert!(provider_offers_video_model(GenerationProvider::Artcraft, VideoModel::GrokImagineVideo));
     assert_eq!(providers_for_video_model(VideoModel::Seedance2p0), vec![GenerationProvider::Artcraft, GenerationProvider::Higgsfield]);
   }

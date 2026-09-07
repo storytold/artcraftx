@@ -10,4 +10,3 @@ pub mod aspect_ratio_to_artcraft_nano_banana_pro;
 pub mod aspect_ratio_to_artcraft_seedream_4;
 pub mod aspect_ratio_to_artcraft_seedream_4p5;
 pub mod aspect_ratio_to_grok_image;
-pub mod aspect_ratio_to_sora_native_gpt_image_1;

@@ -16,8 +16,6 @@ pub enum GenerationProvider {
   Higgsfield,
   /// First-party (cookie-session) Midjourney.
   Midjourney,
-  /// First-party (cookie-session) Sora.
-  Sora,
   /// First-party (cookie-session) World Labs.
   WorldLabs,
 }
