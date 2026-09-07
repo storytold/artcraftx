@@ -130,6 +130,7 @@ mod tests {
       client: Some(&client),
       media_file_to_artcraft_url_map: Some(&map),
       asset_upload_cache: None,
+      asset_upload_observer: None,
     };
 
     let request = ImageGenerationDraftRequest::KinoviMidjourney7(draft)

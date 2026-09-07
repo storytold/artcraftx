@@ -77,6 +77,7 @@ async fn record(db: &LocalFilesDbConnection, service: &str, account_id: &str, ha
     account_id,
     file_hash_blake3: hash,
     service_id,
+    origin: "upload",
     maybe_service_url: url,
     maybe_file_size_bytes: Some(1234),
   }).await.expect("upsert");

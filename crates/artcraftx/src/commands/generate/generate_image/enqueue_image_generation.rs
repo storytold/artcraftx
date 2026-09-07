@@ -101,7 +101,7 @@ pub async fn enqueue_image_generation(
     }
 
     GenerationSource::HiggsfieldCookies | GenerationSource::Higgsfield => {
-      enqueue_via_higgsfield(request, &credential, ledger).await
+      enqueue_via_higgsfield(Some(app), request, &credential, ledger).await
     }
 
     other => Err(credential_not_usable(

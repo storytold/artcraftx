@@ -9,6 +9,8 @@ pub struct UpsertAssetUploadArgs<'a> {
   pub account_id: &'a str,
   pub file_hash_blake3: &'a str,
   pub service_id: &'a str,
+  /// `upload` or `generation_result`.
+  pub origin: &'a str,
   pub maybe_service_url: Option<&'a str>,
   pub maybe_file_size_bytes: Option<i64>,
 }
@@ -19,10 +21,11 @@ pub async fn upsert_asset_upload(args: UpsertAssetUploadArgs<'_>) -> Result<(), 
   sqlx::query(
     r#"
     INSERT INTO asset_uploads
-      (service, account_id, file_hash_blake3, service_id, service_url, file_size_bytes, uploaded_at, last_reused_at)
-    VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, NULL)
+      (service, account_id, file_hash_blake3, service_id, origin, service_url, file_size_bytes, uploaded_at, last_reused_at)
+    VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, NULL)
     ON CONFLICT(service, account_id, file_hash_blake3) DO UPDATE SET
       service_id = excluded.service_id,
+      origin = excluded.origin,
       service_url = excluded.service_url,
       file_size_bytes = excluded.file_size_bytes,
       uploaded_at = excluded.uploaded_at,
@@ -33,6 +36,7 @@ pub async fn upsert_asset_upload(args: UpsertAssetUploadArgs<'_>) -> Result<(), 
       .bind(args.account_id)
       .bind(args.file_hash_blake3)
       .bind(args.service_id)
+      .bind(args.origin)
       .bind(args.maybe_service_url)
       .bind(args.maybe_file_size_bytes)
       .bind(Utc::now())

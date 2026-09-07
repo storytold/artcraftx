@@ -12,13 +12,57 @@
 
 use async_trait::async_trait;
 
-/// A previously uploaded copy of some bytes, as the provider knows it.
+/// How the provider came to hold some content.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum AssetUploadOrigin {
+  /// We uploaded the bytes; `service_id` is the provider's media id.
+  Upload,
+  /// The provider generated the file itself and we downloaded it;
+  /// `service_id` is the job id, and the content can be referenced as a
+  /// previous generation without uploading it (or re-running an IP check).
+  GenerationResult,
+}
+
+impl AssetUploadOrigin {
+  /// The stored form.
+  pub fn as_str(self) -> &'static str {
+    match self {
+      Self::Upload => "upload",
+      Self::GenerationResult => "generation_result",
+    }
+  }
+
+  /// Unknown values read as plain uploads (the conservative choice: they get
+  /// verified as media before reuse).
+  pub fn parse(value: &str) -> Self {
+    match value {
+      "generation_result" => Self::GenerationResult,
+      _ => Self::Upload,
+    }
+  }
+}
+
+/// A copy of some bytes the provider already holds, as the provider knows it.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CachedAssetUpload {
-  /// The provider's own id for the asset (e.g. a Higgsfield media id).
+  /// The provider's own id for the asset: a media id for an upload, a job
+  /// id for a generation result.
   pub service_id: String,
   /// Where the provider serves it, when it publishes a URL.
   pub maybe_service_url: Option<String>,
+  pub origin: AssetUploadOrigin,
+}
+
+impl CachedAssetUpload {
+  /// Bytes we uploaded.
+  pub fn uploaded(service_id: impl Into<String>, maybe_service_url: Option<String>) -> Self {
+    Self { service_id: service_id.into(), maybe_service_url, origin: AssetUploadOrigin::Upload }
+  }
+
+  /// A generation the provider produced, by job id and result URL.
+  pub fn generation_result(job_id: impl Into<String>, result_url: impl Into<String>) -> Self {
+    Self { service_id: job_id.into(), maybe_service_url: Some(result_url.into()), origin: AssetUploadOrigin::GenerationResult }
+  }
 }
 
 /// One account's upload history on one provider. Implementations must not

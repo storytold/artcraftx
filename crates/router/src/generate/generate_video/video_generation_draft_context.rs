@@ -1,4 +1,5 @@
 use crate::api::asset_upload_cache::AssetUploadCache;
+use crate::api::asset_upload_observer::AssetUploadObserver;
 use crate::client::router_client::RouterClient;
 use crate::client::router_higgsfield_client::RouterHiggsfieldClient;
 use crate::client::router_seedance2pro_client::RouterSeedance2ProClient;
@@ -25,6 +26,10 @@ pub struct VideoGenerationDraftContext<'a> {
   /// Optional: the account's upload history on the target provider, so
   /// media it already holds isn't uploaded again.
   pub asset_upload_cache: Option<&'a dyn AssetUploadCache>,
+
+  /// Optional: told whether each reference was reused or uploaded, so the
+  /// caller can show the right notice.
+  pub asset_upload_observer: Option<&'a dyn AssetUploadObserver>,
 }
 
 impl <'a> VideoGenerationDraftContext<'a> {
@@ -58,6 +63,7 @@ impl Debug for VideoGenerationDraftContext<'_> {
       .field("media_file_to_artcraft_url_map", &self.media_file_to_artcraft_url_map)
       .field("character_token_to_kinovi_id_map", &self.character_token_to_kinovi_id_map)
       .field("asset_upload_cache", &self.asset_upload_cache.is_some())
+      .field("asset_upload_observer", &self.asset_upload_observer.is_some())
       .finish()
   }
 }

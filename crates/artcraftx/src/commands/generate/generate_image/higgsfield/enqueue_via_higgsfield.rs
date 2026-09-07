@@ -23,6 +23,7 @@ use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_generation_model::tauri_image_model_to_generation_model;
 use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_router_model::tauri_image_model_to_router_model;
 use crate::credentials::auth_credential::AuthCredential;
+use tauri::AppHandle;
 use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
 
 /// Enqueue via the router's first-party Higgsfield provider.
@@ -34,6 +35,7 @@ use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
 /// re-uploads them. The returned task carries every job id of the
 /// Higgsfield job set so the poller can follow a batch.
 pub async fn enqueue_via_higgsfield(
+  maybe_app: Option<&AppHandle>,
   request: &TauriGenerateImageRequest,
   credential: &AuthCredential,
   ledger: &AssetUploadLedger,
@@ -73,7 +75,7 @@ pub async fn enqueue_via_higgsfield(
   let client = higgsfield_router_client(credential)?;
   // References this account already uploaded are reused by media id.
   let upload_cache = ledger.for_higgsfield_credential(&credential.id);
-  let response = send_higgsfield_image_request(credential, router_request, &client, &media_url_map, &upload_cache).await?;
+  let response = send_higgsfield_image_request(maybe_app, credential, router_request, &client, &media_url_map, &upload_cache).await?;
 
   let payload = response
       .get_higgsfield_payload()
@@ -162,7 +164,7 @@ mod live_higgsfield_image_tests {
       ..Default::default()
     };
 
-    let success = enqueue_via_higgsfield(&request, &credential, &ledger().await).await.expect("enqueue should succeed");
+    let success = enqueue_via_higgsfield(None, &request, &credential, &ledger().await).await.expect("enqueue should succeed");
     println!("[live] Higgsfield image enqueued: provider_job_id={:?}", success.provider_job_id);
     assert_eq!(success.provider, GenerationSource::Higgsfield);
     assert!(success.provider_job_id.is_some());
@@ -181,7 +183,7 @@ mod live_higgsfield_image_tests {
       ..Default::default()
     };
 
-    let success = enqueue_via_higgsfield(&request, &credential, &ledger().await).await.expect("enqueue should succeed");
+    let success = enqueue_via_higgsfield(None, &request, &credential, &ledger().await).await.expect("enqueue should succeed");
     println!("[live] Higgsfield image edit enqueued: provider_job_id={:?}", success.provider_job_id);
     assert!(success.provider_job_id.is_some());
   }

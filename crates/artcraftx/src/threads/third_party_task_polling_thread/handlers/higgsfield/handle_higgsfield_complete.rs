@@ -2,7 +2,7 @@ use artcraft_client::enums::common::generation::common_model_type::CommonModelTy
 use core_types::enums::generation_source::GenerationSource;
 use errors::AnyhowResult;
 use higgsfield_client::endpoints::jobs::job_status::JobStatusResponse;
-use log::{error, info};
+use log::{error, info, warn};
 use sqlite_database::queries::task::Task;
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use sqlite_identifiers::enums::task_model_type::TaskModelType;
@@ -15,7 +15,14 @@ use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
 use crate::threads::task_completion::complete_task_with_local_files::{complete_task_with_local_files, CompleteTaskArgs};
 use crate::threads::task_completion::upload_results_to_artcraft::CompletionPrompt;
+use crate::services::asset_uploads::asset_upload_ledger::{AccountUploadCache, AssetUploadLedger};
+use crate::state::database::local_files_database::LocalFilesDatabase;
 use crate::utils::download::download_url_to_temp_dir::download_url_to_temp_dir;
+use core_types::identifiers::credential_id::CredentialId;
+use file_hashing::hash_file_blake3;
+use router::api::asset_upload_cache::{AssetUploadCache, CachedAssetUpload};
+use std::path::Path;
+use tauri::Manager;
 
 /// Download filename slug when the task has no model type recorded.
 const HIGGSFIELD_FALLBACK_MODEL_SLUG: &str = "higgsfield";
@@ -28,6 +35,7 @@ pub async fn handle_higgsfield_complete(
   app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
+  credential_id: &str,
   task: &Task,
   jobs: &[JobStatusResponse],
 ) {
@@ -39,6 +47,7 @@ pub async fn handle_higgsfield_complete(
     app_preferences,
     task_database,
     storyteller_creds_manager,
+    credential_id,
     task,
     jobs,
   ).await;
@@ -54,16 +63,28 @@ async fn handle_higgsfield_complete_inner(
   app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   storyteller_creds_manager: &StorytellerCredentialManager,
+  credential_id: &str,
   task: &Task,
   jobs: &[JobStatusResponse],
 ) -> AnyhowResult<()> {
+  // Higgsfield already holds these files: remember each one under the
+  // account that generated it, so using the download as a reference later
+  // passes the job id instead of uploading (and IP-checking) it again.
+  let maybe_ledger = app_handle.try_state::<LocalFilesDatabase>()
+      .map(|database| AssetUploadLedger::new(database.inner().clone()))
+      .map(|ledger| ledger.for_higgsfield_credential(&CredentialId::from_trusted(credential_id)));
+
   // NB: `NamedTempFile`s delete themselves on drop, so keep them alive until
   // the completion routine has copied and uploaded them.
   let mut temp_files = Vec::with_capacity(jobs.len());
   for (index, job) in jobs.iter().enumerate() {
     let url = job.result_url().expect("caller passes only jobs with a result URL");
     info!("[HiggsfieldComplete] Downloading result {} of {} for task {} ...", index + 1, jobs.len(), task.id.as_str());
-    temp_files.push(download_url_to_temp_dir(url, app_data_root).await?);
+    let temp_file = download_url_to_temp_dir(url, app_data_root).await?;
+    if let Some(ledger) = &maybe_ledger {
+      record_generation_result(ledger, job, temp_file.path()).await;
+    }
+    temp_files.push(temp_file);
   }
   let local_files = temp_files.iter()
       .map(|file| file.path().to_path_buf())
@@ -100,6 +121,21 @@ async fn handle_higgsfield_complete_inner(
   }).await?;
 
   Ok(())
+}
+
+/// Ledger a downloaded result as content Higgsfield generated (job id +
+/// result URL). Best-effort: a hashing or database problem only costs a
+/// future re-upload.
+async fn record_generation_result(ledger: &AccountUploadCache, job: &JobStatusResponse, path: &Path) {
+  let Some(url) = job.result_url() else { return };
+  let (hash, size) = match (hash_file_blake3(path), std::fs::metadata(path)) {
+    (Ok(hash), Ok(metadata)) => (hash, metadata.len()),
+    (Err(err), _) | (_, Err(err)) => {
+      warn!("[HiggsfieldComplete] Could not hash downloaded result of job {}: {}", job.id, err);
+      return;
+    }
+  };
+  ledger.record_upload(&hash, size, &CachedAssetUpload::generation_result(job.id.as_str(), url)).await;
 }
 
 fn media_class_for(task_type: TaskType) -> TaskMediaFileClass {

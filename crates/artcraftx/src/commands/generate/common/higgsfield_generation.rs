@@ -8,7 +8,6 @@ use std::collections::HashMap;
 
 use artcraft_client::utils::api_host::ApiHost;
 use log::{error, info, warn};
-use router::api::asset_upload_cache::AssetUploadCache;
 use router::client::router_client::RouterClient;
 use router::client::router_higgsfield_client::RouterHiggsfieldClient;
 use router::errors::artcraft_router_error::ArtcraftRouterError;
@@ -16,16 +15,23 @@ use router::errors::provider_error::ProviderError;
 use router::generate::generate_image::generate_image_request_builder::GenerateImageRequestBuilder;
 use router::generate::generate_image::generate_image_response::GenerateImageResponse;
 use router::generate::generate_image::image_generation_draft_context::ImageGenerationDraftContext;
+use router::generate::generate_image::image_generation_draft::ImageGenerationDraftRequest;
 use router::generate::generate_image::image_generation_draft_or_request::ImageGenerationDraftOrRequest;
+use router::generate::generate_image::image_generation_request::ImageGenerationRequest;
 use router::generate::generate_video::generate_video_request_builder::GenerateVideoRequestBuilder;
 use router::generate::generate_video::generate_video_response::GenerateVideoResponse;
 use router::generate::generate_video::video_generation_draft_context::VideoGenerationDraftContext;
+use router::generate::generate_video::video_generation_draft::VideoGenerationDraftRequest;
 use router::generate::generate_video::video_generation_draft_or_request::VideoGenerationDraftOrRequest;
+use router::generate::generate_video::video_generation_request::VideoGenerationRequest;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
+use tauri::AppHandle;
 
 use crate::commands::generate::generate_error::{CredentialProblemReason, GenerateError};
 use crate::commands::generate::generate_image::utils::map_media_files_to_urls::map_media_file_tokens_to_cdn_urls;
 use crate::credentials::auth_credential::AuthCredential;
+use crate::services::asset_uploads::asset_upload_ledger::AccountUploadCache;
+use crate::services::higgsfield::higgsfield_upload_notices::HiggsfieldUploadNotices;
 use crate::services::higgsfield::higgsfield_session_from_credential::higgsfield_session_from_credential;
 
 /// Batch job ids are stored on the task as one comma-separated
@@ -94,71 +100,138 @@ pub async fn higgsfield_media_url_map(tokens: &[MediaFileToken]) -> Result<HashM
 }
 
 /// Build, finalize (uploading references) and send an image request.
+///
+/// References the account already uploaded are reused from the ledger. If
+/// Higgsfield then rejects the job because a reused media id is no good
+/// (deleted or flagged since), those ledger entries are dropped and the
+/// request is finalized and sent once more with fresh uploads.
 pub async fn send_higgsfield_image_request(
+  maybe_app: Option<&AppHandle>,
   credential: &AuthCredential,
   builder: GenerateImageRequestBuilder,
   client: &RouterClient,
   media_url_map: &HashMap<MediaFileToken, String>,
-  upload_cache: &dyn AssetUploadCache,
+  upload_cache: &AccountUploadCache,
 ) -> Result<GenerateImageResponse, GenerateError> {
-  let request = match builder.build2().map_err(|err| {
+  let draft = match builder.build2().map_err(|err| {
     warn!("Could not build Higgsfield image request: {:?}", err);
     GenerateError::from(err)
   })? {
-    ImageGenerationDraftOrRequest::Request(request) => request,
-    ImageGenerationDraftOrRequest::Draft(draft) => {
-      info!("Higgsfield image request has references; uploading them first");
-      let context = ImageGenerationDraftContext {
-        client: Some(client),
-        media_file_to_artcraft_url_map: Some(media_url_map),
-        asset_upload_cache: Some(upload_cache),
-      };
-      draft.finalize(context).await.map_err(|err| {
-        warn!("Could not upload references to Higgsfield: {:?}", err);
-        higgsfield_error_to_generate_error(credential, err)
-      })?
+    ImageGenerationDraftOrRequest::Request(request) => {
+      return request.send_request(client).await
+          .map_err(|err| higgsfield_error_to_generate_error(credential, err));
     }
+    ImageGenerationDraftOrRequest::Draft(draft) => draft,
   };
 
-  request.send_request(client).await.map_err(|err| {
-    warn!("Higgsfield image generation failed: {:?}", err);
+  info!("Higgsfield image request has references; uploading them first");
+  // Reuse flashes a notice; a real upload keeps a progress toast up until
+  // `notices` drops at the end of this function (retry included).
+  let notices = HiggsfieldUploadNotices::new(maybe_app);
+  let request = finalize_image_draft(credential, draft.clone(), client, media_url_map, upload_cache, &notices).await?;
+  match request.send_request(client).await {
+    Ok(response) => Ok(response),
+    Err(err) if should_retry_with_fresh_uploads(&err, upload_cache) => {
+      let forgotten = upload_cache.forget_reused().await;
+      warn!("Higgsfield rejected reused reference media ({:?}); forgot {} ledger entries and uploading afresh", err, forgotten);
+      let request = finalize_image_draft(credential, draft, client, media_url_map, upload_cache, &notices).await?;
+      request.send_request(client).await
+          .map_err(|err| higgsfield_error_to_generate_error(credential, err))
+    }
+    Err(err) => Err(higgsfield_error_to_generate_error(credential, err)),
+  }
+}
+
+async fn finalize_image_draft(
+  credential: &AuthCredential,
+  draft: ImageGenerationDraftRequest,
+  client: &RouterClient,
+  media_url_map: &HashMap<MediaFileToken, String>,
+  upload_cache: &AccountUploadCache,
+  notices: &HiggsfieldUploadNotices,
+) -> Result<ImageGenerationRequest, GenerateError> {
+  let context = ImageGenerationDraftContext {
+    client: Some(client),
+    media_file_to_artcraft_url_map: Some(media_url_map),
+    asset_upload_cache: Some(upload_cache),
+    asset_upload_observer: Some(notices),
+  };
+  draft.finalize(context).await.map_err(|err| {
+    warn!("Could not upload references to Higgsfield: {:?}", err);
     higgsfield_error_to_generate_error(credential, err)
   })
 }
 
 /// Build, finalize (uploading keyframes and references) and send a video
-/// request.
+/// request. Reused uploads that Higgsfield rejects at enqueue time are
+/// forgotten and uploaded afresh, once — see [`send_higgsfield_image_request`].
 pub async fn send_higgsfield_video_request(
+  maybe_app: Option<&AppHandle>,
   credential: &AuthCredential,
   builder: GenerateVideoRequestBuilder,
   client: &RouterClient,
   media_url_map: &HashMap<MediaFileToken, String>,
-  upload_cache: &dyn AssetUploadCache,
+  upload_cache: &AccountUploadCache,
 ) -> Result<GenerateVideoResponse, GenerateError> {
-  let request = match builder.build2().map_err(|err| {
+  let draft = match builder.build2().map_err(|err| {
     warn!("Could not build Higgsfield video request: {:?}", err);
     GenerateError::from(err)
   })? {
-    VideoGenerationDraftOrRequest::Request(request) => request,
-    VideoGenerationDraftOrRequest::Draft(draft) => {
-      info!("Higgsfield video request has media; uploading it first");
-      let context = VideoGenerationDraftContext {
-        client: Some(client),
-        media_file_to_artcraft_url_map: Some(media_url_map),
-        character_token_to_kinovi_id_map: None,
-        asset_upload_cache: Some(upload_cache),
-      };
-      draft.finalize(context).await.map_err(|err| {
-        warn!("Could not upload media to Higgsfield: {:?}", err);
-        higgsfield_error_to_generate_error(credential, err)
-      })?
+    VideoGenerationDraftOrRequest::Request(request) => {
+      return request.send_request(client).await
+          .map_err(|err| higgsfield_error_to_generate_error(credential, err));
     }
+    VideoGenerationDraftOrRequest::Draft(draft) => draft,
   };
 
-  request.send_request(client).await.map_err(|err| {
-    warn!("Higgsfield video generation failed: {:?}", err);
+  info!("Higgsfield video request has media; uploading it first");
+  // Reuse flashes a notice; a real upload keeps a progress toast up until
+  // `notices` drops at the end of this function (retry included).
+  let notices = HiggsfieldUploadNotices::new(maybe_app);
+  let request = finalize_video_draft(credential, draft.clone(), client, media_url_map, upload_cache, &notices).await?;
+  match request.send_request(client).await {
+    Ok(response) => Ok(response),
+    Err(err) if should_retry_with_fresh_uploads(&err, upload_cache) => {
+      let forgotten = upload_cache.forget_reused().await;
+      warn!("Higgsfield rejected reused reference media ({:?}); forgot {} ledger entries and uploading afresh", err, forgotten);
+      let request = finalize_video_draft(credential, draft, client, media_url_map, upload_cache, &notices).await?;
+      request.send_request(client).await
+          .map_err(|err| higgsfield_error_to_generate_error(credential, err))
+    }
+    Err(err) => Err(higgsfield_error_to_generate_error(credential, err)),
+  }
+}
+
+async fn finalize_video_draft(
+  credential: &AuthCredential,
+  draft: VideoGenerationDraftRequest,
+  client: &RouterClient,
+  media_url_map: &HashMap<MediaFileToken, String>,
+  upload_cache: &AccountUploadCache,
+  notices: &HiggsfieldUploadNotices,
+) -> Result<VideoGenerationRequest, GenerateError> {
+  let context = VideoGenerationDraftContext {
+    client: Some(client),
+    media_file_to_artcraft_url_map: Some(media_url_map),
+    character_token_to_kinovi_id_map: None,
+    asset_upload_cache: Some(upload_cache),
+    asset_upload_observer: Some(notices),
+  };
+  draft.finalize(context).await.map_err(|err| {
+    warn!("Could not upload media to Higgsfield: {:?}", err);
     higgsfield_error_to_generate_error(credential, err)
   })
+}
+
+/// Retry with fresh uploads only when Higgsfield rejected a media input and
+/// this request actually reused something from the ledger; otherwise the
+/// media was uploaded just now and re-uploading would change nothing.
+fn should_retry_with_fresh_uploads(err: &ArtcraftRouterError, upload_cache: &AccountUploadCache) -> bool {
+  let media_rejected = matches!(
+    err,
+    ArtcraftRouterError::Provider(ProviderError::Higgsfield(higgsfield_err)) if higgsfield_err.is_media_input_rejected()
+  );
+  media_rejected && upload_cache.reused_count() > 0
 }
 
 /// One `provider_job_id` for a Higgsfield job set.

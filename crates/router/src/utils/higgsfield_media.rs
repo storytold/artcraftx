@@ -12,20 +12,20 @@
 //! media status endpoint first, and any doubt means a fresh upload.
 
 use std::collections::HashMap;
-use std::path::Path;
 
 use file_hashing::hash_bytes_blake3;
 use higgsfield_client::endpoints::media::get_media_status::MediaStatusFamily;
 use higgsfield_client::session::higgsfield_session::HiggsfieldSession;
 use higgsfield_client::session::upload_media::ReferenceMediaFile;
 use higgsfield_client::session::upload_source_guard::check_upload_source_url;
-use higgsfield_client::types::ids::MediaId;
+use higgsfield_client::types::ids::{JobId, MediaId};
 use higgsfield_client::types::media_input::MediaInput;
 use higgsfield_client::types::media_mime_type::MediaMimeType;
 use log::{info, warn};
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
-use crate::api::asset_upload_cache::{AssetUploadCache, CachedAssetUpload};
+use crate::api::asset_upload_observer::AssetUploadObserver;
+use crate::api::asset_upload_cache::{AssetUploadCache, AssetUploadOrigin, CachedAssetUpload};
 use crate::api::audio_list_ref::AudioListRef;
 use crate::api::image_list_ref::ImageListRef;
 use crate::api::image_ref::ImageRef;
@@ -48,6 +48,15 @@ pub enum HiggsfieldMediaKind {
 }
 
 impl HiggsfieldMediaKind {
+  /// Lower-case name for notices ("image" / "video" / "audio").
+  pub fn label(self) -> &'static str {
+    match self {
+      Self::Image => "image",
+      Self::Video => "video",
+      Self::Audio => "audio",
+    }
+  }
+
   /// The status endpoint family for verifying a previous upload. Audio has
   /// none, so cached audio ids are trusted as-is.
   fn status_family(self) -> Option<MediaStatusFamily> {
@@ -63,6 +72,16 @@ impl HiggsfieldMediaKind {
       Self::Image => MediaInput::uploaded(id, url),
       Self::Video => MediaInput::uploaded_video(id, url),
       Self::Audio => MediaInput::uploaded_audio(id, url),
+    }
+  }
+
+  /// A previous Higgsfield generation used as this kind of reference. Audio
+  /// is never generated, so it has no job form.
+  fn job_input(self, job_id: MediaId, url: String) -> Option<MediaInput> {
+    match self {
+      Self::Image => Some(MediaInput::from_image_job(job_id, url)),
+      Self::Video => Some(MediaInput::from_video_job(job_id, url)),
+      Self::Audio => None,
     }
   }
 
@@ -123,6 +142,8 @@ pub struct HiggsfieldUploadContext<'a> {
   pub maybe_map: Option<&'a HashMap<MediaFileToken, String>>,
   /// The account's prior uploads; `None` uploads unconditionally.
   pub maybe_cache: Option<&'a dyn AssetUploadCache>,
+  /// Told whether each source was reused or uploaded.
+  pub maybe_observer: Option<&'a dyn AssetUploadObserver>,
 }
 
 /// Upload every source in `list`, in order. `None` / empty lists upload
@@ -185,6 +206,9 @@ pub async fn upload_source_to_higgsfield(
     if let Some(reusable) = reusable_upload(context.session, cache, &file_hash, kind, ip_check).await {
       info!("Reusing Higgsfield {:?} reference {} for {} (already uploaded by this account)", kind, reusable.id, resolved.description);
       cache.note_reused(&file_hash).await;
+      if let Some(observer) = context.maybe_observer {
+        observer.on_reused(kind.label(), &resolved.description);
+      }
       return Ok(reusable);
     }
   }
@@ -195,13 +219,16 @@ pub async fn upload_source_to_higgsfield(
     "Uploading {:?} reference to Higgsfield ({} bytes, {}, ip_check={})",
     kind, file.bytes.len(), file.mime_type, ip_check,
   );
+  if let Some(observer) = context.maybe_observer {
+    observer.on_uploading(kind.label(), byte_count, ip_check);
+  }
   let uploaded = session_upload(context.session, file).await?;
 
   if let Some(cache) = context.maybe_cache {
-    cache.record_upload(&file_hash, byte_count, &CachedAssetUpload {
-      service_id: uploaded.id.as_str().to_string(),
-      maybe_service_url: Some(uploaded.url.clone()),
-    }).await;
+    cache.record_upload(&file_hash, byte_count, &CachedAssetUpload::uploaded(
+      uploaded.id.as_str(),
+      Some(uploaded.url.clone()),
+    )).await;
   }
   Ok(uploaded)
 }
@@ -224,6 +251,10 @@ async fn reusable_upload(
 ) -> Option<MediaInput> {
   let cached = cache.find_upload(file_hash).await?;
   let media_id = MediaId::new(cached.service_id.clone());
+
+  if cached.origin == AssetUploadOrigin::GenerationResult {
+    return reusable_generation_result(session, cache, file_hash, kind, media_id).await;
+  }
 
   let Some(url) = cached.maybe_service_url.clone() else {
     warn!("Cached Higgsfield upload {} has no URL; uploading again", media_id);
@@ -253,6 +284,37 @@ async fn reusable_upload(
   }
 
   Some(kind.media_input(media_id, url))
+}
+
+/// A file Higgsfield generated itself (we downloaded the result) is used as a
+/// "previous generation" reference by job id — no upload, and no IP check,
+/// since it never left Higgsfield. The job is confirmed to still exist with
+/// a result, and the fresh result URL is used (CDN URLs are time-limited).
+async fn reusable_generation_result(
+  session: &HiggsfieldSession,
+  cache: &dyn AssetUploadCache,
+  file_hash: &str,
+  kind: HiggsfieldMediaKind,
+  job_id: MediaId,
+) -> Option<MediaInput> {
+  let job = match session.job_status(&JobId::new(job_id.as_str())).await {
+    Ok(job) => job,
+    Err(err) => {
+      warn!("Could not confirm Higgsfield generation {} still exists ({}); uploading instead", job_id, err);
+      cache.forget_upload(file_hash).await;
+      return None;
+    }
+  };
+  let Some(url) = job.result_url() else {
+    warn!("Higgsfield generation {} no longer has a result; uploading instead", job_id);
+    cache.forget_upload(file_hash).await;
+    return None;
+  };
+  let Some(input) = kind.job_input(job_id.clone(), url.to_string()) else {
+    info!("Higgsfield generation {} can't stand in for a {:?} reference; uploading instead", job_id, kind);
+    return None;
+  };
+  Some(input)
 }
 
 /// Describe resolved bytes for upload: the MIME type is sniffed from the
@@ -476,7 +538,7 @@ mod tests {
 
     #[tokio::test]
     async fn audio_has_no_status_endpoint_so_the_cached_id_is_trusted() {
-      let cache = CannedCache::with(CachedAssetUpload { service_id: "media-audio".into(), maybe_service_url: Some("https://cdn/a.mp3".into()) });
+      let cache = CannedCache::with(CachedAssetUpload::uploaded("media-audio", Some("https://cdn/a.mp3".into())));
       let reused = reusable_upload(&unreachable_session(), &cache, "hash", HiggsfieldMediaKind::Audio, false).await.unwrap();
       assert_eq!(reused.id.as_str(), "media-audio");
       assert_eq!(reused.kind, MediaInputKind::AudioInput);
@@ -486,14 +548,32 @@ mod tests {
 
     #[tokio::test]
     async fn an_entry_without_a_url_is_forgotten() {
-      let cache = CannedCache::with(CachedAssetUpload { service_id: "media-1".into(), maybe_service_url: None });
+      let cache = CannedCache::with(CachedAssetUpload::uploaded("media-1", None));
       assert!(reusable_upload(&unreachable_session(), &cache, "hash", HiggsfieldMediaKind::Audio, false).await.is_none());
       assert_eq!(*cache.forgotten.lock().unwrap(), vec!["hash".to_string()]);
     }
 
     #[tokio::test]
+    async fn a_generation_result_that_cannot_be_confirmed_means_a_fresh_upload() {
+      let cache = CannedCache::with(CachedAssetUpload::generation_result("job-1", "https://cdn/result.png"));
+      let result = reusable_upload(&unreachable_session(), &cache, "hash", HiggsfieldMediaKind::Image, true).await;
+      assert!(result.is_none());
+      assert!(cache.forgotten.lock().unwrap().contains(&"hash".to_string()));
+    }
+
+    #[test]
+    fn generation_results_become_job_references_by_kind() {
+      let image = HiggsfieldMediaKind::Image.job_input(MediaId::new("job-1"), "https://cdn/r.png".into()).unwrap();
+      assert_eq!(image.kind, MediaInputKind::ImageJob);
+      assert_eq!(image.id.as_str(), "job-1");
+      let video = HiggsfieldMediaKind::Video.job_input(MediaId::new("job-2"), "https://cdn/r.mp4".into()).unwrap();
+      assert_eq!(video.kind, MediaInputKind::VideoJob);
+      assert!(HiggsfieldMediaKind::Audio.job_input(MediaId::new("job-3"), "https://cdn/r.mp3".into()).is_none());
+    }
+
+    #[tokio::test]
     async fn a_status_check_that_fails_means_a_fresh_upload() {
-      let cache = CannedCache::with(CachedAssetUpload { service_id: "media-1".into(), maybe_service_url: Some("https://cdn/x.png".into()) });
+      let cache = CannedCache::with(CachedAssetUpload::uploaded("media-1", Some("https://cdn/x.png".into())));
       assert!(reusable_upload(&unreachable_session(), &cache, "hash", HiggsfieldMediaKind::Image, true).await.is_none());
       assert_eq!(*cache.forgotten.lock().unwrap(), vec!["hash".to_string()]);
       assert!(cache.reused.lock().unwrap().is_empty());

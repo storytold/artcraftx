@@ -7,6 +7,7 @@ use router::api::router_provider::RouterProvider;
 use router::client::request_mismatch_mitigation_strategy::RequestMismatchMitigationStrategy;
 use router::generate::generate_video::generate_video_request_builder::GenerateVideoRequestBuilder;
 use sqlite_identifiers::enums::task_type::TaskType;
+use tauri::AppHandle;
 
 use crate::commands::generate::common::higgsfield_generation::{
   higgsfield_media_url_map, higgsfield_router_client, join_higgsfield_job_ids, send_higgsfield_video_request,
@@ -32,6 +33,7 @@ use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
 /// task carries every job id of the Higgsfield job set so the poller can
 /// follow a batch.
 pub async fn handle_higgsfield_video_via_router(
+  maybe_app: Option<&AppHandle>,
   request: &TauriGenerateVideoRequest,
   credential: &AuthCredential,
   ledger: &AssetUploadLedger,
@@ -69,7 +71,7 @@ pub async fn handle_higgsfield_video_via_router(
   let client = higgsfield_router_client(credential)?;
   // References this account already uploaded are reused by media id.
   let upload_cache = ledger.for_higgsfield_credential(&credential.id);
-  let response = send_higgsfield_video_request(credential, router_request, &client, &media_url_map, &upload_cache).await?;
+  let response = send_higgsfield_video_request(maybe_app, credential, router_request, &client, &media_url_map, &upload_cache).await?;
 
   let payload = response
       .get_higgsfield_payload()
@@ -142,7 +144,7 @@ mod live_higgsfield_video_tests {
       ..Default::default()
     };
 
-    let success = handle_higgsfield_video_via_router(&request, &credential, &test_ledger().await).await.expect("enqueue should succeed");
+    let success = handle_higgsfield_video_via_router(None, &request, &credential, &test_ledger().await).await.expect("enqueue should succeed");
     println!("[live] Higgsfield video enqueued: provider_job_id={:?}", success.provider_job_id);
     assert_eq!(success.provider, GenerationSource::Higgsfield);
     assert!(success.provider_job_id.is_some());
@@ -162,7 +164,7 @@ mod live_higgsfield_video_tests {
       ..Default::default()
     };
 
-    let success = handle_higgsfield_video_via_router(&request, &credential, &test_ledger().await).await.expect("enqueue should succeed");
+    let success = handle_higgsfield_video_via_router(None, &request, &credential, &test_ledger().await).await.expect("enqueue should succeed");
     println!("[live] Higgsfield image-to-video enqueued: provider_job_id={:?}", success.provider_job_id);
     assert!(success.provider_job_id.is_some());
   }

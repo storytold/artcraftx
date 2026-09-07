@@ -11,7 +11,6 @@ use crate::commands::generate::generate_video::request::TauriGenerateVideoReques
 use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::auth_credential::AuthCredential;
 use core_types::enums::generation_source::GenerationSource;
-use crate::events::notice_events::progress_notice_event::ProgressNotice;
 use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use tauri::AppHandle;
@@ -45,15 +44,10 @@ pub async fn handle_credential_router(
     }
     GenerationSource::HiggsfieldCookies
     | GenerationSource::Higgsfield => {
-      // Reference media triggers Higgsfield's mandatory IP/likeness scan,
-      // which routinely takes 15-30s before the job can even enqueue. Keep
-      // a progress toast up for as long as the router call runs; the guard
-      // takes it down on success and failure alike.
-      let has_media = request.media_sources().iter().next().is_some();
-      let _ip_check_notice = maybe_app.filter(|_| has_media).map(|app| {
-        ProgressNotice::start(app, "Higgsfield is checking your media for Intellectual Property and Likeness")
-      });
-      handle_higgsfield_video_via_router(request, &credential, ledger).await
+      // Reference media is uploaded (with Higgsfield's 15-30s IP/likeness
+      // scan) or reused from the ledger; the notices for either come from
+      // the router's upload observer, so nothing is announced up front.
+      handle_higgsfield_video_via_router(maybe_app, request, &credential, ledger).await
     }
     other => Err(credential_not_usable(
       &credential,

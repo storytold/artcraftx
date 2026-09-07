@@ -37,6 +37,7 @@ impl HiggsfieldImageDraftState {
       session: &client.session,
       maybe_map: draft_context.media_file_to_artcraft_url_map,
       maybe_cache: draft_context.asset_upload_cache,
+      maybe_observer: draft_context.asset_upload_observer,
     };
 
     let mut reference_images = Vec::new();

@@ -96,7 +96,7 @@ async fn poll_single_task(
     return Ok(());
   }
 
-  let Some((session, progress)) = find_job_set(app_handle, app_data_root, sessions, &job_ids, task).await else {
+  let Some((credential_id, session, progress)) = find_job_set(app_handle, app_data_root, sessions, &job_ids, task).await else {
     // No account knows the jobs. Leave the task pending: the account may be
     // temporarily unreachable (expired session, network) and come back.
     return Ok(());
@@ -170,6 +170,7 @@ async fn poll_single_task(
     app_preferences,
     task_database,
     storyteller_creds_manager,
+    credential_id,
     task,
     &finished,
   ).await;
@@ -184,7 +185,7 @@ async fn find_job_set<'a>(
   sessions: &'a [(String, HiggsfieldSession)],
   job_ids: &[JobId],
   task: &Task,
-) -> Option<(&'a HiggsfieldSession, JobSetProgress)> {
+) -> Option<(&'a str, &'a HiggsfieldSession, JobSetProgress)> {
   for (credential_id, session) in sessions {
     let batch = match session.job_status_batch(job_ids).await {
       Ok(batch) => batch,
@@ -212,15 +213,15 @@ async fn find_job_set<'a>(
       let status = match statuses.get(job_id) {
         Some(status) => (*status).clone(),
         None if batch.missing.contains(job_id) => JobStatus::Other("missing".to_string()),
-        None => return Some((session, JobSetProgress::Pending)),
+        None => return Some((credential_id, session, JobSetProgress::Pending)),
       };
       if !status.is_terminal() && !batch.missing.contains(job_id) {
         info!("[HiggsfieldPolling] Task {} job {} is {}", task.id.as_str(), job_id, status);
-        return Some((session, JobSetProgress::Pending));
+        return Some((credential_id, session, JobSetProgress::Pending));
       }
       outcomes.push(JobOutcome { job_id: job_id.clone(), status });
     }
-    return Some((session, JobSetProgress::Done(outcomes)));
+    return Some((credential_id, session, JobSetProgress::Done(outcomes)));
   }
   None
 }

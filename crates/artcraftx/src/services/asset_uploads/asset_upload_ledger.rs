@@ -20,6 +20,7 @@
 
 use std::future::Future;
 use std::path::Path;
+use std::sync::{Arc, Mutex};
 
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::endpoints::media_files::get_media_file::get_media_file;
@@ -34,7 +35,7 @@ use local_files_database::queries::get_asset_upload::{get_asset_upload, GetAsset
 use local_files_database::queries::touch_asset_upload_reused::touch_asset_upload_reused;
 use local_files_database::queries::upsert_asset_upload::{upsert_asset_upload, UpsertAssetUploadArgs};
 use log::{info, warn};
-use router::api::asset_upload_cache::{AssetUploadCache, CachedAssetUpload};
+use router::api::asset_upload_cache::{AssetUploadCache, AssetUploadOrigin, CachedAssetUpload};
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
 use crate::services::local_files::file_hash_service::hash_local_file_memoized;
@@ -56,6 +57,10 @@ pub struct AccountUploadCache {
   ledger: AssetUploadLedger,
   service: GenerationSource,
   account_id: String,
+  /// Hashes whose upload this request skipped thanks to a ledger hit. If the
+  /// provider then rejects the request over its media, these are the entries
+  /// to drop before uploading afresh (see `forget_reused`).
+  reused_this_request: Arc<Mutex<Vec<String>>>,
 }
 
 impl AssetUploadLedger {
@@ -65,7 +70,12 @@ impl AssetUploadLedger {
 
   /// This account's uploads on `service`.
   pub fn for_account(&self, service: GenerationSource, account_id: impl Into<String>) -> AccountUploadCache {
-    AccountUploadCache { ledger: self.clone(), service, account_id: account_id.into() }
+    AccountUploadCache {
+      ledger: self.clone(),
+      service,
+      account_id: account_id.into(),
+      reused_this_request: Arc::new(Mutex::new(Vec::new())),
+    }
   }
 
   /// A stored Higgsfield credential's uploads.
@@ -110,6 +120,7 @@ impl AssetUploadLedger {
       account_id,
       file_hash_blake3: file_hash,
       service_id: &upload.service_id,
+      origin: upload.origin.as_str(),
       maybe_service_url: upload.maybe_service_url.as_deref(),
       maybe_file_size_bytes: file_size_bytes.map(|size| size as i64),
     }).await;
@@ -135,6 +146,24 @@ impl AssetUploadLedger {
 impl AccountUploadCache {
   pub fn service(&self) -> GenerationSource {
     self.service
+  }
+
+  /// How many uploads this request has skipped so far via ledger hits.
+  pub fn reused_count(&self) -> usize {
+    self.reused_this_request.lock().map(|reused| reused.len()).unwrap_or(0)
+  }
+
+  /// Drop every ledger entry this request reused, so the next finalize
+  /// uploads those files afresh. Returns how many were forgotten.
+  pub async fn forget_reused(&self) -> usize {
+    let hashes: Vec<String> = match self.reused_this_request.lock() {
+      Ok(mut reused) => reused.drain(..).collect(),
+      Err(_) => Vec::new(),
+    };
+    for hash in &hashes {
+      self.ledger.forget(self.service, &self.account_id, hash).await;
+    }
+    hashes.len()
   }
 
   pub fn account_id(&self) -> &str {
@@ -176,10 +205,7 @@ impl AccountUploadCache {
 
     if let Some(hash) = maybe_hash.as_deref() {
       let file_size_bytes = std::fs::metadata(path).ok().map(|metadata| metadata.len());
-      self.record_upload(hash, file_size_bytes.unwrap_or(0), &CachedAssetUpload {
-        service_id: token.as_str().to_string(),
-        maybe_service_url: None,
-      }).await;
+      self.record_upload(hash, file_size_bytes.unwrap_or(0), &CachedAssetUpload::uploaded(token.as_str().to_string(), None)).await;
     }
     Ok(token)
   }
@@ -197,10 +223,7 @@ impl AccountUploadCache {
       return Ok(token);
     }
     let token = upload().await?;
-    self.record_upload(&hash, bytes.len() as u64, &CachedAssetUpload {
-      service_id: token.as_str().to_string(),
-      maybe_service_url: None,
-    }).await;
+    self.record_upload(&hash, bytes.len() as u64, &CachedAssetUpload::uploaded(token.as_str().to_string(), None)).await;
     Ok(token)
   }
 
@@ -227,6 +250,7 @@ impl AssetUploadCache for AccountUploadCache {
         .map(|record| CachedAssetUpload {
           service_id: record.service_id,
           maybe_service_url: record.service_url,
+          origin: AssetUploadOrigin::parse(&record.origin),
         })
   }
 
@@ -235,6 +259,9 @@ impl AssetUploadCache for AccountUploadCache {
   }
 
   async fn note_reused(&self, file_hash_blake3: &str) {
+    if let Ok(mut reused) = self.reused_this_request.lock() {
+      reused.push(file_hash_blake3.to_string());
+    }
     self.ledger.note_reused(self.service, &self.account_id, file_hash_blake3).await
   }
 
@@ -282,7 +309,7 @@ mod tests {
     let other = ledger.for_higgsfield_credential(&CredentialId::from_trusted("credential_other"));
 
     assert!(cache.find_upload("hash1").await.is_none());
-    let upload = CachedAssetUpload { service_id: "media-1".into(), maybe_service_url: Some("https://cdn/x".into()) };
+    let upload = CachedAssetUpload::uploaded("media-1", Some("https://cdn/x".into()));
     cache.record_upload("hash1", 10, &upload).await;
     assert_eq!(cache.find_upload("hash1").await, Some(upload));
     assert!(other.find_upload("hash1").await.is_none(), "accounts don't share uploads");
@@ -292,6 +319,41 @@ mod tests {
 
     cache.forget_upload("hash1").await;
     assert!(cache.find_upload("hash1").await.is_none());
+  }
+
+  #[tokio::test]
+  async fn generation_results_keep_their_origin() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = AppDataRoot::create_existing(dir.path().join("root")).unwrap();
+    let ledger = AssetUploadLedger::new(LocalFilesDatabase::connect(&root).await.unwrap());
+    let cache = ledger.for_higgsfield_credential(&CredentialId::from_trusted("credential_test"));
+    let result = CachedAssetUpload::generation_result("job-1", "https://cdn/result.png");
+    cache.record_upload("hash-result", 10, &result).await;
+    assert_eq!(cache.find_upload("hash-result").await, Some(result));
+    let plain = CachedAssetUpload::uploaded("media-1", Some("https://cdn/x".into()));
+    cache.record_upload("hash-upload", 10, &plain).await;
+    assert_eq!(cache.find_upload("hash-upload").await.unwrap().origin, AssetUploadOrigin::Upload);
+  }
+
+  #[tokio::test]
+  async fn forget_reused_drops_only_what_this_request_reused() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = AppDataRoot::create_existing(dir.path().join("root")).unwrap();
+    let ledger = AssetUploadLedger::new(LocalFilesDatabase::connect(&root).await.unwrap());
+    let cache = ledger.for_higgsfield_credential(&CredentialId::from_trusted("credential_test"));
+    let upload = |id: &str| CachedAssetUpload::uploaded(id, Some("https://cdn/x".into()));
+    cache.record_upload("reused", 10, &upload("media-reused")).await;
+    cache.record_upload("fresh", 10, &upload("media-fresh")).await;
+    assert_eq!(cache.reused_count(), 0);
+
+    cache.note_reused("reused").await;
+    assert_eq!(cache.reused_count(), 1);
+
+    assert_eq!(cache.forget_reused().await, 1);
+    assert_eq!(cache.reused_count(), 0, "cleared for the retry");
+    assert!(cache.find_upload("reused").await.is_none(), "the reused entry is gone");
+    assert!(cache.find_upload("fresh").await.is_some(), "an entry that wasn't reused survives");
+    assert_eq!(cache.forget_reused().await, 0, "nothing left to forget");
   }
 
   #[tokio::test]

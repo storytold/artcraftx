@@ -69,6 +69,21 @@ impl HiggsfieldError {
     }
   }
 
+  /// The server refused a job because a referenced media input is unknown
+  /// or unusable (`404 "Media input not found"` and its 400/422 cousins).
+  /// Happens when a previously uploaded reference has since been deleted or
+  /// flagged: forget the cached upload and upload afresh.
+  pub fn is_media_input_rejected(&self) -> bool {
+    let text = match self {
+      Self::Api(HiggsfieldApiError::NotFound { raw_http_body }) => raw_http_body,
+      Self::Api(HiggsfieldApiError::BadRequest { reason, .. }) => reason,
+      Self::Api(HiggsfieldApiError::UnprocessableEntity { reason, .. }) => reason,
+      _ => return false,
+    };
+    let text = text.to_ascii_lowercase();
+    text.contains("media") && (text.contains("not found") || text.contains("input"))
+  }
+
   /// Whether the session itself is the problem (expired token, dead session,
   /// bot protection, unusable cookies) — some form of re-authentication is
   /// needed before retrying. Union of [`Self::is_token_rejected`],
@@ -119,6 +134,18 @@ mod tests {
 
     let timed_out = HiggsfieldError::Client(HiggsfieldClientError::MediaIpCheckTimedOut { media_id: MediaId::new("m1"), waited: Duration::from_secs(30) });
     assert!(timed_out.user_facing_rejection().unwrap().contains("didn't finish in time"));
+  }
+
+  #[test]
+  fn media_input_rejections_are_recognised_by_status_and_body() {
+    let not_found = HiggsfieldError::Api(HiggsfieldApiError::NotFound { raw_http_body: r#"{"detail":"Media input not found"}"#.to_string() });
+    assert!(not_found.is_media_input_rejected());
+    let unprocessable = HiggsfieldError::Api(HiggsfieldApiError::UnprocessableEntity { reason: "Invalid media input".to_string(), raw_http_body: String::new() });
+    assert!(unprocessable.is_media_input_rejected());
+    let job_missing = HiggsfieldError::Api(HiggsfieldApiError::NotFound { raw_http_body: r#"{"detail":"Job not found"}"#.to_string() });
+    assert!(!job_missing.is_media_input_rejected(), "a missing job is not a media problem");
+    let dead = HiggsfieldError::Api(HiggsfieldApiError::NoActiveSession { raw_http_body: String::new() });
+    assert!(!dead.is_media_input_rejected());
   }
 
   #[test]
