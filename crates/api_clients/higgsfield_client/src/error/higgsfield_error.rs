@@ -50,6 +50,25 @@ impl HiggsfieldError {
     }
   }
 
+  /// A plain-language explanation when Higgsfield refused the request for a
+  /// reason the user can act on (rather than a fault to retry or report):
+  /// reference media failing the intellectual-property / likeness check, or
+  /// that check not finishing. `None` for everything else.
+  pub fn user_facing_rejection(&self) -> Option<String> {
+    match self {
+      Self::Client(HiggsfieldClientError::MediaProtectedContent { .. }) => Some(
+        "Higgsfield's intellectual property check rejected one of your reference images or videos: \
+         it appears to contain a recognizable person or copyrighted content, so Higgsfield won't use it. \
+         Please choose different reference media.".to_string(),
+      ),
+      Self::Client(HiggsfieldClientError::MediaIpCheckTimedOut { .. }) => Some(
+        "Higgsfield's intellectual property check on your reference media didn't finish in time. \
+         Please try again in a moment.".to_string(),
+      ),
+      _ => None,
+    }
+  }
+
   /// Whether the session itself is the problem (expired token, dead session,
   /// bot protection, unusable cookies) — some form of re-authentication is
   /// needed before retrying. Union of [`Self::is_token_rejected`],
@@ -82,5 +101,29 @@ impl From<HiggsfieldClientError> for HiggsfieldError {
 impl From<HiggsfieldApiError> for HiggsfieldError {
   fn from(error: HiggsfieldApiError) -> Self {
     Self::Api(error)
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::types::ids::MediaId;
+  use std::time::Duration;
+
+  #[test]
+  fn ip_check_outcomes_have_user_facing_messages() {
+    let protected = HiggsfieldError::Client(HiggsfieldClientError::MediaProtectedContent { media_id: MediaId::new("m1") });
+    let message = protected.user_facing_rejection().expect("protected content is user-facing");
+    assert!(message.contains("intellectual property"));
+    assert!(message.contains("different reference media"));
+
+    let timed_out = HiggsfieldError::Client(HiggsfieldClientError::MediaIpCheckTimedOut { media_id: MediaId::new("m1"), waited: Duration::from_secs(30) });
+    assert!(timed_out.user_facing_rejection().unwrap().contains("didn't finish in time"));
+  }
+
+  #[test]
+  fn other_errors_are_not_user_facing_rejections() {
+    let dead = HiggsfieldError::Api(HiggsfieldApiError::NoActiveSession { raw_http_body: String::new() });
+    assert!(dead.user_facing_rejection().is_none());
   }
 }

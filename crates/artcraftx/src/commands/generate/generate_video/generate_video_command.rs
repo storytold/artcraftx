@@ -97,6 +97,12 @@ pub async fn generate_video_command(
           error_type = TauriGenerateVideoErrorType::NeedsStorytellerCredentials;
           error_message = "You need to be logged into Artcraft.".to_string();
         }
+        GenerateError::ProviderRejected(message) => {
+          // The provider refused for a reason the user can act on; the
+          // message already explains it.
+          status = CommandErrorStatus::BadRequest;
+          error_message = message;
+        }
         _ => {}, // Fall-through
       }
 

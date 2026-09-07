@@ -52,16 +52,24 @@ pub fn session_expired(credential: &AuthCredential) -> GenerateError {
   })
 }
 
-/// Convert a router error from a Higgsfield call. When Higgsfield says the
-/// session is dead (`needs_browser_reauth()`), the credential file is marked
-/// so nothing else retries it, and the error becomes a session-expired
-/// credential problem (which the frontend turns into a "log in again" prompt).
+/// Convert a router error from a Higgsfield call.
+///
+/// - A refusal the user can act on (reference media failing the IP /
+///   likeness check) becomes a [`GenerateError::ProviderRejected`] carrying
+///   the explanation, which the commands show verbatim.
+/// - A dead session (`needs_browser_reauth()`) marks the credential file so
+///   nothing else retries it, and becomes a session-expired credential
+///   problem (which the frontend turns into a "log in again" prompt).
+/// - Anything else is a plain provider failure.
 fn higgsfield_error_to_generate_error(credential: &AuthCredential, err: ArtcraftRouterError) -> GenerateError {
-  let session_is_dead = matches!(
-    &err,
-    ArtcraftRouterError::Provider(ProviderError::Higgsfield(higgsfield_err)) if higgsfield_err.needs_browser_reauth()
-  );
-  if !session_is_dead {
+  let ArtcraftRouterError::Provider(ProviderError::Higgsfield(higgsfield_err)) = &err else {
+    return GenerateError::from(err);
+  };
+  if let Some(message) = higgsfield_err.user_facing_rejection() {
+    info!("Higgsfield rejected the request for a user-actionable reason: {}", higgsfield_err);
+    return GenerateError::ProviderRejected(message);
+  }
+  if !higgsfield_err.needs_browser_reauth() {
     return GenerateError::from(err);
   }
   warn!("Higgsfield rejected the session of credential {}; marking it as needing a re-login: {:?}", credential.id, err);
@@ -171,6 +179,49 @@ pub fn split_higgsfield_job_ids(provider_job_id: &str) -> Vec<String> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::credentials::auth_credential::CredentialSecret;
+  use crate::credentials::cookie_credential::CookieCredential;
+  use cookie_store_wrapper::cookie_store::CookieStore;
+  use core_types::enums::generation_source::GenerationSource;
+  use core_types::identifiers::credential_id::CredentialId;
+  use higgsfield_client::error::higgsfield_client_error::HiggsfieldClientError;
+  use higgsfield_client::error::higgsfield_error::HiggsfieldError;
+  use higgsfield_client::types::ids::MediaId;
+  use reqwest::Url;
+
+  #[test]
+  fn protected_content_becomes_a_provider_rejection_with_the_explanation() {
+    let err = ArtcraftRouterError::Provider(ProviderError::Higgsfield(
+      HiggsfieldError::Client(HiggsfieldClientError::MediaProtectedContent { media_id: MediaId::new("m1") }),
+    ));
+    match higgsfield_error_to_generate_error(&unsaved_credential(), err) {
+      GenerateError::ProviderRejected(message) => assert!(message.contains("intellectual property"), "{message}"),
+      other => panic!("expected ProviderRejected, got {other:?}"),
+    }
+  }
+
+  #[test]
+  fn other_higgsfield_errors_stay_provider_failures() {
+    let err = ArtcraftRouterError::Provider(ProviderError::Higgsfield(
+      HiggsfieldError::Client(HiggsfieldClientError::UploadSourceDomainBlocked {
+        source_url: "https://cdn.example.com/a.png".to_string(),
+        domain: "cdn.example.com",
+      }),
+    ));
+    assert!(matches!(higgsfield_error_to_generate_error(&unsaved_credential(), err), GenerateError::ProviderFailure(_)));
+  }
+
+  fn unsaved_credential() -> AuthCredential {
+    let origin = Url::parse("https://higgsfield.ai/").unwrap();
+    AuthCredential {
+      id: CredentialId::generate(),
+      service: GenerationSource::HiggsfieldCookies,
+      name: None,
+      secret: CredentialSecret::Cookies(CookieCredential::new(CookieStore::from_cookie_header("__client=abc", &origin))),
+      user_info: None,
+      source_path: std::env::temp_dir().join("never_written_higgsfield_cookies.toml"),
+    }
+  }
 
   #[test]
   fn job_ids_round_trip() {
