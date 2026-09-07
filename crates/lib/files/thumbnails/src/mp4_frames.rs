@@ -10,7 +10,8 @@ use std::path::Path;
 
 use images::image::RgbImage;
 use mp4::{MediaType, Mp4Reader, TrackType};
-use openh264::decoder::Decoder;
+use openh264::decoder::{Decoder, DecoderConfig, Flush};
+use openh264::OpenH264API;
 
 use crate::error::ThumbnailError;
 
@@ -54,7 +55,12 @@ pub fn decode_mp4_leading_frames<P: AsRef<Path>>(
     (track.track_id(), track.timescale(), nal_length_size_for(track), sps, pps)
   };
 
-  let mut decoder = Decoder::new()
+  // NB: openh264-rs flushes the decoder after every call by default, which
+  // wrecks B-frame reordering: streams with B-frames (every provider's
+  // High-profile output) start erroring a handful of samples in and never
+  // recover. Let the decoder keep its reorder buffer and drain it at the end.
+  let config = DecoderConfig::new().flush_after_decode(Flush::NoFlush);
+  let mut decoder = Decoder::with_api_config(OpenH264API::from_source(), config)
       .map_err(|err| ThumbnailError::Decode(format!("could not create H.264 decoder: {}", err)))?;
 
   // Prime the decoder with the parameter sets.
@@ -64,6 +70,11 @@ pub fn decode_mp4_leading_frames<P: AsRef<Path>>(
   let _ = decoder.decode(&parameter_sets);
 
   let mut frames: Vec<DecodedFrame> = Vec::new();
+  // Presentation times of every sample fed so far. The decoder emits frames
+  // in presentation order (that's what its reorder buffer is for), so the
+  // k-th output frame gets the k-th smallest pts fed — exact regardless of
+  // B-frame depth.
+  let mut fed_pts_ms: Vec<u32> = Vec::new();
   let sample_count = mp4.sample_count(track_id)
       .map_err(|err| ThumbnailError::Decode(format!("could not count samples: {}", err)))?;
 
@@ -83,14 +94,13 @@ pub fn decode_mp4_leading_frames<P: AsRef<Path>>(
     let pts_ms = ((pts_units.max(0) as u128 * 1000) / timescale.max(1) as u128) as u32;
 
     let annex_b = length_prefixed_to_annex_b(&sample.bytes, nal_length_size)?;
+    let insert_at = fed_pts_ms.partition_point(|&fed| fed <= pts_ms);
+    fed_pts_ms.insert(insert_at, pts_ms);
 
-    // NB: openh264 emits frames in decode order; pairing each output with
-    // the same-iteration sample pts is exact for streams without B-frame
-    // reordering (the norm for AI-generated video) and off by a frame or
-    // two otherwise — the final sort by pts keeps playback ordered.
     match decoder.decode(&annex_b) {
       Ok(Some(yuv)) => {
-        frames.push(DecodedFrame { pts_ms, image: yuv_to_rgb(&yuv)? });
+        let output_pts_ms = fed_pts_ms[frames.len()];
+        frames.push(DecodedFrame { pts_ms: output_pts_ms, image: yuv_to_rgb(&yuv)? });
       }
       Ok(None) => {} // Decoder delay; frame not ready yet.
       Err(err) => {
@@ -100,8 +110,30 @@ pub fn decode_mp4_leading_frames<P: AsRef<Path>>(
       }
     }
 
-    if pts_ms >= max_duration_ms {
+    // Samples arrive in decode order, so a B-frame with an earlier pts can
+    // follow the sample that crossed the limit; stop once the frames we
+    // actually have reach it.
+    if frames.last().is_some_and(|frame| frame.pts_ms >= max_duration_ms) {
       break;
+    }
+  }
+
+  // Frames still parked in the reorder buffer.
+  if frames.len() < max_frames {
+    match decoder.flush_remaining() {
+      Ok(remaining) => {
+        for yuv in remaining {
+          if frames.len() >= max_frames || frames.len() >= fed_pts_ms.len() {
+            break;
+          }
+          let output_pts_ms = fed_pts_ms[frames.len()];
+          if output_pts_ms > max_duration_ms {
+            break;
+          }
+          frames.push(DecodedFrame { pts_ms: output_pts_ms, image: yuv_to_rgb(&yuv)? });
+        }
+      }
+      Err(err) => log::warn!("H.264 flush error: {}", err),
     }
   }
 

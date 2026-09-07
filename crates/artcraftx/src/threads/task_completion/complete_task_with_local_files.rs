@@ -1,6 +1,7 @@
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
+use crate::state::thumbnails::thumbnail_work_queue::ThumbnailWorkQueue;
 use crate::threads::task_completion::save_results_to_download_dir::save_results_to_download_dir;
 use crate::threads::task_completion::upload_results_to_artcraft::{upload_results_to_artcraft, CompletionPrompt};
 use crate::threads::third_party_task_polling_thread::events::notify_frontend_of_completion::{
@@ -57,7 +58,8 @@ pub struct CompleteTaskArgs<'a> {
 /// 2. upload to ArtCraft when logged in,
 /// 3. mark the task complete (a no-op if another path already did — the
 ///    Midjourney websocket and long-poller can race),
-/// 4. record where the files landed on the task,
+/// 4. record where the files landed on the task and hand them to the
+///    thumbnail worker,
 /// 5. notify the frontend.
 ///
 /// Returns `Ok(true)` if this call completed the task, `Ok(false)` if it was
@@ -132,6 +134,7 @@ pub async fn complete_task_with_local_files(args: CompleteTaskArgs<'_>) -> Anyho
   }
 
   record_task_download_locations(task_database, &task.id, &downloaded).await;
+  ThumbnailWorkQueue::enqueue_for_app(app_handle, &downloaded);
 
   match maybe_uploaded {
     Some(uploaded) => {

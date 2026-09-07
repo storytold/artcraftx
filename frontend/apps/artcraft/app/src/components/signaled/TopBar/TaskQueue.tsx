@@ -35,6 +35,7 @@ import {
 import type { LocalThumbnail, TaskQueueItem } from "@storyteller/tauri-api";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { useLocalThumbnailReadyEvent } from "@storyteller/tauri-events";
 import {
   useSelectedImageModel,
   useSelectedVideoModel,
@@ -67,13 +68,13 @@ const localThumbnailPending = new Set<string>();
 
 const localStaticThumbnailUrl = (task: {
   downloadedFilePath?: string;
+  localThumbnailPath?: string;
 }): string | undefined => {
   const thumb = task.downloadedFilePath
     ? localThumbnailCache.get(task.downloadedFilePath)
     : undefined;
-  return thumb?.maybe_thumbnail_path
-    ? convertFileSrc(thumb.maybe_thumbnail_path)
-    : undefined;
+  const path = task.localThumbnailPath ?? thumb?.maybe_thumbnail_path;
+  return path ? convertFileSrc(path) : undefined;
 };
 
 const localFileAssetUrl = (task: {
@@ -110,6 +111,10 @@ type CompletedTask = {
   // completion time, so they survive later download-directory changes).
   downloadedFilePath?: string;
   downloadDirectory?: string;
+  // Backend-generated thumbnails of `downloadedFilePath`, when the task
+  // queue already knows them (absolute cache paths).
+  localThumbnailPath?: string;
+  localAnimatedPreviewPath?: string;
 };
 
 type FailedTask = {
@@ -387,24 +392,27 @@ const CompletedCard = ({
   onClick?: () => void;
   onDismiss?: () => void;
 }) => {
-  const [isPreviewHovered, setIsPreviewHovered] = useState(false);
-  // Server thumbnail first; otherwise the backend-generated thumbnail of
-  // the downloaded file, rendered off disk via the asset protocol.
+  // Backend-generated thumbnails of the downloaded file, rendered off disk
+  // via the asset protocol: from the task queue response when it already
+  // has them, else from the cache the ready-event and bulk lookup fill.
   const localThumb = task.downloadedFilePath
     ? localThumbnailCache.get(task.downloadedFilePath)
     : undefined;
-  const staticThumbnailUrl =
-    task.thumbnailUrl ??
-    (localThumb?.maybe_thumbnail_path
-      ? convertFileSrc(localThumb.maybe_thumbnail_path)
-      : undefined);
-  const animatedPreviewUrl = localThumb?.maybe_animated_preview_path
-    ? convertFileSrc(localThumb.maybe_animated_preview_path)
+  const localStaticPath =
+    task.localThumbnailPath ?? localThumb?.maybe_thumbnail_path;
+  const localAnimatedPath =
+    task.localAnimatedPreviewPath ?? localThumb?.maybe_animated_preview_path;
+  const localStaticUrl = localStaticPath
+    ? convertFileSrc(localStaticPath)
     : undefined;
+  const animatedPreviewUrl = localAnimatedPath
+    ? convertFileSrc(localAnimatedPath)
+    : undefined;
+  // Local thumbnails win: they're cut from the actual file, whereas the
+  // server's video thumbnail can be missing (it 404s into the placeholder).
+  // The animated preview plays right away when it exists.
   const displayedThumbnailUrl =
-    isPreviewHovered && animatedPreviewUrl
-      ? animatedPreviewUrl
-      : staticThumbnailUrl;
+    animatedPreviewUrl ?? localStaticUrl ?? task.thumbnailUrl;
   return (
     <div
       className="flex cursor-pointer items-center gap-2.5 rounded-md p-2 transition-colors hover:bg-ui-controls/40"
@@ -425,8 +433,6 @@ const CompletedCard = ({
               }
             : undefined
         }
-        onMouseEnter={() => setIsPreviewHovered(true)}
-        onMouseLeave={() => setIsPreviewHovered(false)}
       >
         {displayedThumbnailUrl ? (
           <img
@@ -643,11 +649,25 @@ export const TaskQueue = () => {
   // is module-level; this just triggers a re-render).
   const [, setLocalThumbnailVersion] = useState(0);
 
-  // Local-only results have no server thumbnail; ask the backend to serve
-  // (or generate) thumbnails for their downloaded files, in one bulk call.
+  // The backend's thumbnail worker announces each thumbnail as it lands.
+  useLocalThumbnailReadyEvent(async (event) => {
+    localThumbnailCache.set(event.file_path, {
+      file_path: event.file_path,
+      status: "ready",
+      maybe_thumbnail_path: event.thumbnail_path,
+      maybe_animated_preview_path:
+        event.maybe_animated_preview_path ?? undefined,
+    });
+    setLocalThumbnailVersion((v) => v + 1);
+  });
+
+  // Ask the backend for thumbnails of downloaded files we don't have yet, in
+  // one bulk call. Ready ones come back at once; the rest are queued for the
+  // worker and arrive via the event above. Server thumbnails don't exempt a
+  // task: the animated preview only exists locally.
   useEffect(() => {
     const wanted = completed
-      .filter((t) => !t.thumbnailUrl && t.downloadedFilePath)
+      .filter((t) => t.downloadedFilePath)
       .map((t) => t.downloadedFilePath!)
       .filter(
         (p) => !localThumbnailCache.has(p) && !localThumbnailPending.has(p),
@@ -657,7 +677,10 @@ export const TaskQueue = () => {
     GetLocalThumbnails(wanted)
       .then((thumbs) => {
         for (const thumb of thumbs) {
-          localThumbnailCache.set(thumb.file_path, thumb);
+          // Pending entries are left out so the next poll asks again.
+          if (thumb.status !== "pending") {
+            localThumbnailCache.set(thumb.file_path, thumb);
+          }
         }
         setLocalThumbnailVersion((v) => v + 1);
       })
@@ -935,6 +958,9 @@ export const TaskQueue = () => {
               batchImageToken: t.completed_item?.maybe_batch_token,
               downloadedFilePath: t.completed_item?.maybe_first_downloaded_file,
               downloadDirectory: t.completed_item?.maybe_download_directory,
+              localThumbnailPath: t.completed_item?.maybe_local_thumbnail_path,
+              localAnimatedPreviewPath:
+                t.completed_item?.maybe_local_animated_preview_path,
               completedAt: t.completed_at,
               updatedAt: t.updated_at,
             };

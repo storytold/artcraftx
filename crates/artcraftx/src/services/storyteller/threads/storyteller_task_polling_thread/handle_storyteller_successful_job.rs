@@ -4,6 +4,7 @@ use crate::error::artcraftx_error::ArtcraftXError;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
+use crate::state::thumbnails::thumbnail_work_queue::ThumbnailWorkQueue;
 use crate::state::app_preferences::settings::preferred_download_filename::{model_slug_from_model_type_str, DownloadFilenameParts};
 use chrono::Local;
 use crate::utils::download::download_url_to_download_dir_via_temp::download_url_to_download_dir_via_temp;
@@ -77,6 +78,7 @@ pub async fn handle_successful_job(
 
   let downloaded = download_all_files(app_data_root, app_preferences, job, task, &media_files).await;
   record_task_download_locations(task_database, &task.id, &downloaded).await;
+  ThumbnailWorkQueue::enqueue_for_app(app_handle, &downloaded);
 
   send_additional_success_events(app_handle, job, task, &media_files).await;
 

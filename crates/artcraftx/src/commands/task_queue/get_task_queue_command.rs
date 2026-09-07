@@ -1,6 +1,9 @@
 use crate::commands::utils::response::shorthand::ResponseOrErrorMessage;
 use crate::commands::utils::response::success_response_wrapper::SerializeMarker;
+use crate::services::local_files::thumbnail_service::generated_thumbnail_paths;
+use crate::state::database::local_files_database::LocalFilesDatabase;
 use crate::state::database::task_database::TaskDatabase;
+use local_files_database::queries::get_local_files_by_paths::get_local_files_by_paths;
 use chrono::{DateTime, Utc};
 use core_types::enums::generation_source::GenerationSource;
 use sqlite_identifiers::enums::task_model_type::TaskModelType;
@@ -64,6 +67,13 @@ pub struct CompletedItemData {
   /// the first (or only) file. Absolute paths recorded at completion time.
   pub maybe_download_directory: Option<String>,
   pub maybe_first_downloaded_file: Option<String>,
+
+  /// Thumbnails of the first downloaded file, once the thumbnail worker has
+  /// produced them (absolute cache paths; render via the asset protocol).
+  /// Until then the frontend hears about them via
+  /// `local_thumbnail_ready_event`.
+  pub maybe_local_thumbnail_path: Option<String>,
+  pub maybe_local_animated_preview_path: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -88,6 +98,7 @@ impl SerializeMarker for GetTaskQueueCommandResponse {}
 pub async fn get_task_queue_command(
   _app: AppHandle,
   task_database: State<'_, TaskDatabase>,
+  local_files_database: State<'_, LocalFilesDatabase>,
 ) -> ResponseOrErrorMessage<GetTaskQueueCommandResponse> {
 
   // NB: This is debug because it spams the logs.
@@ -95,6 +106,7 @@ pub async fn get_task_queue_command(
 
   let result = handle_request(
     &task_database,
+    &local_files_database,
   ).await;
 
   let tasks = match result {
@@ -112,6 +124,7 @@ pub async fn get_task_queue_command(
 
 pub async fn handle_request(
   task_database: &TaskDatabase,
+  local_files_database: &LocalFilesDatabase,
 ) -> AnyhowResult<Vec<TaskQueueItem>> {
 
   let tasks = list_tasks_for_frontend(task_database.get_connection())
@@ -147,6 +160,8 @@ pub async fn handle_request(
         maybe_batch_token: task.on_complete_batch_token,
         maybe_download_directory: task.on_complete_directory_location.clone(),
         maybe_first_downloaded_file: task.on_complete_first_file_location.clone(),
+        maybe_local_thumbnail_path: None,
+        maybe_local_animated_preview_path: None,
       });
     } else {
       // If either failure field is present, fill out the failure report.
@@ -179,5 +194,37 @@ pub async fn handle_request(
     })
   }
 
+  attach_local_thumbnails(local_files_database, &mut transformed_tasks).await;
+
   Ok(transformed_tasks)
+}
+
+/// Fill in the worker-generated thumbnails for every downloaded result, in
+/// one batch lookup. Fails open: a lookup error just leaves them unset.
+async fn attach_local_thumbnails(local_files_database: &LocalFilesDatabase, tasks: &mut [TaskQueueItem]) {
+  let file_paths: Vec<String> = tasks.iter()
+      .filter_map(|task| task.completed_item.as_ref())
+      .filter_map(|item| item.maybe_first_downloaded_file.clone())
+      .collect();
+  if file_paths.is_empty() {
+    return;
+  }
+
+  let records = match get_local_files_by_paths(local_files_database.get_connection(), &file_paths).await {
+    Ok(records) => records,
+    Err(err) => {
+      warn!("Could not look up local thumbnails for the task queue: {}", err);
+      return;
+    }
+  };
+
+  for item in tasks.iter_mut().filter_map(|task| task.completed_item.as_mut()) {
+    let Some(record) = item.maybe_first_downloaded_file.as_ref().and_then(|path| records.get(path)) else {
+      continue;
+    };
+    if let Some((thumbnail_path, maybe_animated_preview_path)) = generated_thumbnail_paths(record) {
+      item.maybe_local_thumbnail_path = Some(thumbnail_path);
+      item.maybe_local_animated_preview_path = maybe_animated_preview_path;
+    }
+  }
 }

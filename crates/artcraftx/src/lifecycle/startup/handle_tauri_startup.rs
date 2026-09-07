@@ -5,6 +5,7 @@ use crate::lifecycle::startup::tasks::set_app_log_level::set_app_log_level;
 use crate::lifecycle::startup::tasks::spawn_discord_presence_thread::spawn_discord_presence_thread;
 use crate::lifecycle::startup::tasks::spawn_main_window_thread::spawn_main_window_thread;
 use crate::lifecycle::startup::tasks::spawn_storyteller_threads::spawn_storyteller_threads;
+use crate::lifecycle::startup::tasks::spawn_thumbnail_worker_thread::spawn_thumbnail_worker_thread;
 use crate::state::runtime::artcraft_platform_info::ArtcraftPlatformInfo;
 use crate::state::usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
@@ -45,7 +46,15 @@ pub async fn handle_tauri_startup(
   let task_database =
       bootstrap_task_database(&app, &root).await?;
 
-  bootstrap_local_files_database(&app, &root).await?;
+  let local_files_database =
+      bootstrap_local_files_database(&app, &root).await?;
+
+  spawn_thumbnail_worker_thread(
+    &app,
+    &root,
+    &task_database,
+    &local_files_database,
+  )?;
 
   spawn_main_window_thread(
     &app,

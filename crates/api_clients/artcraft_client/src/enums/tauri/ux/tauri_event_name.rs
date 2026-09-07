@@ -78,6 +78,11 @@ pub enum TauriEventName {
   RefreshAccountStateEvent,
 
   /// Special event:
+  /// The thumbnail worker produced a thumbnail for a downloaded file
+  #[serde(rename = "local_thumbnail_ready_event")]
+  LocalThumbnailReadyEvent,
+
+  /// Special event:
   /// Show a billing modal (a suggestion to pay, etc. for a specific provider)
   #[serde(rename = "show_provider_billing_modal_event")]
   ShowProviderBillingModalEvent,
@@ -131,6 +136,7 @@ impl TauriEventName {
       Self::GaussianGenerationCompleteEvent => "gaussian_generation_complete_event",
       Self::VideoGenerationCompleteEvent => "video_generation_complete_event",
       Self::RefreshAccountStateEvent => "refresh_account_state_event",
+      Self::LocalThumbnailReadyEvent => "local_thumbnail_ready_event",
       Self::ShowProviderBillingModalEvent => "show_provider_billing_modal_event",
       Self::ShowCredentialErrorModalEvent => "show_credential_error_modal_event",
       Self::FlashNoticeEvent => "flash_notice_event",
@@ -154,6 +160,7 @@ impl TauriEventName {
       "gaussian_generation_complete_event" => Ok(Self::GaussianGenerationCompleteEvent),
       "video_generation_complete_event" => Ok(Self::VideoGenerationCompleteEvent),
       "refresh_account_state_event" => Ok(Self::RefreshAccountStateEvent),
+      "local_thumbnail_ready_event" => Ok(Self::LocalThumbnailReadyEvent),
       "show_provider_billing_modal_event" => Ok(Self::ShowProviderBillingModalEvent),
       "show_credential_error_modal_event" => Ok(Self::ShowCredentialErrorModalEvent),
       "flash_notice_event" => Ok(Self::FlashNoticeEvent),
@@ -180,6 +187,7 @@ impl TauriEventName {
       Self::GaussianGenerationCompleteEvent,
       Self::VideoGenerationCompleteEvent,
       Self::RefreshAccountStateEvent,
+      Self::LocalThumbnailReadyEvent,
       Self::ShowProviderBillingModalEvent,
       Self::ShowCredentialErrorModalEvent,
       Self::FlashNoticeEvent,
@@ -212,6 +220,7 @@ mod tests {
       assert_serialization(TauriEventName::GaussianGenerationCompleteEvent, "gaussian_generation_complete_event");
       assert_serialization(TauriEventName::VideoGenerationCompleteEvent, "video_generation_complete_event");
       assert_serialization(TauriEventName::RefreshAccountStateEvent, "refresh_account_state_event");
+      assert_serialization(TauriEventName::LocalThumbnailReadyEvent, "local_thumbnail_ready_event");
       assert_serialization(TauriEventName::ShowProviderBillingModalEvent, "show_provider_billing_modal_event"); 
       assert_serialization(TauriEventName::ShowCredentialErrorModalEvent, "show_credential_error_modal_event");
       assert_serialization(TauriEventName::FlashNoticeEvent, "flash_notice_event");
@@ -234,6 +243,7 @@ mod tests {
       assert_eq!(TauriEventName::GaussianGenerationCompleteEvent.to_str(), "gaussian_generation_complete_event");
       assert_eq!(TauriEventName::VideoGenerationCompleteEvent.to_str(), "video_generation_complete_event");
       assert_eq!(TauriEventName::RefreshAccountStateEvent.to_str(), "refresh_account_state_event");
+      assert_eq!(TauriEventName::LocalThumbnailReadyEvent.to_str(), "local_thumbnail_ready_event");
       assert_eq!(TauriEventName::ShowProviderBillingModalEvent.to_str(), "show_provider_billing_modal_event");
       assert_eq!(TauriEventName::FlashNoticeEvent.to_str(), "flash_notice_event");
       assert_eq!(TauriEventName::ProgressNoticeEvent.to_str(), "progress_notice_event");
@@ -255,6 +265,7 @@ mod tests {
       assert_eq!(TauriEventName::from_str("gaussian_generation_complete_event").unwrap(), TauriEventName::GaussianGenerationCompleteEvent);
       assert_eq!(TauriEventName::from_str("video_generation_complete_event").unwrap(), TauriEventName::VideoGenerationCompleteEvent);
       assert_eq!(TauriEventName::from_str("refresh_account_state_event").unwrap(), TauriEventName::RefreshAccountStateEvent);
+      assert_eq!(TauriEventName::from_str("local_thumbnail_ready_event").unwrap(), TauriEventName::LocalThumbnailReadyEvent);
       assert_eq!(TauriEventName::from_str("show_provider_billing_modal_event").unwrap(), TauriEventName::ShowProviderBillingModalEvent);
       assert_eq!(TauriEventName::from_str("show_credential_error_modal_event").unwrap(), TauriEventName::ShowCredentialErrorModalEvent);
       assert_eq!(TauriEventName::from_str("flash_notice_event").unwrap(), TauriEventName::FlashNoticeEvent);
@@ -266,7 +277,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TauriEventName::all_variants();
-      assert_eq!(variants.len(), 18);
+      assert_eq!(variants.len(), 19);
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueSuccessEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueFailureEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationCompleteEvent));
@@ -279,6 +290,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TauriEventName::GaussianGenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::VideoGenerationCompleteEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::RefreshAccountStateEvent));
+      assert_eq!(variants.pop_first(), Some(TauriEventName::LocalThumbnailReadyEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ShowProviderBillingModalEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ShowCredentialErrorModalEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::FlashNoticeEvent));

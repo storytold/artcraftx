@@ -1,6 +1,7 @@
 export * from "./lib/common/BasicEventWrapper";
 export * from "./lib/events/functional/AppPreferencesChangedEvent";
 export * from "./lib/events/functional/CreditsBalanceChangedEvent";
+export * from "./lib/events/functional/LocalThumbnailReadyEvent";
 export * from "./lib/sync/useAppPreferencesSync";
 export * from "./lib/events/functional/ObjectGenerationCompleteEvent";
 export * from "./lib/events/functional/RefreshAccountStateEvent";

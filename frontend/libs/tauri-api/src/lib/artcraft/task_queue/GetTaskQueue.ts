@@ -44,6 +44,11 @@ export interface TaskQueueCompletedItem {
   // file, as absolute paths recorded at completion time.
   maybe_download_directory?: string;
   maybe_first_downloaded_file?: string;
+  // Thumbnails of the first downloaded file once the backend's thumbnail
+  // worker has produced them (absolute cache paths; render via
+  // `convertFileSrc`). Until then, listen for `local_thumbnail_ready_event`.
+  maybe_local_thumbnail_path?: string;
+  maybe_local_animated_preview_path?: string;
 }
 
 export interface MediaFileData {

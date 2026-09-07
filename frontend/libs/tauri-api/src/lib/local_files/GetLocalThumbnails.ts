@@ -2,14 +2,16 @@ import { invoke } from "@tauri-apps/api/core";
 import { CommandResult } from "../common/CommandStatus";
 
 /**
- * Bulk thumbnail lookup/generation for local files. The backend hashes each
- * file (memoized in the local_files index), serves cached thumbnails from
- * `cache/thumbnails/{hash}.jpg|.webp`, and generates anything missing.
- * Render the returned paths via `convertFileSrc(...)`.
+ * Bulk thumbnail lookup for local files. The backend serves what its
+ * thumbnail worker has already produced (`cache/thumbnails/{hash}.jpg|.webp`)
+ * and queues anything `pending` for the worker; `local_thumbnail_ready_event`
+ * announces those as they land. Render the returned paths via
+ * `convertFileSrc(...)`.
  */
 
 export type LocalThumbnailStatus =
   | "ready"
+  | "pending"
   | "unsupported"
   | "missing_file"
   | "failed";

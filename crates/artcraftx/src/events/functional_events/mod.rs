@@ -1,6 +1,7 @@
 pub mod app_preferences_changed_event;
 pub mod credits_balance_changed_event;
 pub mod gaussian_generation_complete_event;
+pub mod local_thumbnail_ready_event;
 pub mod object_generation_complete_event;
 pub mod refresh_account_state_event;
 pub mod show_credential_error_modal_event;
