@@ -36,6 +36,7 @@ pub async fn open_login_window(
   app: &AppHandle,
   app_data_root: &AppDataRoot,
   website: LoginWebsite,
+  maybe_target_credential_id: Option<String>,
 ) -> AnyhowResult<()> {
   let window_name = login_window_name(website);
   if app.get_window(&window_name).is_some() {
@@ -94,7 +95,7 @@ pub async fn open_login_window(
   let app_data_root = app_data_root.clone();
 
   let _ = tauri::async_runtime::spawn(async move {
-    login_window_thread(app_handle, app_data_root, website).await;
+    login_window_thread(app_handle, app_data_root, website, maybe_target_credential_id).await;
   });
 
   Ok(())

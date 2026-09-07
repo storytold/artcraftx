@@ -9,6 +9,7 @@ use sqlite_database::queries::task::Task;
 use tauri::AppHandle;
 
 use crate::commands::generate::common::higgsfield_generation::split_higgsfield_job_ids;
+use crate::services::higgsfield::mark_higgsfield_relogin_required::mark_higgsfield_relogin_required;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
@@ -95,7 +96,7 @@ async fn poll_single_task(
     return Ok(());
   }
 
-  let Some((session, progress)) = find_job_set(sessions, &job_ids, task).await else {
+  let Some((session, progress)) = find_job_set(app_handle, app_data_root, sessions, &job_ids, task).await else {
     // No account knows the jobs. Leave the task pending: the account may be
     // temporarily unreachable (expired session, network) and come back.
     return Ok(());
@@ -178,6 +179,8 @@ async fn poll_single_task(
 
 /// Ask each account for the jobs' status until one knows them.
 async fn find_job_set<'a>(
+  app_handle: &AppHandle,
+  app_data_root: &AppDataRoot,
   sessions: &'a [(String, HiggsfieldSession)],
   job_ids: &[JobId],
   task: &Task,
@@ -191,6 +194,9 @@ async fn find_job_set<'a>(
           task.id.as_str(), credential_id, err,
           if err.needs_browser_reauth() { " (log into Higgsfield again)" } else { "" },
         );
+        if err.needs_browser_reauth() {
+          mark_higgsfield_relogin_required(app_handle, app_data_root, credential_id);
+        }
         continue;
       }
     };

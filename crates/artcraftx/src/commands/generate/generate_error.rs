@@ -92,6 +92,56 @@ pub enum CredentialProblemReason {
   CredentialNotFound { credential_id: String },
   /// The credential exists but can't serve this request.
   CredentialNotUsable { credential_id: String, reason: String },
+  /// The provider rejected the credential's session; only a fresh browser
+  /// login fixes it. The credential file is marked (see
+  /// `CookieCredential::relogin_required_since`) so nothing retries the API
+  /// until the user logs in again.
+  SessionExpired { credential_id: String, service: GenerationSource },
+}
+
+impl CredentialProblemReason {
+  /// What to tell the user. Shared by the generate commands' error responses
+  /// and the credential-error modal so both say the same thing.
+  pub fn user_message(&self) -> String {
+    match self {
+      Self::NoCredentialSupplied => {
+        "No account selected. Pick an account in the account selector, \
+         or add one in Settings → Accounts.".to_string()
+      }
+      Self::CredentialNotFound { credential_id } => format!(
+        "The selected account no longer exists (credential {}). \
+         Pick another account and try again.",
+        credential_id,
+      ),
+      Self::CredentialNotUsable { reason, .. } => {
+        format!("The selected account can't be used for this request: {}", reason)
+      }
+      Self::SessionExpired { service, .. } => format!(
+        "Your session has expired and {} needs you to login again.",
+        service_display_name(*service),
+      ),
+    }
+  }
+}
+
+/// The provider name as users know it, for messages.
+fn service_display_name(service: GenerationSource) -> &'static str {
+  match service {
+    GenerationSource::Higgsfield | GenerationSource::HiggsfieldCookies => "Higgsfield",
+    GenerationSource::Grok | GenerationSource::GrokCookies | GenerationSource::XAiApi => "Grok",
+    GenerationSource::Midjourney | GenerationSource::MidjourneyCookies => "Midjourney",
+    GenerationSource::Artcraft
+    | GenerationSource::ArtcraftLocal
+    | GenerationSource::ArtcraftCookies
+    | GenerationSource::ArtcraftApi => "ArtCraft",
+    GenerationSource::Fal | GenerationSource::FalApi => "Fal",
+    GenerationSource::MagnificCookies => "Magnific",
+    GenerationSource::OpenArtCookies => "OpenArt",
+    GenerationSource::RunwayCookies => "Runway",
+    GenerationSource::OpenAiApi => "OpenAI",
+    GenerationSource::ReplicateApi => "Replicate",
+    GenerationSource::WorldLabs | GenerationSource::WorldLabsCookies => "World Labs",
+  }
 }
 
 #[derive(Debug)]

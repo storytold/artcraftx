@@ -28,6 +28,9 @@ pub struct CredentialPayload {
   pub updated_at: Option<DateTime<Utc>>,
   pub failed_at: Option<DateTime<Utc>>,
   pub succeeded_at: Option<DateTime<Utc>>,
+  /// Set while the provider has rejected this session and the user must log
+  /// in again (see `CookieCredential::relogin_required_since`).
+  pub relogin_required_since: Option<DateTime<Utc>>,
 }
 
 impl CredentialPayload {
@@ -47,6 +50,7 @@ impl CredentialPayload {
       updated_at: cookie.and_then(|c| c.updated_at),
       failed_at: api_key.and_then(|key| key.failed_at).or(cookie.and_then(|c| c.failed_at)),
       succeeded_at: api_key.and_then(|key| key.succeeded_at).or(cookie.and_then(|c| c.succeeded_at)),
+      relogin_required_since: cookie.and_then(|c| c.relogin_required_since),
     }
   }
 }

@@ -79,10 +79,10 @@ pub async fn generate_video_command(
           error_type = TauriGenerateVideoErrorType::NoProviderAvailable;
           error_message = "No configured provider available for video generation".to_string();
         }
-        GenerateError::CredentialProblem(_) => {
+        GenerateError::CredentialProblem(reason) => {
           status = CommandErrorStatus::Unauthorized;
           error_type = TauriGenerateVideoErrorType::CredentialProblem;
-          error_message = "There's a problem with the selected account.".to_string();
+          error_message = reason.user_message();
         }
         GenerateError::NotYetImplemented(message) => {
           error_message = message;

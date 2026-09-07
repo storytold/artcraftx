@@ -54,10 +54,10 @@ pub async fn generate_audio_command(
           error_type = TauriGenerateAudioErrorType::ModelNotSpecified;
           error_message = "No model specified for audio generation".to_string();
         }
-        GenerateError::CredentialProblem(_) => {
+        GenerateError::CredentialProblem(reason) => {
           status = CommandErrorStatus::Unauthorized;
           error_type = TauriGenerateAudioErrorType::CredentialProblem;
-          error_message = "There's a problem with the selected account.".to_string();
+          error_message = reason.user_message();
         }
         GenerateError::NotYetImplemented(message) => {
           error_message = message;

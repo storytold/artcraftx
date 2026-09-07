@@ -56,10 +56,10 @@ pub async fn generate_splat_command(
           error_type = TauriGenerateSplatErrorType::ModelNotSpecified;
           error_message = "No model specified for splat generation".to_string();
         }
-        GenerateError::CredentialProblem(_) => {
+        GenerateError::CredentialProblem(reason) => {
           status = CommandErrorStatus::Unauthorized;
           error_type = TauriGenerateSplatErrorType::CredentialProblem;
-          error_message = "There's a problem with the selected account.".to_string();
+          error_message = reason.user_message();
         }
         GenerateError::NotYetImplemented(message) => {
           error_message = message;

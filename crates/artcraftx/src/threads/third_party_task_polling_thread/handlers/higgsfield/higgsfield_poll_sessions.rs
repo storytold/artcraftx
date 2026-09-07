@@ -49,6 +49,14 @@ impl HiggsfieldPollSessions {
     let mut result = Vec::with_capacity(higgsfield_credentials.len());
     for credential in &higgsfield_credentials {
       let id = credential.id.as_str().to_string();
+      // A session Higgsfield already rejected stays untouched until the user
+      // logs in again (which rewrites the cookies and clears the mark).
+      if credential.needs_relogin() {
+        if self.sessions.remove(&id).is_some() {
+          warn!("[HiggsfieldPolling] Credential {} needs a re-login; not polling with it", id);
+        }
+        continue;
+      }
       let cookie_header = credential.cookies().map(|cookie| cookie.cookie_header()).unwrap_or_default();
       let is_current = self.sessions.get(&id).is_some_and(|entry| entry.cookie_header == cookie_header);
       if !is_current {

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRefreshAccountStateEvent } from "@storyteller/tauri-events";
 import { Button } from "@storyteller/ui-button";
-import { Key, Pen, Plus, Trash2 } from "lucide-react";
+import { Key, LogIn, Pen, Plus, Trash2 } from "lucide-react";
 import {
   CredentialPayload,
   ServiceMeta,
@@ -9,6 +9,7 @@ import {
   getServiceMeta,
   listCredentials,
   refreshGrokStatsig,
+  openWebLogin,
 } from "./credential-helpers";
 import { AddCredentialModal } from "./AddCredentialModal";
 import { ArtcraftLoginModal } from "./ArtcraftLoginModal";
@@ -172,6 +173,10 @@ const CredentialRow = ({
   const secondaryLine = isApiKey
     ? `${credential.api_key_preview ?? ""}${"*".repeat(12)}`
     : cookieIdentityLine(credential);
+  // The provider rejected this session; nothing is attempted with it until
+  // the user logs in again (which refreshes this credential in place).
+  const needsRelogin = credential.relogin_required_since !== null;
+  const canRelogin = needsRelogin && !!meta.loginWebsite;
 
   return (
     <div
@@ -192,7 +197,25 @@ const CredentialRow = ({
         >
           {secondaryLine}
         </span>
+        {needsRelogin && (
+          <span className="truncate text-xs text-amber-500">
+            Session expired. {meta.label} needs you to log in again.
+          </span>
+        )}
       </div>
+      {canRelogin && (
+        <Button
+          variant="primary"
+          className="h-8"
+          icon={LogIn}
+          onClick={(e: React.MouseEvent) => {
+            e.stopPropagation();
+            openWebLogin(meta.loginWebsite!, credential.id);
+          }}
+        >
+          Log in
+        </Button>
+      )}
       {isApiKey && (
         <Button
           variant="secondary"

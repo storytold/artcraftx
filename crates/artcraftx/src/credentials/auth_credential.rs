@@ -4,6 +4,7 @@ use crate::credentials::credential_toml::CredentialToml;
 use core_types::enums::generation_source::{CredentialKind, GenerationSource};
 use crate::credentials::credential_user_info::CredentialUserInfo;
 use crate::error::artcraftx_credential_error::ArtcraftXCredentialError;
+use chrono::Utc;
 use std::path::{Path, PathBuf};
 use core_types::identifiers::credential_id::CredentialId;
 
@@ -68,6 +69,27 @@ impl AuthCredential {
 
   pub fn kind(&self) -> CredentialKind {
     self.secret.kind()
+  }
+
+  /// Whether the stored session is known-dead (see
+  /// [`CookieCredential::relogin_required_since`]). API-key credentials
+  /// never need a browser re-login.
+  pub fn needs_relogin(&self) -> bool {
+    self.cookies().is_some_and(CookieCredential::needs_relogin)
+  }
+
+  /// Record that the provider rejected this credential's session and
+  /// persist it, so every later caller skips the API until the user logs in
+  /// again. Returns `Ok(true)` when the credential was newly marked (the
+  /// moment to tell the user), `Ok(false)` if it was already marked or isn't
+  /// a cookie credential.
+  pub fn mark_relogin_required(&mut self) -> Result<bool, ArtcraftXCredentialError> {
+    let CredentialSecret::Cookies(cookie) = &mut self.secret else {
+      return Ok(false);
+    };
+    let newly_marked = cookie.mark_relogin_required(Utc::now());
+    self.save()?;
+    Ok(newly_marked)
   }
 
   /// The credential's file name within the credentials directory

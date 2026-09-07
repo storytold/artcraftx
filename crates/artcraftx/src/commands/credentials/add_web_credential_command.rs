@@ -24,25 +24,46 @@ pub struct WebCredentialSave {
   /// The User-Agent the capturing webview presented, when the site pins one.
   /// Bot-protection cookies are bound to it; see `CookieCredential::user_agent`.
   pub maybe_user_agent: Option<String>,
+  /// An existing credential to refresh in place (a re-login). When it still
+  /// exists, exactly that file is rewritten; when it's gone, a new one is
+  /// created. `None` upserts the service's managed credential instead.
+  pub maybe_target_credential_id: Option<String>,
 }
 
 /// Save a web-login (cookie) credential to the credentials directory.
 ///
-/// Upserts by service: if a managed cookie credential for `service` already
-/// exists, its file (and label) are reused and the cookies refreshed;
-/// otherwise a new `{service}.toml` file is created. This keeps the login flow
+/// With a target credential id (a re-login), that exact credential is
+/// rewritten if it still exists, keeping its id, label, and file. Otherwise
+/// this upserts by service: if a managed cookie credential for `service`
+/// already exists, its file (and label) are reused and the cookies refreshed;
+/// else a new `{service}.toml` file is created. This keeps the login flow
 /// from piling up a new file on every re-login while still letting users
 /// hand-maintain multiple accounts.
+///
+/// Fresh cookies are a fresh session, so any "needs re-login" mark is cleared.
 pub fn save_web_credential(
   creds_dir: &AppCredentialsDir,
   save: WebCredentialSave,
 ) -> Result<AuthCredential, ArtcraftXError> {
-  let existing = creds_dir
-      .load_credentials()?
-      .into_iter()
-      .find(|credential| {
-        credential.service == save.service && credential.kind() == CredentialKind::Cookies
-      });
+  let all_credentials = creds_dir.load_credentials()?;
+
+  let targeted = save.maybe_target_credential_id.as_deref().and_then(|target_id| {
+    let found = all_credentials.iter().find(|credential| {
+      credential.id.as_str() == target_id
+          && credential.service == save.service
+          && credential.kind() == CredentialKind::Cookies
+    });
+    if found.is_none() {
+      info!("Re-login target credential {} no longer exists; saving a new credential instead", target_id);
+    }
+    found.cloned()
+  });
+
+  let existing = targeted.or_else(|| {
+    all_credentials.into_iter().find(|credential| {
+      credential.service == save.service && credential.kind() == CredentialKind::Cookies
+    })
+  });
 
   let now = Utc::now();
 
@@ -60,6 +81,7 @@ pub fn save_web_credential(
     updated_at: Some(now),
     failed_at: None,
     succeeded_at: None,
+    relogin_required_since: None,
     user_agent: save.maybe_user_agent,
     grok_data,
     cookies: save.cookies,
@@ -152,6 +174,7 @@ pub async fn add_web_credential_command(
       maybe_statsig: None,
       // Hand-entered cookies came from an unknown browser; record no UA.
       maybe_user_agent: None,
+      maybe_target_credential_id: None,
     },
   ).map_err(|err| {
     error!("Error saving web credential: {}", err);
@@ -181,4 +204,67 @@ fn apply_optional_name(
     format!("Error saving credential label: {}", err)
   })?;
   Ok(credential)
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::credentials::auth_credential::AuthCredential;
+  use reqwest::Url;
+
+  const SERVICE: GenerationSource = GenerationSource::HiggsfieldCookies;
+
+  #[test]
+  fn targeted_relogin_rewrites_that_credential_and_clears_the_mark() {
+    let (_dir, root) = temp_root();
+    let creds_dir = root.credentials_dir();
+    let first = save(creds_dir, "__client=first", None);
+    let second = save(creds_dir, "__client=second", None);
+    // NB: without a target, a second login upserts the first managed file.
+    assert_eq!(second.id, first.id);
+
+    let mut expired = creds_dir.find_credential_by_id(first.id.as_str()).unwrap().unwrap();
+    expired.name = Some("work".to_string());
+    creds_dir.save_credential(&expired).unwrap();
+    assert!(expired.mark_relogin_required().unwrap());
+    assert!(creds_dir.find_credential_by_id(first.id.as_str()).unwrap().unwrap().needs_relogin());
+
+    let refreshed = save(creds_dir, "__client=fresh", Some(first.id.as_str()));
+    assert_eq!(refreshed.id, first.id, "same identity");
+    assert_eq!(refreshed.source_path, first.source_path, "same file");
+    assert_eq!(refreshed.name.as_deref(), Some("work"), "label kept");
+    assert!(!refreshed.needs_relogin(), "fresh session clears the mark");
+    assert!(refreshed.cookies().unwrap().cookies.has_cookie("__client"));
+    assert_eq!(creds_dir.load_credentials().unwrap().len(), 1, "no second file");
+  }
+
+  #[test]
+  fn targeted_relogin_creates_a_new_credential_when_the_target_is_gone() {
+    let (_dir, root) = temp_root();
+    let creds_dir = root.credentials_dir();
+    let saved = save(creds_dir, "__client=fresh", Some("credential_deleted_meanwhile"));
+    assert_ne!(saved.id.as_str(), "credential_deleted_meanwhile");
+    assert_eq!(creds_dir.load_credentials().unwrap().len(), 1);
+    assert!(!saved.needs_relogin());
+  }
+
+  // ── Helpers ──
+
+  fn temp_root() -> (tempfile::TempDir, AppDataRoot) {
+    let dir = tempfile::tempdir().unwrap();
+    let root = AppDataRoot::create_existing(dir.path()).unwrap();
+    (dir, root)
+  }
+
+  fn save(creds_dir: &AppCredentialsDir, cookie_header: &str, target: Option<&str>) -> AuthCredential {
+    let origin = Url::parse("https://higgsfield.ai/").unwrap();
+    save_web_credential(creds_dir, WebCredentialSave {
+      service: SERVICE,
+      cookies: CookieStore::from_cookie_header(cookie_header, &origin),
+      maybe_user_info: None,
+      maybe_statsig: None,
+      maybe_user_agent: None,
+      maybe_target_credential_id: target.map(str::to_string),
+    }).unwrap()
+  }
 }

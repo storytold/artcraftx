@@ -22,6 +22,12 @@ export interface CredentialPayload {
   updated_at: string | null;
   failed_at: string | null;
   succeeded_at: string | null;
+  /**
+   * Set while the provider has rejected this session and the user must log
+   * in again; the backend makes no API calls with the credential until then.
+   * Cleared by a successful re-login.
+   */
+  relogin_required_since: string | null;
 }
 
 export interface ServiceMeta {
@@ -134,9 +140,12 @@ export const deleteCredential = async (
  * `LoginWebsite` variant (see `WEBSITE_LOGIN_SERVICES[].loginWebsite`). The
  * backend opens a fresh webview and, once the user signs in, saves the
  * captured cookies as a credential and emits `refresh_account_state_event`.
+ *
+ * Pass `credentialId` to refresh that credential in place (a re-login after
+ * its session expired) instead of adding a second account for the service.
  */
-export const openWebLogin = async (website: string): Promise<void> => {
-  await invoke("open_web_login_command", { website });
+export const openWebLogin = async (website: string, credentialId?: string): Promise<void> => {
+  await invoke("open_web_login_command", { website, credentialId });
 };
 
 /**

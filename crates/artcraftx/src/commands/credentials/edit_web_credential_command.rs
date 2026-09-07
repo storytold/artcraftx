@@ -67,6 +67,8 @@ pub async fn edit_web_credential_command(
           updated_at: Some(Utc::now()),
           failed_at: existing_failed_at,
           succeeded_at: existing_succeeded_at,
+          // New cookies are a new session; the old one's death no longer applies.
+          relogin_required_since: None,
           // Hand-pasted cookies came from an unknown browser; drop the
           // recorded UA rather than claim one that may no longer match.
           user_agent: None,

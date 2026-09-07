@@ -159,6 +159,7 @@ async fn handle_error_behavior(
   let error_message = match &err {
     GenerateError::NotYetImplemented(message) => message.clone(),
     GenerateError::ProviderRejected(message) => message.clone(),
+    GenerateError::CredentialProblem(reason) => reason.user_message(),
     other => format!("{:?}", other),
   };
 

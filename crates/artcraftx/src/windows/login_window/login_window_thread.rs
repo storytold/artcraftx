@@ -30,6 +30,7 @@ pub async fn login_window_thread(
   app: AppHandle,
   app_data_root: AppDataRoot,
   website: LoginWebsite,
+  maybe_target_credential_id: Option<String>,
 ) {
   let site = login_site_for(website);
   let window_name = login_window_name(website);
@@ -49,6 +50,7 @@ pub async fn login_window_thread(
       &app_data_root,
       website,
       site.as_ref(),
+      maybe_target_credential_id.as_deref(),
     );
 
     match result {
@@ -80,6 +82,7 @@ fn check_login_window(
   app_data_root: &AppDataRoot,
   website: LoginWebsite,
   site: &dyn LoginWindowSite,
+  maybe_target_credential_id: Option<&str>,
 ) -> AnyhowResult<bool> {
   let url = webview_window.url()?;
   let hostname = url.host_str().unwrap_or_default().to_string();
@@ -156,6 +159,7 @@ fn check_login_window(
       maybe_user_info,
       maybe_statsig,
       maybe_user_agent: site.user_agent().map(str::to_string),
+      maybe_target_credential_id: maybe_target_credential_id.map(str::to_string),
     },
   )?;
 

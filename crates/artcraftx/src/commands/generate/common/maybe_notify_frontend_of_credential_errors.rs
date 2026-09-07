@@ -1,11 +1,14 @@
 use tauri::AppHandle;
 
 use crate::commands::generate::generate_error::{CredentialProblemReason, GenerateError};
+use crate::credentials::login_website::LoginWebsite;
 use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::show_credential_error_modal_event::ShowCredentialErrorModalEvent;
 
 /// If the error is a credential problem, tell the frontend to show the
-/// dismissable credential-error modal.
+/// dismissable credential-error modal. An expired session also names the
+/// website and credential to log into again, so the modal can offer a
+/// "log in" button that refreshes that exact credential.
 pub async fn maybe_notify_frontend_of_credential_errors(
   app: &AppHandle,
   error: &GenerateError,
@@ -14,22 +17,17 @@ pub async fn maybe_notify_frontend_of_credential_errors(
     return;
   };
 
-  let message = match reason {
-    CredentialProblemReason::NoCredentialSupplied => {
-      "No account selected. Pick an account in the account selector, \
-       or add one in Settings → Accounts.".to_string()
-    }
-    CredentialProblemReason::CredentialNotFound { credential_id } => {
-      format!(
-        "The selected account no longer exists (credential {}). \
-         Pick another account and try again.",
-        credential_id,
-      )
-    }
-    CredentialProblemReason::CredentialNotUsable { reason, .. } => {
-      format!("The selected account can't be used for this request: {}", reason)
-    }
+  let (maybe_relogin_website, maybe_credential_id) = match reason {
+    CredentialProblemReason::SessionExpired { credential_id, service } => (
+      LoginWebsite::for_credential_service(*service),
+      Some(credential_id.clone()),
+    ),
+    _ => (None, None),
   };
 
-  ShowCredentialErrorModalEvent { message }.send_infallible(app);
+  ShowCredentialErrorModalEvent {
+    message: reason.user_message(),
+    maybe_relogin_website,
+    maybe_credential_id,
+  }.send_infallible(app);
 }

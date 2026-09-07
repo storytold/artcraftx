@@ -7,10 +7,12 @@
 use std::collections::HashMap;
 
 use artcraft_client::utils::api_host::ApiHost;
-use log::{info, warn};
+use log::{error, info, warn};
 use router::api::asset_upload_cache::AssetUploadCache;
 use router::client::router_client::RouterClient;
 use router::client::router_higgsfield_client::RouterHiggsfieldClient;
+use router::errors::artcraft_router_error::ArtcraftRouterError;
+use router::errors::provider_error::ProviderError;
 use router::generate::generate_image::generate_image_request_builder::GenerateImageRequestBuilder;
 use router::generate::generate_image::generate_image_response::GenerateImageResponse;
 use router::generate::generate_image::image_generation_draft_context::ImageGenerationDraftContext;
@@ -21,7 +23,7 @@ use router::generate::generate_video::video_generation_draft_context::VideoGener
 use router::generate::generate_video::video_generation_draft_or_request::VideoGenerationDraftOrRequest;
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
-use crate::commands::generate::generate_error::GenerateError;
+use crate::commands::generate::generate_error::{CredentialProblemReason, GenerateError};
 use crate::commands::generate::generate_image::utils::map_media_files_to_urls::map_media_file_tokens_to_cdn_urls;
 use crate::credentials::auth_credential::AuthCredential;
 use crate::services::higgsfield::higgsfield_session_from_credential::higgsfield_session_from_credential;
@@ -30,10 +32,44 @@ use crate::services::higgsfield::higgsfield_session_from_credential::higgsfield_
 /// `provider_job_id`, so the poller can follow every job of the set.
 pub const HIGGSFIELD_JOB_ID_SEPARATOR: char = ',';
 
-/// The router client for a stored Higgsfield credential.
+/// The router client for a stored Higgsfield credential. A credential whose
+/// session Higgsfield already rejected fails here, before any request, until
+/// the user logs in again.
 pub fn higgsfield_router_client(credential: &AuthCredential) -> Result<RouterClient, GenerateError> {
+  if credential.needs_relogin() {
+    info!("Higgsfield credential {} is marked as needing a re-login; not calling the API", credential.id);
+    return Err(session_expired(credential));
+  }
   let session = higgsfield_session_from_credential(credential)?;
   Ok(RouterClient::Higgsfield(RouterHiggsfieldClient::new(session)))
+}
+
+/// The error for a credential whose session is dead.
+pub fn session_expired(credential: &AuthCredential) -> GenerateError {
+  GenerateError::CredentialProblem(CredentialProblemReason::SessionExpired {
+    credential_id: credential.id.to_string(),
+    service: credential.service,
+  })
+}
+
+/// Convert a router error from a Higgsfield call. When Higgsfield says the
+/// session is dead (`needs_browser_reauth()`), the credential file is marked
+/// so nothing else retries it, and the error becomes a session-expired
+/// credential problem (which the frontend turns into a "log in again" prompt).
+fn higgsfield_error_to_generate_error(credential: &AuthCredential, err: ArtcraftRouterError) -> GenerateError {
+  let session_is_dead = matches!(
+    &err,
+    ArtcraftRouterError::Provider(ProviderError::Higgsfield(higgsfield_err)) if higgsfield_err.needs_browser_reauth()
+  );
+  if !session_is_dead {
+    return GenerateError::from(err);
+  }
+  warn!("Higgsfield rejected the session of credential {}; marking it as needing a re-login: {:?}", credential.id, err);
+  let mut marked = credential.clone();
+  if let Err(save_err) = marked.mark_relogin_required() {
+    error!("Could not mark credential {} as needing a re-login: {}", credential.id, save_err);
+  }
+  session_expired(credential)
 }
 
 /// Resolve reference media tokens (cloud-library picks only) to their
@@ -51,6 +87,7 @@ pub async fn higgsfield_media_url_map(tokens: &[MediaFileToken]) -> Result<HashM
 
 /// Build, finalize (uploading references) and send an image request.
 pub async fn send_higgsfield_image_request(
+  credential: &AuthCredential,
   builder: GenerateImageRequestBuilder,
   client: &RouterClient,
   media_url_map: &HashMap<MediaFileToken, String>,
@@ -70,20 +107,21 @@ pub async fn send_higgsfield_image_request(
       };
       draft.finalize(context).await.map_err(|err| {
         warn!("Could not upload references to Higgsfield: {:?}", err);
-        GenerateError::from(err)
+        higgsfield_error_to_generate_error(credential, err)
       })?
     }
   };
 
   request.send_request(client).await.map_err(|err| {
     warn!("Higgsfield image generation failed: {:?}", err);
-    GenerateError::from(err)
+    higgsfield_error_to_generate_error(credential, err)
   })
 }
 
 /// Build, finalize (uploading keyframes and references) and send a video
 /// request.
 pub async fn send_higgsfield_video_request(
+  credential: &AuthCredential,
   builder: GenerateVideoRequestBuilder,
   client: &RouterClient,
   media_url_map: &HashMap<MediaFileToken, String>,
@@ -104,14 +142,14 @@ pub async fn send_higgsfield_video_request(
       };
       draft.finalize(context).await.map_err(|err| {
         warn!("Could not upload media to Higgsfield: {:?}", err);
-        GenerateError::from(err)
+        higgsfield_error_to_generate_error(credential, err)
       })?
     }
   };
 
   request.send_request(client).await.map_err(|err| {
     warn!("Higgsfield video generation failed: {:?}", err);
-    GenerateError::from(err)
+    higgsfield_error_to_generate_error(credential, err)
   })
 }
 

@@ -73,7 +73,7 @@ pub async fn enqueue_via_higgsfield(
   let client = higgsfield_router_client(credential)?;
   // References this account already uploaded are reused by media id.
   let upload_cache = ledger.for_higgsfield_credential(&credential.id);
-  let response = send_higgsfield_image_request(router_request, &client, &media_url_map, &upload_cache).await?;
+  let response = send_higgsfield_image_request(credential, router_request, &client, &media_url_map, &upload_cache).await?;
 
   let payload = response
       .get_higgsfield_payload()

@@ -43,6 +43,22 @@ impl LoginWebsite {
     }
   }
 
+  /// The website to log into again to refresh a credential of this service,
+  /// if the app can drive that login. The inverse of
+  /// [`Self::credential_service`].
+  pub fn for_credential_service(service: GenerationSource) -> Option<Self> {
+    match service {
+      GenerationSource::ArtcraftCookies => Some(Self::ArtCraft),
+      GenerationSource::OpenArtCookies => Some(Self::OpenArt),
+      GenerationSource::HiggsfieldCookies => Some(Self::Higgsfield),
+      GenerationSource::RunwayCookies => Some(Self::Runway),
+      GenerationSource::MagnificCookies => Some(Self::Magnific),
+      GenerationSource::MidjourneyCookies => Some(Self::Midjourney),
+      GenerationSource::GrokCookies => Some(Self::XAi),
+      _ => None,
+    }
+  }
+
   /// The generation provider impacted by this login, if any. Used to tell the
   /// frontend which account state to refresh. `None` means "not tied to a
   /// known generation provider" (refresh broadly).
@@ -85,6 +101,15 @@ mod tests {
     assert_eq!(json, "\"artcraft\"");
     let back: LoginWebsite = serde_json::from_str("\"higgsfield\"").unwrap();
     assert_eq!(back, LoginWebsite::Higgsfield);
+  }
+
+  #[test]
+  fn credential_service_round_trips() {
+    for website in [LoginWebsite::ArtCraft, LoginWebsite::OpenArt, LoginWebsite::Higgsfield, LoginWebsite::Runway, LoginWebsite::Magnific, LoginWebsite::Midjourney, LoginWebsite::XAi] {
+      assert_eq!(LoginWebsite::for_credential_service(website.credential_service()), Some(website));
+    }
+    assert_eq!(LoginWebsite::for_credential_service(GenerationSource::FalApi), None);
+    assert_eq!(LoginWebsite::for_credential_service(GenerationSource::Higgsfield), None, "bare provider, not a cookie service");
   }
 
   #[test]
