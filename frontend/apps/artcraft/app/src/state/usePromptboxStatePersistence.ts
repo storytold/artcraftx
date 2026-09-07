@@ -187,9 +187,8 @@ const pickOptions = (store: Record<string, unknown>, spec: FieldSpec): Record<st
   return out;
 };
 
-// The full set of patches describing the current state, one per modality
-// plus the model->account memory.
-const snapshot = (): UpdatePromptboxStateRequest[] => {
+// The complete state to persist, as the backend stores it.
+const snapshot = (): UpdatePromptboxStateRequest => {
   const selection = useClassyModelSelectorStore.getState();
   const accountId = selection.selectedAccountId ?? undefined;
   const optionsFor: Partial<Record<PromptboxModality, Record<string, unknown>>> = {
@@ -198,41 +197,39 @@ const snapshot = (): UpdatePromptboxStateRequest[] => {
     audio: pickOptions(asRecord(usePromptAudioStore.getState()), AUDIO_OPTION_FIELDS),
   };
 
-  const patches: UpdatePromptboxStateRequest[] = SELECTOR_PAGES.map(({ modality, page }) => ({
-    modality,
+  const modalityState = (modality: PromptboxModality, selectedModel: string | undefined): ModalityPromptboxState => ({
     selected_account_id: accountId,
-    selected_model: selection.selectedModels[page]?.id,
+    selected_model: selectedModel,
     options: optionsFor[modality] ?? {},
-  }));
-  patches.push({
-    modality: "audio",
-    selected_account_id: accountId,
-    selected_model: usePromptAudioStore.getState().selectedModelId ?? undefined,
-    options: optionsFor.audio ?? {},
   });
-  patches.push({ last_account_by_model: selection.lastAccountByModel });
-  return patches;
+  const selectorModel = (page: ModelPage) => selection.selectedModels[page]?.id;
+
+  return {
+    image: modalityState("image", selectorModel(ModelPage.TextToImage)),
+    video: modalityState("video", selectorModel(ModelPage.ImageToVideo)),
+    splat: modalityState("splat", selectorModel(ModelPage.ImageTo3DWorld)),
+    mesh: modalityState("mesh", selectorModel(ModelPage.ImageTo3DObject)),
+    audio: modalityState("audio", usePromptAudioStore.getState().selectedModelId ?? undefined),
+    last_account_by_model: selection.lastAccountByModel,
+  };
 };
 
-// Subscribe to every store that feeds the snapshot; write only the patches
-// that changed since the last write, debounced.
+// Subscribe to every store that feeds the snapshot; write the whole snapshot
+// (debounced) whenever it differs from the last one written.
 const startPersisting = (): (() => void) => {
-  const lastWritten = new Map<string, string>();
-  for (const patch of snapshot()) lastWritten.set(patchKey(patch), JSON.stringify(patch));
+  let lastWritten = JSON.stringify(snapshot());
 
   let timer: number | undefined;
   const flush = () => {
     timer = undefined;
-    for (const patch of snapshot()) {
-      const key = patchKey(patch);
-      const json = JSON.stringify(patch);
-      if (lastWritten.get(key) === json) continue;
-      lastWritten.set(key, json);
-      UpdatePromptboxState(patch).catch((err) => {
-        console.warn("[promptbox] could not persist state:", err);
-        lastWritten.delete(key); // Try again on the next change.
-      });
-    }
+    const state = snapshot();
+    const json = JSON.stringify(state);
+    if (json === lastWritten) return;
+    lastWritten = json;
+    UpdatePromptboxState(state).catch((err) => {
+      console.warn("[promptbox] could not persist state:", err);
+      lastWritten = ""; // Try again on the next change.
+    });
   };
   const schedule = () => {
     if (timer !== undefined) window.clearTimeout(timer);
@@ -250,6 +247,3 @@ const startPersisting = (): (() => void) => {
     for (const unsubscribe of unsubscribers) unsubscribe();
   };
 };
-
-const patchKey = (patch: UpdatePromptboxStateRequest): string =>
-  patch.modality ?? "last_account_by_model";

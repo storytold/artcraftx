@@ -12,6 +12,7 @@ use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_servi
 use crate::credentials::auth_credential::AuthCredential;
 use core_types::enums::generation_source::GenerationSource;
 use crate::events::notice_events::progress_notice_event::ProgressNotice;
+use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use tauri::AppHandle;
 
@@ -23,6 +24,7 @@ pub async fn handle_credential_router(
   // Optional so headless callers (live tests) can skip UI notices.
   maybe_app: Option<&AppHandle>,
   app_data_root: &AppDataRoot,
+  ledger: &AssetUploadLedger,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let credential = resolve_generation_credential(
     request.credential_id.as_deref(),
@@ -39,7 +41,7 @@ pub async fn handle_credential_router(
     GenerationSource::Artcraft
     | GenerationSource::ArtcraftLocal
     | GenerationSource::ArtcraftCookies => {
-      handle_artcraft_credential(request, &credential).await
+      handle_artcraft_credential(request, &credential, ledger).await
     }
     GenerationSource::HiggsfieldCookies
     | GenerationSource::Higgsfield => {
@@ -51,7 +53,7 @@ pub async fn handle_credential_router(
       let _ip_check_notice = maybe_app.filter(|_| has_media).map(|app| {
         ProgressNotice::start(app, "Higgsfield is checking your media for Intellectual Property and Likeness")
       });
-      handle_higgsfield_video_via_router(request, &credential).await
+      handle_higgsfield_video_via_router(request, &credential, ledger).await
     }
     other => Err(credential_not_usable(
       &credential,
@@ -66,6 +68,7 @@ pub async fn handle_credential_router(
 async fn handle_artcraft_credential(
   request: &TauriGenerateVideoRequest,
   credential: &AuthCredential,
+  ledger: &AssetUploadLedger,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let tauri_model = request.model.ok_or(GenerateError::no_model_specified())?;
 
@@ -83,6 +86,7 @@ async fn handle_artcraft_credential(
     &creds,
     router_model,
     generation_model,
+    ledger,
   ).await
 }
 
@@ -153,7 +157,8 @@ mod live_generation_tests {
       ..Default::default()
     };
 
-    let result = handle_credential_router(&request, None, &app_data_root).await;
+    let ledger = AssetUploadLedger::new(crate::state::database::local_files_database::LocalFilesDatabase::connect(&app_data_root).await.expect("local files db"));
+    let result = handle_credential_router(&request, None, &app_data_root, &ledger).await;
     let success = result.expect("seedance lite enqueue should succeed");
     println!("[live] seedance 1.0 lite enqueued: job_id={:?}", success.provider_job_id);
     assert!(success.provider_job_id.is_some());

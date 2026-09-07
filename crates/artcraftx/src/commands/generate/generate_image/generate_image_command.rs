@@ -13,6 +13,8 @@ use crate::events::basic_sendable_event_trait::BasicSendableEvent;
 use crate::events::functional_events::credits_balance_changed_event::CreditsBalanceChangedEvent;
 use crate::events::generation_events::generation_enqueue_success_event::GenerationEnqueueSuccessEvent;
 use crate::state::data_dir::app_data_root::AppDataRoot;
+use crate::state::database::local_files_database::LocalFilesDatabase;
+use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
 use crate::state::database::task_database::TaskDatabase;
 use log::{error, info};
 use tauri::{AppHandle, State};
@@ -25,18 +27,21 @@ pub async fn generate_image_command(
   task_database: State<'_, TaskDatabase>,
   midjourney_live_session: State<'_, MidjourneyLiveSession>,
   grok_websockets: State<'_, GrokWebsockets>,
+  local_files_database: State<'_, LocalFilesDatabase>,
 ) -> Response<TauriGenerateImageResponse, TauriGenerateImageErrorType, ()> {
 
   info!("generate_image_command called, request: {:?}", request);
 
   // Generation is credential-driven: the request names a stored credential,
   // and we invoke the router for that credential's service.
+  let ledger = AssetUploadLedger::new(local_files_database.inner().clone());
   let result = enqueue_image_generation(
     &request,
     &app,
     &app_data_root,
     &midjourney_live_session,
     &grok_websockets,
+    &ledger,
   ).await;
 
   match result {

@@ -14,6 +14,7 @@ use router::api::mesh_ref::MeshRef;
 use crate::commands::utils::api_adapters::models::mesh::tauri_mesh_model_to_generation_model::tauri_mesh_model_to_generation_model;
 use crate::commands::utils::api_adapters::models::mesh::tauri_mesh_model_to_router_model::tauri_mesh_model_to_router_model;
 use crate::commands::generate::generate_error::GenerateError;
+use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::common::generation_credential::{credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential};
 use crate::commands::generate::common::media_source_conversion::{
@@ -31,6 +32,7 @@ use crate::state::data_dir::app_data_root::AppDataRoot;
 pub async fn handle_credential_router(
   request: &TauriGenerateMeshRequest,
   app_data_root: &AppDataRoot,
+  ledger: &AssetUploadLedger,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   // Reject unusable media sources (missing local files, empty bytes) before
   // any provider work.
@@ -51,7 +53,7 @@ pub async fn handle_credential_router(
     GenerationSource::Artcraft
     | GenerationSource::ArtcraftLocal
     | GenerationSource::ArtcraftCookies => {
-      handle_artcraft_credential(request, &credential).await
+      handle_artcraft_credential(request, &credential, ledger).await
     }
     other => Err(credential_not_usable(
       &credential,
@@ -66,6 +68,7 @@ pub async fn handle_credential_router(
 async fn handle_artcraft_credential(
   request: &TauriGenerateMeshRequest,
   credential: &AuthCredential,
+  ledger: &AssetUploadLedger,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let tauri_model = request.model.ok_or(GenerateError::no_model_specified())?;
 
@@ -78,15 +81,15 @@ async fn handle_artcraft_credential(
   let creds = storyteller_creds_from_credential(credential)?;
 
   let media = request.media_sources();
-  let reference_images = sources_to_artcraft_tokens(media.reference_images, ArtcraftMediaKind::Image, Some(&creds), &api_host)
+  let reference_images = sources_to_artcraft_tokens(media.reference_images, ArtcraftMediaKind::Image, Some(&creds), &api_host, ledger)
       .await?.map(ImageListRef::MediaFileTokens);
-  let front_image = maybe_source_to_artcraft_token(media.front_image, ArtcraftMediaKind::Image, Some(&creds), &api_host)
+  let front_image = maybe_source_to_artcraft_token(media.front_image, ArtcraftMediaKind::Image, Some(&creds), &api_host, ledger)
       .await?.map(ImageRef::MediaFileToken);
-  let back_image = maybe_source_to_artcraft_token(media.back_image, ArtcraftMediaKind::Image, Some(&creds), &api_host)
+  let back_image = maybe_source_to_artcraft_token(media.back_image, ArtcraftMediaKind::Image, Some(&creds), &api_host, ledger)
       .await?.map(ImageRef::MediaFileToken);
-  let left_image = maybe_source_to_artcraft_token(media.left_image, ArtcraftMediaKind::Image, Some(&creds), &api_host)
+  let left_image = maybe_source_to_artcraft_token(media.left_image, ArtcraftMediaKind::Image, Some(&creds), &api_host, ledger)
       .await?.map(ImageRef::MediaFileToken);
-  let right_image = maybe_source_to_artcraft_token(media.right_image, ArtcraftMediaKind::Image, Some(&creds), &api_host)
+  let right_image = maybe_source_to_artcraft_token(media.right_image, ArtcraftMediaKind::Image, Some(&creds), &api_host, ledger)
       .await?.map(ImageRef::MediaFileToken);
   // There's no ArtCraft mesh-file upload endpoint yet; meshes stay token-only.
   let input_mesh = match media.input_mesh {

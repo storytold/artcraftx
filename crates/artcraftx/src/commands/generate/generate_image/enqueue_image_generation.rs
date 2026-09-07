@@ -45,6 +45,7 @@ use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_ge
 use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_router_model::tauri_image_model_to_router_model;
 use crate::credentials::auth_credential::AuthCredential;
 use crate::credentials::find_service_credentials::find_first_credential_for_service;
+use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
 use crate::services::grok::state::grok_websockets::GrokWebsockets;
 use crate::services::grok::util::refresh_grok_statsig::{refresh_grok_statsig_blocking, GrokStatsigRefreshOutcome};
 use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveSession;
@@ -64,6 +65,7 @@ pub async fn enqueue_image_generation(
   app_data_root: &AppDataRoot,
   mj_session: &MidjourneyLiveSession,
   grok_websockets: &GrokWebsockets,
+  ledger: &AssetUploadLedger,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   // Reject unusable media sources (missing local files, empty bytes) before
   // any provider work.
@@ -81,13 +83,13 @@ pub async fn enqueue_image_generation(
   match credential.service {
     GenerationSource::Artcraft
     | GenerationSource::ArtcraftLocal
-    | GenerationSource::ArtcraftCookies => enqueue_via_artcraft(request, &credential).await,
+    | GenerationSource::ArtcraftCookies => enqueue_via_artcraft(request, &credential, ledger).await,
 
     GenerationSource::FalApi => {
       let api_key = credential.api_key().ok_or_else(|| {
         credential_not_usable(&credential, "the FAL credential has no API key")
       })?;
-      enqueue_via_fal(request, &api_key.api_key, app_data_root).await
+      enqueue_via_fal(request, &api_key.api_key, app_data_root, ledger).await
     }
 
     GenerationSource::MidjourneyCookies | GenerationSource::Midjourney => {
@@ -99,7 +101,7 @@ pub async fn enqueue_image_generation(
     }
 
     GenerationSource::HiggsfieldCookies | GenerationSource::Higgsfield => {
-      enqueue_via_higgsfield(request, &credential).await
+      enqueue_via_higgsfield(request, &credential, ledger).await
     }
 
     other => Err(credential_not_usable(
@@ -117,6 +119,7 @@ pub async fn enqueue_image_generation(
 async fn enqueue_via_artcraft(
   request: &TauriGenerateImageRequest,
   credential: &AuthCredential,
+  ledger: &AssetUploadLedger,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let tauri_model = request.model.ok_or(GenerateError::no_model_specified())?;
 
@@ -137,7 +140,7 @@ async fn enqueue_via_artcraft(
   // the media must reach ArtCraft anyway.
   let semantic_media_files = parse_semantic_media_files(request, &creds, &api_host).await?;
   let reference_tokens = sources_to_artcraft_tokens(
-    request.reference_media_sources(), ArtcraftMediaKind::Image, Some(&creds), &api_host,
+    request.reference_media_sources(), ArtcraftMediaKind::Image, Some(&creds), &api_host, ledger,
   ).await?;
   let image_inputs = collect_artcraft_image_inputs(&semantic_media_files, reference_tokens);
 
@@ -215,6 +218,7 @@ async fn enqueue_via_fal(
   request: &TauriGenerateImageRequest,
   api_key: &str,
   app_data_root: &AppDataRoot,
+  ledger: &AssetUploadLedger,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let tauri_model = request.model.ok_or(GenerateError::no_model_specified())?;
 
@@ -225,7 +229,7 @@ async fn enqueue_via_fal(
     )),
   )?;
 
-  let image_inputs = resolve_fal_image_inputs(request, &ApiHost::Storyteller, app_data_root).await?;
+  let image_inputs = resolve_fal_image_inputs(request, &ApiHost::Storyteller, app_data_root, ledger).await?;
 
   let router_request = GenerateImageRequestBuilder {
     model: router_model,
@@ -259,6 +263,7 @@ async fn resolve_fal_image_inputs(
   request: &TauriGenerateImageRequest,
   api_host: &ApiHost,
   app_data_root: &AppDataRoot,
+  ledger: &AssetUploadLedger,
 ) -> Result<Option<ImageListRef>, GenerateError> {
   let mut canvas_and_scene_tokens: Vec<MediaFileToken> = Vec::new();
 
@@ -278,7 +283,7 @@ async fn resolve_fal_image_inputs(
   let maybe_creds = maybe_artcraft_credential.as_ref()
       .and_then(|credential| storyteller_creds_from_credential(credential).ok());
   let reference_urls = image_sources_to_fal_urls(
-    request.reference_media_sources(), maybe_creds.as_ref(), api_host,
+    request.reference_media_sources(), maybe_creds.as_ref(), api_host, ledger,
   ).await?;
   urls.extend(reference_urls.unwrap_or_default());
 

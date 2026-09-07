@@ -28,6 +28,7 @@ use sqlite_identifiers::ids::prompt_token::PromptToken;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 use uuid_utils::uuid::generate_random_uuid;
+use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
 use crate::utils::enum_conversion::artcraft_api_generation_provider::artcraft_api_generation_provider;
 
 const MAX_UPLOAD_RETRIES: u32 = 5;
@@ -63,7 +64,8 @@ pub struct UploadedResults {
 
 /// Upload every result file to ArtCraft (in order; the first becomes the
 /// primary), retrying on rate limits, then look up the primary file's CDN and
-/// thumbnail URLs (failing open).
+/// thumbnail URLs (failing open). With a ledger, a file this account already
+/// uploaded (and ArtCraft still has) is reused by token instead.
 pub async fn upload_results_to_artcraft(
   creds: &StorytellerCredentialSet,
   task: &Task,
@@ -71,8 +73,10 @@ pub async fn upload_results_to_artcraft(
   media_class: TaskMediaFileClass,
   prompt: CompletionPrompt,
   local_files: &[PathBuf],
+  maybe_ledger: Option<&AssetUploadLedger>,
 ) -> AnyhowResult<UploadedResults> {
   let task_id = task.id.as_str();
+  let maybe_upload_cache = maybe_ledger.and_then(|ledger| ledger.for_artcraft_session(Some(creds)));
 
   let maybe_prompt_token = resolve_prompt_token(creds, task, generation_provider, prompt).await;
 
@@ -85,14 +89,18 @@ pub async fn upload_results_to_artcraft(
   for (index, local_file) in local_files.iter().enumerate() {
     info!("[TaskCompletion] Uploading result {} of {} for task {} ...", index + 1, local_files.len(), task_id);
 
-    let media_token = upload_with_retry(
+    let upload = || upload_with_retry(
       creds,
       local_file,
       generation_provider,
       media_class,
       maybe_prompt_token.as_ref(),
       maybe_batch_token.as_ref(),
-    ).await?;
+    );
+    let media_token = match &maybe_upload_cache {
+      Some(cache) => cache.artcraft_token_for_file(&ApiHost::Storyteller, local_file, upload).await?,
+      None => upload().await?,
+    };
 
     info!("[TaskCompletion] Uploaded task {} result as {:?}", task_id, media_token);
 

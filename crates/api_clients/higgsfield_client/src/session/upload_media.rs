@@ -232,6 +232,16 @@ impl HiggsfieldSession {
 }
 
 impl HiggsfieldSession {
+  /// One status read of an uploaded image or clip (`GET /fnf/media/{id}` /
+  /// `/fnf/video/{id}`). Used to confirm a previously uploaded reference
+  /// still exists (and whether its IP check ran) before reusing its id.
+  pub async fn get_media_status(&self, family: MediaStatusFamily, media_id: &MediaId) -> Result<GetMediaStatusResponse, HiggsfieldError> {
+    self.with_auth(|auth| {
+      let request = GetMediaStatusRequest::new(family, media_id.clone());
+      async move { get_media_status(GetMediaStatusArgs { request, auth: &auth, host: self.api_host() }).await }
+    }).await
+  }
+
   /// Poll the upload's status (`GET /fnf/media/{id}` for images,
   /// `/fnf/video/{id}` for clips) until its IP check has finished. Only
   /// completes if the check was requested (`force_ip_check` on confirm);

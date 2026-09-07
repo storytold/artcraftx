@@ -1,3 +1,4 @@
+pub mod asset_upload_cache;
 pub mod audio_list_ref;
 pub mod audio_ref;
 pub mod character_list_ref;

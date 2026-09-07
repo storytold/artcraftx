@@ -13,6 +13,7 @@ use router::api::video_ref::VideoRef;
 use crate::commands::utils::api_adapters::models::splat::tauri_splat_model_to_generation_model::tauri_splat_model_to_generation_model;
 use crate::commands::utils::api_adapters::models::splat::tauri_splat_model_to_router_model::tauri_splat_model_to_router_model;
 use crate::commands::generate::generate_error::GenerateError;
+use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::common::generation_credential::{credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential};
 use crate::commands::generate::common::media_source_conversion::{
@@ -30,6 +31,7 @@ use crate::state::data_dir::app_data_root::AppDataRoot;
 pub async fn handle_credential_router(
   request: &TauriGenerateSplatRequest,
   app_data_root: &AppDataRoot,
+  ledger: &AssetUploadLedger,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   // Reject unusable media sources (missing local files, empty bytes) before
   // any provider work.
@@ -50,7 +52,7 @@ pub async fn handle_credential_router(
     GenerationSource::Artcraft
     | GenerationSource::ArtcraftLocal
     | GenerationSource::ArtcraftCookies => {
-      handle_artcraft_credential(request, &credential).await
+      handle_artcraft_credential(request, &credential, ledger).await
     }
     other => Err(credential_not_usable(
       &credential,
@@ -65,6 +67,7 @@ pub async fn handle_credential_router(
 async fn handle_artcraft_credential(
   request: &TauriGenerateSplatRequest,
   credential: &AuthCredential,
+  ledger: &AssetUploadLedger,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let tauri_model = request.model.ok_or(GenerateError::no_model_specified())?;
 
@@ -77,9 +80,9 @@ async fn handle_artcraft_credential(
   let creds = storyteller_creds_from_credential(credential)?;
 
   let media = request.media_sources();
-  let reference_images = sources_to_artcraft_tokens(media.reference_images, ArtcraftMediaKind::Image, Some(&creds), &api_host)
+  let reference_images = sources_to_artcraft_tokens(media.reference_images, ArtcraftMediaKind::Image, Some(&creds), &api_host, ledger)
       .await?.map(ImageListRef::MediaFileTokens);
-  let reference_video = maybe_source_to_artcraft_token(media.reference_video, ArtcraftMediaKind::Video, Some(&creds), &api_host)
+  let reference_video = maybe_source_to_artcraft_token(media.reference_video, ArtcraftMediaKind::Video, Some(&creds), &api_host, ledger)
       .await?.map(VideoRef::MediaFileToken);
 
   let client = RouterClient::Artcraft(RouterArtcraftClient::new(

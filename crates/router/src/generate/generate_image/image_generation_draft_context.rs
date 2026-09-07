@@ -3,6 +3,7 @@ use std::fmt::Debug;
 
 use sqlite_identifiers::ids::media_file_token::MediaFileToken;
 
+use crate::api::asset_upload_cache::AssetUploadCache;
 use crate::client::router_client::RouterClient;
 use crate::client::router_higgsfield_client::RouterHiggsfieldClient;
 use crate::client::router_seedance2pro_client::RouterSeedance2ProClient;
@@ -28,6 +29,10 @@ pub struct ImageGenerationDraftContext<'a> {
   /// inputs that must be downloaded from ArtCraft and re-uploaded to the
   /// target provider's CDN.
   pub media_file_to_artcraft_url_map: Option<&'a HashMap<MediaFileToken, String>>,
+
+  /// Optional: the account's upload history on the target provider, so
+  /// media it already holds isn't uploaded again.
+  pub asset_upload_cache: Option<&'a dyn AssetUploadCache>,
 }
 
 impl<'a> ImageGenerationDraftContext<'a> {
@@ -49,6 +54,7 @@ impl Debug for ImageGenerationDraftContext<'_> {
     f.debug_struct("ImageGenerationDraftContext")
       .field("client", &self.client.is_some())
       .field("media_file_to_artcraft_url_map", &self.media_file_to_artcraft_url_map.map(|m| m.len()))
+      .field("asset_upload_cache", &self.asset_upload_cache.is_some())
       .finish()
   }
 }

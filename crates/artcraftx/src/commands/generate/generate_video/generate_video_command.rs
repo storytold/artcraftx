@@ -14,6 +14,8 @@ use crate::events::generation_events::generation_enqueue_success_event::Generati
 use crate::state::usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
 use crate::state::usage_tracker::artcraft_usage_type::{ArtcraftUsagePage, ArtcraftUsageType};
 use crate::state::data_dir::app_data_root::AppDataRoot;
+use crate::state::database::local_files_database::LocalFilesDatabase;
+use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
 use crate::state::database::task_database::TaskDatabase;
 use log::{error, info, warn};
 use tauri::{AppHandle, State};
@@ -25,6 +27,7 @@ pub async fn generate_video_command(
   app_data_root: State<'_, AppDataRoot>,
   artcraft_usage_tracker: State<'_, ArtcraftUsageTracker>,
   task_database: State<'_, TaskDatabase>,
+  local_files_database: State<'_, LocalFilesDatabase>,
 ) -> Response<TauriGenerateVideoResponse, TauriGenerateVideoErrorType, ()> {
 
   info!("generate_video_command called, request: {:?}", request);
@@ -41,12 +44,14 @@ pub async fn generate_video_command(
     request.start_frame_image_media_token = request.image_media_token.clone();
   }
 
+  let ledger = AssetUploadLedger::new(local_files_database.inner().clone());
   let result = handle_request(
     request,
     &app,
     &app_data_root,
     &artcraft_usage_tracker,
     &task_database,
+    &ledger,
   ).await;
 
   match result {
@@ -126,6 +131,7 @@ async fn handle_request(
   app_data_root: &AppDataRoot,
   artcraft_usage_tracker: &ArtcraftUsageTracker,
   task_database: &TaskDatabase,
+  ledger: &AssetUploadLedger,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   // Reject unusable media sources (missing local files, empty bytes) before
@@ -134,7 +140,7 @@ async fn handle_request(
 
   // Generation is credential-driven: the request names a stored credential,
   // and the router dispatches to that credential's service.
-  let result = handle_credential_router(&request, Some(app), app_data_root).await;
+  let result = handle_credential_router(&request, Some(app), app_data_root, ledger).await;
 
   let success_event = match result {
     Err(err) => return Err(err),

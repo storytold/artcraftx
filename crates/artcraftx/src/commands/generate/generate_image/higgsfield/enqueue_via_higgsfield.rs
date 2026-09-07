@@ -23,6 +23,7 @@ use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_generation_model::tauri_image_model_to_generation_model;
 use crate::commands::utils::api_adapters::models::image::tauri_image_model_to_router_model::tauri_image_model_to_router_model;
 use crate::credentials::auth_credential::AuthCredential;
+use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
 
 /// Enqueue via the router's first-party Higgsfield provider.
 ///
@@ -35,6 +36,7 @@ use crate::credentials::auth_credential::AuthCredential;
 pub async fn enqueue_via_higgsfield(
   request: &TauriGenerateImageRequest,
   credential: &AuthCredential,
+  ledger: &AssetUploadLedger,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let tauri_model = request.model.ok_or(GenerateError::no_model_specified())?;
 
@@ -69,7 +71,9 @@ pub async fn enqueue_via_higgsfield(
   };
 
   let client = higgsfield_router_client(credential)?;
-  let response = send_higgsfield_image_request(router_request, &client, &media_url_map).await?;
+  // References this account already uploaded are reused by media id.
+  let upload_cache = ledger.for_higgsfield_credential(&credential.id);
+  let response = send_higgsfield_image_request(router_request, &client, &media_url_map, &upload_cache).await?;
 
   let payload = response
       .get_higgsfield_payload()
@@ -121,8 +125,14 @@ mod live_higgsfield_image_tests {
 
   use crate::commands::generate::generate_image::tauri_image_model::TauriImageModel;
   use crate::state::data_dir::app_data_root::AppDataRoot;
+  use crate::state::database::local_files_database::LocalFilesDatabase;
 
   use super::*;
+
+  async fn ledger() -> AssetUploadLedger {
+    let app_data_root = AppDataRoot::create_default().expect("app data root");
+    AssetUploadLedger::new(LocalFilesDatabase::connect(&app_data_root).await.expect("local files db"))
+  }
 
   /// A production ArtCraft media file (see `test_data::web::image_media_tokens`).
   const JUNO_AT_LAKE_MEDIA_TOKEN: &str = "m_m1bz02z1kkzanxy6rb4vk1kvq9de9g";
@@ -152,7 +162,7 @@ mod live_higgsfield_image_tests {
       ..Default::default()
     };
 
-    let success = enqueue_via_higgsfield(&request, &credential).await.expect("enqueue should succeed");
+    let success = enqueue_via_higgsfield(&request, &credential, &ledger().await).await.expect("enqueue should succeed");
     println!("[live] Higgsfield image enqueued: provider_job_id={:?}", success.provider_job_id);
     assert_eq!(success.provider, GenerationSource::Higgsfield);
     assert!(success.provider_job_id.is_some());
@@ -171,7 +181,7 @@ mod live_higgsfield_image_tests {
       ..Default::default()
     };
 
-    let success = enqueue_via_higgsfield(&request, &credential).await.expect("enqueue should succeed");
+    let success = enqueue_via_higgsfield(&request, &credential, &ledger().await).await.expect("enqueue should succeed");
     println!("[live] Higgsfield image edit enqueued: provider_job_id={:?}", success.provider_job_id);
     assert!(success.provider_job_id.is_some());
   }

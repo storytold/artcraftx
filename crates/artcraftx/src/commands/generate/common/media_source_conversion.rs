@@ -31,6 +31,7 @@ use uuid_utils::uuid::generate_random_uuid;
 
 use crate::commands::generate::common::tauri_media_source::TauriMediaSource;
 use crate::commands::generate::generate_error::GenerateError;
+use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
 
 /// Which ArtCraft upload endpoint a source goes through.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -78,22 +79,29 @@ pub fn collect_source_tokens<'a>(sources: impl IntoIterator<Item = &'a TauriMedi
 // ── ArtCraft provider (token-native) ──
 
 /// Resolve one source to an ArtCraft media token: tokens pass through;
-/// local files and bytes upload to ArtCraft at generate time.
+/// local files and bytes upload to ArtCraft at generate time — unless the
+/// ledger says this account already uploaded the same content and ArtCraft
+/// confirms it still has it.
 pub async fn source_to_artcraft_token(
   source: TauriMediaSource,
   kind: ArtcraftMediaKind,
   maybe_creds: Option<&StorytellerCredentialSet>,
   api_host: &ApiHost,
+  ledger: &AssetUploadLedger,
 ) -> Result<MediaFileToken, GenerateError> {
+  let maybe_cache = ledger.for_artcraft_session(maybe_creds);
   match source {
     TauriMediaSource::MediaFileToken { token } => Ok(token),
-    TauriMediaSource::LocalPath { path } => upload_path_to_artcraft(&path, kind, maybe_creds, api_host).await,
+    TauriMediaSource::LocalPath { path } => match &maybe_cache {
+      Some(cache) => cache.artcraft_token_for_file(api_host, &path, || upload_path_to_artcraft(&path, kind, maybe_creds, api_host)).await,
+      None => upload_path_to_artcraft(&path, kind, maybe_creds, api_host).await,
+    },
     TauriMediaSource::Bytes { bytes, file_name } => {
-      // The upload endpoints are multipart-from-file; stage the bytes.
-      let staged = stage_bytes_to_temp_file(&bytes, file_name.as_deref())?;
-      let result = upload_path_to_artcraft(&staged, kind, maybe_creds, api_host).await;
-      std::fs::remove_file(&staged).ok();
-      result
+      let upload = || upload_bytes_to_artcraft(&bytes, file_name.as_deref(), kind, maybe_creds, api_host);
+      match &maybe_cache {
+        Some(cache) => cache.artcraft_token_for_bytes(api_host, &bytes, upload).await,
+        None => upload().await,
+      }
     }
   }
 }
@@ -104,6 +112,7 @@ pub async fn sources_to_artcraft_tokens(
   kind: ArtcraftMediaKind,
   maybe_creds: Option<&StorytellerCredentialSet>,
   api_host: &ApiHost,
+  ledger: &AssetUploadLedger,
 ) -> Result<Option<Vec<MediaFileToken>>, GenerateError> {
   let sources = match maybe_sources {
     None => return Ok(None),
@@ -112,7 +121,7 @@ pub async fn sources_to_artcraft_tokens(
   };
   let mut tokens = Vec::with_capacity(sources.len());
   for source in sources {
-    tokens.push(source_to_artcraft_token(source, kind, maybe_creds, api_host).await?);
+    tokens.push(source_to_artcraft_token(source, kind, maybe_creds, api_host, ledger).await?);
   }
   Ok(Some(tokens))
 }
@@ -123,10 +132,11 @@ pub async fn maybe_source_to_artcraft_token(
   kind: ArtcraftMediaKind,
   maybe_creds: Option<&StorytellerCredentialSet>,
   api_host: &ApiHost,
+  ledger: &AssetUploadLedger,
 ) -> Result<Option<MediaFileToken>, GenerateError> {
   match maybe_source {
     None => Ok(None),
-    Some(source) => Ok(Some(source_to_artcraft_token(source, kind, maybe_creds, api_host).await?)),
+    Some(source) => Ok(Some(source_to_artcraft_token(source, kind, maybe_creds, api_host, ledger).await?)),
   }
 }
 
@@ -138,6 +148,7 @@ pub async fn image_sources_to_fal_urls(
   maybe_sources: Option<Vec<TauriMediaSource>>,
   maybe_creds: Option<&StorytellerCredentialSet>,
   api_host: &ApiHost,
+  ledger: &AssetUploadLedger,
 ) -> Result<Option<Vec<String>>, GenerateError> {
   let sources = match maybe_sources {
     None => return Ok(None),
@@ -146,7 +157,7 @@ pub async fn image_sources_to_fal_urls(
   };
   let mut urls = Vec::with_capacity(sources.len());
   for source in sources {
-    let token = source_to_artcraft_token(source, ArtcraftMediaKind::Image, maybe_creds, api_host).await?;
+    let token = source_to_artcraft_token(source, ArtcraftMediaKind::Image, maybe_creds, api_host, ledger).await?;
     let response = get_media_file(api_host, &token).await?;
     urls.push(response.media_file.media_links.cdn_url.to_string());
   }
@@ -154,6 +165,21 @@ pub async fn image_sources_to_fal_urls(
 }
 
 // ── Private ──
+
+/// The upload endpoints are multipart-from-file; stage the bytes, upload,
+/// clean up.
+async fn upload_bytes_to_artcraft(
+  bytes: &[u8],
+  maybe_file_name: Option<&str>,
+  kind: ArtcraftMediaKind,
+  maybe_creds: Option<&StorytellerCredentialSet>,
+  api_host: &ApiHost,
+) -> Result<MediaFileToken, GenerateError> {
+  let staged = stage_bytes_to_temp_file(bytes, maybe_file_name)?;
+  let result = upload_path_to_artcraft(&staged, kind, maybe_creds, api_host).await;
+  std::fs::remove_file(&staged).ok();
+  result
+}
 
 async fn upload_path_to_artcraft(
   path: &Path,

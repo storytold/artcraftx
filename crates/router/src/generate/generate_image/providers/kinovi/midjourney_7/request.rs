@@ -129,6 +129,7 @@ mod tests {
     let ctx = ImageGenerationDraftContext {
       client: Some(&client),
       media_file_to_artcraft_url_map: Some(&map),
+      asset_upload_cache: None,
     };
 
     let request = ImageGenerationDraftRequest::KinoviMidjourney7(draft)

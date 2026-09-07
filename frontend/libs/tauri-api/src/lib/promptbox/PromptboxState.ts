@@ -33,19 +33,13 @@ export interface GetPromptboxStateResult {
 export const GetPromptboxState = async (): Promise<GetPromptboxStateResult> =>
   (await invoke("get_promptbox_state_command")) as GetPromptboxStateResult;
 
-// A patch: only present fields change. `options` replaces the modality's
-// options wholesale; `last_account_by_model` entries merge in.
-export interface UpdatePromptboxStateRequest {
-  modality?: PromptboxModality;
-  selected_account_id?: string;
-  selected_model?: string;
-  options?: Record<string, unknown>;
-  last_account_by_model?: Record<string, string>;
-}
+// The full state to persist. The backend replaces what it has wholesale and
+// owns `version`, so the frontend never sends one.
+export type UpdatePromptboxStateRequest = Omit<PromptboxState, "version">;
 
 export interface UpdatePromptboxStateResult {
   state: PromptboxState;
 }
 
-export const UpdatePromptboxState = async (request: UpdatePromptboxStateRequest): Promise<UpdatePromptboxStateResult> =>
-  (await invoke("update_promptbox_state_command", { request })) as UpdatePromptboxStateResult;
+export const UpdatePromptboxState = async (state: UpdatePromptboxStateRequest): Promise<UpdatePromptboxStateResult> =>
+  (await invoke("update_promptbox_state_command", { state })) as UpdatePromptboxStateResult;

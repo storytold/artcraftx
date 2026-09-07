@@ -139,6 +139,7 @@ worldlabs_consumer_client = { path = "crates/api_clients/worldlabs_consumer_clie
 anyhow = "1.0.102"
 assertor = "0.0.3"
 base64 = "0.22.1"
+async-trait = "0.1.89"
 blake3 = "1.5"
 bstr = "1.12.1"
 byteorder = "1.5.0"

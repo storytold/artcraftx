@@ -13,6 +13,7 @@ use router::api::image_list_ref::ImageListRef;
 use crate::commands::utils::api_adapters::models::audio::tauri_audio_model_to_generation_model::tauri_audio_model_to_generation_model;
 use crate::commands::utils::api_adapters::models::audio::tauri_audio_model_to_router_model::tauri_audio_model_to_router_model;
 use crate::commands::generate::generate_error::GenerateError;
+use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
 use crate::commands::generate::task_enqueue_success::TaskEnqueueSuccess;
 use crate::commands::generate::common::generation_credential::{credential_not_usable, resolve_generation_credential, storyteller_creds_from_credential};
 use crate::commands::generate::common::media_source_conversion::{sources_to_artcraft_tokens, ArtcraftMediaKind};
@@ -28,6 +29,7 @@ use crate::state::data_dir::app_data_root::AppDataRoot;
 pub async fn handle_credential_router(
   request: &TauriGenerateAudioRequest,
   app_data_root: &AppDataRoot,
+  ledger: &AssetUploadLedger,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   // Reject unusable media sources (missing local files, empty bytes) before
   // any provider work.
@@ -49,7 +51,7 @@ pub async fn handle_credential_router(
     GenerationSource::Artcraft
     | GenerationSource::ArtcraftLocal
     | GenerationSource::ArtcraftCookies => {
-      handle_artcraft_credential(request, &credential).await
+      handle_artcraft_credential(request, &credential, ledger).await
     }
     other => Err(credential_not_usable(
       &credential,
@@ -64,6 +66,7 @@ pub async fn handle_credential_router(
 async fn handle_artcraft_credential(
   request: &TauriGenerateAudioRequest,
   credential: &AuthCredential,
+  ledger: &AssetUploadLedger,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let tauri_model = request.model.ok_or(GenerateError::no_model_specified())?;
 
@@ -76,10 +79,10 @@ async fn handle_artcraft_credential(
   let creds = storyteller_creds_from_credential(credential)?;
 
   let audio_references = sources_to_artcraft_tokens(
-    request.audio_media_sources(), ArtcraftMediaKind::Audio, Some(&creds), &api_host,
+    request.audio_media_sources(), ArtcraftMediaKind::Audio, Some(&creds), &api_host, ledger,
   ).await?.map(AudioListRef::MediaFileTokens);
   let image_references = sources_to_artcraft_tokens(
-    request.image_media_sources(), ArtcraftMediaKind::Image, Some(&creds), &api_host,
+    request.image_media_sources(), ArtcraftMediaKind::Image, Some(&creds), &api_host, ledger,
   ).await?.map(ImageListRef::MediaFileTokens);
 
   let client = RouterClient::Artcraft(RouterArtcraftClient::new(

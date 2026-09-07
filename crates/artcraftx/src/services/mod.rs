@@ -1,3 +1,4 @@
+pub mod asset_uploads;
 pub mod grok;
 pub mod local_files;
 pub mod higgsfield;

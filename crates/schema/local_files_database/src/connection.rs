@@ -20,10 +20,10 @@ pub struct LocalFilesDbConnection {
 impl LocalFilesDbConnection {
   /// Open (creating if missing) and migrate the database.
   ///
-  /// On migration failure the file is deleted and recreated — acceptable
-  /// while every row is derivable from the filesystem (hashes and thumbnail
-  /// flags regenerate on demand). Revisit before storing anything
-  /// irreplaceable here (e.g. the upload-dedup ledger).
+  /// On migration failure the file is moved aside (`<name>.broken-<unix ms>`)
+  /// and a fresh one created. Nothing here is irreplaceable — thumbnails
+  /// regenerate and the upload ledger only costs a re-upload — but the
+  /// ledger is worth keeping for a hand recovery, so it isn't deleted.
   pub async fn connect_and_migrate<P: AsRef<Path>>(database_file: P) -> AnyhowResult<Self> {
     match run_migrations(&database_file).await {
       Ok(pool) => return Ok(Self { pool }),
@@ -32,10 +32,23 @@ impl LocalFilesDbConnection {
       }
     }
 
-    info!("Deleting and recreating local_files SQLite database at {:?}", database_file.as_ref());
+    let database_file = database_file.as_ref();
+    let unix_ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|duration| duration.as_millis())
+        .unwrap_or(0);
+    let aside = database_file.with_extension(format!("broken-{unix_ms}"));
+    info!("Moving local_files SQLite database aside to {:?} and recreating it", aside);
 
-    if let Err(err) = std::fs::remove_file(&database_file) {
-      error!("Error deleting local_files SQLite database file: {:?}", err);
+    if let Err(err) = std::fs::rename(database_file, &aside) {
+      error!("Error moving local_files SQLite database file aside: {:?}", err);
+    }
+    // WAL/shm sidecars belong to the old file; a stale WAL must not replay
+    // into the new database.
+    for sidecar in ["-wal", "-shm"] {
+      let mut path = database_file.as_os_str().to_owned();
+      path.push(sidecar);
+      let _ = std::fs::remove_file(path);
     }
 
     let pool = run_migrations(database_file).await?;

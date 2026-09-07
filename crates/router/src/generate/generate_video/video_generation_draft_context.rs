@@ -1,3 +1,4 @@
+use crate::api::asset_upload_cache::AssetUploadCache;
 use crate::client::router_client::RouterClient;
 use crate::client::router_higgsfield_client::RouterHiggsfieldClient;
 use crate::client::router_seedance2pro_client::RouterSeedance2ProClient;
@@ -20,6 +21,10 @@ pub struct VideoGenerationDraftContext<'a> {
   /// Optional context: a map of Character Tokens to their respective Kinovi IDs
   /// Only necessary if using Kinovi characters
   pub character_token_to_kinovi_id_map: Option<&'a HashMap<CharacterToken, String>>,
+
+  /// Optional: the account's upload history on the target provider, so
+  /// media it already holds isn't uploaded again.
+  pub asset_upload_cache: Option<&'a dyn AssetUploadCache>,
 }
 
 impl <'a> VideoGenerationDraftContext<'a> {
@@ -52,6 +57,7 @@ impl Debug for VideoGenerationDraftContext<'_> {
       .field("client", &self.client.is_some())
       .field("media_file_to_artcraft_url_map", &self.media_file_to_artcraft_url_map)
       .field("character_token_to_kinovi_id_map", &self.character_token_to_kinovi_id_map)
+      .field("asset_upload_cache", &self.asset_upload_cache.is_some())
       .finish()
   }
 }

@@ -8,6 +8,7 @@ use std::collections::HashMap;
 
 use artcraft_client::utils::api_host::ApiHost;
 use log::{info, warn};
+use router::api::asset_upload_cache::AssetUploadCache;
 use router::client::router_client::RouterClient;
 use router::client::router_higgsfield_client::RouterHiggsfieldClient;
 use router::generate::generate_image::generate_image_request_builder::GenerateImageRequestBuilder;
@@ -53,6 +54,7 @@ pub async fn send_higgsfield_image_request(
   builder: GenerateImageRequestBuilder,
   client: &RouterClient,
   media_url_map: &HashMap<MediaFileToken, String>,
+  upload_cache: &dyn AssetUploadCache,
 ) -> Result<GenerateImageResponse, GenerateError> {
   let request = match builder.build2().map_err(|err| {
     warn!("Could not build Higgsfield image request: {:?}", err);
@@ -64,6 +66,7 @@ pub async fn send_higgsfield_image_request(
       let context = ImageGenerationDraftContext {
         client: Some(client),
         media_file_to_artcraft_url_map: Some(media_url_map),
+        asset_upload_cache: Some(upload_cache),
       };
       draft.finalize(context).await.map_err(|err| {
         warn!("Could not upload references to Higgsfield: {:?}", err);
@@ -84,6 +87,7 @@ pub async fn send_higgsfield_video_request(
   builder: GenerateVideoRequestBuilder,
   client: &RouterClient,
   media_url_map: &HashMap<MediaFileToken, String>,
+  upload_cache: &dyn AssetUploadCache,
 ) -> Result<GenerateVideoResponse, GenerateError> {
   let request = match builder.build2().map_err(|err| {
     warn!("Could not build Higgsfield video request: {:?}", err);
@@ -96,6 +100,7 @@ pub async fn send_higgsfield_video_request(
         client: Some(client),
         media_file_to_artcraft_url_map: Some(media_url_map),
         character_token_to_kinovi_id_map: None,
+        asset_upload_cache: Some(upload_cache),
       };
       draft.finalize(context).await.map_err(|err| {
         warn!("Could not upload media to Higgsfield: {:?}", err);

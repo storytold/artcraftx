@@ -1,5 +1,7 @@
 use crate::state::app_preferences::app_preferences_manager::AppPreferencesManager;
 use crate::state::data_dir::app_data_root::AppDataRoot;
+use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
+use crate::state::database::local_files_database::LocalFilesDatabase;
 use crate::state::database::task_database::TaskDatabase;
 use crate::state::thumbnails::thumbnail_work_queue::ThumbnailWorkQueue;
 use crate::threads::task_completion::save_results_to_download_dir::save_results_to_download_dir;
@@ -20,7 +22,7 @@ use sqlite_database::queries::update::update_successful_task_status_with_metadat
 };
 use sqlite_identifiers::enums::task_media_file_class::TaskMediaFileClass;
 use std::path::PathBuf;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 pub struct CompleteTaskArgs<'a> {
   pub app_handle: &'a AppHandle,
@@ -95,6 +97,10 @@ pub async fn complete_task_with_local_files(args: CompleteTaskArgs<'_>) -> Anyho
     local_files,
   );
 
+  // The upload ledger lets a re-delivered file reuse its earlier upload.
+  let maybe_ledger = app_handle.try_state::<LocalFilesDatabase>()
+      .map(|database| AssetUploadLedger::new(database.inner().clone()));
+
   let maybe_uploaded = match maybe_storyteller_creds {
     Some(creds) => {
       let uploaded = upload_results_to_artcraft(
@@ -104,6 +110,7 @@ pub async fn complete_task_with_local_files(args: CompleteTaskArgs<'_>) -> Anyho
         media_class,
         prompt,
         local_files,
+        maybe_ledger.as_ref(),
       ).await?;
       Some(uploaded)
     }

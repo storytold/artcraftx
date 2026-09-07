@@ -13,6 +13,8 @@ use crate::events::generation_events::generation_enqueue_success_event::Generati
 
 
 use crate::state::data_dir::app_data_root::AppDataRoot;
+use crate::state::database::local_files_database::LocalFilesDatabase;
+use crate::services::asset_uploads::asset_upload_ledger::AssetUploadLedger;
 use crate::state::database::task_database::TaskDatabase;
 use log::{error, info};
 use tauri::{AppHandle, State};
@@ -22,17 +24,18 @@ pub async fn generate_audio_command(
   request: TauriGenerateAudioRequest,
   app: AppHandle,
   app_data_root: State<'_, AppDataRoot>,
-
   task_database: State<'_, TaskDatabase>,
+  local_files_database: State<'_, LocalFilesDatabase>,
 ) -> Response<TauriGenerateAudioResponse, TauriGenerateAudioErrorType, ()> {
 
   info!("generate_audio_command called, request: {:?}", request);
 
+  let ledger = AssetUploadLedger::new(local_files_database.inner().clone());
   let result = handle_request(
     request,
     &app_data_root,
-
     &task_database,
+    &ledger,
   ).await;
 
   match result {
@@ -90,13 +93,13 @@ pub async fn generate_audio_command(
 async fn handle_request(
   request: TauriGenerateAudioRequest,
   app_data_root: &AppDataRoot,
-
   task_database: &TaskDatabase,
+  ledger: &AssetUploadLedger,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
 
   // Generation is credential-driven: the request names a stored credential,
   // and the router dispatches to that credential's service.
-  let success_event = handle_credential_router(&request, app_data_root).await?;
+  let success_event = handle_credential_router(&request, app_data_root, ledger).await?;
 
   let result = success_event
     .insert_into_task_database_with_frontend_payload(

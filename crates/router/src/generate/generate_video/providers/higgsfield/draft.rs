@@ -10,7 +10,7 @@ use crate::generate::generate_video::providers::higgsfield::common::HiggsfieldVi
 use crate::generate::generate_video::providers::higgsfield::request::HiggsfieldVideoRequestState;
 use crate::generate::generate_video::providers::higgsfield::video_request::HiggsfieldVideoRequest;
 use crate::generate::generate_video::video_generation_draft_context::VideoGenerationDraftContext;
-use crate::utils::higgsfield_media::{upload_image_ref, upload_media_list, HiggsfieldMediaKind};
+use crate::utils::higgsfield_media::{upload_image_ref, upload_media_list, HiggsfieldMediaKind, HiggsfieldUploadContext};
 
 /// What a `build.rs` planned, before media is uploaded.
 #[derive(Clone, Debug)]
@@ -65,18 +65,21 @@ impl HiggsfieldVideoDraftState {
     draft_context: &VideoGenerationDraftContext<'_>,
   ) -> Result<HiggsfieldVideoRequestState, ArtcraftRouterError> {
     let client = draft_context.get_higgsfield_client_ref()?;
-    let session = &client.session;
-    let map = draft_context.media_file_to_artcraft_url_map;
+    let uploads = HiggsfieldUploadContext {
+      session: &client.session,
+      maybe_map: draft_context.media_file_to_artcraft_url_map,
+      maybe_cache: draft_context.asset_upload_cache,
+    };
     let label = self.plan.model_label();
 
     let references = self.unhandled_request_state.take().unwrap_or_default();
 
-    let start_frame = upload_image_ref(session, references.start_frame, self.ip_check, map).await?;
-    let end_frame = upload_image_ref(session, references.end_frame, self.ip_check, map).await?;
-    let images = upload_media_list(session, references.reference_images.map(Into::into), HiggsfieldMediaKind::Image, self.ip_check, map).await?;
-    let mut videos = upload_media_list(session, references.reference_videos.map(Into::into), HiggsfieldMediaKind::Video, self.ip_check, map).await?;
+    let start_frame = upload_image_ref(uploads, references.start_frame, self.ip_check).await?;
+    let end_frame = upload_image_ref(uploads, references.end_frame, self.ip_check).await?;
+    let images = upload_media_list(uploads, references.reference_images.map(Into::into), HiggsfieldMediaKind::Image, self.ip_check).await?;
+    let mut videos = upload_media_list(uploads, references.reference_videos.map(Into::into), HiggsfieldMediaKind::Video, self.ip_check).await?;
     // Audio has no IP check.
-    let audio = upload_media_list(session, references.reference_audio.map(Into::into), HiggsfieldMediaKind::Audio, false, map).await?;
+    let audio = upload_media_list(uploads, references.reference_audio.map(Into::into), HiggsfieldMediaKind::Audio, false).await?;
 
     let mut request = match self.plan.clone() {
       HiggsfieldVideoPlan::Request(request) => request,

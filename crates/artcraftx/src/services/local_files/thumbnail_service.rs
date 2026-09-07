@@ -17,13 +17,10 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex as StdMutex};
-use std::time::UNIX_EPOCH;
 
-use file_hashing::hash_file_blake3;
 use local_files_database::queries::get_local_file_by_path::get_local_file_by_path;
 use local_files_database::queries::local_file_record::LocalFileRecord;
 use local_files_database::queries::set_thumbnail_result::{set_thumbnail_result, SetThumbnailResultArgs};
-use local_files_database::queries::upsert_local_file::{upsert_local_file, UpsertLocalFileArgs};
 use local_files_database::thumbnail_state::ThumbnailState;
 use log::{info, warn};
 use once_cell::sync::Lazy;
@@ -31,6 +28,7 @@ use serde_derive::Serialize;
 use thumbnails::{generate_image_thumbnail, generate_video_thumbnails, ThumbnailError, STATIC_THUMBNAIL_MAX_DIMENSION, THUMBNAIL_GENERATOR_VERSION};
 use tokio::sync::{Mutex as TokioMutex, Semaphore};
 
+use crate::services::local_files::file_hash_service::{file_extension, hash_local_file_with_stat, stat_file};
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::local_files_database::LocalFilesDatabase;
 
@@ -184,7 +182,7 @@ pub async fn generate_thumbnail(
     return LocalThumbnail::without_thumbnail(file_path, LocalThumbnailStatus::MissingFile, None);
   };
 
-  let file_hash = match cached_or_computed_hash(database, file_path, file_size_bytes, file_mtime_ms).await {
+  let file_hash = match hash_local_file_with_stat(database, file_path, file_size_bytes, file_mtime_ms).await {
     Ok(hash) => hash,
     Err(message) => {
       warn!("Could not hash {}: {}", file_path.display(), message);
@@ -284,47 +282,6 @@ fn generate(kind: MediaKind, source: &Path, jpg: &Path, webp: &Path) -> Result<b
   }
 }
 
-/// The memoization at the heart of this module: trust the indexed hash when
-/// size+mtime match (a row lookup), rehash only when the file changed (a
-/// full read).
-async fn cached_or_computed_hash(
-  database: &LocalFilesDatabase,
-  file_path: &Path,
-  file_size_bytes: i64,
-  file_mtime_ms: i64,
-) -> Result<String, String> {
-  let path_string = file_path.to_string_lossy().into_owned();
-
-  match get_local_file_by_path(database.get_connection(), &path_string).await {
-    Ok(Some(record)) if record.matches_stat(file_size_bytes, file_mtime_ms) => {
-      return Ok(record.file_hash_blake3);
-    }
-    Ok(_) => {}
-    Err(err) => warn!("local_files lookup failed for {}: {}", path_string, err),
-  }
-
-  let hash_path = file_path.to_path_buf();
-  let file_hash = tokio::task::spawn_blocking(move || hash_file_blake3(&hash_path))
-      .await
-      .map_err(|join_error| join_error.to_string())?
-      .map_err(|io_error| io_error.to_string())?;
-
-  let extension = file_extension(file_path);
-  let upsert = upsert_local_file(UpsertLocalFileArgs {
-    db: database.get_connection(),
-    file_path: &path_string,
-    maybe_file_type: (!extension.is_empty()).then_some(extension.as_str()),
-    file_size_bytes,
-    file_mtime_ms,
-    file_hash_blake3: &file_hash,
-  }).await;
-  if let Err(err) = upsert {
-    warn!("local_files upsert failed for {}: {}", path_string, err);
-  }
-
-  Ok(file_hash)
-}
-
 async fn record_outcome(
   database: &LocalFilesDatabase,
   file_path: &Path,
@@ -352,29 +309,9 @@ async fn record_outcome(
   }
 }
 
-/// `(size, mtime_ms)` for a regular file, `None` if it's missing.
-fn stat_file(file_path: &Path) -> Option<(i64, i64)> {
-  let stat = match std::fs::metadata(file_path) {
-    Ok(metadata) if metadata.is_file() => metadata,
-    _ => return None,
-  };
-  let file_mtime_ms = stat.modified().ok()
-      .and_then(|mtime| mtime.duration_since(UNIX_EPOCH).ok())
-      .map(|duration| duration.as_millis() as i64)
-      .unwrap_or(0);
-  Some((stat.len() as i64, file_mtime_ms))
-}
-
 fn per_path_lock(file_path: &Path) -> Arc<TokioMutex<()>> {
   let mut locks = PER_PATH_LOCKS.lock().expect("lock poisoned");
   locks.entry(file_path.to_path_buf()).or_default().clone()
-}
-
-fn file_extension(file_path: &Path) -> String {
-  file_path.extension()
-      .and_then(|extension| extension.to_str())
-      .map(str::to_ascii_lowercase)
-      .unwrap_or_default()
 }
 
 #[cfg(test)]
