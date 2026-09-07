@@ -11,13 +11,18 @@ use crate::commands::generate::generate_video::request::TauriGenerateVideoReques
 use crate::utils::services::artcraft_api_host::maybe_artcraft_api_host_for_service;
 use crate::credentials::auth_credential::AuthCredential;
 use core_types::enums::generation_source::GenerationSource;
+use crate::events::basic_sendable_event_trait::BasicSendableEvent;
+use crate::events::notice_events::flash_notice_event::FlashNoticeEvent;
 use crate::state::data_dir::app_data_root::AppDataRoot;
+use tauri::AppHandle;
 
 /// Credential-driven video generation: resolve the stored credential named
 /// by the request's `credential_id`, then route to that credential's service
 /// via the router. The router owns upload + dispatch mechanics per provider.
 pub async fn handle_credential_router(
   request: &TauriGenerateVideoRequest,
+  // Optional so headless callers (live tests) can skip UI notices.
+  maybe_app: Option<&AppHandle>,
   app_data_root: &AppDataRoot,
 ) -> Result<TaskEnqueueSuccess, GenerateError> {
   let credential = resolve_generation_credential(
@@ -39,6 +44,16 @@ pub async fn handle_credential_router(
     }
     GenerationSource::HiggsfieldCookies
     | GenerationSource::Higgsfield => {
+      // Reference media triggers Higgsfield's mandatory IP/likeness scan,
+      // which routinely takes 15-20s before the job can even enqueue. Tell
+      // the user what the wait is, up front.
+      if let Some(app) = maybe_app {
+        if request.media_sources().iter().next().is_some() {
+          FlashNoticeEvent::new(
+            "Higgsfield is checking your media for Intellectual Property and Likeness",
+          ).send_infallible(app);
+        }
+      }
       handle_higgsfield_video_via_router(request, &credential).await
     }
     other => Err(credential_not_usable(
@@ -141,7 +156,7 @@ mod live_generation_tests {
       ..Default::default()
     };
 
-    let result = handle_credential_router(&request, &app_data_root).await;
+    let result = handle_credential_router(&request, None, &app_data_root).await;
     let success = result.expect("seedance lite enqueue should succeed");
     println!("[live] seedance 1.0 lite enqueued: job_id={:?}", success.provider_job_id);
     assert!(success.provider_job_id.is_some());

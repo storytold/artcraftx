@@ -22,6 +22,7 @@ import {
 import {
   useAppPreferencesSync,
   useFlashFileDownloadErrorEvent,
+  useFlashNoticeEvent,
   useFlashUserInputErrorEvent,
   useGenerationCompleteEvent,
   useGenerationEnqueueFailureEvent,
@@ -72,6 +73,19 @@ export const MainApp = () => {
       event.generated_images || [],
       event.maybe_frontend_subscriber_id,
     );
+  });
+
+  useFlashNoticeEvent(async (event) => {
+    console.log("Flash notice event received:", event);
+    // Informational "notice" flash: blue, ~5 seconds.
+    toast(event.message, {
+      duration: 5000,
+      icon: "\u2139\ufe0f",
+      style: {
+        background: "#1d4ed8",
+        color: "#ffffff",
+      },
+    });
   });
 
   useFlashUserInputErrorEvent(async (event) => {

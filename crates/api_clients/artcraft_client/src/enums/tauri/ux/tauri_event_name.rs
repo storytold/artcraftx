@@ -88,6 +88,12 @@ pub enum TauriEventName {
   #[serde(rename = "show_credential_error_modal_event")]
   ShowCredentialErrorModalEvent,
 
+  /// Notice event:
+  /// Flash an informational (non-error) message, e.g. "Higgsfield is
+  /// checking your media for Intellectual Property and Likeness".
+  #[serde(rename = "flash_notice_event")]
+  FlashNoticeEvent,
+
   /// Warning event:
   /// Flash a user input error message
   #[serde(rename = "flash_user_input_error_event")]
@@ -120,6 +126,7 @@ impl TauriEventName {
       Self::RefreshAccountStateEvent => "refresh_account_state_event",
       Self::ShowProviderBillingModalEvent => "show_provider_billing_modal_event",
       Self::ShowCredentialErrorModalEvent => "show_credential_error_modal_event",
+      Self::FlashNoticeEvent => "flash_notice_event",
       Self::FlashUserInputErrorEvent => "flash_user_input_error_event",
       Self::FlashFileDownloadErrorEvent => "flash_file_download_error_event",
     }
@@ -141,6 +148,7 @@ impl TauriEventName {
       "refresh_account_state_event" => Ok(Self::RefreshAccountStateEvent),
       "show_provider_billing_modal_event" => Ok(Self::ShowProviderBillingModalEvent),
       "show_credential_error_modal_event" => Ok(Self::ShowCredentialErrorModalEvent),
+      "flash_notice_event" => Ok(Self::FlashNoticeEvent),
       "flash_user_input_error_event" => Ok(Self::FlashUserInputErrorEvent),
       "flash_file_download_error_event" => Ok(Self::FlashFileDownloadErrorEvent),
       _ => Err(format!("invalid tauri_event_name: {:?}", job_status)),
@@ -165,6 +173,7 @@ impl TauriEventName {
       Self::RefreshAccountStateEvent,
       Self::ShowProviderBillingModalEvent,
       Self::ShowCredentialErrorModalEvent,
+      Self::FlashNoticeEvent,
       Self::FlashUserInputErrorEvent,
       Self::FlashFileDownloadErrorEvent,
     ])
@@ -195,6 +204,7 @@ mod tests {
       assert_serialization(TauriEventName::RefreshAccountStateEvent, "refresh_account_state_event");
       assert_serialization(TauriEventName::ShowProviderBillingModalEvent, "show_provider_billing_modal_event"); 
       assert_serialization(TauriEventName::ShowCredentialErrorModalEvent, "show_credential_error_modal_event");
+      assert_serialization(TauriEventName::FlashNoticeEvent, "flash_notice_event");
       assert_serialization(TauriEventName::FlashUserInputErrorEvent, "flash_user_input_error_event");
       assert_serialization(TauriEventName::FlashFileDownloadErrorEvent, "flash_file_download_error_event");
     }
@@ -214,6 +224,7 @@ mod tests {
       assert_eq!(TauriEventName::VideoGenerationCompleteEvent.to_str(), "video_generation_complete_event");
       assert_eq!(TauriEventName::RefreshAccountStateEvent.to_str(), "refresh_account_state_event");
       assert_eq!(TauriEventName::ShowProviderBillingModalEvent.to_str(), "show_provider_billing_modal_event");
+      assert_eq!(TauriEventName::FlashNoticeEvent.to_str(), "flash_notice_event");
       assert_eq!(TauriEventName::FlashUserInputErrorEvent.to_str(), "flash_user_input_error_event");
       assert_eq!(TauriEventName::FlashFileDownloadErrorEvent.to_str(), "flash_file_download_error_event");
     }
@@ -234,6 +245,7 @@ mod tests {
       assert_eq!(TauriEventName::from_str("refresh_account_state_event").unwrap(), TauriEventName::RefreshAccountStateEvent);
       assert_eq!(TauriEventName::from_str("show_provider_billing_modal_event").unwrap(), TauriEventName::ShowProviderBillingModalEvent);
       assert_eq!(TauriEventName::from_str("show_credential_error_modal_event").unwrap(), TauriEventName::ShowCredentialErrorModalEvent);
+      assert_eq!(TauriEventName::from_str("flash_notice_event").unwrap(), TauriEventName::FlashNoticeEvent);
       assert_eq!(TauriEventName::from_str("flash_user_input_error_event").unwrap(), TauriEventName::FlashUserInputErrorEvent);
       assert_eq!(TauriEventName::from_str("flash_file_download_error_event").unwrap(), TauriEventName::FlashFileDownloadErrorEvent);
     }
@@ -241,7 +253,7 @@ mod tests {
     #[test]
     fn all_variants() {
       let mut variants = TauriEventName::all_variants();
-      assert_eq!(variants.len(), 16);
+      assert_eq!(variants.len(), 17);
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueSuccessEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationEnqueueFailureEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::GenerationCompleteEvent));
@@ -256,6 +268,7 @@ mod tests {
       assert_eq!(variants.pop_first(), Some(TauriEventName::RefreshAccountStateEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ShowProviderBillingModalEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::ShowCredentialErrorModalEvent));
+      assert_eq!(variants.pop_first(), Some(TauriEventName::FlashNoticeEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::FlashUserInputErrorEvent));
       assert_eq!(variants.pop_first(), Some(TauriEventName::FlashFileDownloadErrorEvent));
       assert_eq!(variants.pop_first(), None);

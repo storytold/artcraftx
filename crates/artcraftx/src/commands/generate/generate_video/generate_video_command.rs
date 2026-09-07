@@ -43,6 +43,7 @@ pub async fn generate_video_command(
 
   let result = handle_request(
     request,
+    &app,
     &app_data_root,
     &artcraft_usage_tracker,
     &task_database,
@@ -121,6 +122,7 @@ pub async fn generate_video_command(
 
 async fn handle_request(
   request: TauriGenerateVideoRequest,
+  app: &AppHandle,
   app_data_root: &AppDataRoot,
   artcraft_usage_tracker: &ArtcraftUsageTracker,
   task_database: &TaskDatabase,
@@ -132,7 +134,7 @@ async fn handle_request(
 
   // Generation is credential-driven: the request names a stored credential,
   // and the router dispatches to that credential's service.
-  let result = handle_credential_router(&request, app_data_root).await;
+  let result = handle_credential_router(&request, Some(app), app_data_root).await;
 
   let success_event = match result {
     Err(err) => return Err(err),
