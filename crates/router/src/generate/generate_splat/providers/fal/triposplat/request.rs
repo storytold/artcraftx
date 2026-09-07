@@ -26,7 +26,6 @@ mod tests {
   use crate::api::router_splat_model::RouterSplatModel;
   use crate::generate::generate_splat::generate_splat_request_builder::GenerateSplatRequestBuilder;
   use crate::generate::generate_splat::generate_splat_response::GenerateSplatResponse;
-  use crate::generate::generate_splat::splat_generation_draft_or_request::SplatGenerationDraftOrRequest;
   use crate::test_helpers::get_fal_client;
 
   #[tokio::test]
@@ -43,11 +42,7 @@ mod tests {
       ..Default::default()
     };
 
-    let draft_or_request = builder.build2().expect("build2 should succeed");
-    let request = match draft_or_request {
-      SplatGenerationDraftOrRequest::Request(r) => r,
-      _ => panic!("expected Request variant (Fal splat skips draft)"),
-    };
+    let request = builder.build2().expect("build2 should succeed");
 
     let response = request.send_request(&client).await.expect("send_request should succeed");
     println!("response: {:?}", response);

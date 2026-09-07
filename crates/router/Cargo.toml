@@ -28,7 +28,6 @@ midjourney_client.workspace = true
 seedance2pro_client.workspace = true
 sqlite_identifiers.workspace = true
 url_utils.workspace = true
-worldlabs_api_client.workspace = true
 
 # External
 anyhow.workspace = true

@@ -17,10 +17,7 @@ use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveS
 use crate::services::midjourney::threads::midjourney_long_polling_thread::midjourney_long_polling_thread;
 use crate::services::midjourney::threads::midjourney_websocket_thread::midjourney_websocket_thread;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use crate::services::worldlabs::state::worldlabs_bearer_bridge::WorldlabsBearerBridge;
-use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
 use crate::threads::third_party_task_polling_thread::third_party_task_polling_thread::third_party_task_polling_thread;
-use crate::services::worldlabs::threads::worldlabs_marble_task_polling::worldlabs_marble_task_polling;
 use errors::AnyhowResult;
 use tauri::AppHandle;
 
@@ -34,8 +31,6 @@ pub async fn handle_tauri_startup(
   midjourney_live_session: MidjourneyLiveSession,
   grok_creds_manager: GrokCredentialManager,
   grok_websockets: GrokWebsockets,
-  _worldlabs_bearer_bridge: WorldlabsBearerBridge,
-  worldlabs_creds_manager: WorldlabsCredentialManager,
 ) -> AnyhowResult<()> {
 
   set_app_log_level(
@@ -95,15 +90,6 @@ pub async fn handle_tauri_startup(
     app_preferences.clone(),
     task_database.clone(),
     midjourney_live_session.clone(),
-    storyteller_creds_manager.clone(),
-  ));
-
-  tauri::async_runtime::spawn(worldlabs_marble_task_polling(
-    app.clone(),
-    root.clone(),
-    app_preferences.clone(),
-    task_database.clone(),
-    worldlabs_creds_manager.clone(),
     storyteller_creds_manager.clone(),
   ));
 

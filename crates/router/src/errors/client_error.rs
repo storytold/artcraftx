@@ -14,7 +14,6 @@ pub enum ClientType {
   Higgsfield,
   Midjourney,
   Seedance2Pro,
-  WorldLabs,
 }
 
 impl Display for ClientType {
@@ -28,7 +27,6 @@ impl Display for ClientType {
       Self::Higgsfield => write!(f, "Higgsfield"),
       Self::Midjourney => write!(f, "Midjourney"),
       Self::Seedance2Pro => write!(f, "Seedance2Pro"),
-      Self::WorldLabs => write!(f, "WorldLabs"),
     }
   }
 }

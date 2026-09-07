@@ -7,7 +7,6 @@ use grok_api_client::error::grok_error::GrokError;
 use higgsfield_client::error::higgsfield_error::HiggsfieldError;
 use midjourney_client::error::midjourney_error::MidjourneyError;
 use seedance2pro_client::error::seedance2pro_error::Seedance2ProError;
-use worldlabs_api_client::error::world_labs_error::WorldLabsError;
 
 #[derive(Debug)]
 pub enum ProviderError {
@@ -30,7 +29,6 @@ pub enum ProviderError {
   /// (e.g. softban, filtered prompt). The string carries the raw detail.
   MidjourneySubmitRejected(String),
   Seedance2Pro(Seedance2ProError),
-  WorldLabs(WorldLabsError),
 }
 
 impl Error for ProviderError {}
@@ -48,7 +46,6 @@ impl Display for ProviderError {
       Self::MidjourneySubscriptionRequired(detail) => write!(f, "Midjourney subscription required: {}", detail),
       Self::MidjourneySubmitRejected(detail) => write!(f, "Midjourney submit rejected: {}", detail),
       Self::Seedance2Pro(e) => write!(f, "Seedance2Pro provider error: {}", e),
-      Self::WorldLabs(e) => write!(f, "WorldLabs provider error: {}", e),
     }
   }
 }
@@ -92,11 +89,5 @@ impl From<MidjourneyError> for ProviderError {
 impl From<Seedance2ProError> for ProviderError {
   fn from(error: Seedance2ProError) -> Self {
     Self::Seedance2Pro(error)
-  }
-}
-
-impl From<WorldLabsError> for ProviderError {
-  fn from(error: WorldLabsError) -> Self {
-    Self::WorldLabs(error)
   }
 }

@@ -272,7 +272,6 @@ dependencies = [
  "uuid_utils",
  "web_base64",
  "workspace-build-acceleration",
- "worldlabs_consumer_client",
 ]
 
 [[package]]
@@ -5682,7 +5681,6 @@ dependencies = [
  "url_utils",
  "uuid 1.22.0",
  "workspace-build-acceleration",
- "worldlabs_api_client",
  "wreq",
 ]
 
@@ -9238,64 +9236,6 @@ dependencies = [
 [[package]]
 name = "workspace-build-acceleration"
 version = "0.1.0"
-
-[[package]]
-name = "worldlabs_api_client"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "chrono",
- "env",
- "env_logger",
- "errors",
- "filesys",
- "log",
- "serde",
- "serde_json",
- "strum",
- "test_data",
- "tokio",
- "uuid 1.22.0",
- "workspace-build-acceleration",
- "wreq",
-]
-
-[[package]]
-name = "worldlabs_consumer_client"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "base64 0.22.1",
- "bstr",
- "byteorder",
- "chrono",
- "cloudflare_errors",
- "cloudflare_mitigation",
- "env",
- "env_logger",
- "errors",
- "filesys",
- "futures",
- "http_headers",
- "indexmap 2.13.0",
- "jwt_light",
- "log",
- "log4rs",
- "once_cell",
- "regex",
- "scraper",
- "serde",
- "serde_json",
- "sha2 0.11.0-rc.5",
- "test_data",
- "test_utils",
- "tokio",
- "url",
- "uuid 1.22.0",
- "workspace-build-acceleration",
- "wreq",
- "wreq-util",
-]
 
 [[package]]
 name = "wreq"

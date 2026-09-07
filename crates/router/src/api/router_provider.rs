@@ -15,5 +15,4 @@ pub enum RouterProvider {
   /// First-party (cookie-session) Midjourney.
   Midjourney,
   Seedance2Pro,
-  WorldLabs,
 }

@@ -11,4 +11,3 @@ pub mod router_grok_client;
 pub mod router_higgsfield_client;
 pub mod router_midjourney_client;
 pub mod router_seedance2pro_client;
-pub mod router_worldlabs_client;

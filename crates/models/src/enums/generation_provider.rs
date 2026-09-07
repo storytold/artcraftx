@@ -16,8 +16,6 @@ pub enum GenerationProvider {
   Higgsfield,
   /// First-party (cookie-session) Midjourney.
   Midjourney,
-  /// First-party (cookie-session) World Labs.
-  WorldLabs,
 }
 
 #[cfg(test)]
@@ -27,7 +25,6 @@ mod tests {
   #[test]
   fn serializes_to_frontend_values() {
     assert_eq!(serde_json::to_string(&GenerationProvider::Artcraft).unwrap(), "\"artcraft\"");
-    assert_eq!(serde_json::to_string(&GenerationProvider::WorldLabs).unwrap(), "\"world_labs\"");
     assert_eq!(serde_json::to_string(&GenerationProvider::Higgsfield).unwrap(), "\"higgsfield\"");
     assert_eq!(serde_json::from_str::<GenerationProvider>("\"higgsfield\"").unwrap(), GenerationProvider::Higgsfield);
   }

@@ -34,9 +34,6 @@ export function ProviderSetupModal({
 
   const buttonOnClick = async () => {
     switch (provider) {
-      case GenerationProvider.WorldLabs:
-        await invoke("worldlabs_open_login_command");
-        break;
       case GenerationProvider.Grok:
         await invoke("grok_open_login_command");
         break;
@@ -117,8 +114,6 @@ function getServiceProviderName(provider: GenerationProvider) : string {
       return "Fal";
     case GenerationProvider.Midjourney:
       return "Midjourney";
-    case GenerationProvider.WorldLabs:
-      return "WorldLabs";
     case GenerationProvider.Artcraft:
     default:
       return "Artcraft";

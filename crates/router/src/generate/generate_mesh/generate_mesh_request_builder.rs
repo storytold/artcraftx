@@ -269,7 +269,6 @@ mod tests {
         RouterProvider::GmiCloud,
         RouterProvider::GrokApi,
         RouterProvider::Seedance2Pro,
-        RouterProvider::WorldLabs,
       ] {
         let result = builder_with_url_image(provider, RouterMeshModel::Hunyuan3d3).build2();
         assert!(

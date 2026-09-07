@@ -34,7 +34,6 @@ export function ProviderBillingModal({
     case GenerationProvider.Grok:
     case GenerationProvider.Higgsfield:
     case GenerationProvider.Midjourney:
-    case GenerationProvider.WorldLabs:
       // NB: We're just going to ask users to set up billing on the provider's website.
       block = <GenericProviderBillingBlock provider={provider} />;
       break;

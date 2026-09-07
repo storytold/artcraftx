@@ -9,13 +9,6 @@ pub struct ArtcraftSplatResponsePayload {
   pub all_inference_job_tokens: Vec<InferenceJobToken>,
 }
 
-#[derive(Clone, Debug)]
-pub struct WorldLabsSplatResponsePayload {
-  /// The World Labs operation ID; poll it for generation status.
-  pub operation_id: String,
-  pub done: bool,
-}
-
 /// Fal's queue/webhook submission receipt for a splat generation.
 #[derive(Clone, Debug)]
 pub struct FalSplatResponsePayload {
@@ -40,7 +33,6 @@ pub struct FalSplatResponsePayload {
 pub enum GenerateSplatResponse {
   Artcraft(ArtcraftSplatResponsePayload),
   Fal(FalSplatResponsePayload),
-  WorldLabs(WorldLabsSplatResponsePayload),
 }
 
 impl GenerateSplatResponse {
@@ -54,13 +46,6 @@ impl GenerateSplatResponse {
   pub fn get_fal_payload(&self) -> Option<FalSplatResponsePayload> {
     match self {
       Self::Fal(p) => Some(p.clone()),
-      _ => None,
-    }
-  }
-
-  pub fn get_worldlabs_payload(&self) -> Option<WorldLabsSplatResponsePayload> {
-    match self {
-      Self::WorldLabs(p) => Some(p.clone()),
       _ => None,
     }
   }

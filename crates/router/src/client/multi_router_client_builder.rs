@@ -7,7 +7,6 @@ use crate::client::router_grok_client::RouterGrokClient;
 use crate::client::router_higgsfield_client::RouterHiggsfieldClient;
 use crate::client::router_midjourney_client::RouterMidjourneyClient;
 use crate::client::router_seedance2pro_client::RouterSeedance2ProClient;
-use crate::client::router_worldlabs_client::RouterWorldLabsClient;
 
 pub struct MultiRouterClientBuilder {
   artcraft_client: Option<RouterArtcraftClient>,
@@ -18,7 +17,6 @@ pub struct MultiRouterClientBuilder {
   higgsfield_client: Option<RouterHiggsfieldClient>,
   midjourney_client: Option<RouterMidjourneyClient>,
   seedance2pro_client: Option<RouterSeedance2ProClient>,
-  worldlabs_client: Option<RouterWorldLabsClient>,
 }
 
 impl MultiRouterClientBuilder {
@@ -32,7 +30,6 @@ impl MultiRouterClientBuilder {
       higgsfield_client: None,
       midjourney_client: None,
       seedance2pro_client: None,
-      worldlabs_client: None,
     }
   }
 
@@ -76,10 +73,6 @@ impl MultiRouterClientBuilder {
     self
   }
 
-  pub fn set_worldlabs_client(mut self, client: RouterWorldLabsClient) -> Self {
-    self.worldlabs_client = Some(client);
-    self
-  }
 
   pub fn build(self) -> MultiRouterClient {
     MultiRouterClient {
@@ -91,7 +84,6 @@ impl MultiRouterClientBuilder {
       higgsfield_client: self.higgsfield_client,
       midjourney_client: self.midjourney_client,
       seedance2pro_client: self.seedance2pro_client,
-      worldlabs_client: self.worldlabs_client,
     }
   }
 }

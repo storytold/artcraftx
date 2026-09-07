@@ -3,7 +3,7 @@
 // ids the backend accepts on generate requests.
 
 // `models::enums::GenerationProvider`
-export type ListingProvider = "artcraft" | "fal" | "grok" | "higgsfield" | "midjourney" | "world_labs";
+export type ListingProvider = "artcraft" | "fal" | "grok" | "higgsfield" | "midjourney";
 
 // `models::enums::ModelCreator` (snake_case)
 export type ListingCreator = string;

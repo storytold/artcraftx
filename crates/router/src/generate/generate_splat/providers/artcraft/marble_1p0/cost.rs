@@ -1,4 +1,4 @@
-use worldlabs_api_client::pricing::check_pricing::InputType;
+use crate::generate::generate_splat::providers::artcraft::input_type::InputType;
 
 use crate::generate::generate_splat::providers::artcraft::cost_common::{
   artcraft_splat_cost_estimate, derive_input_type_for_pricing, ArtcraftSplatPriceTable,

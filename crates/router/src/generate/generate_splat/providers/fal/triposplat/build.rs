@@ -10,15 +10,14 @@ use crate::errors::client_error::ClientError;
 use crate::generate::generate_mesh::providers::reject_unsupported::reject_unsupported_option;
 use crate::generate::generate_splat::generate_splat_request_builder::GenerateSplatRequestBuilder;
 use crate::generate::generate_splat::providers::fal::triposplat::request::FalTripoSplatRequestState;
-use crate::generate::generate_splat::splat_generation_draft_or_request::SplatGenerationDraftOrRequest;
 use crate::generate::generate_splat::splat_generation_request::SplatGenerationRequest;
 
 /// TripoSplat takes exactly one input image and nothing else. Prompts,
 /// videos, panorama and recaption flags are unsupported: rejected under
 /// `ErrorOut`, dropped otherwise.
-pub fn build_fal_triposplat(builder: GenerateSplatRequestBuilder) -> Result<SplatGenerationDraftOrRequest, ArtcraftRouterError> {
+pub fn build_fal_triposplat(builder: GenerateSplatRequestBuilder) -> Result<SplatGenerationRequest, ArtcraftRouterError> {
   let state = build_fal_triposplat_state(builder)?;
-  Ok(SplatGenerationDraftOrRequest::Request(SplatGenerationRequest::FalTripoSplat(state)))
+  Ok(SplatGenerationRequest::FalTripoSplat(state))
 }
 
 pub(crate) fn build_fal_triposplat_state(

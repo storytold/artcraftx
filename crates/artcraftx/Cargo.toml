@@ -52,7 +52,6 @@ models.workspace = true
 sqlite_identifiers.workspace = true
 url_utils.workspace = true
 web_base64.workspace = true
-worldlabs_consumer_client.workspace = true
 
 # External
 anyhow.workspace = true

@@ -37,9 +37,6 @@ export const providerForService = (service: string): GenerationProvider | undefi
     case "midjourney":
     case "midjourney_cookies":
       return GenerationProvider.Midjourney;
-    case "world_labs":
-    case "worldlabs_cookies":
-      return GenerationProvider.WorldLabs;
     default:
       return undefined;
   }

@@ -1,5 +1,6 @@
 use artcraft_client::api_defs::omni_gen::cost_and_generate_requests::omni_gen_splat_cost_and_generate_request::OmniGenSplatCostAndGenerateRequest;
-use worldlabs_api_client::pricing::check_pricing::InputType;
+
+use crate::generate::generate_splat::providers::artcraft::input_type::InputType;
 
 use crate::generate::generate_splat::splat_generation_cost_estimate::SplatGenerationCostEstimate;
 

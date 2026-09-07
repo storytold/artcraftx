@@ -10,14 +10,10 @@ use crate::generate::generate_splat::providers::artcraft::marble_1p1::build::bui
 use crate::generate::generate_splat::providers::artcraft::marble_1p1_plus::build::build_artcraft_marble_1p1_plus;
 use crate::generate::generate_splat::providers::artcraft::triposplat::build::build_artcraft_triposplat;
 use crate::generate::generate_splat::providers::fal::triposplat::build::build_fal_triposplat;
-use crate::generate::generate_splat::providers::worldlabs::marble_1p0::build::build_worldlabs_marble_1p0;
-use crate::generate::generate_splat::providers::worldlabs::marble_1p0_draft::build::build_worldlabs_marble_1p0_draft;
-use crate::generate::generate_splat::providers::worldlabs::marble_1p1::build::build_worldlabs_marble_1p1;
-use crate::generate::generate_splat::providers::worldlabs::marble_1p1_plus::build::build_worldlabs_marble_1p1_plus;
-use crate::generate::generate_splat::splat_generation_draft_or_request::SplatGenerationDraftOrRequest;
+use crate::generate::generate_splat::splat_generation_request::SplatGenerationRequest;
 
 /// RouterProvider-agnostic splat (gaussian world) generation request.
-/// Distilled by `build2()` into a `SplatGenerationDraftOrRequest` for the
+/// Distilled by `build2()` into a `SplatGenerationRequest` for the
 /// selected (provider, model) pair.
 ///
 /// NB: The deprecated marble 0.1 models are treated as their marble 1.x
@@ -74,7 +70,7 @@ impl Default for GenerateSplatRequestBuilder {
 
 impl GenerateSplatRequestBuilder {
 
-  pub fn build2(self) -> Result<SplatGenerationDraftOrRequest, ArtcraftRouterError> {
+  pub fn build2(self) -> Result<SplatGenerationRequest, ArtcraftRouterError> {
     match (self.provider, self.model) {
       // Artcraft
       (RouterProvider::Artcraft, RouterSplatModel::Marble1p0 | RouterSplatModel::Marble0p1Plus) => build_artcraft_marble_1p0(self),
@@ -84,11 +80,6 @@ impl GenerateSplatRequestBuilder {
       (RouterProvider::Artcraft, RouterSplatModel::TripoSplat) => build_artcraft_triposplat(self),
       // Fal
       (RouterProvider::Fal, RouterSplatModel::TripoSplat) => build_fal_triposplat(self),
-      // World Labs
-      (RouterProvider::WorldLabs, RouterSplatModel::Marble1p0 | RouterSplatModel::Marble0p1Plus) => build_worldlabs_marble_1p0(self),
-      (RouterProvider::WorldLabs, RouterSplatModel::Marble1p0Draft | RouterSplatModel::Marble0p1Mini) => build_worldlabs_marble_1p0_draft(self),
-      (RouterProvider::WorldLabs, RouterSplatModel::Marble1p1) => build_worldlabs_marble_1p1(self),
-      (RouterProvider::WorldLabs, RouterSplatModel::Marble1p1Plus) => build_worldlabs_marble_1p1_plus(self),
       _ => self.unsupported_provider_and_model(),
     }
   }
@@ -98,7 +89,7 @@ impl GenerateSplatRequestBuilder {
         .unwrap_or_else(|| uuid::Uuid::new_v4().to_string())
   }
 
-  fn unsupported_provider_and_model(&self) -> Result<SplatGenerationDraftOrRequest, ArtcraftRouterError> {
+  fn unsupported_provider_and_model(&self) -> Result<SplatGenerationRequest, ArtcraftRouterError> {
     Err(ArtcraftRouterError::UnsupportedProviderAndModelForNewApi(
       format!("Splat generation for model `{:?}` is not supported for provider {:?}", self.model, self.provider)
     ))
@@ -107,14 +98,7 @@ impl GenerateSplatRequestBuilder {
 
 #[cfg(test)]
 mod tests {
-  use sqlite_identifiers::ids::media_file_token::MediaFileToken;
-
-  use crate::generate::generate_splat::splat_generation_draft::SplatGenerationDraftRequest;
-  use crate::generate::generate_splat::splat_generation_request::SplatGenerationRequest;
-
   use super::*;
-
-  const IMAGE_URL: &str = "https://example.com/room.png";
 
   mod artcraft_dispatch_tests {
     use super::*;
@@ -130,7 +114,7 @@ mod tests {
       for model in cases {
         let result = artcraft_builder(model).build2()
           .unwrap_or_else(|e| panic!("build should succeed for {model:?}: {e}"));
-        let request = expect_request(result);
+        let request = result;
         let matches = matches!(
           (model, &request),
           (RouterSplatModel::Marble1p0, SplatGenerationRequest::ArtcraftMarble1p0(_))
@@ -146,7 +130,7 @@ mod tests {
     fn legacy_marble_0p1_mini_is_treated_as_marble_1p0_draft() {
       let result = artcraft_builder(RouterSplatModel::Marble0p1Mini).build2().expect("build");
       assert!(matches!(
-        expect_request(result),
+        result,
         SplatGenerationRequest::ArtcraftMarble1p0Draft(_)
       ));
     }
@@ -155,91 +139,9 @@ mod tests {
     fn legacy_marble_0p1_plus_is_treated_as_marble_1p0() {
       let result = artcraft_builder(RouterSplatModel::Marble0p1Plus).build2().expect("build");
       assert!(matches!(
-        expect_request(result),
+        result,
         SplatGenerationRequest::ArtcraftMarble1p0(_)
       ));
-    }
-  }
-
-  mod worldlabs_dispatch_tests {
-    use super::*;
-
-    #[test]
-    fn text_prompts_dispatch_to_direct_requests() {
-      let cases = [
-        RouterSplatModel::Marble1p0,
-        RouterSplatModel::Marble1p0Draft,
-        RouterSplatModel::Marble1p1,
-        RouterSplatModel::Marble1p1Plus,
-      ];
-      for model in cases {
-        let result = worldlabs_text_builder(model).build2()
-          .unwrap_or_else(|e| panic!("build should succeed for {model:?}: {e}"));
-        let request = expect_request(result);
-        let matches = matches!(
-          (model, &request),
-          (RouterSplatModel::Marble1p0, SplatGenerationRequest::WorldLabsMarble1p0(_))
-            | (RouterSplatModel::Marble1p0Draft, SplatGenerationRequest::WorldLabsMarble1p0Draft(_))
-            | (RouterSplatModel::Marble1p1, SplatGenerationRequest::WorldLabsMarble1p1(_))
-            | (RouterSplatModel::Marble1p1Plus, SplatGenerationRequest::WorldLabsMarble1p1Plus(_))
-        );
-        assert!(matches, "unexpected dispatch for {model:?}: {request:?}");
-      }
-    }
-
-    #[test]
-    fn media_inputs_dispatch_to_drafts() {
-      let cases = [
-        RouterSplatModel::Marble1p0,
-        RouterSplatModel::Marble1p0Draft,
-        RouterSplatModel::Marble1p1,
-        RouterSplatModel::Marble1p1Plus,
-      ];
-      for model in cases {
-        let builder = GenerateSplatRequestBuilder {
-          reference_images: Some(ImageListRef::Urls(vec![IMAGE_URL.to_string()])),
-          ..worldlabs_text_builder(model)
-        };
-        let result = builder.build2()
-          .unwrap_or_else(|e| panic!("build should succeed for {model:?}: {e}"));
-        let draft = expect_draft(result);
-        let matches = matches!(
-          (model, &draft),
-          (RouterSplatModel::Marble1p0, SplatGenerationDraftRequest::WorldLabsMarble1p0(_))
-            | (RouterSplatModel::Marble1p0Draft, SplatGenerationDraftRequest::WorldLabsMarble1p0Draft(_))
-            | (RouterSplatModel::Marble1p1, SplatGenerationDraftRequest::WorldLabsMarble1p1(_))
-            | (RouterSplatModel::Marble1p1Plus, SplatGenerationDraftRequest::WorldLabsMarble1p1Plus(_))
-        );
-        assert!(matches, "unexpected dispatch for {model:?}: {draft:?}");
-      }
-    }
-
-    #[test]
-    fn legacy_models_are_treated_as_their_successors() {
-      let mini = worldlabs_text_builder(RouterSplatModel::Marble0p1Mini).build2().expect("build");
-      assert!(matches!(
-        expect_request(mini),
-        SplatGenerationRequest::WorldLabsMarble1p0Draft(_)
-      ));
-
-      let plus = worldlabs_text_builder(RouterSplatModel::Marble0p1Plus).build2().expect("build");
-      assert!(matches!(
-        expect_request(plus),
-        SplatGenerationRequest::WorldLabsMarble1p0(_)
-      ));
-    }
-
-    #[test]
-    fn media_token_inputs_dispatch_to_drafts() {
-      let builder = GenerateSplatRequestBuilder {
-        prompt: None,
-        reference_images: Some(ImageListRef::MediaFileTokens(vec![
-          MediaFileToken::new("mf_test123".to_string()),
-        ])),
-        ..worldlabs_text_builder(RouterSplatModel::Marble1p0)
-      };
-      let result = builder.build2().expect("build");
-      assert!(matches!(result, SplatGenerationDraftOrRequest::Draft(_)));
     }
   }
 
@@ -276,29 +178,6 @@ mod tests {
       model,
       prompt: Some("a cozy cabin in the snowy mountains".to_string()),
       ..Default::default()
-    }
-  }
-
-  fn worldlabs_text_builder(model: RouterSplatModel) -> GenerateSplatRequestBuilder {
-    GenerateSplatRequestBuilder {
-      provider: RouterProvider::WorldLabs,
-      model,
-      prompt: Some("a cozy cabin in the snowy mountains".to_string()),
-      ..Default::default()
-    }
-  }
-
-  fn expect_request(result: SplatGenerationDraftOrRequest) -> SplatGenerationRequest {
-    match result {
-      SplatGenerationDraftOrRequest::Request(request) => request,
-      SplatGenerationDraftOrRequest::Draft(draft) => panic!("expected Request, got Draft: {draft:?}"),
-    }
-  }
-
-  fn expect_draft(result: SplatGenerationDraftOrRequest) -> SplatGenerationDraftRequest {
-    match result {
-      SplatGenerationDraftOrRequest::Draft(draft) => draft,
-      SplatGenerationDraftOrRequest::Request(request) => panic!("expected Draft, got Request: {request:?}"),
     }
   }
 }

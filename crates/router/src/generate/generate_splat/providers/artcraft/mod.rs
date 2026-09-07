@@ -1,5 +1,6 @@
 pub(crate) mod build_common;
 pub(crate) mod cost_common;
+pub mod input_type;
 pub(crate) mod request_common;
 pub(crate) mod resolve;
 pub mod marble_1p0;

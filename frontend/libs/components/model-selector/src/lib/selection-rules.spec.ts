@@ -35,6 +35,7 @@ describe("providerForService", () => {
     expect(providerForService("higgsfield_cookies")).toBe(GenerationProvider.Higgsfield);
     expect(providerForService("higgsfield")).toBe(GenerationProvider.Higgsfield);
     expect(providerForService("runway_cookies")).toBeUndefined();
+    expect(providerForService("worldlabs_cookies")).toBeUndefined();
   });
 });
 
@@ -54,7 +55,7 @@ describe("chooseModelForProvider", () => {
     expect(chooseModelForProvider(GenerationProvider.Fal, page)).toBe(flux);
   });
   it("is undefined when the provider offers nothing on the page", () => {
-    expect(chooseModelForProvider(GenerationProvider.WorldLabs, page)).toBeUndefined();
+    expect(chooseModelForProvider(GenerationProvider.Higgsfield, page)).toBeUndefined();
   });
 });
 

@@ -6,7 +6,6 @@ use router::client::request_mismatch_mitigation_strategy::RequestMismatchMitigat
 use router::client::router_artcraft_client::RouterArtcraftClient;
 use router::client::router_client::RouterClient;
 use router::generate::generate_splat::generate_splat_request_builder::GenerateSplatRequestBuilder;
-use router::generate::generate_splat::splat_generation_draft_or_request::SplatGenerationDraftOrRequest;
 use router::api::image_list_ref::ImageListRef;
 use router::api::video_ref::VideoRef;
 
@@ -104,19 +103,11 @@ async fn handle_artcraft_credential(
 
   info!("Building Artcraft splat generation plan: model={:?}", router_model);
 
-  let generation_request = match router_request.build2() {
-    Ok(SplatGenerationDraftOrRequest::Request(generation_request)) => generation_request,
-    Ok(SplatGenerationDraftOrRequest::Draft(draft)) => {
-      warn!("Artcraft build unexpectedly produced a draft: {:?}", draft);
-      return Err(GenerateError::NotYetImplemented(
-        "Artcraft requests should not require a draft phase".to_string(),
-      ));
-    }
-    Err(err) => {
-      warn!("Could not build Artcraft router request: {:?}", err);
-      return Err(err.into());
-    }
-  };
+  let generation_request = router_request.build2()
+      .map_err(|err| {
+        warn!("Could not build Artcraft router request: {:?}", err);
+        GenerateError::from(err)
+      })?;
 
   let response = generation_request.send_request(&client).await
       .map_err(|err| {

@@ -11,7 +11,6 @@ use higgsfield_client::error::higgsfield_error::HiggsfieldError;
 use midjourney_client::error::midjourney_error::MidjourneyError;
 use artcraft_client::error::storyteller_error::StorytellerError;
 use router::errors::download_error::DownloadError;
-use worldlabs_consumer_client::error::world_labs_error::WorldLabsError;
 //use fal_client::error::fal_error_plus::FalErrorPlus;
 
 #[derive(Debug)]
@@ -103,7 +102,6 @@ pub enum MissingCredentialsReason {
   NeedsMidjourneyUserId,
   NeedsMidjourneyUserInfo,
   NeedsStorytellerCredentials,
-  NeedsWorldLabsCredentials,
 }
 
 #[derive(Debug)]
@@ -133,7 +131,6 @@ pub enum ProviderFailureReason {
   /// NB: The midjourney client doesn't categorize all errors, so we have to do so on our end.
   MidjourneyJobEnqueueFailed,
   StorytellerError(StorytellerError),
-  WorldLabsError(WorldLabsError),
 }
 
 impl GenerateError {
@@ -176,10 +173,6 @@ impl GenerateError {
 
   pub fn needs_storyteller_credentials() -> Self {
     Self::MissingCredentials(MissingCredentialsReason::NeedsStorytellerCredentials)
-  }
-
-  pub fn needs_worldlabs_credentials() -> Self {
-    Self::MissingCredentials(MissingCredentialsReason::NeedsWorldLabsCredentials)
   }
 }
 
@@ -238,12 +231,6 @@ impl From<StorytellerError> for GenerateError {
   }
 }
 
-impl From<WorldLabsError> for GenerateError {
-  fn from(value: WorldLabsError) -> Self {
-    Self::ProviderFailure(ProviderFailureReason::WorldLabsError(value))
-  }
-}
-
 impl From<ArtcraftRouterError> for GenerateError {
   fn from(value: ArtcraftRouterError) -> Self {
     match value {
@@ -262,7 +249,6 @@ impl From<ArtcraftRouterError> for GenerateError {
           ProviderError::GrokApi(_) => BillingProvider::Artcraft,
           ProviderError::Grok(_) => BillingProvider::Artcraft,
           ProviderError::Higgsfield(_) => BillingProvider::Higgsfield,
-          ProviderError::WorldLabs(_) => BillingProvider::Artcraft,
         };
         Self::BillingIssue(BillingIssueReason { provider })
       },
@@ -278,9 +264,6 @@ impl From<ArtcraftRouterError> for GenerateError {
       ArtcraftRouterError::Provider(ProviderError::Midjourney(e)) => Self::ProviderFailure(ProviderFailureReason::MidjourneyError(e)),
       ArtcraftRouterError::Provider(ProviderError::MidjourneySubscriptionRequired(message)) => Self::ProviderRejected(message),
       ArtcraftRouterError::Provider(ProviderError::MidjourneySubmitRejected(message)) => Self::ProviderRejected(message),
-      // NB: the desktop app reaches World Labs through the Artcraft backend; the router's
-      // direct World Labs provider isn't used here.
-      ArtcraftRouterError::Provider(ProviderError::WorldLabs(_)) => Self::ArtcraftRouterNotYetSupportedProvider("world_labs"),
       ArtcraftRouterError::UnsupportedModel(model) => Self::NotYetImplemented(format!("Unsupported model: {}", model)),
       ArtcraftRouterError::UnsupportedProviderAndModelForNewApi(_message) => Self::ArtcraftRouterNotYetSupportedProvider("unsupported model for new router API"),
       ArtcraftRouterError::ProviderResponseInvalid(message) => Self::ProviderRejected(message),

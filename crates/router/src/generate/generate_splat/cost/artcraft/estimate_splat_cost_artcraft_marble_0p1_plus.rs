@@ -1,20 +1,14 @@
 use crate::generate::generate_splat::plan::artcraft::plan_generate_splat_artcraft_marble_0p1_plus::PlanArtcraftMarble0p1Plus;
 use crate::generate::generate_splat::splat_generation_cost_estimate::SplatGenerationCostEstimate;
-use worldlabs_api_client::api::api_types::world_labs_model::WorldLabsModel;
-use worldlabs_api_client::pricing::check_pricing::{calculate_cost, InputType};
 
-#[allow(deprecated)] // legacy marble 0.1 pricing intentionally uses the deprecated variants
+/// Marble 0.1-plus costs 1580 World Labs credits for text or a single image
+/// ($1 per 1,250 credits), so it is flat priced.
+const COST_IN_USD_CENTS: u64 = 126;
+
 pub(crate) fn estimate_splat_cost_artcraft_marble_0p1_plus(
-  plan: &PlanArtcraftMarble0p1Plus,
+  _plan: &PlanArtcraftMarble0p1Plus,
 ) -> SplatGenerationCostEstimate {
-  let input_type = if plan.reference_image.is_some() {
-    InputType::ImageNonPanorama
-  } else {
-    InputType::Text
-  };
-
-  let cost = calculate_cost(WorldLabsModel::Marble0p1Plus, input_type);
-  let cost_in_usd_cents = cost.us_dollar_cents as u64;
+  let cost_in_usd_cents = COST_IN_USD_CENTS;
 
   SplatGenerationCostEstimate {
     cost_in_credits: Some(cost_in_usd_cents),

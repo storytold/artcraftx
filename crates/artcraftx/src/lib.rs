@@ -66,8 +66,6 @@ use crate::services::grok::state::grok_websockets::GrokWebsockets;
 use crate::services::midjourney::state::midjourney_credential_manager::MidjourneyCredentialManager;
 use crate::services::midjourney::state::midjourney_live_session::MidjourneyLiveSession;
 use crate::services::storyteller::state::storyteller_credential_manager::StorytellerCredentialManager;
-use crate::services::worldlabs::state::worldlabs_bearer_bridge::WorldlabsBearerBridge;
-use crate::services::worldlabs::state::worldlabs_credential_manager::WorldlabsCredentialManager;
 use log::error;
 
 use crate::state::usage_tracker::artcraft_usage_tracker::ArtcraftUsageTracker;
@@ -117,12 +115,6 @@ pub fn run() {
   let grok_websockets = GrokWebsockets::new();
   let grok_websockets_2 = grok_websockets.clone();
 
-  let worldlabs_creds_manager = WorldlabsCredentialManager::initialize_from_disk_infallible(&app_data_root);
-  let worldlabs_creds_manager_2 = worldlabs_creds_manager.clone();
-
-  let worldlabs_bearer_bridge = WorldlabsBearerBridge::empty();
-  let worldlabs_bearer_bridge_2 = worldlabs_bearer_bridge.clone();
-  
   let artcraft_usage_tracker = ArtcraftUsageTracker::new();
   let artcraft_usage_tracker_2 = artcraft_usage_tracker.clone();
 
@@ -162,8 +154,6 @@ pub fn run() {
           midjourney_live_session_2,
           grok_creds_manager_2,
           grok_websockets_2,
-          worldlabs_bearer_bridge_2,
-          worldlabs_creds_manager_2,
         ).await;
 
         if let Err(err) = result {
@@ -183,9 +173,7 @@ pub fn run() {
     .manage(grok_websockets)
     .manage(midjourney_creds_manager)
     .manage(midjourney_live_session)
-    .manage(storyteller_creds_manager_3)
-    .manage(worldlabs_bearer_bridge)
-    .manage(worldlabs_creds_manager);
+    .manage(storyteller_creds_manager_3);
 
   // TODO: Break this out into another module, because RustRover/IntelliJ lags with these macros.
   //  My first attempt at naively doing this didn't work because the macros can't find their codegen'd targets.

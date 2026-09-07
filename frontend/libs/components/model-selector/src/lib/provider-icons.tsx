@@ -8,7 +8,6 @@ const GENERATION_PROVIDER_TO_CREATOR: Partial<Record<GenerationProvider, ModelCr
   [GenerationProvider.Grok]: ModelCreator.Grok,
   [GenerationProvider.Higgsfield]: ModelCreator.Higgsfield,
   [GenerationProvider.Midjourney]: ModelCreator.Midjourney,
-  [GenerationProvider.WorldLabs]: ModelCreator.WorldLabs,
   [GenerationProvider.Fal]: ModelCreator.Fal,
 };
 
@@ -43,8 +42,6 @@ export const getProviderDisplayName = (provider: GenerationProvider): string => 
       return "Higgsfield";
     case GenerationProvider.Midjourney:
       return "Midjourney";
-    case GenerationProvider.WorldLabs:
-      return "World Labs";
     default:
       return "Unknown Provider";
   }

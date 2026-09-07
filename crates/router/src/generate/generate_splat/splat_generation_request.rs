@@ -14,14 +14,6 @@ use crate::generate::generate_splat::providers::artcraft::triposplat::cost::Artc
 use crate::generate::generate_splat::providers::artcraft::triposplat::request::ArtcraftTripoSplatRequestState;
 use crate::generate::generate_splat::providers::fal::triposplat::cost::FalTripoSplatCostState;
 use crate::generate::generate_splat::providers::fal::triposplat::request::FalTripoSplatRequestState;
-use crate::generate::generate_splat::providers::worldlabs::marble_1p0::cost::WorldLabsMarble1p0CostState;
-use crate::generate::generate_splat::providers::worldlabs::marble_1p0::request::WorldLabsMarble1p0RequestState;
-use crate::generate::generate_splat::providers::worldlabs::marble_1p0_draft::cost::WorldLabsMarble1p0DraftModelCostState;
-use crate::generate::generate_splat::providers::worldlabs::marble_1p0_draft::request::WorldLabsMarble1p0DraftModelRequestState;
-use crate::generate::generate_splat::providers::worldlabs::marble_1p1::cost::WorldLabsMarble1p1CostState;
-use crate::generate::generate_splat::providers::worldlabs::marble_1p1::request::WorldLabsMarble1p1RequestState;
-use crate::generate::generate_splat::providers::worldlabs::marble_1p1_plus::cost::WorldLabsMarble1p1PlusCostState;
-use crate::generate::generate_splat::providers::worldlabs::marble_1p1_plus::request::WorldLabsMarble1p1PlusRequestState;
 use crate::generate::generate_splat::splat_generation_cost_estimate::SplatGenerationCostEstimate;
 
 #[derive(Clone, Debug)]
@@ -32,10 +24,6 @@ pub enum SplatGenerationRequest {
   ArtcraftMarble1p1Plus(ArtcraftMarble1p1PlusRequestState),
   ArtcraftTripoSplat(ArtcraftTripoSplatRequestState),
   FalTripoSplat(FalTripoSplatRequestState),
-  WorldLabsMarble1p0(WorldLabsMarble1p0RequestState),
-  WorldLabsMarble1p0Draft(WorldLabsMarble1p0DraftModelRequestState),
-  WorldLabsMarble1p1(WorldLabsMarble1p1RequestState),
-  WorldLabsMarble1p1Plus(WorldLabsMarble1p1PlusRequestState),
 }
 
 impl SplatGenerationRequest {
@@ -48,10 +36,6 @@ impl SplatGenerationRequest {
       Self::ArtcraftMarble1p1Plus(_) => RouterProvider::Artcraft,
       Self::ArtcraftTripoSplat(_) => RouterProvider::Artcraft,
       Self::FalTripoSplat(_) => RouterProvider::Fal,
-      Self::WorldLabsMarble1p0(_) => RouterProvider::WorldLabs,
-      Self::WorldLabsMarble1p0Draft(_) => RouterProvider::WorldLabs,
-      Self::WorldLabsMarble1p1(_) => RouterProvider::WorldLabs,
-      Self::WorldLabsMarble1p1Plus(_) => RouterProvider::WorldLabs,
     }
   }
 
@@ -64,10 +48,6 @@ impl SplatGenerationRequest {
       SplatGenerationRequest::ArtcraftMarble1p1Plus(request) => Ok(ArtcraftMarble1p1PlusCostState::from_request(request).estimate_cost()),
       SplatGenerationRequest::ArtcraftTripoSplat(request) => Ok(ArtcraftTripoSplatCostState::from_request(request).estimate_cost()),
       SplatGenerationRequest::FalTripoSplat(request) => Ok(FalTripoSplatCostState::from_request(request).estimate_cost()),
-      SplatGenerationRequest::WorldLabsMarble1p0(request) => Ok(WorldLabsMarble1p0CostState::from_request(request).estimate_cost()),
-      SplatGenerationRequest::WorldLabsMarble1p0Draft(request) => Ok(WorldLabsMarble1p0DraftModelCostState::from_request(request).estimate_cost()),
-      SplatGenerationRequest::WorldLabsMarble1p1(request) => Ok(WorldLabsMarble1p1CostState::from_request(request).estimate_cost()),
-      SplatGenerationRequest::WorldLabsMarble1p1Plus(request) => Ok(WorldLabsMarble1p1PlusCostState::from_request(request).estimate_cost()),
     }
   }
 
@@ -97,22 +77,6 @@ impl SplatGenerationRequest {
       },
       SplatGenerationRequest::FalTripoSplat(request) => {
         let client_ref = client.get_fal_client_ref()?;
-        request.send(client_ref).await
-      },
-      SplatGenerationRequest::WorldLabsMarble1p0(request) => {
-        let client_ref = client.get_worldlabs_client_ref()?;
-        request.send(client_ref).await
-      },
-      SplatGenerationRequest::WorldLabsMarble1p0Draft(request) => {
-        let client_ref = client.get_worldlabs_client_ref()?;
-        request.send(client_ref).await
-      },
-      SplatGenerationRequest::WorldLabsMarble1p1(request) => {
-        let client_ref = client.get_worldlabs_client_ref()?;
-        request.send(client_ref).await
-      },
-      SplatGenerationRequest::WorldLabsMarble1p1Plus(request) => {
-        let client_ref = client.get_worldlabs_client_ref()?;
         request.send(client_ref).await
       },
     }

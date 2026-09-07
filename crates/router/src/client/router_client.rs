@@ -7,7 +7,6 @@ use crate::client::router_grok_client::RouterGrokClient;
 use crate::client::router_higgsfield_client::RouterHiggsfieldClient;
 use crate::client::router_midjourney_client::RouterMidjourneyClient;
 use crate::client::router_seedance2pro_client::RouterSeedance2ProClient;
-use crate::client::router_worldlabs_client::RouterWorldLabsClient;
 use crate::errors::client_error::{ClientError, ClientType};
 
 pub enum RouterClient {
@@ -20,7 +19,6 @@ pub enum RouterClient {
   Higgsfield(RouterHiggsfieldClient),
   Midjourney(RouterMidjourneyClient),
   Seedance2Pro(RouterSeedance2ProClient),
-  WorldLabs(RouterWorldLabsClient),
 }
 
 impl RouterClient {
@@ -88,11 +86,4 @@ impl RouterClient {
     }
   }
 
-  pub fn get_worldlabs_client_ref(&self) -> Result<&RouterWorldLabsClient, ClientError> {
-    match self {
-      RouterClient::WorldLabs(client) => Ok(client),
-      RouterClient::Multi(multi) => multi.get_worldlabs_client_ref(),
-      _ => Err(ClientError::ClientNotConfigured(ClientType::WorldLabs)),
-    }
-  }
 }

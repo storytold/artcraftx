@@ -27,13 +27,6 @@ fn splat_providers() -> Vec<SplatProviderOffering> {
       SplatModel::Marble1p0Draft,
       SplatModel::TripoSplat,
     ]),
-    // First-party (cookie-session) World Labs: the Marble models.
-    SplatProviderOffering::of(GenerationProvider::WorldLabs, &[
-      SplatModel::Marble1p1,
-      SplatModel::Marble1p1Plus,
-      SplatModel::Marble1p0,
-      SplatModel::Marble1p0Draft,
-    ]),
   ]
 }
 

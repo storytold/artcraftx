@@ -28,8 +28,6 @@ function getServiceProviderName(provider: GenerationProvider) : string {
       return "Higgsfield";
     case GenerationProvider.Midjourney:
       return "Midjourney";
-    case GenerationProvider.WorldLabs:
-      return "World Labs";
     case GenerationProvider.Artcraft:
     default:
       return "Artcraft";
