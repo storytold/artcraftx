@@ -11,7 +11,6 @@ use crate::state::app_preferences::app_preferences_manager::AppPreferencesManage
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
 use crate::database::task_database_pending_statuses::TASK_DATABASE_PENDING_STATUSES;
-use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::enums::common::generation::common_model_type::CommonModelType;
 use core_types::enums::generation_source::GenerationSource;
 use errors::AnyhowResult;
@@ -75,15 +74,14 @@ async fn run_once(
   app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   mj_session: &MidjourneyLiveSession,
-  storyteller_creds_manager: &StorytellerCredentialManager,
+  // Uploads now go to the backup account (see `services::backup`), not the session.
+  _storyteller_creds_manager: &StorytellerCredentialManager,
 ) -> AnyhowResult<()> {
   let cookie_header = match midjourney_cookie_header(app_data_root) {
     Some(header) => header,
     None => return sleep_not_ready().await,
   };
 
-  // Optional: without an ArtCraft session, results are still saved locally.
-  let maybe_storyteller_creds = storyteller_creds_manager.get_credentials()?;
 
   // Resolves and caches user_id + websocket_token in the session.
   let user_id = match resolve_user_id(mj_session, &cookie_header).await {
@@ -120,7 +118,6 @@ async fn run_once(
     app_preferences,
     task_database,
     mj_session,
-    maybe_storyteller_creds.as_ref(),
     websocket,
   ).await
 }
@@ -133,7 +130,6 @@ async fn drive_websocket(
   app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   mj_session: &MidjourneyLiveSession,
-  maybe_storyteller_creds: Option<&StorytellerCredentialSet>,
   websocket: MidjourneyWebSocket,
 ) -> AnyhowResult<()> {
   let image_downloader = ImageDownloaderClient::create(Some(midjourney_browser_profile()))?;
@@ -174,7 +170,6 @@ async fn drive_websocket(
                 app_data_root,
                 app_preferences,
                 task_database,
-                maybe_storyteller_creds,
                 image_downloader: &image_downloader,
                 midjourney_job_id: job_id,
                 local_task: &local_task,

@@ -9,6 +9,17 @@ export interface AppPreferencesPayload {
   sounds: AppSoundPreferences,
   downloads: AppDownloadPreferences,
   prompt: AppPromptPreferences,
+  backup: AppBackupPreferences,
+}
+
+// Backing up generations made on other services (Higgsfield, Midjourney,
+// Runway, ...) to one of the user's ArtCraft accounts.
+export interface AppBackupPreferences {
+  // Master switch. Off until the user opts in.
+  enabled: boolean,
+  // The ArtCraft credential id results are uploaded to. Kept while backups
+  // are off so re-enabling restores the choice. Absent when never chosen.
+  maybe_artcraft_credential_id?: string | null,
 }
 
 export interface AppPromptPreferences {

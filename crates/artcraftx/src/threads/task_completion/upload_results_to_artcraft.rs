@@ -67,6 +67,7 @@ pub struct UploadedResults {
 /// thumbnail URLs (failing open). With a ledger, a file this account already
 /// uploaded (and ArtCraft still has) is reused by token instead.
 pub async fn upload_results_to_artcraft(
+  api_host: &ApiHost,
   creds: &StorytellerCredentialSet,
   task: &Task,
   generation_provider: GenerationSource,
@@ -78,7 +79,7 @@ pub async fn upload_results_to_artcraft(
   let task_id = task.id.as_str();
   let maybe_upload_cache = maybe_ledger.and_then(|ledger| ledger.for_artcraft_session(Some(creds)));
 
-  let maybe_prompt_token = resolve_prompt_token(creds, task, generation_provider, prompt).await;
+  let maybe_prompt_token = resolve_prompt_token(api_host, creds, task, generation_provider, prompt).await;
 
   // TODO: Move this from clientside to the backend.
   //  The first upload should produce a batch token that we can reuse.
@@ -90,6 +91,7 @@ pub async fn upload_results_to_artcraft(
     info!("[TaskCompletion] Uploading result {} of {} for task {} ...", index + 1, local_files.len(), task_id);
 
     let upload = || upload_with_retry(
+      api_host,
       creds,
       local_file,
       generation_provider,
@@ -98,7 +100,7 @@ pub async fn upload_results_to_artcraft(
       maybe_batch_token.as_ref(),
     );
     let media_token = match &maybe_upload_cache {
-      Some(cache) => cache.artcraft_token_for_file(&ApiHost::Storyteller, local_file, upload).await?,
+      Some(cache) => cache.artcraft_token_for_file(api_host, local_file, upload).await?,
       None => upload().await?,
     };
 
@@ -116,7 +118,7 @@ pub async fn upload_results_to_artcraft(
   let mut maybe_cdn_url = None;
   let mut maybe_thumbnail_url_template = None;
 
-  match get_media_file(&ApiHost::Storyteller, &primary_media_file_token).await {
+  match get_media_file(api_host, &primary_media_file_token).await {
     Ok(response) => {
       maybe_cdn_url = Some(response.media_file.media_links.cdn_url.clone());
       maybe_thumbnail_url_template = media_links_to_thumbnail_template(&response.media_file.media_links)
@@ -140,6 +142,7 @@ pub async fn upload_results_to_artcraft(
 /// Turn the caller's prompt instruction into a token. Creating a prompt fails
 /// open: the uploads are still worth keeping without one.
 async fn resolve_prompt_token(
+  api_host: &ApiHost,
   creds: &StorytellerCredentialSet,
   task: &Task,
   generation_provider: GenerationSource,
@@ -173,7 +176,7 @@ async fn resolve_prompt_token(
         maybe_duration_seconds: None,
       };
 
-      match create_prompt(&ApiHost::Storyteller, Some(creds), request).await {
+      match create_prompt(api_host, Some(creds), request).await {
         Ok(response) => {
           info!("[TaskCompletion] Created prompt {:?} for task {}", response.prompt_token, task_id);
           Some(response.prompt_token)
@@ -188,6 +191,7 @@ async fn resolve_prompt_token(
 }
 
 async fn upload_with_retry(
+  api_host: &ApiHost,
   creds: &StorytellerCredentialSet,
   path: &Path,
   generation_provider: GenerationSource,
@@ -198,7 +202,7 @@ async fn upload_with_retry(
   let mut retry_delay_secs = INITIAL_RETRY_DELAY_SECS;
 
   for attempt in 1..=MAX_UPLOAD_RETRIES {
-    let result = try_upload(creds, path, generation_provider, media_class, maybe_prompt_token, maybe_batch_token).await;
+    let result = try_upload(api_host, creds, path, generation_provider, media_class, maybe_prompt_token, maybe_batch_token).await;
 
     match result {
       Ok(token) => return Ok(token),
@@ -218,6 +222,7 @@ async fn upload_with_retry(
 }
 
 async fn try_upload(
+  api_host: &ApiHost,
   creds: &StorytellerCredentialSet,
   path: &Path,
   generation_provider: GenerationSource,
@@ -230,7 +235,7 @@ async fn try_upload(
   let media_token = match media_class {
     TaskMediaFileClass::Video => {
       let result = upload_video_media_file_from_file(UploadVideoFromFileArgs {
-        api_host: &ApiHost::Storyteller,
+        api_host,
         maybe_creds: Some(creds),
         path,
         maybe_prompt_token,
@@ -240,7 +245,7 @@ async fn try_upload(
     }
     TaskMediaFileClass::Splat | TaskMediaFileClass::Mesh => {
       let result = legacy_upload_media_file_from_file(LegacyUploadMediaFileFromFileArgs {
-        api_host: &ApiHost::Storyteller,
+        api_host,
         maybe_creds: Some(creds),
         path,
         maybe_generation_provider,
@@ -249,7 +254,7 @@ async fn try_upload(
     }
     _ => {
       let result = upload_image_media_file_from_file(UploadImageFromFileArgs {
-        api_host: &ApiHost::Storyteller,
+        api_host,
         maybe_creds: Some(creds),
         path,
         is_intermediate_system_file: false,

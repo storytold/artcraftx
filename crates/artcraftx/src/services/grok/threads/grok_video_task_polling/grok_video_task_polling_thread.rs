@@ -8,7 +8,6 @@ use crate::state::data_dir::subdirectory::trait_data_subdir::DataSubdir;
 use crate::state::database::task_database::TaskDatabase;
 use crate::threads::task_completion::complete_task_with_local_files::{complete_task_with_local_files, CompleteTaskArgs};
 use crate::threads::task_completion::upload_results_to_artcraft::CompletionPrompt;
-use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::enums::common::generation::common_model_type::CommonModelType;
 use core_types::enums::generation_source::GenerationSource;
 use errors::AnyhowResult;
@@ -57,7 +56,8 @@ async fn polling_loop(
   app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   grok_creds: &GrokCredentialManager,
-  storyteller_creds_manager: &StorytellerCredentialManager,
+  // Uploads now go to the backup account (see `services::backup`), not the session.
+  _storyteller_creds_manager: &StorytellerCredentialManager,
 ) -> AnyhowResult<()> {
   loop {
     if !grok_creds.do_task_polling()? {
@@ -65,8 +65,6 @@ async fn polling_loop(
       continue;
     }
 
-    // Optional: without an ArtCraft session, results are still saved locally.
-    let maybe_storyteller_creds = storyteller_creds_manager.get_credentials()?;
 
     let grok_full_creds = match get_or_update_grok_full_credentials(&grok_creds).await {
       Ok(creds) => creds,
@@ -89,7 +87,6 @@ async fn polling_loop(
       app_preferences,
       task_database,
       &grok_full_creds,
-      maybe_storyteller_creds.as_ref(),
       local_tasks,
     ).await?;
 
@@ -103,7 +100,6 @@ async fn poll_grok_tasks(
   app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
   grok_full_creds: &GrokFullCredentials,
-  maybe_storyteller_creds: Option<&StorytellerCredentialSet>,
   local_tasks: TaskList,
 ) -> AnyhowResult<()> {
   let local_tasks = local_tasks.tasks;
@@ -157,7 +153,6 @@ async fn poll_grok_tasks(
       app_data_root,
       app_preferences,
       task_database,
-      maybe_storyteller_creds,
       grok_full_creds,
       grok_post_id,
       local_task,
@@ -183,7 +178,6 @@ async fn complete_grok_video(
   app_data_root: &AppDataRoot,
   app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
-  maybe_storyteller_creds: Option<&StorytellerCredentialSet>,
   grok_full_creds: &GrokFullCredentials,
   grok_post_id: &str,
   local_task: &Task,
@@ -207,7 +201,6 @@ async fn complete_grok_video(
     app_data_root,
     app_preferences,
     task_database,
-    maybe_storyteller_creds,
     task: local_task,
     generation_provider: GenerationSource::Grok,
     media_class: TaskMediaFileClass::Video,

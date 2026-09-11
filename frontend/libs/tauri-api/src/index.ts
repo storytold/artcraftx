@@ -39,6 +39,7 @@ export * from "./lib/settings/GetAppPreferences.js";
 export * from "./lib/settings/UpdateAppPreference.js";
 export * from "./lib/settings/UpdateSoundPreference.js";
 export * from "./lib/settings/UpdatePromptPreference.js";
+export * from "./lib/settings/UpdateBackupPreference.js";
 export * from "./lib/settings/appPreferencesStore.js";
 export * from "./lib/promptbox/PromptboxState.js";
 export * from "./lib/settings/LoadCustomSound.js";

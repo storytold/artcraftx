@@ -50,7 +50,8 @@ async fn handle_grok_image_complete_inner(
   app_data_root: &AppDataRoot,
   app_preferences: &AppPreferencesManager,
   task_database: &TaskDatabase,
-  storyteller_creds_manager: &StorytellerCredentialManager,
+  // Uploads now go to the backup account (see `services::backup`), not the session.
+  _storyteller_creds_manager: &StorytellerCredentialManager,
   task: &Task,
   images: &[CompletedImage],
 ) -> AnyhowResult<()> {
@@ -70,14 +71,12 @@ async fn handle_grok_image_complete_inner(
       .find(|prompt| !prompt.is_empty())
       .map(|prompt| prompt.to_string());
 
-  let maybe_creds = storyteller_creds_manager.get_credentials()?;
 
   complete_task_with_local_files(CompleteTaskArgs {
     app_handle,
     app_data_root,
     app_preferences,
     task_database,
-    maybe_storyteller_creds: maybe_creds.as_ref(),
     task,
     generation_provider: GenerationSource::Grok,
     media_class: TaskMediaFileClass::Image,

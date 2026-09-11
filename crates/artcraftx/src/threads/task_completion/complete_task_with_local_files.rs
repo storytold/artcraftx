@@ -11,11 +11,10 @@ use crate::threads::third_party_task_polling_thread::events::notify_frontend_of_
 };
 use crate::utils::download::record_task_download_locations::record_task_download_locations;
 use anyhow::bail;
-use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
-use artcraft_client::utils::api_host::ApiHost;
+use crate::services::backup::backup_target::resolve_backup_target;
 use core_types::enums::generation_source::GenerationSource;
 use errors::AnyhowResult;
-use log::{info, warn};
+use log::info;
 use sqlite_database::queries::task::Task;
 use sqlite_database::queries::update::update_successful_task_status_with_metadata::{
   update_successful_task_status_with_metadata, UpdateSuccessfulTaskArgs,
@@ -29,10 +28,6 @@ pub struct CompleteTaskArgs<'a> {
   pub app_data_root: &'a AppDataRoot,
   pub app_preferences: &'a AppPreferencesManager,
   pub task_database: &'a TaskDatabase,
-
-  /// ArtCraft session to upload the results to. Without one the task still
-  /// completes locally with the saved downloads.
-  pub maybe_storyteller_creds: Option<&'a StorytellerCredentialSet>,
 
   pub task: &'a Task,
 
@@ -57,7 +52,8 @@ pub struct CompleteTaskArgs<'a> {
 /// Deliver a finished generation:
 ///
 /// 1. save every file to the user's download directory (fail open per file),
-/// 2. upload to ArtCraft when logged in,
+/// 2. back up to the user's chosen ArtCraft account, when backups are on
+///    (Settings → Account Backup; see `services::backup`),
 /// 3. mark the task complete (a no-op if another path already did — the
 ///    Midjourney websocket and long-poller can race),
 /// 4. record where the files landed on the task and hand them to the
@@ -72,7 +68,6 @@ pub async fn complete_task_with_local_files(args: CompleteTaskArgs<'_>) -> Anyho
     app_data_root,
     app_preferences,
     task_database,
-    maybe_storyteller_creds,
     task,
     generation_provider,
     media_class,
@@ -101,10 +96,16 @@ pub async fn complete_task_with_local_files(args: CompleteTaskArgs<'_>) -> Anyho
   let maybe_ledger = app_handle.try_state::<LocalFilesDatabase>()
       .map(|database| AssetUploadLedger::new(database.inner().clone()));
 
-  let maybe_uploaded = match maybe_storyteller_creds {
-    Some(creds) => {
+  // The same rail for every third-party service: results go to the backup
+  // account the user picked, or stay local when backups are off.
+  let maybe_backup = resolve_backup_target(app_data_root, app_preferences);
+
+  let maybe_uploaded = match &maybe_backup {
+    Some(backup) => {
+      info!("[TaskCompletion] Backing up task {} to ArtCraft account {}", task_id, backup.credential_id);
       let uploaded = upload_results_to_artcraft(
-        creds,
+        &backup.api_host,
+        &backup.creds,
         task,
         generation_provider,
         media_class,
@@ -115,7 +116,7 @@ pub async fn complete_task_with_local_files(args: CompleteTaskArgs<'_>) -> Anyho
       Some(uploaded)
     }
     None => {
-      warn!("[TaskCompletion] No ArtCraft session; completing task {} without uploading", task_id);
+      info!("[TaskCompletion] Backups are off or unconfigured; completing task {} locally only", task_id);
       None
     }
   };
@@ -152,7 +153,8 @@ pub async fn complete_task_with_local_files(args: CompleteTaskArgs<'_>) -> Anyho
         maybe_batch_token: uploaded.maybe_batch_token,
         media_class,
       };
-      notify_frontend_of_completion(app_handle, &ApiHost::Storyteller, maybe_storyteller_creds, task, &completion).await;
+      let backup = maybe_backup.as_ref().expect("uploaded only with a backup target");
+      notify_frontend_of_completion(app_handle, &backup.api_host, Some(&backup.creds), task, &completion).await;
     }
     None => notify_generation_complete(app_handle, task),
   }

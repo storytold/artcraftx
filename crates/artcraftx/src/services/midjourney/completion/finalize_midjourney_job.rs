@@ -4,7 +4,6 @@ use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::state::database::task_database::TaskDatabase;
 use crate::threads::task_completion::complete_task_with_local_files::{complete_task_with_local_files, CompleteTaskArgs};
 use crate::threads::task_completion::upload_results_to_artcraft::CompletionPrompt;
-use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::enums::common::generation::common_model_type::CommonModelType;
 use core_types::enums::generation_source::GenerationSource;
 use errors::AnyhowResult;
@@ -24,7 +23,6 @@ pub struct FinalizeMidjourneyJobArgs<'a> {
   pub app_data_root: &'a AppDataRoot,
   pub app_preferences: &'a AppPreferencesManager,
   pub task_database: &'a TaskDatabase,
-  pub maybe_storyteller_creds: Option<&'a StorytellerCredentialSet>,
   pub image_downloader: &'a ImageDownloaderClient,
   pub midjourney_job_id: &'a str,
   pub local_task: &'a Task,
@@ -49,7 +47,6 @@ pub async fn finalize_midjourney_job(args: FinalizeMidjourneyJobArgs<'_>) -> Any
     app_data_root,
     app_preferences,
     task_database,
-    maybe_storyteller_creds,
     image_downloader,
     midjourney_job_id,
     local_task,
@@ -67,7 +64,6 @@ pub async fn finalize_midjourney_job(args: FinalizeMidjourneyJobArgs<'_>) -> Any
     app_data_root,
     app_preferences,
     task_database,
-    maybe_storyteller_creds,
     task: local_task,
     generation_provider: GenerationSource::Midjourney,
     media_class: TaskMediaFileClass::Image,

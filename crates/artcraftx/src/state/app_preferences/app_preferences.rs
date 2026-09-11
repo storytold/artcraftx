@@ -1,4 +1,5 @@
 use crate::state::app_preferences::legacy_json_preferences::LegacyJsonPreferences;
+use crate::state::app_preferences::settings::app_backup_preferences::AppBackupPreferences;
 use crate::state::app_preferences::settings::app_download_preferences::AppDownloadPreferences;
 use crate::state::app_preferences::settings::app_prompt_preferences::AppPromptPreferences;
 use crate::state::app_preferences::settings::app_sound_preferences::AppSoundPreferences;
@@ -12,7 +13,8 @@ use std::path::Path;
 ///  - 1..=3: the legacy JSON layout (see `legacy_json_preferences`).
 ///  - 4: TOML, grouped into `[sounds]` / `[downloads]` tables.
 ///  - 5: added the `[prompt]` table.
-const CURRENT_VERSION: u32 = 5;
+///  - 6: added the `[backup]` table.
+const CURRENT_VERSION: u32 = 6;
 
 /// User-adjustable app preferences, persisted as `settings/app_preferences.toml`.
 ///
@@ -31,6 +33,10 @@ const CURRENT_VERSION: u32 = 5;
 /// [prompt]
 /// enter_to_generate = true
 ///
+/// [backup]
+/// enabled = true
+/// maybe_artcraft_credential_id = "credential_01j9dq3v5x8k2m7n4p6r9t0wxy"
+///
 /// [downloads.preferred_download_directory]
 /// system = "downloads"
 /// ```
@@ -44,6 +50,7 @@ pub struct AppPreferences {
   pub sounds: AppSoundPreferences,
   pub downloads: AppDownloadPreferences,
   pub prompt: AppPromptPreferences,
+  pub backup: AppBackupPreferences,
 }
 
 impl Default for AppPreferences {
@@ -53,6 +60,7 @@ impl Default for AppPreferences {
       sounds: AppSoundPreferences::default(),
       downloads: AppDownloadPreferences::default(),
       prompt: AppPromptPreferences::default(),
+      backup: AppBackupPreferences::default(),
     }
   }
 }
@@ -130,12 +138,13 @@ mod tests {
   #[test]
   fn defaults_serialize_to_nested_toml() {
     let toml = toml::to_string_pretty(&AppPreferences::default()).unwrap();
-    assert!(toml.starts_with("version = 5\n"), "{toml}");
+    assert!(toml.starts_with("version = 6\n"), "{toml}");
     assert!(toml.contains("[sounds]\nplay_sounds = true\n"), "{toml}");
     assert!(toml.contains("enqueue_success = \"done\""), "{toml}");
     assert!(toml.contains("[downloads]\n"), "{toml}");
     assert!(toml.contains("[downloads.preferred_download_directory]\nsystem = \"downloads\""), "{toml}");
     assert!(toml.contains("[prompt]\nenter_to_generate = true"), "{toml}");
+    assert!(toml.contains("[backup]\nenabled = false\n"), "{toml}");
   }
 
   #[test]
@@ -150,6 +159,8 @@ mod tests {
     prefs.downloads.preferred_download_directory = PreferredDownloadDirectory::Custom("/tmp/out".into());
     prefs.downloads.preferred_download_filename = PreferredDownloadFilename::Custom("{model}_{date}".into());
     prefs.prompt.enter_to_generate = false;
+    prefs.backup.enabled = true;
+    prefs.backup.maybe_artcraft_credential_id = Some("credential_backup".to_string());
 
     prefs.save_to_file(&path).unwrap();
     let loaded = AppPreferences::load_from_file(&path).unwrap();
@@ -163,6 +174,7 @@ mod tests {
     assert_eq!(prefs.sounds.enqueue_success, Some(AppSoundFile::Done));
     assert_eq!(prefs.downloads, AppPreferences::default().downloads);
     assert!(prefs.prompt.enter_to_generate, "prompt table absent -> default");
+    assert!(!prefs.backup.enabled, "backup table absent -> off");
   }
 
   #[test]

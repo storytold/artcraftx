@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { AppPreferencesPayload, GetAppPreferences } from "./GetAppPreferences";
+import { AppBackupPreferences, AppPreferencesPayload, GetAppPreferences } from "./GetAppPreferences";
 
 // ── App preferences cache ──
 //
@@ -57,6 +57,16 @@ export const selectEnterToGenerate = (s: AppPreferencesStore): boolean =>
 // and synchronous — safe to read in key handlers.
 export const useEnterToGenerate = (): boolean =>
   useAppPreferencesStore(selectEnterToGenerate);
+
+const DEFAULT_BACKUP_PREFERENCES: AppBackupPreferences = { enabled: false, maybe_artcraft_credential_id: null };
+
+export const selectBackupPreferences = (s: AppPreferencesStore): AppBackupPreferences =>
+  s.preferences?.backup ?? DEFAULT_BACKUP_PREFERENCES;
+
+// The Account Backup settings (Settings → Account Backup). Falls back to
+// "off, no account" until the first load completes.
+export const useBackupPreferences = (): AppBackupPreferences =>
+  useAppPreferencesStore(selectBackupPreferences);
 
 // Non-hook access for code outside React (e.g. sound playback).
 export const getCachedAppPreferences = (): AppPreferencesPayload | undefined =>

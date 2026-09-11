@@ -27,6 +27,7 @@ use crate::commands::service::promptbox::get_promptbox_state_command::get_prompt
 use crate::commands::service::promptbox::update_promptbox_state_command::update_promptbox_state_command;
 use crate::commands::service::app_preferences::load_custom_sound_command::load_custom_sound_command;
 use crate::commands::service::app_preferences::update_app_preference_command::update_app_preferences_command;
+use crate::commands::service::app_preferences::update_backup_preference_command::update_backup_preference_command;
 use crate::commands::service::app_preferences::update_prompt_preference_command::update_prompt_preference_command;
 use crate::commands::service::app_preferences::update_sound_preference_command::update_sound_preference_command;
 use crate::commands::cost_estimate::estimate_audio_cost_command::estimate_audio_cost_command;
@@ -217,6 +218,7 @@ pub fn run() {
     platform_info_command,
     tasks_nuke_all_command,
     update_app_preferences_command,
+    update_backup_preference_command,
     update_prompt_preference_command,
     update_promptbox_state_command,
     update_sound_preference_command,

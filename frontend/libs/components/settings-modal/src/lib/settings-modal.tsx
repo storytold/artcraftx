@@ -5,6 +5,7 @@ import { MiscSettingsPane } from "./panes/MiscSettingsPane";
 import { DownloadsSettingsPane } from "./panes/DownloadsSettingsPane";
 import { AudioSettingsPane } from "./panes/AudioSettingsPane";
 import { AccountSettingsPane } from "./panes/AccountSettings/AccountSettingsPane";
+import { AccountBackupSettingsPane } from "./panes/AccountBackupSettingsPane";
 import { AboutSettingsPane } from "./panes/AboutSettingsPane";
 import { gtagEvent } from "@storyteller/google-analytics";
 import { BillingSettingsPane } from "./panes/BillingSettingsPane";
@@ -16,6 +17,7 @@ export type SettingsSection =
   | "downloads"
   | "appearance"
   | "accounts"
+  | "backup"
   | "alerts"
   | "about"
   | "billing";
@@ -45,6 +47,7 @@ export const SettingsContent = ({
     { id: "general" as const, label: "General" },
     { id: "downloads" as const, label: "Downloads" },
     { id: "accounts" as const, label: "Accounts" },
+    { id: "backup" as const, label: "Account Backup" },
     { id: "billing" as const, label: "Plan & Credits" },
     { id: "alerts" as const, label: "Alerts" },
     { id: "about" as const, label: "About" },
@@ -66,6 +69,8 @@ export const SettingsContent = ({
             globalAccountLogoutCallback={globalAccountLogoutCallback}
           />
         );
+      case "backup":
+        return <AccountBackupSettingsPane />;
       case "about":
         return <AboutSettingsPane />;
       case "billing":
