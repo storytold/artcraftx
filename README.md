@@ -1,5 +1,9 @@
 <h1 align="center">ArtCraft-X</h1>
 
+<p align="center">
+  <img src="docs/images/artcraftx-screenshot.png" width="1100" alt="ArtCraft-X's image generation workspace, with model selection, reference images, and a prompt editor.">
+</p>
+
 <p align="center">A minimal desktop app for AI creation.</p>
 
 <p align="center">
@@ -21,8 +25,4 @@
 <p align="center">
   <strong>Early Experimental Release</strong><br>
   Builds are Forthcoming
-</p>
-
-<p align="center">
-  <img src="docs/images/artcraftx-screenshot.png" width="1100" alt="ArtCraft-X's image generation workspace, with model selection, reference images, and a prompt editor.">
 </p>
