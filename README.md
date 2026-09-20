@@ -16,10 +16,10 @@
 </p>
 
 <p align="center">
-  <a href="https://discord.gg/artcraft">Discord</a> ·
-  <a href="https://www.youtube.com/@OfficialArtCraftStudios">YouTube</a> ·
-  <a href="https://x.com/get_artcraft">X</a> ·
-  <a href="https://www.linkedin.com/company/artcraft-ai">LinkedIn</a>
+  <a href="https://discord.gg/artcraft"><img alt="Discord members online" src="https://img.shields.io/discord/1359579021108842617?style=for-the-badge&amp;label=Discord&amp;color=5865F2&amp;logo=discord&amp;logoColor=white"></a>
+  <a href="https://www.youtube.com/@OfficialArtCraftStudios"><img alt="YouTube" src="https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&amp;logo=youtube&amp;logoColor=white"></a>
+  <a href="https://x.com/get_artcraft"><img alt="X" src="https://img.shields.io/badge/X-181717?style=for-the-badge&amp;logo=x&amp;logoColor=white"></a>
+  <a href="https://www.linkedin.com/company/artcraft-ai"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge"></a>
 </p>
 
 <p align="center">
