@@ -195,7 +195,9 @@ export const TopBar = () => {
             </Tooltip>
           </div>
 
-          {isDesktop && platform !== "macos" && (
+          {/* Only Windows hides the native title bar (`decorations(false)` in setup_main_window.rs);
+              macOS overlays its traffic lights and Linux keeps the window manager's own buttons. */}
+          {isDesktop && platform === "windows" && (
             <div className="no-drag flex h-full items-center">
               <button
                 type="button"
