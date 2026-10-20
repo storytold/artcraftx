@@ -65,7 +65,6 @@ impl<Params: Serialize, Response: DeserializeOwned> FalRequest<Params, Response>
           )
         ),
       )
-      .header("Content-Type", "application/json")
       .send()
       .await?;
 
@@ -88,7 +87,6 @@ impl<Params: Serialize, Response: DeserializeOwned> FalRequest<Params, Response>
       .post(format!("https://queue.fal.run/{}", self.endpoint))
       .json(&self.params)
       .header("Authorization", format!("Key {}", &key))
-      .header("Content-Type", "application/json")
       .send()
       .await?;
 
@@ -119,7 +117,6 @@ impl<Params: Serialize, Response: DeserializeOwned> FalRequest<Params, Response>
       .post(request_url)
       .json(&self.params)
       .header("Authorization", format!("Key {}", &key))
-      .header("Content-Type", "application/json")
       .send()
       .await?;
 
@@ -144,7 +141,6 @@ impl<Params: Serialize, Response: DeserializeOwned> FalRequest<Params, Response>
         .post(format!("https://queue.fal.run/{}", self.endpoint))
         .json(&self.params)
         .header("Authorization", format!("Key {}", &key))
-        .header("Content-Type", "application/json")
         .send()
         .await?;
 
@@ -155,7 +151,7 @@ impl<Params: Serialize, Response: DeserializeOwned> FalRequest<Params, Response>
 
     let body = response.text().await?;
 
-    println!("Queue response: {}", body);
+    info!("Queue response: {}", body);
 
     let payload: QueueResponse = serde_json::from_str(&body)?;
 
