@@ -84,9 +84,7 @@ impl CredentialToml {
     let path = path.as_ref();
     let contents = toml::to_string_pretty(self)
         .map_err(|source| ArtcraftXCredentialError::TomlSerializeError { source })?;
-    let temp_path = path.with_extension("toml.tmp");
-    write_owner_only(&temp_path, contents.as_bytes())
-        .and_then(|_| std::fs::rename(&temp_path, path))
+    replace_owner_only(path, contents.as_bytes())
         .map_err(|source| ArtcraftXCredentialError::FileWriteError {
           path: path.to_path_buf(),
           source,
@@ -144,6 +142,18 @@ impl CredentialToml {
       user_info: credential.user_info.clone(),
     }
   }
+}
+
+/// Replace `path` with `contents` atomically: write `<path>.tmp` in the same
+/// folder, then rename it over `path`. On Unix the new file is owner-only
+/// (0600), so an existing file with wider permissions is tightened too. Use
+/// this for every file in the credentials folder.
+pub fn replace_owner_only(path: &Path, contents: &[u8]) -> std::io::Result<()> {
+  let mut temp_path = path.as_os_str().to_os_string();
+  temp_path.push(".tmp");
+  let temp_path = PathBuf::from(temp_path);
+  write_owner_only(&temp_path, contents)?;
+  std::fs::rename(&temp_path, path)
 }
 
 /// Create (or truncate) `path` and write `contents`. On Unix a new file gets
