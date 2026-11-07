@@ -5,8 +5,13 @@ use core_types::enums::generation_source::GenerationSource;
 use crate::credentials::credential_user_info::CredentialUserInfo;
 use crate::error::artcraftx_credential_error::ArtcraftXCredentialError;
 use serde_derive::{Deserialize, Serialize};
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use core_types::identifiers::credential_id::CredentialId;
+
+#[cfg(unix)]
+use std::os::unix::fs::OpenOptionsExt;
 
 /// The on-disk (TOML) shape of a credential file.
 ///
@@ -71,11 +76,15 @@ impl CredentialToml {
         })
   }
 
+  /// Write atomically (temp file + rename) so a crash mid-write can't leave a
+  /// truncated credential file. The file holds secrets, so on Unix it is
+  /// created readable by its owner only (0600). Replacing the file also
+  /// tightens an existing file that was saved with wider permissions.
   pub fn save<P: AsRef<Path>>(&self, path: P) -> Result<(), ArtcraftXCredentialError> {
     let path = path.as_ref();
     let contents = toml::to_string_pretty(self)
         .map_err(|source| ArtcraftXCredentialError::TomlSerializeError { source })?;
-    std::fs::write(path, contents)
+    replace_owner_only(path, contents.as_bytes())
         .map_err(|source| ArtcraftXCredentialError::FileWriteError {
           path: path.to_path_buf(),
           source,
@@ -133,6 +142,30 @@ impl CredentialToml {
       user_info: credential.user_info.clone(),
     }
   }
+}
+
+/// Replace `path` with `contents` atomically: write `<path>.tmp` in the same
+/// folder, then rename it over `path`. On Unix the new file is owner-only
+/// (0600), so an existing file with wider permissions is tightened too. Use
+/// this for every file in the credentials folder.
+pub fn replace_owner_only(path: &Path, contents: &[u8]) -> std::io::Result<()> {
+  let mut temp_path = path.as_os_str().to_os_string();
+  temp_path.push(".tmp");
+  let temp_path = PathBuf::from(temp_path);
+  write_owner_only(&temp_path, contents)?;
+  std::fs::rename(&temp_path, path)
+}
+
+/// Create (or truncate) `path` and write `contents`. On Unix a new file gets
+/// mode 0600 when it is created, not afterwards, so it is not readable by
+/// other users while it is being written.
+fn write_owner_only(path: &Path, contents: &[u8]) -> std::io::Result<()> {
+  let mut options = OpenOptions::new();
+  options.write(true).create(true).truncate(true);
+  #[cfg(unix)]
+  options.mode(0o600);
+  let mut file = options.open(path)?;
+  file.write_all(contents)
 }
 
 #[cfg(test)]
@@ -282,6 +315,42 @@ mod tests {
       let toml_text = toml::to_string_pretty(&rewritten).unwrap();
       let reparsed: CredentialToml = toml::from_str(&toml_text).unwrap();
       assert_eq!(reparsed, rewritten);
+    }
+  }
+
+  #[cfg(unix)]
+  mod file_mode_tests {
+    use super::*;
+    use std::os::unix::fs::PermissionsExt;
+
+    #[test]
+    fn saved_file_is_owner_only() {
+      let dir = tempfile::tempdir().unwrap();
+      let path = dir.path().join("fal_api.toml");
+      let file: CredentialToml = toml::from_str(HAND_WRITTEN_API_KEY_FILE).unwrap();
+      file.save(&path).unwrap();
+
+      assert_eq!(file_mode(&path), 0o600, "credential file mode was {:o}", file_mode(&path));
+      assert_eq!(CredentialToml::load(&path).unwrap(), file);
+      assert!(!path.with_extension("toml.tmp").exists());
+    }
+
+    #[test]
+    fn saving_tightens_an_existing_readable_file() {
+      let dir = tempfile::tempdir().unwrap();
+      let path = dir.path().join("fal_api.toml");
+      std::fs::write(&path, HAND_WRITTEN_API_KEY_FILE).unwrap();
+      std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o644)).unwrap();
+
+      let file = CredentialToml::load(&path).unwrap();
+      file.save(&path).unwrap();
+
+      assert_eq!(file_mode(&path), 0o600, "credential file mode was {:o}", file_mode(&path));
+      assert_eq!(CredentialToml::load(&path).unwrap(), file);
+    }
+
+    fn file_mode(path: &Path) -> u32 {
+      std::fs::metadata(path).unwrap().permissions().mode() & 0o777
     }
   }
 }

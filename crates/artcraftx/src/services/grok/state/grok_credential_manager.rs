@@ -1,3 +1,4 @@
+use crate::credentials::credential_toml::replace_owner_only;
 use crate::services::grok::state::legacy_credential_paths::GrokLegacyCredentialPaths;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::grok::state::grok_credential_holder::GrokCredentialHolder;
@@ -197,16 +198,43 @@ impl GrokCredentialManager {
     let path = self.app_data_root.credentials_dir().get_grok_state_path();
     let serialized = serde_json::to_string(&state)?;
 
-    std::fs::write(path, serialized)?;
+    replace_owner_only(&path, serialized.as_bytes())?;
 
     // TODO: This is just for building the client and testing.
     if let Some(cookies) = creds.browser_cookies.as_ref() {
       let cookies_header = cookies.to_cookie_string();
       let path = self.app_data_root.credentials_dir().get_grok_cookies_path();
-      std::fs::write(path, cookies_header)?;
+      replace_owner_only(&path, cookies_header.as_bytes())?;
     }
 
     Ok(())
+  }
+}
+
+#[cfg(all(test, unix))]
+mod tests {
+  use super::*;
+  use std::os::unix::fs::PermissionsExt;
+  use std::path::Path;
+  use url::Url;
+
+  #[test]
+  fn persisted_files_are_owner_only() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = AppDataRoot::create_existing(dir.path()).unwrap();
+    let manager = GrokCredentialManager::initialize_empty(&root);
+    let url = Url::parse("https://grok.com/").unwrap();
+    manager.replace_cookie_store(CookieStore::from_cookie_header("a=1", &url)).unwrap();
+
+    manager.persist_to_disk().unwrap();
+
+    let creds_dir = root.credentials_dir();
+    assert_eq!(file_mode(&creds_dir.get_grok_state_path()), 0o600, "grok state file");
+    assert_eq!(file_mode(&creds_dir.get_grok_cookies_path()), 0o600, "grok cookies file");
+  }
+
+  fn file_mode(path: &Path) -> u32 {
+    std::fs::metadata(path).unwrap().permissions().mode() & 0o777
   }
 }
 
