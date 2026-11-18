@@ -1,3 +1,4 @@
+use crate::credentials::credential_toml::replace_owner_only;
 use crate::services::storyteller::state::legacy_credential_paths::StorytellerLegacyCredentialPaths;
 use core_types::enums::generation_source::GenerationSource;
 use crate::state::data_dir::app_data_root::AppDataRoot;
@@ -5,8 +6,6 @@ use crate::services::storyteller::state::read_storyteller_credentials_from_disk:
 use crate::services::storyteller::state::storyteller_credential_holder::StorytellerCredentialHolder;
 use errors::AnyhowResult;
 use log::{info, warn};
-use std::fs::OpenOptions;
-use std::io::Write;
 use artcraft_client::credentials::storyteller_avt_cookie::StorytellerAvtCookie;
 use artcraft_client::credentials::storyteller_credential_set::StorytellerCredentialSet;
 use artcraft_client::credentials::storyteller_session_cookie::StorytellerSessionCookie;
@@ -136,14 +135,7 @@ fn persist_session_to_disk(session: &StorytellerSessionCookie, app_data_root: &A
   let creds_dir = app_data_root.credentials_dir();
   let filename = creds_dir.get_storyteller_session_cookie_file_path();
 
-  let mut file = OpenOptions::new()
-      .create(true)
-      .write(true)
-      .truncate(true)
-      .open(filename)?;
-
-  file.write_all(session.as_bytes())?;
-  file.flush()?;
+  replace_owner_only(&filename, session.as_bytes())?;
 
   Ok(())
 }
@@ -152,14 +144,35 @@ fn persist_avt_to_disk(avt: &StorytellerAvtCookie, app_data_root: &AppDataRoot) 
   let creds_dir = app_data_root.credentials_dir();
   let filename = creds_dir.get_storyteller_avt_cookie_file_path();
 
-  let mut file = OpenOptions::new()
-      .create(true)
-      .write(true)
-      .truncate(true)
-      .open(filename)?;
-
-  file.write_all(avt.as_bytes())?;
-  file.flush()?;
+  replace_owner_only(&filename, avt.as_bytes())?;
 
   Ok(())
+}
+
+#[cfg(all(test, unix))]
+mod tests {
+  use super::*;
+  use std::os::unix::fs::PermissionsExt;
+  use std::path::Path;
+
+  #[test]
+  fn persisted_cookie_files_are_owner_only() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = AppDataRoot::create_existing(dir.path()).unwrap();
+    let manager = StorytellerCredentialManager::initialize_empty(&root);
+    manager.set_credentials(&StorytellerCredentialSet::initialize(
+      Some(StorytellerAvtCookie::new("avt-value".to_string())),
+      Some(StorytellerSessionCookie::new("session-value".to_string())),
+    )).unwrap();
+
+    manager.persist_all_to_disk().unwrap();
+
+    let creds_dir = root.credentials_dir();
+    assert_eq!(file_mode(&creds_dir.get_storyteller_avt_cookie_file_path()), 0o600, "storyteller avt cookie file");
+    assert_eq!(file_mode(&creds_dir.get_storyteller_session_cookie_file_path()), 0o600, "storyteller session cookie file");
+  }
+
+  fn file_mode(path: &Path) -> u32 {
+    std::fs::metadata(path).unwrap().permissions().mode() & 0o777
+  }
 }

@@ -1,3 +1,4 @@
+use crate::credentials::credential_toml::replace_owner_only;
 use crate::services::midjourney::state::legacy_credential_paths::MidjourneyLegacyCredentialPaths;
 use crate::state::data_dir::app_data_root::AppDataRoot;
 use crate::services::midjourney::state::midjourney_user_info::MidjourneyUserInfo;
@@ -165,7 +166,7 @@ impl MidjourneyCredentialManager {
     let path = self.app_data_root.credentials_dir().get_midjourney_state_path();
     let serialized = serde_json::to_string(&state)?;
     
-    std::fs::write(path, serialized)?;
+    replace_owner_only(&path, serialized.as_bytes())?;
 
     Ok(())
   }
@@ -185,4 +186,26 @@ fn read_midjourney_state_from_disk(root: &AppDataRoot) -> AnyhowResult<Option<Se
   let state: SerializableMidjourneyState = serde_json::from_str(&contents)?;
 
   Ok(Some(state))
+}
+
+#[cfg(all(test, unix))]
+mod tests {
+  use super::*;
+  use std::os::unix::fs::PermissionsExt;
+  use url::Url;
+
+  #[test]
+  fn persisted_state_file_is_owner_only() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = AppDataRoot::create_existing(dir.path()).unwrap();
+    let manager = MidjourneyCredentialManager::initialize_empty(&root);
+    let url = Url::parse("https://www.midjourney.com/").unwrap();
+    manager.replace_cookie_store(CookieStore::from_cookie_header("a=1", &url)).unwrap();
+
+    manager.persist_to_disk().unwrap();
+
+    let path = root.credentials_dir().get_midjourney_state_path();
+    let mode = std::fs::metadata(&path).unwrap().permissions().mode() & 0o777;
+    assert_eq!(mode, 0o600, "midjourney state file mode was {:o}", mode);
+  }
 }

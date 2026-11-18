@@ -21,6 +21,9 @@ pub struct AppCredentialsDir {
 impl DataSubdir for AppCredentialsDir {
   const DIRECTORY_NAME: &'static str = "credentials";
 
+  /// Holds API keys and session cookies.
+  const OWNER_ONLY: bool = true;
+
   fn new_from<P: AsRef<Path>> (dir: P) -> Self {
     Self {
       path: dir.as_ref().to_path_buf(),
@@ -231,6 +234,16 @@ mod tests {
     let credentials = creds_dir.load_credentials().unwrap();
     assert_eq!(credentials.len(), 1);
     assert_eq!(credentials[0].api_key().unwrap().api_key, "fal-key-123");
+  }
+
+  #[cfg(unix)]
+  #[test]
+  fn directory_is_created_owner_only() {
+    use std::os::unix::fs::PermissionsExt;
+    let root = tempfile::tempdir().unwrap();
+    let creds_dir = AppCredentialsDir::get_or_create_in_root_dir(root.path()).unwrap();
+    let mode = std::fs::metadata(creds_dir.path()).unwrap().permissions().mode() & 0o777;
+    assert_eq!(mode, 0o700, "credentials directory mode was {:o}", mode);
   }
 
   #[test]
