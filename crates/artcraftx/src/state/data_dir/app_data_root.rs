@@ -145,3 +145,48 @@ fn get_default_data_dir() -> anyhow::Result<PathBuf> {
       .join(DEFAULT_ARTCRAFT_DATA_DIR)
       .join(DEFAULT_ARTCRAFTX_DATA_SUBDIR))
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use tauri::utils::config::AssetProtocolConfig;
+
+  /// Tauri configs that set the asset protocol scope.
+  const TAURI_CONFIG_FILES: [&str; 3] = [
+    "tauri.conf.json",
+    "tauri-dev-hot-reload.conf.json",
+    "tauri-mac.conf.json",
+  ];
+
+  /// Tauri resolves `$HOME` with `dirs::home_dir()`.
+  const CREDENTIALS_DENY_PATTERN: &str = "$HOME/Artcraft/artcraftx/credentials/**";
+
+  #[test]
+  fn asset_protocol_scope_denies_the_credentials_dir() {
+    for file_name in TAURI_CONFIG_FILES {
+      let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(file_name);
+      let config: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+      let asset_protocol: AssetProtocolConfig =
+          serde_json::from_value(config["app"]["security"]["assetProtocol"].clone()).unwrap();
+
+      let denied = asset_protocol.scope.forbidden_paths().cloned().unwrap_or_default();
+      assert!(
+        denied.contains(&PathBuf::from(CREDENTIALS_DENY_PATTERN)),
+        "{} does not deny {}", file_name, CREDENTIALS_DENY_PATTERN,
+      );
+      assert_eq!(asset_protocol.scope.allowed_paths(), &vec![PathBuf::from("**")], "{}", file_name);
+    }
+  }
+
+  #[test]
+  fn credentials_deny_pattern_names_the_default_credentials_dir() {
+    let credentials_dir = get_default_data_dir()
+        .unwrap()
+        .join(AppCredentialsDir::DIRECTORY_NAME);
+    let pattern_dir = CREDENTIALS_DENY_PATTERN
+        .strip_prefix("$HOME/")
+        .and_then(|rest| rest.strip_suffix("/**"))
+        .unwrap();
+    assert_eq!(credentials_dir, dirs::home_dir().unwrap().join(pattern_dir));
+  }
+}

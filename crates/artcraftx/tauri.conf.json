@@ -15,9 +15,14 @@
     "security": {
       "assetProtocol": {
         "enable": true,
-        "scope": [
-          "**"
-        ]
+        "scope": {
+          "allow": [
+            "**"
+          ],
+          "deny": [
+            "$HOME/Artcraft/artcraftx/credentials/**"
+          ]
+        }
       },
       "csp": {
         "default-src": [
