@@ -7,7 +7,7 @@
     "frontendDist": "../../frontend/apps/artcraft/dist",
     "devUrl": "http://localhost:5173",
     "beforeDevCommand": "nx run artcraft:dev",
-    "beforeBuildCommand": "npx run artcraft:build"
+    "beforeBuildCommand": "npx nx run artcraft:build"
   },
   "app": {
     "withGlobalTauri": true,
@@ -109,12 +109,28 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "category": "GraphicsAndDesign",
+    "shortDescription": "A minimal desktop app for AI creation",
+    "longDescription": "ArtCraft-X is a minimal desktop app for AI creation: images, video, audio, 3D meshes and worlds.",
+    "publisher": "Learning Machines LLC",
+    "homepage": "https://getartcraft.com",
     "icon": [
       "icons/32x32.png",
+      "icons/64x64.png",
       "icons/128x128.png",
-      "icons/128x128@2x.png",
+      "icons/256x256.png",
+      "icons/icon.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "linux": {
+      "deb": {
+        "section": "graphics",
+        "desktopTemplate": "linux/artcraftx.desktop"
+      },
+      "rpm": {
+        "desktopTemplate": "linux/artcraftx.desktop"
+      }
+    }
   }
 }
